@@ -16,6 +16,8 @@ type Props = {
   /** Defaults to the theme's text colour. */
   iconColor?: string;
   iconSize?: number;
+  borderColor?: ColorValue;
+  borderWidth?: number;
   /** Makes the tile a button. Then `accessibilityLabel` is required. */
   onPress?: () => void;
   accessibilityLabel?: string;
@@ -29,13 +31,15 @@ export function AppIconTile({
   backgroundColor,
   iconColor,
   iconSize = sizes.icon,
+  borderColor,
+  borderWidth = 0,
   onPress,
   accessibilityLabel,
 }: Props) {
   const { colors } = useTheme();
   const tile = [
     styles.tile,
-    { width: size, height: size, borderRadius, backgroundColor: backgroundColor ?? colors.surfaceRaised },
+    { width: size, height: size, borderRadius, borderColor, borderWidth, backgroundColor: backgroundColor ?? colors.surfaceRaised },
   ];
   const icon = <Icon size={iconSize} color={iconColor ?? colors.text} />;
 

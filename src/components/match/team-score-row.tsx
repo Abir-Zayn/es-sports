@@ -1,10 +1,10 @@
 import { StyleSheet, View } from 'react-native';
 
 import { InitialsAvatar, Text } from '@/components/ui';
-import { useTheme, useThemedStyles, type Palette } from '@/theme';
+import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { LiveTeam } from '@/types/cricket';
 
-const TEAM_AVATAR_SIZE = 30;
+const TEAM_AVATAR_SIZE = 26;
 
 /** A team's avatar, name and score. The batting side is full strength, the other muted. */
 export function TeamScoreRow({ team }: { team: LiveTeam }) {
@@ -27,9 +27,9 @@ export function TeamScoreRow({ team }: { team: LiveTeam }) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-    name: { flex: 1, fontSize: 13, lineHeight: 18, fontWeight: '600' },
+    row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+    name: { flex: 1, fontSize: 12, lineHeight: 16, fontWeight: '600' },
     scoreRow: { flexDirection: 'row', alignItems: 'baseline', gap: 5 },
-    score: { fontSize: 20, lineHeight: 24, fontWeight: '800', fontVariant: ['tabular-nums'] },
-    overs: { fontSize: 12, lineHeight: 16, color: colors.textMuted },
+    score: { fontSize: 17, lineHeight: 20, fontWeight: '800', fontVariant: ['tabular-nums'] },
+    overs: { fontSize: 11, lineHeight: 14, color: colors.textMuted },
   });

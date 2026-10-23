@@ -3,12 +3,12 @@ import { useState } from 'react';
 import { View, type ColorValue } from 'react-native';
 
 import { AppAvatar } from '@/components/ui/app-avatar';
-import { useTheme, type AvatarTone } from '@/theme';
+import { useTheme, type AvatarTone, type Palette } from '@/theme';
 
 type Props = {
   /** Initials shown when there is no picture, or it fails to load. */
   label: string;
-  /** Colour family of the fallback: bright characters on a dark circle of the same colour. */
+  /** Colour family of the fallback: bright characters on a dark circle of the same colour, or a plain neutral. */
   tone?: AvatarTone;
   /** An uploaded picture. Shown instead of the initials when present. */
   imageUri?: string | null;
@@ -22,6 +22,12 @@ type Props = {
 };
 
 const SQUARE_RADIUS_RATIO = 0.3;
+
+const TONES: Record<AvatarTone, { background: (c: Palette) => string; ink: (c: Palette) => string }> = {
+  blue: { background: (c) => c.primarySoft, ink: (c) => c.link },
+  yellow: { background: (c) => c.accentSoft, ink: (c) => c.accent },
+  neutral: { background: (c) => c.surfaceRaised, ink: (c) => c.text },
+};
 
 /** An avatar for a person, team or tournament: their picture, or initials on a tinted circle. */
 export function InitialsAvatar({
@@ -58,8 +64,8 @@ export function InitialsAvatar({
       label={label}
       size={size}
       borderRadius={borderRadius}
-      backgroundColor={tone === 'yellow' ? colors.accentSoft : colors.primarySoft}
-      color={tone === 'yellow' ? colors.accent : colors.link}
+      backgroundColor={TONES[tone].background(colors)}
+      color={TONES[tone].ink(colors)}
       borderColor={borderColor}
       borderWidth={borderWidth}
       accessibilityLabel={accessibilityLabel}

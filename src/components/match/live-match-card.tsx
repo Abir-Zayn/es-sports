@@ -33,7 +33,7 @@ export function LiveMatchCard({ match, onPress }: Props) {
         </Text>
       </View>
 
-      <Text variant="heading" style={styles.status}>
+      <Text variant="body" style={styles.status}>
         {match.status}
       </Text>
 
@@ -58,21 +58,21 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     card: {
       width: LIVE_MATCH_CARD_WIDTH,
-      paddingTop: spacing.lg,
-      paddingHorizontal: 18,
-      paddingBottom: 18,
+      paddingTop: spacing.md,
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.md,
       borderRadius: radius.lg,
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
-      gap: 14,
+      gap: 10,
     },
     pressed: { opacity: 0.85 },
     topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
-    label: { flexShrink: 1, textAlign: 'right', fontSize: 11, lineHeight: 14, fontWeight: '600', letterSpacing: 1, color: colors.textMuted },
-    teams: { gap: 10 },
+    label: { flexShrink: 1, textAlign: 'right', fontSize: 10, lineHeight: 13, fontWeight: '600', letterSpacing: 1, color: colors.textMuted },
+    teams: { gap: spacing.sm },
     divider: { height: 1, backgroundColor: colors.border },
-    status: { fontWeight: '700' },
-    ballsRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    thisOver: { fontSize: 11, lineHeight: 14, color: colors.textMuted, marginRight: spacing.xs },
+    status: { fontSize: 15, lineHeight: 20, fontWeight: '700' },
+    ballsRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs + 1 },
+    thisOver: { fontSize: 10, lineHeight: 13, color: colors.textMuted, marginRight: spacing.xs },
   });

@@ -8,7 +8,7 @@ export function BallChip({ value }: { value: string }) {
   const { colors } = useTheme();
   let background = colors.surfaceRaised;
   let color = colors.text;
-  let fontSize = 12;
+  let fontSize = 11;
   if (value === 'W') {
     background = colors.dangerSoft;
     color = colors.dangerSoftText;
@@ -18,15 +18,15 @@ export function BallChip({ value }: { value: string }) {
   } else if (value === 'Wd' || value === 'Nb') {
     background = colors.accentSoft;
     color = colors.accent;
-    fontSize = 10;
+    fontSize = 9;
   }
   return (
     <View style={[styles.chip, { backgroundColor: background }]}>
-      <Text style={{ color, fontSize, lineHeight: 16, fontWeight: '700' }}>{value}</Text>
+      <Text style={{ color, fontSize, lineHeight: 14, fontWeight: '700' }}>{value}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  chip: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  chip: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
 });

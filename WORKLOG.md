@@ -40,6 +40,8 @@ Entry template:
 - "Next Games" section (was Upcoming): flat rows split by hairlines, no card or date tile. Shared `UpcomingMatchTile` in `src/components/match/` (type `UpcomingMatch` in `src/types/cricket.ts`); date shows weekday small over "24 Oct" larger.
 - Avatars: `InitialsAvatar` (picture if uploaded, else initials on a dark blue or yellow tone; circle or square) used for the top bar user, team avatars (square in Your Teams) and the tournament card logo. Built on `AppAvatar`. Tone type `AvatarTone` lives in the theme.
 - Native splash is now a blank image on the dark background (no white ES frame); the animated splash fades the letters in. Needs a native rebuild.
+- Search screen (`/search`, full screen, opened from the Home search button) built from the design: back button, `SearchField`, `AppTabs` filter pills, grouped results (teams, players, tournaments), recent searches, no-results state. Sample data in `src/features/search/sample-data.ts`; result taps show "coming soon".
+- New shared components: `SearchField`, `AppTabs` (generic), `InitialsAvatar` neutral tone, `AppIconTile` border props. Live match card made more compact (smaller text, avatar, chips, spacing).
 - Fixed the app staying light while the phone was dark: theme preference now saved under `theme-preference-v2`, old key deleted.
 - Dev-only auth bypass (`src/features/auth/dev-bypass.ts`): Log in and Create account skip validation and open Home. Release builds still validate.
 

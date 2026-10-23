@@ -1,9 +1,11 @@
 export { AppAvatar } from './app-avatar';
 export { AppBadge } from './app-badge';
 export { AppIconTile } from './app-icon-tile';
+export { AppTabs, type AppTab } from './app-tabs';
 export { InitialsAvatar } from './initials-avatar';
 export { Button } from './button';
 export { Checkbox } from './checkbox';
 export { PasswordField } from './password-field';
+export { SearchField } from './search-field';
 export { Text } from './text';
 export { TextField } from './text-field';

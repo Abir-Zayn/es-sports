@@ -27,7 +27,7 @@ export function HomeScreen() {
       <TopBar
         user={sampleUser}
         onProfile={() => router.navigate('/profile')}
-        onSearch={() => comingSoon('Search')}
+        onSearch={() => router.push('/search')}
         onNotifications={() => comingSoon('Notifications')}
       />
       <LiveSection matches={liveMatches} onSeeAll={() => comingSoon('Live matches')} onMatchPress={() => comingSoon('Live match')} />
