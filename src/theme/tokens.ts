@@ -74,6 +74,9 @@ const light: Palette = {
 
 export const palettes = { dark, light } as const;
 
+/** Colour family for tinted avatars. */
+export type AvatarTone = 'blue' | 'yellow';
+
 export type ColorScheme = keyof typeof palettes;
 export type ThemePreference = ColorScheme | 'system';
 

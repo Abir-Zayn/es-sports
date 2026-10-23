@@ -2,7 +2,7 @@ import Bell from 'lucide-react-native/icons/bell';
 import Search from 'lucide-react-native/icons/search';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { AppAvatar, Text } from '@/components/ui';
+import { InitialsAvatar, Text } from '@/components/ui';
 import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import type { HomeUser } from '../sample-data';
@@ -21,7 +21,14 @@ export function TopBar({ user, onProfile, onSearch, onNotifications }: Props) {
   return (
     <View style={styles.row}>
       <Pressable accessibilityRole="button" accessibilityLabel="My profile" onPress={onProfile}>
-        <AppAvatar label={user.initials} size={46} borderColor={colors.primary} borderWidth={2} />
+        <InitialsAvatar
+          label={user.initials}
+          tone={user.tone}
+          imageUri={user.avatarUri}
+          size={46}
+          borderColor={colors.primary}
+          borderWidth={2}
+        />
       </Pressable>
       <View style={styles.greeting}>
         <Text style={styles.welcome}>Welcome back</Text>

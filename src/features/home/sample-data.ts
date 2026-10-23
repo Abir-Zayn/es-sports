@@ -1,13 +1,11 @@
 // TODO: replace with data from Supabase once the project and tables exist. All sample values from the design file.
+import type { AvatarTone } from '@/theme';
 import type { LiveMatch, TeamInfo, UpcomingMatch } from '@/types/cricket';
 
-export type HomeUser = { initials: string; name: string; unreadNotifications: number };
-export type Tournament = { id: string; short: string; name: string; meta: string };
+export type HomeUser = { initials: string; name: string; tone: AvatarTone; avatarUri?: string; unreadNotifications: number };
+export type Tournament = { id: string; short: string; name: string; meta: string; tone: AvatarTone; avatarUri?: string };
 
-const YELLOW = '#FFC83D';
-const BLUE = '#3DA9FF';
-
-export const sampleUser: HomeUser = { initials: 'TR', name: 'Tanvir', unreadNotifications: 3 };
+export const sampleUser: HomeUser = { initials: 'TR', name: 'Tanvir', tone: 'blue', unreadNotifications: 3 };
 
 export const liveMatches: LiveMatch[] = [
   {
@@ -15,8 +13,8 @@ export const liveMatches: LiveMatch[] = [
     label: 'HSF PREMIER LEAGUE · MATCH 12',
     status: 'Strikers need 27 runs from 21 balls',
     teams: [
-      { short: 'KK', name: 'Karnaphuli Kings', color: YELLOW, score: '168/7', overs: '(20)', batting: false },
-      { short: 'CS', name: 'Chattogram Strikers', color: BLUE, score: '142/4', overs: '(16.3)', batting: true },
+      { short: 'KK', name: 'Karnaphuli Kings', tone: 'yellow', score: '168/7', overs: '(20)', batting: false },
+      { short: 'CS', name: 'Chattogram Strikers', tone: 'blue', score: '142/4', overs: '(16.3)', batting: true },
     ],
     balls: ['1', '4', 'Wd', '4'],
   },
@@ -25,17 +23,17 @@ export const liveMatches: LiveMatch[] = [
     label: 'FRIENDLY MATCH',
     status: 'Riders opted to bat',
     teams: [
-      { short: 'PR', name: 'Patenga Riders', color: BLUE, score: '64/2', overs: '(8.1)', batting: true },
-      { short: 'AT', name: 'Agrabad Titans', color: YELLOW, score: 'Yet to bat', overs: '', batting: false },
+      { short: 'PR', name: 'Patenga Riders', tone: 'blue', score: '64/2', overs: '(8.1)', batting: true },
+      { short: 'AT', name: 'Agrabad Titans', tone: 'yellow', score: 'Yet to bat', overs: '', batting: false },
     ],
     balls: ['0', '1', '2', '1'],
   },
 ];
 
 export const myTeams: TeamInfo[] = [
-  { short: 'CS', name: 'Chattogram Strikers', color: BLUE },
-  { short: 'HH', name: 'Halishahar Hawks', color: YELLOW },
-  { short: 'PW', name: 'Port City Warriors', color: BLUE },
+  { short: 'CS', name: 'Chattogram Strikers', tone: 'blue' },
+  { short: 'HH', name: 'Halishahar Hawks', tone: 'yellow' },
+  { short: 'PW', name: 'Port City Warriors', tone: 'blue' },
 ];
 
 export const upcoming: UpcomingMatch[] = [
@@ -45,6 +43,6 @@ export const upcoming: UpcomingMatch[] = [
 ];
 
 export const tournaments: Tournament[] = [
-  { id: 't1', short: 'HSF', name: 'HSF Premier League', meta: '8 teams · League + Knockout' },
-  { id: 't2', short: 'CTG', name: 'Port City T10 Cup', meta: '6 teams · Starts 2 Nov' },
+  { id: 't1', short: 'HSF', name: 'HSF Premier League', meta: '8 teams · League + Knockout', tone: 'blue' },
+  { id: 't2', short: 'CTG', name: 'Port City T10 Cup', meta: '6 teams · Starts 2 Nov', tone: 'yellow' },
 ];

@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { AppAvatar, Text } from '@/components/ui';
+import { InitialsAvatar, Text } from '@/components/ui';
 import { useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { LiveTeam } from '@/types/cricket';
 
@@ -13,7 +13,7 @@ export function TeamScoreRow({ team }: { team: LiveTeam }) {
   const color = team.batting ? colors.text : colors.textMuted;
   return (
     <View style={styles.row}>
-      <AppAvatar label={team.short} size={TEAM_AVATAR_SIZE} backgroundColor={team.color} color={colors.primaryText} />
+      <InitialsAvatar label={team.short} tone={team.tone} imageUri={team.avatarUri} size={TEAM_AVATAR_SIZE} />
       <Text style={[styles.name, { color }]} numberOfLines={1}>
         {team.name}
       </Text>

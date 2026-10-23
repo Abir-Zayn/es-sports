@@ -13,6 +13,8 @@ type Props = {
   color?: string;
   borderColor?: ColorValue;
   borderWidth?: number;
+  /** Defaults to a full circle. */
+  borderRadius?: number;
   /** Set when the avatar stands alone; otherwise it is hidden from screen readers and the parent's label is used. */
   accessibilityLabel?: string;
 };
@@ -25,6 +27,7 @@ export function AppAvatar({
   color,
   borderColor,
   borderWidth = 0,
+  borderRadius,
   accessibilityLabel,
 }: Props) {
   const { colors } = useTheme();
@@ -38,7 +41,7 @@ export function AppAvatar({
       style={{
         width: size,
         height: size,
-        borderRadius: size / 2,
+        borderRadius: borderRadius ?? size / 2,
         backgroundColor: backgroundColor ?? colors.surfaceRaised,
         borderColor,
         borderWidth,

@@ -15,11 +15,11 @@ import { palettes, spacing } from '@/theme';
 // The splash is always the dark brand screen, whatever theme the user picked.
 const colors = palettes.dark;
 
-// Same size as the native splash image (`imageWidth` in app.json) so the handoff does not jump.
+// The native splash is only the dark background (a blank image in app.json), so the mark fades in here.
 const MARK_SIZE = 288;
 const BAR_WIDTH = 120;
-const MIN_VISIBLE_MS = 1500;
-const WORDMARK_AT_MS = 650;
+const MIN_VISIBLE_MS = 1900;
+const WORDMARK_AT_MS = 850;
 const FADE_OUT_MS = 240;
 const easeOut = Easing.out(Easing.cubic);
 const fill = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 } as const;
@@ -42,6 +42,7 @@ export function AnimatedSplash({ ready, onDone, onShown }: Props) {
   const reduceMotion = useReducedMotion();
   const startedAt = useRef(0);
 
+  const lettersIn = useSharedValue(reduceMotion ? 1 : 0);
   const delivery = useSharedValue(reduceMotion ? 1 : 0);
   const ballIn = useSharedValue(reduceMotion ? 1 : 0);
   const wordmark = useSharedValue(0);
@@ -51,11 +52,12 @@ export function AnimatedSplash({ ready, onDone, onShown }: Props) {
   useEffect(() => {
     startedAt.current = Date.now();
     if (!reduceMotion) {
-      delivery.value = withDelay(150, withTiming(1, { duration: 420, easing: easeOut }));
-      ballIn.value = withDelay(300, withTiming(1, { duration: 420, easing: easeOut }));
+      lettersIn.value = withTiming(1, { duration: 350, easing: easeOut });
+      delivery.value = withDelay(350, withTiming(1, { duration: 420, easing: easeOut }));
+      ballIn.value = withDelay(500, withTiming(1, { duration: 420, easing: easeOut }));
     }
-    progress.value = withTiming(0.8, { duration: 1400, easing: Easing.linear });
-  }, [reduceMotion, delivery, ballIn, progress]);
+    progress.value = withTiming(0.8, { duration: 1700, easing: Easing.linear });
+  }, [reduceMotion, lettersIn, delivery, ballIn, progress]);
 
   useEffect(() => {
     if (!ready) return;
@@ -80,6 +82,7 @@ export function AnimatedSplash({ ready, onDone, onShown }: Props) {
     };
   }, [ready, reduceMotion, onDone, wordmark, progress, screen]);
 
+  const lettersStyle = useAnimatedStyle(() => ({ opacity: lettersIn.value }));
   const trailStyle = useAnimatedStyle(() => ({
     opacity: delivery.value,
     transform: [{ translateX: (1 - delivery.value) * -40 }],
@@ -105,7 +108,9 @@ export function AnimatedSplash({ ready, onDone, onShown }: Props) {
       <Pitch width={width} height={height} />
 
       <View style={[styles.mark, { top: markTop, left: centerX - MARK_SIZE / 2 }]}>
-        <Image source={letters} style={styles.layer} contentFit="contain" />
+        <Animated.View style={[styles.layer, lettersStyle]}>
+          <Image source={letters} style={styles.layer} contentFit="contain" />
+        </Animated.View>
         <Animated.View style={[styles.layer, trailStyle]}>
           <Image source={trail} style={styles.layer} contentFit="contain" />
         </Animated.View>

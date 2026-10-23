@@ -1,4 +1,6 @@
-export type TeamInfo = { short: string; name: string; color: string };
+import type { AvatarTone } from '@/theme';
+
+export type TeamInfo = { short: string; name: string; tone: AvatarTone; avatarUri?: string };
 
 export type LiveTeam = TeamInfo & {
   /** Display score, e.g. "142/4", or "Yet to bat". */

@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { Text } from '@/components/ui';
+import { InitialsAvatar, Text } from '@/components/ui';
 import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import type { Tournament } from '../sample-data';
@@ -27,7 +27,15 @@ export function TournamentCard({ tournament, onPress }: Props) {
           <Path d="M-10 104 C80 86 166 50 260 28 L260 40 C170 62 86 96 -10 112 Z" fill={colors.primaryDeep} />
         </Svg>
         <View style={styles.logo}>
-          <Text style={styles.logoText}>{tournament.short}</Text>
+          <InitialsAvatar
+            label={tournament.short}
+            tone={tournament.tone}
+            imageUri={tournament.avatarUri}
+            size={48}
+            shape="square"
+            borderColor={colors.surface}
+            borderWidth={2}
+          />
         </View>
       </View>
       <View style={styles.body}>
@@ -56,20 +64,7 @@ const createStyles = (colors: Palette) =>
     pressed: { opacity: 0.85 },
     banner: { height: BANNER_HEIGHT, backgroundColor: colors.primarySoft },
     art: { position: 'absolute', top: 0, left: 0 },
-    logo: {
-      position: 'absolute',
-      left: 14,
-      bottom: -22,
-      width: 48,
-      height: 48,
-      borderRadius: 14,
-      backgroundColor: colors.background,
-      borderWidth: 2,
-      borderColor: colors.surface,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    logoText: { fontSize: 18, lineHeight: 22, fontWeight: '800', fontStyle: 'italic', color: colors.link },
+    logo: { position: 'absolute', left: 14, bottom: -22 },
     body: { paddingTop: 30, paddingHorizontal: 14, paddingBottom: 14, flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
     info: { flex: 1, minWidth: 0, gap: spacing.xs },
     name: { fontSize: 15, lineHeight: 20, fontWeight: '700' },
