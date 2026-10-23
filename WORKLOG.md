@@ -26,6 +26,12 @@ Entry template:
 - Installed the `logo-design` plugin (`kaankiziltug/logo-design-skill`) and designed the app logo with it: an original ES mark (italic E, curved S, tapered trail ending in a red cricket ball with a seam). Built as SVG paths, no live text. Final ink is near-black on light.
 - Final app icon is the "On Light" version (`#F2F5F4` background). Replaced `assets/images/`: `icon`, `android-icon-foreground/background/monochrome` (1024), `favicon` (48), `splash-icon` (1024, white reversed ES for the dark splash).
 - SVG masters in `design/logo/` (`logo`, `logo-reversed`, icon sources). Removed the earlier concept files. Kept the reference image in `design/logo/reference/`.
+- Splash screen: native splash holds the white ES letters; `AnimatedSplash` starts on the same frame, then the trail and red ball glide in, "EsSports" wordmark (system font) and tagline fade up, progress bar, fade out. Reduced-motion safe.
+- Fixed `pnpm start`: set `allowBuilds` in `pnpm-workspace.yaml`. Project is pnpm-only from here (`pnpm exec expo ...`).
+- Auth UI: login and sign-up screens (email and password, zod validation, Supabase calls loaded on submit because the client throws without `.env`). Google and phone buttons on login only, both show "Coming soon". "Don't have an account? Create one!" and "Already have an account? Log in" links.
+- Sign-up requires accepting the Terms and Conditions (checkbox, `/terms` screen). Terms text is a generic placeholder in `src/features/legal/terms-content.ts`.
+- Shared UI in `src/components/ui`: `Button` (primary, secondary, ghost, leading icon), `TextField`, `PasswordField` (lucide eye icon), `Checkbox`. Shared auth frame `AuthLayout`, `SocialOptions`, `AuthSwitchLink`.
+- Added `lucide-react-native` and `react-native-svg` (per-icon imports).
 
 **Decisions**
 - Hallmark targets web pages, so screens still use the Expo UI skills and theme tokens.
@@ -33,10 +39,17 @@ Entry template:
 - Logo is an original build, not the supplied raster (`use-concepts.png`): that one was low-res, of unknown origin and off-palette.
 - Palette: cyan `#19BFFF`, near-black `#0B1410`, light `#F2F5F4`, ball red `#E5243B`, teal `#0E6FA0`.
 - App icon is dark ES on light. Splash stays dark, so it uses the reversed (white) mark.
+- Theme `primary` is now cyan (was green). Wordmark uses the device system font, no custom font.
+- Google and phone login create accounts on first use, so they are not repeated on sign-up.
 
 **Open / next**
-- Splash screen not built yet. In `app.json`: `imageWidth` 76 is too small for the wide mark, and the adaptive-icon `backgroundColor` `#0B1410` no longer matches the light icon background.
-- Wordmark "EsSports" not built. Render as text with a loaded font (Barlow Condensed italic is a guess, check against mocks) or outline it for marketing.
+- `react-native-svg` is native: rebuild the dev build (`pnpm exec expo run:android` or EAS) before the eye icon works.
+- Replace the placeholder terms text with reviewed legal text. Privacy policy screen not built (Play Store needs one).
+- No Supabase project or `.env` yet, so login and sign-up show "isn't available right now". Session persistence not set up (`persistSession: false`).
+- Phone login needs an SMS provider. Cheapest for Bangladesh is a local provider through the Supabase Send SMS hook (prices not verified).
+- Both `package-lock.json` and `pnpm-lock.yaml` exist. `expo-doctor` flags it. Delete `package-lock.json`.
+- Welcome screen (mock 02) and "Forgot password?" not built. Native splash and animation not checked on a device.
+- Adaptive-icon background in `app.json` was set to `#F2F5F4`.
 - Seam stitches vanish below ~48px. Make a small-size cut if the seam must show at icon size.
 - Not checked on a device: adaptive and monochrome icons.
 - Logo masters live in gitignored `design/logo/`, so they are not in the repo. Back them up or move them if needed.
