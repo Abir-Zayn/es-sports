@@ -69,5 +69,5 @@ Entry template:
 - Legal: replace the placeholder terms text with reviewed text; build a Privacy Policy screen (Play Store needs one). Trademark and reverse-image search for the logo not done.
 - Repo: both `package-lock.json` and `pnpm-lock.yaml` exist and `expo-doctor` flags it. Delete `package-lock.json`. Logo masters live in gitignored `design/logo/`, so back them up.
 - Design screens still to build (from the Claude design file): Welcome, phone sign-in, verify code, profile setup, notifications, create sheet; player screens; scorer panel; organizer flow. Also Settings (Appearance picker is on the Profile tab for now) and "Forgot password?".
-- Placeholders show "coming soon" toasts: notifications, create, live match, team screens, search results, the live stream link, sharing a match, player taps in squads, the head-to-head team picker and the Stats category chips other than the first (no data for them yet).
+- Placeholders show "coming soon" toasts: notifications, create, live match, player taps, search results other than teams, the live stream link, sharing a match, the head-to-head team picker and the Stats category chips other than the first (no data for them yet).
 - Seam stitches on the logo vanish below ~48px; make a small-size cut if the seam must show at icon size.
