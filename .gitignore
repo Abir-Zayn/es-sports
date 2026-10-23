@@ -30,14 +30,36 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
 
 # typescript
 *.tsbuildinfo
 
-example
 
 # generated native folders
 /ios
 /android
+
+# supabase
+supabase/.temp/
+supabase/.branches/
+
+# env (names only in .env.example)
+.env
+.env.*
+!.env.example
+
+# credentials
+*.keystore
+google-services.json
+service-account*.json
+
+# tests
+coverage/
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# local tooling
+.claude/settings.local.json
+graphify-out/

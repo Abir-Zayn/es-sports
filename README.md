@@ -1,56 +1,71 @@
-# Welcome to your Expo app 👋
+# esSports
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Multi-tenant cricket tournament platform. Pilot: HSF Premier League. Android only.
 
-## Get started
+**Stack:** React Native + Expo SDK 58 (TypeScript strict, Expo Router), Supabase (Postgres, Auth, Realtime, Edge Functions), TanStack Query, EAS Build/Update.
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Getting started
 
 ```bash
-npm run reset-project
+npm install
+cp .env.example .env   # fill in the Supabase URL and anon key
+npx expo start
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+Run on an Android emulator or device with a [development build](https://docs.expo.dev/develop/development-builds/introduction/) (`eas build --profile development`).
 
-### Other setup steps
+### Environment
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+| Variable | Purpose |
+| --- | --- |
+| `EXPO_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
 
-## Learn more
+`EXPO_PUBLIC_*` values are bundled into the app and readable by anyone. Never put `service_role`, payment or admin secrets in the app. Privileged actions run in Edge Functions.
 
-To learn more about developing your project with Expo, look at the following resources:
+## Scripts
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+| Command | What it does |
+| --- | --- |
+| `npm start` | Start the dev server |
+| `npm run android` | Start and open on Android |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run lint` | `expo lint` |
+| `npm test` | Jest (`jest-expo`) |
+| `npm run doctor` | `expo-doctor` |
+| `npm run gen:types` | Generate DB types (needs `SUPABASE_PROJECT_ID`) |
 
-## Join the community
+Run typecheck, lint, tests and doctor before calling a task done. Install packages with `npx expo install <pkg>`, and run `npm audit` on dependency changes.
 
-Join our community of developers creating universal apps.
+## Project structure
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```
+src/
+  app/              Expo Router routes only
+  components/ui/    shared UI (Text, ...)
+  features/         auth, tournaments, teams, players, matches, scoring, auction
+                    each: api.ts (queries/mutations) + hooks (TanStack Query)
+  features/scoring/engine/   pure scoring functions, test-first
+  hooks/            shared hooks
+  lib/              env (Zod), supabase client, query client
+  theme/            design tokens (colors, spacing, radius, typography)
+supabase/migrations/   SQL migrations
+design/                Claude-created UI designs (reference only, not bundled)
+```
+
+## Conventions
+
+- Screens never call Supabase directly; go through feature `api.ts` and hooks.
+- One Supabase client (`src/lib/supabase.ts`). DB types are generated, never hand-written.
+- Style with theme tokens only. Shared widgets (scorecard, wagon wheel, player card, stat tables) are built once and reused.
+- Validate external input with Zod.
+- Long lists use FlashList. No blur effects. Animate only transform and opacity with Reanimated.
+- Clean up every listener, timer and Realtime channel; one channel per live match screen.
+- Every scored ball is an idempotent event with a client-generated UUID, queued locally and synced on reconnect. Undo and edit create audited events.
+- RLS is on for every table, tenant-scoped, with a test per policy.
+
+## Release
+
+- Release builds enable R8 and resource shrinking (`expo-build-properties`) and strip `console.*`.
+- `runtimeVersion` uses the `appVersion` policy. JS-only fixes ship via EAS Update with staged rollout; any native change needs a new store build.
+- Profiles in `eas.json`: `development`, `preview`, `production`.
