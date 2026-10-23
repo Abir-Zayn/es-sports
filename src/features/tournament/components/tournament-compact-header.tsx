@@ -3,8 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, InitialsAvatar, Text } from '@/components/ui';
-import { radius, sizes, spacing, useTheme, useThemedStyles } from '@/theme';
-import type { AvatarTone } from '@/theme';
+import { radius, sizes, spacing, useTheme, useThemedStyles, type AvatarTone } from '@/theme';
 
 type Props = {
   short: string;
