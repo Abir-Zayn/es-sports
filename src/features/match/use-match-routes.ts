@@ -1,7 +1,5 @@
 import { useRouter } from 'expo-router';
 
-import { comingSoon } from '@/lib/coming-soon';
-
 import type { MatchTabId } from './types';
 
 export const matchTabs: { id: MatchTabId; label: string }[] = [
@@ -20,8 +18,18 @@ export function useMatchRoutes(id: string) {
   const router = useRouter();
 
   function openTab(tab: MatchTabId) {
-    if (tab === 'live') return router.replace({ pathname: '/match/[id]', params: { id } });
-    comingSoon(matchTabs.find((t) => t.id === tab)?.label ?? 'This');
+    switch (tab) {
+      case 'live':
+        return router.replace({ pathname: '/match/[id]', params: { id } });
+      case 'scorecard':
+        return router.replace({ pathname: '/match/[id]/scorecard', params: { id } });
+      case 'overs':
+        return router.replace({ pathname: '/match/[id]/overs', params: { id } });
+      case 'wagon':
+        return router.replace({ pathname: '/match/[id]/wagon', params: { id } });
+      case 'info':
+        return router.replace({ pathname: '/match/[id]/info', params: { id } });
+    }
   }
 
   function goBack() {
@@ -36,7 +44,13 @@ export function useMatchRoutes(id: string) {
 export function useOpenMatch() {
   const router = useRouter();
   return (id: string, state: MatchState) => {
-    if (state === 'live') return router.push({ pathname: '/match/[id]', params: { id } });
-    comingSoon('Match');
+    switch (state) {
+      case 'live':
+        return router.push({ pathname: '/match/[id]', params: { id } });
+      case 'result':
+        return router.push({ pathname: '/match/[id]/scorecard', params: { id } });
+      case 'upcoming':
+        return router.push({ pathname: '/match/[id]/info', params: { id } });
+    }
   };
 }
