@@ -50,7 +50,7 @@ src/
   lib/              env (Zod), supabase client, query client
   theme/            design tokens (colors, spacing, radius, typography)
 supabase/migrations/   SQL migrations
-design/                Claude-created UI designs (reference only, not bundled)
+design/                Claude-created UI designs (local only, gitignored)
 ```
 
 ## Conventions

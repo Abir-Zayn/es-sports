@@ -63,3 +63,6 @@ desktop.ini
 # local tooling
 .claude/settings.local.json
 graphify-out/
+
+# UI design files (local only)
+/design/

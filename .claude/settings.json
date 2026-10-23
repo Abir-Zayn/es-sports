@@ -1,4 +1,12 @@
 {
+  "extraKnownMarketplaces": {
+    "bencium-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "bencium/bencium-marketplace"
+      }
+    }
+  },
   "enabledPlugins": {
     "expo@claude-plugins-official": true
   }

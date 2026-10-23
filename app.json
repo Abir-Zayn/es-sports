@@ -12,7 +12,7 @@
     "android": {
       "package": "com.essports.app",
       "adaptiveIcon": {
-        "backgroundColor": "#0B1410",
+        "backgroundColor": "#F2F5F4",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -27,7 +27,7 @@
         {
           "backgroundColor": "#0B1410",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 288
         }
       ],
       [
