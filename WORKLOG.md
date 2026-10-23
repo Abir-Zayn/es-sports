@@ -26,7 +26,7 @@ Entry template:
 - Installed the `logo-design` plugin (`kaankiziltug/logo-design-skill`) and designed the app logo with it: an original ES mark (italic E, curved S, tapered trail ending in a red cricket ball with a seam). Built as SVG paths, no live text. Final ink is near-black on light.
 - Final app icon is the "On Light" version (`#F2F5F4` background). Replaced `assets/images/`: `icon`, `android-icon-foreground/background/monochrome` (1024), `favicon` (48), `splash-icon` (1024, white reversed ES for the dark splash).
 - SVG masters in `design/logo/` (`logo`, `logo-reversed`, icon sources). Removed the earlier concept files. Kept the reference image in `design/logo/reference/`.
-- Splash screen: native splash holds the white ES letters; `AnimatedSplash` starts on the same frame, then the trail and red ball glide in, "EsSports" wordmark (system font) and tagline fade up, progress bar, fade out. Reduced-motion safe.
+- Splash screen: native splash is the plain dark background (blank image); `AnimatedSplash` fades the ES letters in, then the trail and red ball glide in, "EsSports" wordmark (system font) and tagline fade up, progress bar, fade out. Reduced-motion safe.
 - Fixed `pnpm start`: set `allowBuilds` in `pnpm-workspace.yaml`. Project is pnpm-only from here (`pnpm exec expo ...`).
 - Auth UI: login and sign-up screens (email and password, zod validation, Supabase calls loaded on submit because the client throws without `.env`). Google and phone buttons on login only, both show "Coming soon". "Don't have an account? Create one!" and "Already have an account? Log in" links.
 - Sign-up requires accepting the Terms and Conditions (checkbox, `/terms` screen). Terms text is a generic placeholder in `src/features/legal/terms-content.ts`.
@@ -39,12 +39,13 @@ Entry template:
 - Home refactor: `HomeScreen` now only composes sections in `src/features/home/sections/` (top bar, live, your teams, upcoming, tournaments to follow). Shared `LiveMatchCard`, `TeamScoreRow`, `BallChip` in `src/components/match/`; types in `src/types/cricket.ts`. New reusable `AppBadge` and `AppAvatar` (replaces `TeamBadge`). Live card: badge left, tournament right, "needs x runs" line on top, radius 20, smaller avatar/score/team name. Section headings are now title case, 20px, no italic.
 - "Next Games" section (was Upcoming): flat rows split by hairlines, no card or date tile. Shared `UpcomingMatchTile` in `src/components/match/` (type `UpcomingMatch` in `src/types/cricket.ts`); date shows weekday small over "24 Oct" larger.
 - Avatars: `InitialsAvatar` (picture if uploaded, else initials on a dark blue or yellow tone; circle or square) used for the top bar user, team avatars (square in Your Teams) and the tournament card logo. Built on `AppAvatar`. Tone type `AvatarTone` lives in the theme.
-- Native splash is now a blank image on the dark background (no white ES frame); the animated splash fades the letters in. Needs a native rebuild.
+- Native splash switched to a blank image (removed the white ES frame shown before the splash). Needs a native rebuild.
 - Search screen (`/search`, full screen, opened from the Home search button) built from the design: back button, `SearchField`, `AppTabs` filter pills, grouped results (teams, players, tournaments), recent searches, no-results state. Sample data in `src/features/search/sample-data.ts`; result taps show "coming soon".
 - New shared components: `SearchField`, `AppTabs` (generic), `InitialsAvatar` neutral tone, `AppIconTile` border props. Live match card made more compact (smaller text, avatar, chips, spacing).
 - Tournament overview screen (`/tournament/[id]`, full screen, opened from the Home tournament cards) built from the design: banner header, follow button, section tabs, live match card, standings, top performers, recent results, head-to-head link. Sample data in `src/features/tournament/sample-data.ts`; other tabs and links show "coming soon". New shared `StandingsTable`, `ResultCard`; `Section` and `SectionHeader` moved to `components/ui`; `AppTabs` `outlined` option; `Button` `compact` size.
 - Fixed the app staying light while the phone was dark: theme preference now saved under `theme-preference-v2`, old key deleted.
 - Dev-only auth bypass (`src/features/auth/dev-bypass.ts`): Log in and Create account skip validation and open Home. Release builds still validate.
+- Pushed to GitHub (`main`): latest commits cover auth screens, theme, Home, search, tournament overview. Removed a stray `filter-tabs.tsx` the editor re-saved after it was deleted.
 
 **Decisions**
 - Hallmark targets web pages, so screens still use the Expo UI skills and theme tokens.
@@ -54,44 +55,16 @@ Entry template:
 - App icon is dark ES on light. Splash stays dark, so it uses the reversed (white) mark.
 - Theme `primary` is now cyan (was green). Wordmark uses the device system font, no custom font.
 - Google and phone login create accounts on first use, so they are not repeated on sign-up.
+- Screens are built faithfully from the Claude design file, split into section components under `src/features/<name>/sections/`, with shared pieces in `src/components/{ui,match}`. Sample data lives in each feature's `sample-data.ts` until Supabase exists.
+- Heading style on built screens: title case, 20px bold, no italic (differs from the design's italic capitals).
+- Edit scripts on Windows must write files as UTF-8 (a `·` once got saved in the wrong encoding).
 
 **Open / next**
-- `react-native-svg` is native: rebuild the dev build (`pnpm exec expo run:android` or EAS) before the eye icon works.
-- Replace the placeholder terms text with reviewed legal text. Privacy policy screen not built (Play Store needs one).
-- No Supabase project or `.env` yet, so login and sign-up show "isn't available right now". Session persistence not set up (`persistSession: false`).
+- Rebuild the native app once (`pnpm exec expo run:android` or EAS): needed for `react-native-svg`, `userInterfaceStyle: automatic`, the blank native splash and the new splash colour. Nothing is checked on a device yet (layouts, keyboard behaviour, adaptive and monochrome icons, splash timing).
+- Supabase: no project or `.env` yet, so login and sign-up show "isn't available right now". Session persistence not set up (`persistSession: false`). Delete `dev-bypass.ts` once real auth works.
 - Phone login needs an SMS provider. Cheapest for Bangladesh is a local provider through the Supabase Send SMS hook (prices not verified).
-- Both `package-lock.json` and `pnpm-lock.yaml` exist. `expo-doctor` flags it. Delete `package-lock.json`.
-- Delete `dev-bypass.ts` once real auth works. Search, notifications, create sheet, live match and tournament screens show "coming soon" toasts. Welcome screen (mock 02) and "Forgot password?" not built. Native splash and animation not checked on a device.
-- Adaptive-icon background in `app.json` was set to `#F2F5F4`.
-- Theme switch UI is only on the Profile tab (no Settings screen yet). `userInterfaceStyle` change needs a native rebuild.
-- Seam stitches vanish below ~48px. Make a small-size cut if the seam must show at icon size.
-- Not checked on a device: adaptive and monochrome icons.
-- Logo masters live in gitignored `design/logo/`, so they are not in the repo. Back them up or move them if needed.
-- Trademark and reverse-image search not done.
-- Commit the staged `design/README.md` removal. It stays in history from commit `5af7f12` until then.
-- `bencium-marketplace` is not registered, so its plugin failed to install. Needs `/plugin marketplace add <owner/repo>`.
-- UI work starts once designs are in `design/`.
-
----
-
-## 2026-10-22
-
-**Done**
-- Scaffolded the app with `create-expo-app` (Expo SDK 58, RN 0.88, React 19.3, TypeScript strict, Expo Router).
-- Removed template demo code and iOS/web parts. Android only.
-- Installed: supabase-js, TanStack Query, Zod, FlashList, date-fns, expo-secure-store, expo-updates, expo-build-properties. Dev: jest-expo, Testing Library, Supabase CLI, console-stripping babel plugin. All versions pinned (`.npmrc` `save-exact`).
-- Project structure: `src/{app,components/ui,hooks,lib,theme,features/*}`, `supabase/migrations`.
-- Config: R8 and resource shrinking, console stripping in production, `runtimeVersion` `appVersion` policy, `eas.json` (development, preview, production), `.env.example`.
-- Foundation code: theme tokens, `Text` component, Zod-validated env, Supabase client singleton, query client, root layout, placeholder home screen.
-- Checks: `tsc --noEmit` and `expo lint` clean, `expo-doctor` 20/20.
-
-**Decisions**
-- Dark-first green theme.
-- Auth session persistence deferred to the auth feature (encrypted SecureStore pattern needs `aes-js` and AsyncStorage).
-
-**Open / next**
-- `npm audit`: 41 findings, all in Expo's own toolchain. Fix needs `--force`, so left alone.
-- Splash hides immediately. Hold it until first data is ready once data exists.
-- Not created yet: Supabase project, EAS project, `.env`, Play Store assets.
-- Missing skills named in project rules: `vercel-react-native-skills`, `test-driven-development`, `systematic-debugging`, `verification-before-completion`.
-- Nothing committed yet.
+- Legal: replace the placeholder terms text with reviewed text; build a Privacy Policy screen (Play Store needs one). Trademark and reverse-image search for the logo not done.
+- Repo: both `package-lock.json` and `pnpm-lock.yaml` exist and `expo-doctor` flags it. Delete `package-lock.json`. Logo masters live in gitignored `design/logo/`, so back them up.
+- Design screens still to build (from the Claude design file): Welcome, phone sign-in, verify code, profile setup, notifications, create sheet; tournament Matches, Table, Stats, Teams, head to head; match centre (live, scorecard, overs, wagon wheel, info); team and player screens; scorer panel; organizer flow. Also Settings (Appearance picker is on the Profile tab for now) and "Forgot password?".
+- Placeholders show "coming soon" toasts: notifications, create, live match, team and tournament sub-pages, search results.
+- Seam stitches on the logo vanish below ~48px; make a small-size cut if the seam must show at icon size.
