@@ -1,8 +1,6 @@
 import { useRouter } from 'expo-router';
 
-import { comingSoon } from '@/lib/coming-soon';
-
-import { tournamentSections, type TournamentSectionId } from './sample-data';
+import type { TournamentSectionId } from './sample-data';
 
 /** Navigation for one tournament's screens. Switching sections replaces the screen so Back leaves the tournament. */
 export function useTournamentRoutes(id: string) {
@@ -14,13 +12,17 @@ export function useTournamentRoutes(id: string) {
         return router.replace({ pathname: '/tournament/[id]', params: { id } });
       case 'matches':
         return router.replace({ pathname: '/tournament/[id]/matches', params: { id } });
-      default:
-        return comingSoon(tournamentSections.find((s) => s.id === section)?.label ?? 'This');
+      case 'table':
+        return router.replace({ pathname: '/tournament/[id]/table', params: { id } });
+      case 'stats':
+        return router.replace({ pathname: '/tournament/[id]/stats', params: { id } });
+      case 'teams':
+        return router.replace({ pathname: '/tournament/[id]/teams', params: { id } });
     }
   }
 
   function openHeadToHead() {
-    comingSoon('Head to head');
+    router.push({ pathname: '/tournament/[id]/head-to-head', params: { id } });
   }
 
   function goBack() {
