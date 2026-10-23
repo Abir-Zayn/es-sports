@@ -3,9 +3,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppAvatar, SegmentedControl, Text, type SegmentedOption } from '@/components/ui';
 import { comingSoon } from '@/lib/coming-soon';
+import { initialsOf } from '@/lib/initials';
 import { useThemedStyles, type Palette } from '@/theme';
 
-import { initialsOf } from '../format';
 import type { MatchInfoData } from '../types';
 
 /** Both squads: pick a team, then see its playing XI and the bench. */

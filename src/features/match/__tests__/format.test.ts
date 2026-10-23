@@ -1,4 +1,4 @@
-import { economy, initialsOf, oversToBalls, strikeRate } from '../format';
+import { economy, oversToBalls, strikeRate } from '../format';
 
 describe('match figures', () => {
   it('counts overs as balls', () => {
@@ -14,10 +14,5 @@ describe('match figures', () => {
   it('computes strike rate', () => {
     expect(strikeRate(68, 41)).toBe('165.85');
     expect(strikeRate(0, 0)).toBe('0.00');
-  });
-
-  it('takes up to two initials', () => {
-    expect(initialsOf('Rafi Hasan')).toBe('RH');
-    expect(initialsOf('Tamim Iqbal Jr')).toBe('TI');
   });
 });

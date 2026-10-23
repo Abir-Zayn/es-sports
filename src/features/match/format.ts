@@ -14,12 +14,3 @@ export function economy(runs: number, overs: string): string {
   const balls = oversToBalls(overs);
   return balls === 0 ? '0.00' : ((runs / balls) * 6).toFixed(2);
 }
-
-/** "RH" from "Rafi Hasan". */
-export function initialsOf(name: string): string {
-  return name
-    .split(' ')
-    .map((word) => word[0])
-    .join('')
-    .slice(0, 2);
-}
