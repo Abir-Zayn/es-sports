@@ -1,11 +1,7 @@
 // TODO: replace with data from Supabase once the project and tables exist. All sample values from the design file.
-import type { TeamInfo, TournamentOverview } from '@/types/cricket';
+import type { TournamentOverview } from '@/types/cricket';
 
-const strikers: TeamInfo = { short: 'CS', name: 'Chattogram Strikers', tone: 'blue' };
-const kings: TeamInfo = { short: 'KK', name: 'Karnaphuli Kings', tone: 'yellow' };
-const riders: TeamInfo = { short: 'PR', name: 'Patenga Riders', tone: 'blue' };
-const hawks: TeamInfo = { short: 'HH', name: 'Halishahar Hawks', tone: 'yellow' };
-const blasters: TeamInfo = { short: 'BB', name: 'Bayazid Blasters', tone: 'yellow' };
+import { blasters, hawks, kings, riders, strikers } from './sample-teams';
 
 export const tournamentSections = [
   { id: 'overview', label: 'Overview' },
@@ -23,6 +19,7 @@ const hsf: TournamentOverview = {
   name: 'HSF Premier League 2026',
   tone: 'blue',
   meta: 'League + Knockout · T20 · 8 teams · Halishahar Ground',
+  format: 'League + Knockout · T20',
   statusLabel: 'Ongoing',
   progress: 'Match 12 of 31 · Final on 30 Nov',
   live: {

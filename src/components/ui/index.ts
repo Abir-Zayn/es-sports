@@ -7,6 +7,7 @@ export { Button } from './button';
 export { Checkbox } from './checkbox';
 export { PasswordField } from './password-field';
 export { SearchField } from './search-field';
+export { SegmentedControl, type SegmentedOption } from './segmented-control';
 export { Section } from './section';
 export { SectionHeader } from './section-header';
 export { Text } from './text';
