@@ -1,8 +1,7 @@
 // TODO: replace with data from Supabase once the project and tables exist. All sample values from the design file.
-import type { LiveMatch, TeamInfo } from '@/types/cricket';
+import type { LiveMatch, TeamInfo, UpcomingMatch } from '@/types/cricket';
 
 export type HomeUser = { initials: string; name: string; unreadNotifications: number };
-export type Fixture = { id: string; month: string; day: string; weekday: string; home: string; away: string; meta: string };
 export type Tournament = { id: string; short: string; name: string; meta: string };
 
 const YELLOW = '#FFC83D';
@@ -39,7 +38,7 @@ export const myTeams: TeamInfo[] = [
   { short: 'PW', name: 'Port City Warriors', color: BLUE },
 ];
 
-export const upcoming: Fixture[] = [
+export const upcoming: UpcomingMatch[] = [
   { id: 'f1', month: 'OCT', day: '24', weekday: 'FRI', home: 'Patenga Riders', away: 'vs Agrabad Titans', meta: '4:00 PM · Halishahar Ground' },
   { id: 'f2', month: 'OCT', day: '26', weekday: 'SUN', home: 'Chattogram Strikers', away: 'vs Port City Warriors', meta: '3:00 PM · Halishahar Ground' },
   { id: 'f3', month: 'OCT', day: '27', weekday: 'MON', home: 'Karnaphuli Kings', away: 'vs Halishahar Hawks', meta: '3:00 PM · Patenga Field' },

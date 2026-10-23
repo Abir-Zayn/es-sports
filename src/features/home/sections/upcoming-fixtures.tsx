@@ -1,32 +1,38 @@
 import { StyleSheet, View } from 'react-native';
 
-import { sizes } from '@/theme';
+import { UpcomingMatchTile } from '@/components/match/upcoming-match-tile';
+import { sizes, useThemedStyles, type Palette } from '@/theme';
+import type { UpcomingMatch } from '@/types/cricket';
 
-import { FixtureCard } from '../components/fixture-card';
 import { SectionHeader } from '../components/section-header';
-import type { Fixture } from '../sample-data';
 import { Section } from './section';
 
 type Props = {
-  fixtures: Fixture[];
+  fixtures: UpcomingMatch[];
   onAllFixtures: () => void;
-  onRemind: (fixture: Fixture) => void;
+  onRemind: (match: UpcomingMatch) => void;
 };
 
 /** The next matches on the calendar. */
 export function UpcomingFixtures({ fixtures, onAllFixtures, onRemind }: Props) {
+  const styles = useThemedStyles(createStyles);
   return (
     <Section>
-      <SectionHeader title="Upcoming Tournaments" action="All fixtures" onAction={onAllFixtures} />
+      <SectionHeader title="Next Games" action="All fixtures" onAction={onAllFixtures} />
       <View style={styles.list}>
-        {fixtures.map((fixture) => (
-          <FixtureCard key={fixture.id} fixture={fixture} onRemind={() => onRemind(fixture)} />
+        {fixtures.map((fixture, i) => (
+          <View key={fixture.id}>
+            {i > 0 ? <View style={styles.divider} /> : null}
+            <UpcomingMatchTile match={fixture} onRemind={() => onRemind(fixture)} />
+          </View>
         ))}
       </View>
     </Section>
   );
 }
 
-const styles = StyleSheet.create({
-  list: { paddingHorizontal: sizes.gutter, gap: 14 },
-});
+const createStyles = (colors: Palette) =>
+  StyleSheet.create({
+    list: { paddingHorizontal: sizes.gutter },
+    divider: { height: 1, backgroundColor: colors.border },
+  });
