@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BOTTOM_NAV_CLEARANCE } from '@/components/navigation/bottom-nav';
+import { useOpenMatch } from '@/features/match/use-match-routes';
 import { comingSoon } from '@/lib/coming-soon';
 import { sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
@@ -16,6 +17,7 @@ import { UpcomingFixtures } from './sections/upcoming-fixtures';
 /** Lays out the Home sections top to bottom. Each section owns its own look; this owns order and actions. */
 export function HomeScreen() {
   const router = useRouter();
+  const openMatch = useOpenMatch();
   const insets = useSafeAreaInsets();
   const styles = useThemedStyles(createStyles);
 
@@ -30,7 +32,7 @@ export function HomeScreen() {
         onSearch={() => router.push('/search')}
         onNotifications={() => comingSoon('Notifications')}
       />
-      <LiveSection matches={liveMatches} onSeeAll={() => comingSoon('Live matches')} onMatchPress={() => comingSoon('Live match')} />
+      <LiveSection matches={liveMatches} onSeeAll={() => comingSoon('Live matches')} onMatchPress={(match) => openMatch(match.id, 'live')} />
       <ContractedTeams
         teams={myTeams}
         onManage={() => comingSoon('Team management')}

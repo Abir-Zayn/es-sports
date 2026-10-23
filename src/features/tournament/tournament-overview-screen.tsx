@@ -2,6 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
+import { useOpenMatch } from '@/features/match/use-match-routes';
 import { comingSoon } from '@/lib/coming-soon';
 import { sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
@@ -22,6 +23,7 @@ export function TournamentOverviewScreen() {
   const styles = useThemedStyles(createStyles);
   const tournament = getTournamentOverview(tournamentId);
   const routes = useTournamentRoutes(tournamentId);
+  const openMatch = useOpenMatch();
   const [following, setFollowing] = useState(false);
 
   return (
@@ -37,13 +39,13 @@ export function TournamentOverviewScreen() {
       <TournamentSectionTabs tournamentId={tournamentId} selected="overview" />
 
       <View style={styles.sections}>
-        <LiveMatchSummary match={tournament.live.match} onPress={() => comingSoon('Live match')} />
+        <LiveMatchSummary match={tournament.live.match} onPress={() => openMatch(tournament.live.match.id, 'live')} />
         <StandingsSection rows={tournament.standings} onFullTable={() => routes.openSection('table')} />
         <TopPerformersSection performers={tournament.performers} onAllStats={() => routes.openSection('stats')} />
         <RecentResultsSection
           results={tournament.results}
           onAllMatches={() => routes.openSection('matches')}
-          onResultPress={() => comingSoon('Match')}
+          onResultPress={(result) => openMatch(result.id, 'result')}
         />
         <HeadToHeadLink onPress={routes.openHeadToHead} />
       </View>

@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { comingSoon } from '@/lib/coming-soon';
+import { useOpenMatch } from '@/features/match/use-match-routes';
 import { useThemedStyles, type Palette } from '@/theme';
 import type { FixtureGroup } from '@/types/cricket';
 
@@ -9,6 +9,7 @@ import { FixtureCard } from '../components/fixture-card';
 
 /** A titled stack of matches: Live, Upcoming, Knockouts or Results. */
 export function FixtureGroupSection({ group }: { group: FixtureGroup }) {
+  const openMatch = useOpenMatch();
   const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.group}>
@@ -19,7 +20,7 @@ export function FixtureGroupSection({ group }: { group: FixtureGroup }) {
         <FixtureCard
           key={fixture.id}
           fixture={fixture}
-          onPress={() => comingSoon(fixture.state === 'live' ? 'Live match' : 'Match')}
+          onPress={() => openMatch(fixture.id, fixture.state)}
         />
       ))}
     </View>

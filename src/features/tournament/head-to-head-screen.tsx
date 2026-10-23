@@ -5,6 +5,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, SegmentedControl, Text, type SegmentedOption } from '@/components/ui';
+import { useOpenMatch } from '@/features/match/use-match-routes';
 import { comingSoon } from '@/lib/coming-soon';
 import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { HeadToHeadScope } from '@/types/cricket';
@@ -28,6 +29,7 @@ export function HeadToHeadScreen() {
   const styles = useThemedStyles(createStyles);
   const { id } = useLocalSearchParams<{ id: string }>();
   const { goBack } = useTournamentRoutes(id ?? 't1');
+  const openMatch = useOpenMatch();
   const [scope, setScope] = useState<HeadToHeadScope>('all');
 
   const { teamA, teamB, figures, meetings } = strikersVsKings;
@@ -80,7 +82,7 @@ export function HeadToHeadScreen() {
               key={meeting.id}
               meeting={meeting}
               winner={meeting.winner === 'a' ? teamA : teamB}
-              onPress={() => comingSoon('Match')}
+              onPress={() => openMatch(meeting.id, 'result')}
             />
           ))}
         </View>
