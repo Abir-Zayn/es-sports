@@ -7,12 +7,14 @@ import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from 
 type Props = Omit<PressableProps, 'children' | 'style'> & {
   label: string;
   variant?: 'primary' | 'secondary' | 'ghost';
+  /** `compact` is a 40px button for tight spots like a card header. */
+  size?: 'regular' | 'compact';
   loading?: boolean;
   /** Shown before the label, e.g. a provider logo. */
   leading?: ReactNode;
 };
 
-export function Button({ label, variant = 'primary', loading = false, leading, disabled, ...rest }: Props) {
+export function Button({ label, variant = 'primary', size = 'regular', loading = false, leading, disabled, ...rest }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const inactive = disabled || loading;
@@ -23,7 +25,7 @@ export function Button({ label, variant = 'primary', loading = false, leading, d
       accessibilityState={{ disabled: !!inactive, busy: loading }}
       disabled={inactive}
       {...rest}
-      style={({ pressed }) => [styles.base, styles[variant], pressed && styles.pressed, disabled && styles.disabled]}
+      style={({ pressed }) => [styles.base, size === 'compact' && styles.compact, styles[variant], pressed && styles.pressed, disabled && styles.disabled]}
     >
       {loading ? (
         <ActivityIndicator color={labelColor} />
@@ -48,6 +50,7 @@ const createStyles = (colors: Palette) =>
       gap: spacing.md,
       paddingHorizontal: spacing.xl,
     },
+    compact: { height: 40, paddingHorizontal: sizes.gutter },
     primary: { backgroundColor: colors.primary },
     secondary: { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border },
     ghost: { backgroundColor: 'transparent' },

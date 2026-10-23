@@ -1,11 +1,9 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { InitialsAvatar, Text } from '@/components/ui';
+import { InitialsAvatar, Section, SectionHeader, Text } from '@/components/ui';
 import { sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 import type { TeamInfo } from '@/types/cricket';
 
-import { SectionHeader } from '../components/section-header';
-import { Section } from './section';
 
 type Props = {
   teams: TeamInfo[];

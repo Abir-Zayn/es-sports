@@ -38,7 +38,7 @@ export function HomeScreen() {
         onJoin={() => comingSoon('Joining a team')}
       />
       <UpcomingFixtures fixtures={upcoming} onAllFixtures={() => comingSoon('Fixtures')} onRemind={() => comingSoon('Reminders')} />
-      <TournamentsToFollow tournaments={tournaments} onTournamentPress={() => comingSoon('Tournament page')} />
+      <TournamentsToFollow tournaments={tournaments} onTournamentPress={(t) => router.push({ pathname: '/tournament/[id]', params: { id: t.id } })} />
     </ScrollView>
   );
 }

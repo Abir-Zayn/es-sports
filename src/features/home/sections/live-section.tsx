@@ -1,11 +1,9 @@
 import { ScrollView, StyleSheet } from 'react-native';
 
 import { LIVE_MATCH_CARD_WIDTH, LiveMatchCard } from '@/components/match/live-match-card';
+import { Section, SectionHeader } from '@/components/ui';
 import { sizes, spacing } from '@/theme';
 import type { LiveMatch } from '@/types/cricket';
-
-import { SectionHeader } from '../components/section-header';
-import { Section } from './section';
 
 const CARD_GAP = spacing.md;
 

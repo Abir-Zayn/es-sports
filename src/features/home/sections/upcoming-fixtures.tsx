@@ -1,11 +1,9 @@
 import { StyleSheet, View } from 'react-native';
 
 import { UpcomingMatchTile } from '@/components/match/upcoming-match-tile';
+import { Section, SectionHeader } from '@/components/ui';
 import { sizes, useThemedStyles, type Palette } from '@/theme';
 import type { UpcomingMatch } from '@/types/cricket';
-
-import { SectionHeader } from '../components/section-header';
-import { Section } from './section';
 
 type Props = {
   fixtures: UpcomingMatch[];

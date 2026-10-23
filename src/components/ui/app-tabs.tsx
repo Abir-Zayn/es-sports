@@ -9,10 +9,12 @@ type Props<T extends string> = {
   tabs: AppTab<T>[];
   selected: T;
   onSelect: (id: T) => void;
+  /** Draws an outline on the unselected pills. On by default. */
+  outlined?: boolean;
 };
 
 /** A row of pill tabs where one is selected. The selected pill is filled; the rest are outlined. */
-export function AppTabs<T extends string>({ tabs, selected, onSelect }: Props<T>) {
+export function AppTabs<T extends string>({ tabs, selected, onSelect, outlined = true }: Props<T>) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   return (
@@ -25,7 +27,7 @@ export function AppTabs<T extends string>({ tabs, selected, onSelect }: Props<T>
             accessibilityRole="tab"
             accessibilityState={{ selected: on }}
             onPress={() => onSelect(tab.id)}
-            style={[styles.tab, on && styles.tabOn]}
+            style={[styles.tab, !outlined && styles.tabFlat, on && styles.tabOn]}
           >
             <Text style={[styles.label, { color: on ? colors.background : colors.text }]}>{tab.label}</Text>
           </Pressable>
@@ -46,6 +48,7 @@ const createStyles = (colors: Palette) =>
       borderColor: colors.outline,
       justifyContent: 'center',
     },
+    tabFlat: { borderColor: 'transparent' },
     tabOn: { backgroundColor: colors.text, borderColor: colors.text },
     label: { fontSize: 13, lineHeight: 18, fontWeight: '600' },
   });

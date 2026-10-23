@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Text } from '@/components/ui';
+import { Text } from '@/components/ui/text';
 import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 type Props = {

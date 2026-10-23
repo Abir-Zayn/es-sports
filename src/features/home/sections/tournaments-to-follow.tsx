@@ -1,11 +1,10 @@
 import { ScrollView, StyleSheet } from 'react-native';
 
+import { Section, SectionHeader } from '@/components/ui';
 import { sizes, spacing } from '@/theme';
 
-import { SectionHeader } from '../components/section-header';
 import { TOURNAMENT_CARD_WIDTH, TournamentCard } from '../components/tournament-card';
 import type { Tournament } from '../sample-data';
-import { Section } from './section';
 
 const CARD_GAP = spacing.md;
 

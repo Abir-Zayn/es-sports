@@ -35,3 +35,43 @@ export type UpcomingMatch = {
   /** Time and ground as shown, e.g. "4:00 PM - Halishahar Ground". */
   meta: string;
 };
+
+export type StandingRow = { pos: number; team: TeamInfo; played: number; points: number; nrr: string };
+
+export type Performer = {
+  id: string;
+  /** What they lead in, e.g. "MOST RUNS". */
+  label: string;
+  initials: string;
+  name: string;
+  team: string;
+  value: string;
+  unit: string;
+};
+
+export type ResultTeam = { team: TeamInfo; score: string; won: boolean };
+
+export type MatchResult = {
+  id: string;
+  /** Match number and date, e.g. "MATCH 11 · YESTERDAY". */
+  label: string;
+  /** Outcome line, e.g. "Strikers won by 18 runs". */
+  result: string;
+  teams: [ResultTeam, ResultTeam];
+};
+
+export type TournamentOverview = {
+  id: string;
+  short: string;
+  name: string;
+  tone: AvatarTone;
+  avatarUri?: string;
+  /** Format, overs, team count and venue as one line. */
+  meta: string;
+  statusLabel: string;
+  progress: string;
+  live: { label: string; match: LiveMatch };
+  standings: StandingRow[];
+  performers: Performer[];
+  results: MatchResult[];
+};

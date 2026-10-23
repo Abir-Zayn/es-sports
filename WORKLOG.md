@@ -42,6 +42,7 @@ Entry template:
 - Native splash is now a blank image on the dark background (no white ES frame); the animated splash fades the letters in. Needs a native rebuild.
 - Search screen (`/search`, full screen, opened from the Home search button) built from the design: back button, `SearchField`, `AppTabs` filter pills, grouped results (teams, players, tournaments), recent searches, no-results state. Sample data in `src/features/search/sample-data.ts`; result taps show "coming soon".
 - New shared components: `SearchField`, `AppTabs` (generic), `InitialsAvatar` neutral tone, `AppIconTile` border props. Live match card made more compact (smaller text, avatar, chips, spacing).
+- Tournament overview screen (`/tournament/[id]`, full screen, opened from the Home tournament cards) built from the design: banner header, follow button, section tabs, live match card, standings, top performers, recent results, head-to-head link. Sample data in `src/features/tournament/sample-data.ts`; other tabs and links show "coming soon". New shared `StandingsTable`, `ResultCard`; `Section` and `SectionHeader` moved to `components/ui`; `AppTabs` `outlined` option; `Button` `compact` size.
 - Fixed the app staying light while the phone was dark: theme preference now saved under `theme-preference-v2`, old key deleted.
 - Dev-only auth bypass (`src/features/auth/dev-bypass.ts`): Log in and Create account skip validation and open Home. Release builds still validate.
 
