@@ -36,6 +36,7 @@ Entry template:
 - Added reusable `AppIconTile` (terms back button).
 - Home screen built from the Claude design file (`Home.dc.html`): header, live match cards, my teams, upcoming fixtures, tournaments to follow, floating bottom nav with raised Create button. Sample data in `src/features/home/sample-data.ts`. Tabs live in `src/app/(tabs)/` (custom bar via `expo-router/ui`); Tournaments and Matches are placeholders, Profile holds the Appearance picker.
 - Dark palette now uses the design's exact colours; added tokens (`primarySoft`, `primaryDeep`, `accentSoft`, `dangerSoft`, `onLive`, `outline`, `sizes.gutter`, `sizes.sectionGap`).
+- Home refactor: `HomeScreen` now only composes sections in `src/features/home/sections/` (top bar, live, your teams, upcoming, tournaments to follow). Shared `LiveMatchCard`, `TeamScoreRow`, `BallChip` in `src/components/match/`; types in `src/types/cricket.ts`. New reusable `AppBadge` and `AppAvatar` (replaces `TeamBadge`). Live card: badge left, tournament right, "needs x runs" line on top, radius 20, smaller avatar/score/team name. Section headings are now title case, 20px, no italic.
 - Fixed the app staying light while the phone was dark: theme preference now saved under `theme-preference-v2`, old key deleted.
 - Dev-only auth bypass (`src/features/auth/dev-bypass.ts`): Log in and Create account skip validation and open Home. Release builds still validate.
 

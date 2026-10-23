@@ -1,20 +1,14 @@
 // TODO: replace with data from Supabase once the project and tables exist. All sample values from the design file.
-export type TeamInfo = { short: string; name: string; color: string };
-export type LiveTeam = TeamInfo & { score: string; overs: string; batting: boolean };
-export type LiveMatch = {
-  id: string;
-  label: string;
-  status: string;
-  teams: [LiveTeam, LiveTeam];
-  balls: string[];
-};
+import type { LiveMatch, TeamInfo } from '@/types/cricket';
+
+export type HomeUser = { initials: string; name: string; unreadNotifications: number };
 export type Fixture = { id: string; month: string; day: string; weekday: string; home: string; away: string; meta: string };
 export type Tournament = { id: string; short: string; name: string; meta: string };
 
 const YELLOW = '#FFC83D';
 const BLUE = '#3DA9FF';
 
-export const sampleUser = { initials: 'TR', name: 'Tanvir', unreadNotifications: 3 };
+export const sampleUser: HomeUser = { initials: 'TR', name: 'Tanvir', unreadNotifications: 3 };
 
 export const liveMatches: LiveMatch[] = [
   {

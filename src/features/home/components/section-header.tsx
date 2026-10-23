@@ -36,14 +36,7 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     row: { paddingHorizontal: sizes.gutter, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexShrink: 1 },
-    dot: { width: 10, height: 10, borderRadius: 5 },
-    title: {
-      fontSize: 26,
-      lineHeight: 32,
-      fontWeight: '800',
-      fontStyle: 'italic',
-      textTransform: 'uppercase',
-      letterSpacing: -0.3,
-    },
+    dot: { width: 8, height: 8, borderRadius: 4 },
+    title: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
     action: { fontSize: 13, fontWeight: '600', color: colors.link },
   });
