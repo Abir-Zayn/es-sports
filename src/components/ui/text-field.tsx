@@ -2,7 +2,7 @@ import { useState, type ComponentRef, type ReactNode, type Ref } from 'react';
 import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
 import { Text } from '@/components/ui/text';
-import { colors, radius, sizes, spacing } from '@/theme';
+import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 type Props = Omit<TextInputProps, 'style'> & {
   label: string;
@@ -13,6 +13,8 @@ type Props = Omit<TextInputProps, 'style'> & {
 };
 
 export function TextField({ label, error, trailing, ref, onFocus, onBlur, ...rest }: Props) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const [focused, setFocused] = useState(false);
   return (
     <View style={styles.wrap}>
@@ -47,20 +49,21 @@ export function TextField({ label, error, trailing, ref, onFocus, onBlur, ...res
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: { gap: spacing.xs },
-  field: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: sizes.field,
-    paddingHorizontal: spacing.xl,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  focused: { borderColor: colors.primary },
-  invalid: { borderColor: colors.danger },
-  input: { flex: 1, minWidth: 0, fontSize: 16, color: colors.text, paddingVertical: 0 },
-  error: { color: colors.danger },
-});
+const createStyles = (colors: Palette) =>
+  StyleSheet.create({
+    wrap: { gap: spacing.xs },
+    field: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      height: sizes.field,
+      paddingHorizontal: spacing.xl,
+      borderRadius: radius.pill,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+    },
+    focused: { borderColor: colors.primary },
+    invalid: { borderColor: colors.danger },
+    input: { flex: 1, minWidth: 0, fontSize: 16, color: colors.text, paddingVertical: 0 },
+    error: { color: colors.danger },
+  });

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui/text';
-import { colors, radius, spacing } from '@/theme';
+import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 type Props = {
   checked: boolean;
@@ -16,6 +16,8 @@ type Props = {
 };
 
 export function Checkbox({ checked, onChange, children, accessibilityLabel, error }: Props) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.wrap}>
       <Pressable
@@ -41,21 +43,22 @@ export function Checkbox({ checked, onChange, children, accessibilityLabel, erro
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: { gap: spacing.xs },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xs },
-  box: {
-    width: 24,
-    height: 24,
-    borderRadius: radius.sm,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  boxChecked: { backgroundColor: colors.primary, borderColor: colors.primary },
-  boxInvalid: { borderColor: colors.danger },
-  label: { flex: 1, lineHeight: 20 },
-  error: { color: colors.danger },
-});
+const createStyles = (colors: Palette) =>
+  StyleSheet.create({
+    wrap: { gap: spacing.xs },
+    row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xs },
+    box: {
+      width: 24,
+      height: 24,
+      borderRadius: radius.sm,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    boxChecked: { backgroundColor: colors.primary, borderColor: colors.primary },
+    boxInvalid: { borderColor: colors.danger },
+    label: { flex: 1, lineHeight: 20 },
+    error: { color: colors.danger },
+  });

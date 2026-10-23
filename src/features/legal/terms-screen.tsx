@@ -4,12 +4,14 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppIconTile, Text } from '@/components/ui';
-import { colors, radius, spacing } from '@/theme';
+import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { termsSections } from './terms-content';
 
 export function TermsScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
@@ -37,9 +39,16 @@ export function TermsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
-  content: { paddingHorizontal: spacing.xl, paddingTop: spacing.md, paddingBottom: spacing.xxl, gap: spacing.xl },
-  section: { gap: spacing.sm },
-});
+const createStyles = (colors: Palette) =>
+  StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.background },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+    },
+    content: { paddingHorizontal: spacing.xl, paddingTop: spacing.md, paddingBottom: spacing.xxl, gap: spacing.xl },
+    section: { gap: spacing.sm },
+  });

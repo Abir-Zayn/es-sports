@@ -3,7 +3,7 @@ import { useRef, useState, type ComponentRef } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { Button, Checkbox, PasswordField, Text, TextField } from '@/components/ui';
-import { colors, spacing } from '@/theme';
+import { spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { AuthLayout } from './auth-layout';
 import { AuthSwitchLink } from './auth-switch-link';
@@ -13,6 +13,7 @@ type FieldErrors = { email?: string; password?: string; confirm?: string; accept
 
 export function SignUpScreen() {
   const router = useRouter();
+  const styles = useThemedStyles(createStyles);
   const passwordRef = useRef<ComponentRef<typeof TextInput>>(null);
   const confirmRef = useRef<ComponentRef<typeof TextInput>>(null);
   const [email, setEmail] = useState('');
@@ -109,9 +110,10 @@ export function SignUpScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  form: { gap: spacing.lg },
-  formError: { color: colors.danger },
-  sent: { color: colors.primary },
-  link: { color: colors.primary, fontWeight: '600' },
-});
+const createStyles = (colors: Palette) =>
+  StyleSheet.create({
+    form: { gap: spacing.lg },
+    formError: { color: colors.danger },
+    sent: { color: colors.link },
+    link: { color: colors.link, fontWeight: '600' },
+  });

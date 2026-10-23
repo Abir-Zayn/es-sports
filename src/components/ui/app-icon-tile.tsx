@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react';
 import { Pressable, StyleSheet, View, type ColorValue } from 'react-native';
 
-import { colors, radius as radii, sizes } from '@/theme';
+import { radius as radii, sizes, useTheme } from '@/theme';
 
 type IconComponent = ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
 
@@ -11,7 +11,9 @@ type Props = {
   /** Tile width and height. */
   size?: number;
   borderRadius?: number;
+  /** Defaults to the theme's raised surface. */
   backgroundColor?: ColorValue;
+  /** Defaults to the theme's text colour. */
   iconColor?: string;
   iconSize?: number;
   /** Makes the tile a button. Then `accessibilityLabel` is required. */
@@ -24,14 +26,18 @@ export function AppIconTile({
   icon: Icon,
   size = 44,
   borderRadius = radii.md,
-  backgroundColor = colors.surfaceRaised,
-  iconColor = colors.text,
+  backgroundColor,
+  iconColor,
   iconSize = sizes.icon,
   onPress,
   accessibilityLabel,
 }: Props) {
-  const tile = [styles.tile, { width: size, height: size, borderRadius, backgroundColor }];
-  const icon = <Icon size={iconSize} color={iconColor} />;
+  const { colors } = useTheme();
+  const tile = [
+    styles.tile,
+    { width: size, height: size, borderRadius, backgroundColor: backgroundColor ?? colors.surfaceRaised },
+  ];
+  const icon = <Icon size={iconSize} color={iconColor ?? colors.text} />;
 
   if (!onPress) {
     return (

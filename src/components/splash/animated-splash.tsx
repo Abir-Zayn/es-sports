@@ -10,7 +10,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { colors, spacing } from '@/theme';
+import { palettes, spacing } from '@/theme';
+
+// The splash is always the dark brand screen, whatever theme the user picked.
+const colors = palettes.dark;
 
 // Same size as the native splash image (`imageWidth` in app.json) so the handoff does not jump.
 const MARK_SIZE = 288;

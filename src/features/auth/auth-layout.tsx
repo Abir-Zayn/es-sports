@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BrandMark } from '@/components/brand/brand-mark';
 import { Text } from '@/components/ui';
-import { colors, spacing } from '@/theme';
+import { spacing, useThemedStyles, type Palette } from '@/theme';
 
 type Props = {
   title: string;
@@ -16,6 +16,7 @@ type Props = {
 
 /** Shared frame for the login and sign-up screens: mark, heading, keyboard-aware body. */
 export function AuthLayout({ title, subtitle, children, scrollable = false }: Props) {
+  const styles = useThemedStyles(createStyles);
   const body = (
     <>
       <View style={styles.logo}>
@@ -46,11 +47,12 @@ export function AuthLayout({ title, subtitle, children, scrollable = false }: Pr
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  flex: { flex: 1 },
-  content: { paddingHorizontal: spacing.xl, paddingTop: spacing.xl, paddingBottom: spacing.lg, gap: spacing.xl },
-  logo: { paddingTop: spacing.xxl },
-  heading: { gap: spacing.sm },
-  title: { fontWeight: '800' },
-});
+const createStyles = (colors: Palette) =>
+  StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.background },
+    flex: { flex: 1 },
+    content: { paddingHorizontal: spacing.xl, paddingTop: spacing.xl, paddingBottom: spacing.lg, gap: spacing.xl },
+    logo: { paddingTop: spacing.xxl },
+    heading: { gap: spacing.sm },
+    title: { fontWeight: '800' },
+  });

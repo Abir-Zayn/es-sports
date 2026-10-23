@@ -32,6 +32,8 @@ Entry template:
 - Sign-up requires accepting the Terms and Conditions (checkbox, `/terms` screen). Terms text is a generic placeholder in `src/features/legal/terms-content.ts`.
 - Shared UI in `src/components/ui`: `Button` (primary, secondary, ghost, leading icon), `TextField`, `PasswordField` (lucide eye icon), `Checkbox`. Shared auth frame `AuthLayout`, `SocialOptions`, `AuthSwitchLink`.
 - Added `lucide-react-native` and `react-native-svg` (per-icon imports).
+- Light and dark theme: palettes in `src/theme/tokens.ts`, `ThemeProvider` with `useTheme` and `useThemedStyles`, System/Light/Dark preference saved in SecureStore, `userInterfaceStyle` set to `automatic`. Appearance picker is on Home for now. Dark-ink logo layers for light mode. Splash stays dark.
+- Added reusable `AppIconTile` (terms back button).
 
 **Decisions**
 - Hallmark targets web pages, so screens still use the Expo UI skills and theme tokens.
@@ -50,6 +52,7 @@ Entry template:
 - Both `package-lock.json` and `pnpm-lock.yaml` exist. `expo-doctor` flags it. Delete `package-lock.json`.
 - Welcome screen (mock 02) and "Forgot password?" not built. Native splash and animation not checked on a device.
 - Adaptive-icon background in `app.json` was set to `#F2F5F4`.
+- Theme switch UI is only on Home (no Settings screen yet). `userInterfaceStyle` change needs a native rebuild.
 - Seam stitches vanish below ~48px. Make a small-size cut if the seam must show at icon size.
 - Not checked on a device: adaptive and monochrome icons.
 - Logo masters live in gitignored `design/logo/`, so they are not in the repo. Back them up or move them if needed.

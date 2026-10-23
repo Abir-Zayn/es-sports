@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
-import { colors, spacing } from '@/theme';
+import { spacing } from '@/theme';
 
 const googleG = require('../../../assets/images/google-g.png');
 const phoneIcon = require('../../../assets/images/phone.png');
@@ -35,9 +35,10 @@ export function SocialOptions() {
         leading={<Image source={phoneIcon} style={styles.logo} contentFit="contain" accessibilityElementsHidden />}
         onPress={() => setNotice('Phone login is coming soon.')}
       />
+      {/* Absolute, so the message never adds height between the phone button and the footer link. */}
       <View style={styles.noticeSlot} accessibilityLiveRegion="polite">
         {notice ? (
-          <Text variant="caption" style={styles.notice}>
+          <Text variant="caption" muted>
             {notice}
           </Text>
         ) : null}
@@ -50,7 +51,5 @@ const styles = StyleSheet.create({
   wrap: { gap: spacing.md },
   or: { textAlign: 'center' },
   logo: { width: 20, height: 20 },
-  // Absolute, so the message never adds height between the phone button and the footer link.
   noticeSlot: { position: 'absolute', left: 0, right: 0, top: '100%', marginTop: spacing.xs, alignItems: 'center' },
-  notice: { color: colors.textMuted },
 });
