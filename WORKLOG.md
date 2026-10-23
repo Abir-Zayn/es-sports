@@ -21,11 +21,27 @@ Entry template:
 - Tidied `.gitignore`: merged env rules (`.env`, `.env.*`, `!.env.example`), added keystore and credential files, coverage, Windows files, local tooling.
 - Rewrote `README.md` for this project.
 - Added this `WORKLOG.md`.
+- Gitignored `design/` (local only). Untracked `design/README.md` with `git rm --cached` (staged, not committed).
+- Read splash references in `design/splash/` (Splash, Welcome).
+- Installed the `logo-design` plugin (`kaankiziltug/logo-design-skill`) and designed the app logo with it: an original ES mark (italic E, curved S, tapered trail ending in a red cricket ball with a seam). Built as SVG paths, no live text. Final ink is near-black on light.
+- Final app icon is the "On Light" version (`#F2F5F4` background). Replaced `assets/images/`: `icon`, `android-icon-foreground/background/monochrome` (1024), `favicon` (48), `splash-icon` (1024, white reversed ES for the dark splash).
+- SVG masters in `design/logo/` (`logo`, `logo-reversed`, icon sources). Removed the earlier concept files. Kept the reference image in `design/logo/reference/`.
 
 **Decisions**
 - Hallmark targets web pages, so screens still use the Expo UI skills and theme tokens.
+- Design files stay out of GitHub.
+- Logo is an original build, not the supplied raster (`use-concepts.png`): that one was low-res, of unknown origin and off-palette.
+- Palette: cyan `#19BFFF`, near-black `#0B1410`, light `#F2F5F4`, ball red `#E5243B`, teal `#0E6FA0`.
+- App icon is dark ES on light. Splash stays dark, so it uses the reversed (white) mark.
 
 **Open / next**
+- Splash screen not built yet. In `app.json`: `imageWidth` 76 is too small for the wide mark, and the adaptive-icon `backgroundColor` `#0B1410` no longer matches the light icon background.
+- Wordmark "EsSports" not built. Render as text with a loaded font (Barlow Condensed italic is a guess, check against mocks) or outline it for marketing.
+- Seam stitches vanish below ~48px. Make a small-size cut if the seam must show at icon size.
+- Not checked on a device: adaptive and monochrome icons.
+- Logo masters live in gitignored `design/logo/`, so they are not in the repo. Back them up or move them if needed.
+- Trademark and reverse-image search not done.
+- Commit the staged `design/README.md` removal. It stays in history from commit `5af7f12` until then.
 - `bencium-marketplace` is not registered, so its plugin failed to install. Needs `/plugin marketplace add <owner/repo>`.
 - UI work starts once designs are in `design/`.
 
