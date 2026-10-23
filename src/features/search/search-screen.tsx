@@ -5,6 +5,7 @@ import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, AppTabs, SearchField, Text } from '@/components/ui';
+import { useOpenTeam } from '@/features/team/use-team-routes';
 import { comingSoon } from '@/lib/coming-soon';
 import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
@@ -14,6 +15,7 @@ import { recentSearches, searchAll, searchTabs, type SearchTab } from './sample-
 
 export function SearchScreen() {
   const router = useRouter();
+  const openTeam = useOpenTeam();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
@@ -67,7 +69,7 @@ export function SearchScreen() {
               {group.title.toUpperCase()}
             </Text>
             {group.rows.map((row) => (
-              <ResultRow key={row.id} row={row} onPress={() => comingSoon(group.title)} />
+              <ResultRow key={row.id} row={row} onPress={() => (group.id === 'teams' ? openTeam(row.short) : comingSoon(group.title))} />
             ))}
           </View>
         ))}

@@ -2,7 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { comingSoon } from '@/lib/coming-soon';
+import { useOpenTeam } from '@/features/team/use-team-routes';
 import { spacing, useThemedStyles, type Palette } from '@/theme';
 import type { TournamentTeam } from '@/types/cricket';
 
@@ -25,6 +25,7 @@ export function TournamentTeamsScreen() {
   const tournamentId = id ?? 't1';
   const styles = useThemedStyles(createStyles);
   const { openHeadToHead } = useTournamentRoutes(tournamentId);
+  const openTeam = useOpenTeam();
 
   return (
     <TournamentScreenFrame tournamentId={tournamentId} section="teams">
@@ -44,7 +45,7 @@ export function TournamentTeamsScreen() {
                 key={entry.team.short}
                 entry={entry}
                 qualifyCount={leagueTable.qualifyCount}
-                onPress={() => comingSoon('Team')}
+                onPress={() => openTeam(entry.team.short)}
               />
             ))}
             {row.length === 1 ? <View style={styles.spacer} /> : null}

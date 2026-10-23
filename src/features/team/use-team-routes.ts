@@ -1,7 +1,5 @@
 import { useRouter } from 'expo-router';
 
-import { comingSoon } from '@/lib/coming-soon';
-
 import type { TeamTabId } from './types';
 
 export const teamTabs: { id: TeamTabId; label: string }[] = [
@@ -16,8 +14,16 @@ export function useTeamRoutes(id: string) {
   const router = useRouter();
 
   function openTab(tab: TeamTabId) {
-    if (tab === 'overview') return router.replace({ pathname: '/team/[id]', params: { id } });
-    comingSoon(teamTabs.find((t) => t.id === tab)?.label ?? 'This');
+    switch (tab) {
+      case 'overview':
+        return router.replace({ pathname: '/team/[id]', params: { id } });
+      case 'squad':
+        return router.replace({ pathname: '/team/[id]/squad', params: { id } });
+      case 'members':
+        return router.replace({ pathname: '/team/[id]/members', params: { id } });
+      case 'matches':
+        return router.replace({ pathname: '/team/[id]/matches', params: { id } });
+    }
   }
 
   function goBack() {

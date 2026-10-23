@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BOTTOM_NAV_CLEARANCE } from '@/components/navigation/bottom-nav';
 import { useOpenMatch } from '@/features/match/use-match-routes';
+import { useOpenTeam } from '@/features/team/use-team-routes';
 import { comingSoon } from '@/lib/coming-soon';
 import { sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
@@ -18,6 +19,7 @@ import { UpcomingFixtures } from './sections/upcoming-fixtures';
 export function HomeScreen() {
   const router = useRouter();
   const openMatch = useOpenMatch();
+  const openTeam = useOpenTeam();
   const insets = useSafeAreaInsets();
   const styles = useThemedStyles(createStyles);
 
@@ -36,7 +38,7 @@ export function HomeScreen() {
       <ContractedTeams
         teams={myTeams}
         onManage={() => comingSoon('Team management')}
-        onTeamPress={() => comingSoon('Team page')}
+        onTeamPress={(team) => openTeam(team.short)}
         onJoin={() => comingSoon('Joining a team')}
       />
       <UpcomingFixtures fixtures={upcoming} onAllFixtures={() => comingSoon('Fixtures')} onRemind={() => comingSoon('Reminders')} />
