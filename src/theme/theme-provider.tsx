@@ -4,7 +4,9 @@ import { Appearance, useColorScheme } from 'react-native';
 
 import { palettes, type ColorScheme, type Palette, type ThemePreference } from './tokens';
 
-const STORAGE_KEY = 'theme-preference';
+const STORAGE_KEY = 'theme-preference-v2';
+// Written by an earlier build whose login toggle could leave the app stuck on "light".
+const LEGACY_STORAGE_KEY = 'theme-preference';
 
 type ThemeValue = {
   /** What the user picked: follow the phone, or force light or dark. */
@@ -26,6 +28,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [preference, setPreferenceState] = useState<ThemePreference>('system');
 
   useEffect(() => {
+    SecureStore.deleteItemAsync(LEGACY_STORAGE_KEY).catch(() => {});
     SecureStore.getItemAsync(STORAGE_KEY)
       .then((stored) => {
         if (isPreference(stored)) setPreferenceState(stored);

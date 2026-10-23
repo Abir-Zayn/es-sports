@@ -7,6 +7,7 @@ import { spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { AuthLayout } from './auth-layout';
 import { AuthSwitchLink } from './auth-switch-link';
+import { SKIP_AUTH } from './dev-bypass';
 import { signInSchema, signInWithEmail } from './sign-in';
 import { SocialOptions } from './social-options';
 
@@ -23,6 +24,10 @@ export function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
   async function submit() {
+    if (SKIP_AUTH) {
+      router.replace('/home');
+      return;
+    }
     const parsed = signInSchema.safeParse({ email: email.trim(), password });
     if (!parsed.success) {
       const flat = parsed.error.flatten().fieldErrors;

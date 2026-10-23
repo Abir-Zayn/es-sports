@@ -34,6 +34,10 @@ Entry template:
 - Added `lucide-react-native` and `react-native-svg` (per-icon imports).
 - Light and dark theme: palettes in `src/theme/tokens.ts`, `ThemeProvider` with `useTheme` and `useThemedStyles`, System/Light/Dark preference saved in SecureStore, `userInterfaceStyle` set to `automatic`. Appearance picker is on Home for now. Dark-ink logo layers for light mode. Splash stays dark.
 - Added reusable `AppIconTile` (terms back button).
+- Home screen built from the Claude design file (`Home.dc.html`): header, live match cards, my teams, upcoming fixtures, tournaments to follow, floating bottom nav with raised Create button. Sample data in `src/features/home/sample-data.ts`. Tabs live in `src/app/(tabs)/` (custom bar via `expo-router/ui`); Tournaments and Matches are placeholders, Profile holds the Appearance picker.
+- Dark palette now uses the design's exact colours; added tokens (`primarySoft`, `primaryDeep`, `accentSoft`, `dangerSoft`, `onLive`, `outline`, `sizes.gutter`, `sizes.sectionGap`).
+- Fixed the app staying light while the phone was dark: theme preference now saved under `theme-preference-v2`, old key deleted.
+- Dev-only auth bypass (`src/features/auth/dev-bypass.ts`): Log in and Create account skip validation and open Home. Release builds still validate.
 
 **Decisions**
 - Hallmark targets web pages, so screens still use the Expo UI skills and theme tokens.
@@ -50,9 +54,9 @@ Entry template:
 - No Supabase project or `.env` yet, so login and sign-up show "isn't available right now". Session persistence not set up (`persistSession: false`).
 - Phone login needs an SMS provider. Cheapest for Bangladesh is a local provider through the Supabase Send SMS hook (prices not verified).
 - Both `package-lock.json` and `pnpm-lock.yaml` exist. `expo-doctor` flags it. Delete `package-lock.json`.
-- Welcome screen (mock 02) and "Forgot password?" not built. Native splash and animation not checked on a device.
+- Delete `dev-bypass.ts` once real auth works. Search, notifications, create sheet, live match and tournament screens show "coming soon" toasts. Welcome screen (mock 02) and "Forgot password?" not built. Native splash and animation not checked on a device.
 - Adaptive-icon background in `app.json` was set to `#F2F5F4`.
-- Theme switch UI is only on Home (no Settings screen yet). `userInterfaceStyle` change needs a native rebuild.
+- Theme switch UI is only on the Profile tab (no Settings screen yet). `userInterfaceStyle` change needs a native rebuild.
 - Seam stitches vanish below ~48px. Make a small-size cut if the seam must show at icon size.
 - Not checked on a device: adaptive and monochrome icons.
 - Logo masters live in gitignored `design/logo/`, so they are not in the repo. Back them up or move them if needed.

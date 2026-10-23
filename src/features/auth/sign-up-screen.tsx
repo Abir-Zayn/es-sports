@@ -7,6 +7,7 @@ import { spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { AuthLayout } from './auth-layout';
 import { AuthSwitchLink } from './auth-switch-link';
+import { SKIP_AUTH } from './dev-bypass';
 import { signUpSchema, signUpWithEmail } from './sign-up';
 
 type FieldErrors = { email?: string; password?: string; confirm?: string; accepted?: string };
@@ -26,6 +27,10 @@ export function SignUpScreen() {
   const [loading, setLoading] = useState(false);
 
   async function submit() {
+    if (SKIP_AUTH) {
+      router.replace('/home');
+      return;
+    }
     const parsed = signUpSchema.safeParse({ email: email.trim(), password, confirm, accepted });
     if (!parsed.success) {
       const flat = parsed.error.flatten().fieldErrors;
