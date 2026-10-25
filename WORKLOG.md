@@ -13,6 +13,14 @@ Entry template:
 
 ---
 
+## 2026-10-26
+
+**Done:** Reviewed the existing Team screens (Overview, Squad, Members, Matches) and match-viewing screens (Live, Scorecard, Overs, Wagon, Info). Their routes and UI are already implemented; data remains sample-based and several actions remain placeholders. Built, installed, and launched esSports on the Pixel_6 emulator. Confirmed the app is the foreground activity and Metro bundled successfully. Lint and typecheck passed.
+
+**Decisions:** Set `ANDROID_HOME` for the launch process. Installed Android NDK 27.1.12297006 and CMake 3.31.6 in the local SDK. Pinned `expo-build-properties.android.cmakeVersion` to `3.31.6` in `app.json` to resolve Ninja's Windows path-length build failure, then regenerated Android through Expo prebuild.
+
+**Open / next:** Exact visual comparison and design screen numbering could not be verified because the Claude artifact was inaccessible. Metro remains running on port 8081. `ANDROID_HOME` was set for this process only; future terminals still need the SDK environment variable configured.
+
 ## 2026-10-23
 
 **Done**

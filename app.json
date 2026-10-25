@@ -34,6 +34,7 @@
         "expo-build-properties",
         {
           "android": {
+            "cmakeVersion": "3.31.6",
             "enableMinifyInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true
           }
