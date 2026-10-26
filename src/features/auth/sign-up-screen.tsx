@@ -67,6 +67,7 @@ export function SignUpScreen() {
         />
         <PasswordField
           ref={passwordRef}
+          placeholder="Add password"
           value={password}
           onChangeText={setPassword}
           error={errors.password}
@@ -78,6 +79,7 @@ export function SignUpScreen() {
         <PasswordField
           ref={confirmRef}
           label="Confirm password"
+          placeholder="Add password"
           value={confirm}
           onChangeText={setConfirm}
           error={errors.confirm}
