@@ -62,6 +62,7 @@ export function LoginScreen() {
         />
         <PasswordField
           ref={passwordRef}
+          placeholder="Add password"
           value={password}
           onChangeText={setPassword}
           error={errors.password}
