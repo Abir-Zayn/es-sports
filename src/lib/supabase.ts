@@ -1,8 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
+import { Platform } from 'react-native';
 
+import { authStorage } from './auth-storage';
 import { env } from './env';
 
-// Session persistence is added with the auth feature (encrypted SecureStore pattern).
-export const supabase = createClient(env.EXPO_PUBLIC_SUPABASE_URL, env.EXPO_PUBLIC_SUPABASE_ANON_KEY, {
-  auth: { autoRefreshToken: true, persistSession: false, detectSessionInUrl: false },
+export const supabase = createClient(env.EXPO_PUBLIC_SUPABASE_URL, env.EXPO_PUBLIC_SUPABASE_KEY, {
+  auth: {
+    ...(Platform.OS !== 'web' ? { storage: authStorage } : {}),
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false,
+  },
 });

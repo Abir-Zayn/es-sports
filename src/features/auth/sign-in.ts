@@ -1,24 +1,27 @@
 import { z } from 'zod';
 
+import { supabase } from '@/lib/supabase';
+
+import { authErrorMessage } from './auth-errors';
+
 export const signInSchema = z.object({
   email: z.email('Enter a valid email.'),
   password: z.string().min(1, 'Enter your password.'),
 });
 
 export type SignInInput = z.infer<typeof signInSchema>;
-export type SignInResult = { ok: true } | { ok: false; message: string };
+export type SignInResult = { ok: true } | { ok: false; message: string; needsConfirmation?: boolean };
 
 export async function signInWithEmail({ email, password }: SignInInput): Promise<SignInResult> {
   try {
-    // Loaded on demand: the client reads env at import time and throws while the project has no .env.
-    const { supabase } = await import('@/lib/supabase');
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (!error) return { ok: true };
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error && data.session) return { ok: true };
     return {
       ok: false,
-      message: error.code === 'invalid_credentials' ? 'Email or password is wrong.' : "Couldn't log in. Try again.",
+      message: authErrorMessage(error ?? {}, 'Couldn’t log in. Try again.'),
+      needsConfirmation: error?.code === 'email_not_confirmed',
     };
   } catch {
-    return { ok: false, message: "Login isn't available right now. Try again later." };
+    return { ok: false, message: 'Couldn’t connect. Check your connection and try again.' };
   }
 }

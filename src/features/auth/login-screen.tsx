@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { useRef, useState, type ComponentRef } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
@@ -7,14 +6,13 @@ import { spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { AuthLayout } from './auth-layout';
 import { AuthSwitchLink } from './auth-switch-link';
-import { SKIP_AUTH } from './dev-bypass';
+import { resendConfirmation } from './resend-confirmation';
 import { signInSchema, signInWithEmail } from './sign-in';
 import { SocialOptions } from './social-options';
 
 type FieldErrors = { email?: string; password?: string };
 
 export function LoginScreen() {
-  const router = useRouter();
   const styles = useThemedStyles(createStyles);
   const passwordRef = useRef<ComponentRef<typeof TextInput>>(null);
   const [email, setEmail] = useState('');
@@ -22,12 +20,15 @@ export function LoginScreen() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const inFlight = useRef(false);
+  const [confirmationEmail, setConfirmationEmail] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   async function submit() {
-    if (SKIP_AUTH) {
-      router.replace('/home');
-      return;
-    }
+    if (inFlight.current) return;
+    setFormError(null);
+    setNotice(null);
+    setConfirmationEmail(null);
     const parsed = signInSchema.safeParse({ email: email.trim(), password });
     if (!parsed.success) {
       const flat = parsed.error.flatten().fieldErrors;
@@ -35,20 +36,37 @@ export function LoginScreen() {
       return;
     }
     setErrors({});
-    setFormError(null);
+    inFlight.current = true;
     setLoading(true);
     const result = await signInWithEmail(parsed.data);
     setLoading(false);
-    if (result.ok) router.replace('/home');
+    inFlight.current = false;
+    // The session guard navigates only after Supabase emits SIGNED_IN.
+    if (!result.ok) {
+      setFormError(result.message);
+      if (result.needsConfirmation) setConfirmationEmail(parsed.data.email);
+    }
+  }
+
+  async function resend() {
+    if (inFlight.current || !confirmationEmail) return;
+    inFlight.current = true;
+    setLoading(true);
+    setNotice(null);
+    const result = await resendConfirmation(confirmationEmail);
+    if (result.ok) setNotice('Check your inbox. Confirm your email, then return here to log in.');
     else setFormError(result.message);
+    setLoading(false);
+    inFlight.current = false;
   }
 
   return (
-    <AuthLayout title="Back on strike." subtitle="Log in to run your tournament.">
+    <AuthLayout scrollable title="Back on strike." subtitle="Log in to run your tournament.">
       <View style={styles.form}>
         <TextField
           label="Email"
           value={email}
+          editable={!loading}
           onChangeText={setEmail}
           error={errors.email}
           placeholder="you@example.com"
@@ -64,6 +82,7 @@ export function LoginScreen() {
           ref={passwordRef}
           placeholder="Add password"
           value={password}
+          editable={!loading}
           onChangeText={setPassword}
           error={errors.password}
           returnKeyType="done"
@@ -74,11 +93,13 @@ export function LoginScreen() {
             {formError}
           </Text>
         ) : null}
+        {notice ? <Text variant="caption" accessibilityLiveRegion="polite">{notice}</Text> : null}
         <Button label="Log in" onPress={submit} loading={loading} />
+        {confirmationEmail ? <Button label="Resend confirmation email" variant="secondary" onPress={resend} disabled={loading} /> : null}
       </View>
 
       <SocialOptions />
-      <AuthSwitchLink prompt="Don't have an account?" action="Create one!" href="/sign-up" />
+      <AuthSwitchLink prompt="Don’t have an account?" action="Create one" href="/sign-up" />
     </AuthLayout>
   );
 }

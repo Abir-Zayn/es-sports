@@ -1,6 +1,9 @@
 import { Redirect } from 'expo-router';
 
-// TODO: send signed-in users to /home once the auth session is restored on launch.
+import { useAuth } from '@/features/auth/auth-provider';
+
 export default function Index() {
-  return <Redirect href="/login" />;
+  const { session, isLoading } = useAuth();
+  if (isLoading) return null;
+  return <Redirect href={session ? '/home' : '/login'} />;
 }

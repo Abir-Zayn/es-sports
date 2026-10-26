@@ -5,12 +5,14 @@ import { StatusBar } from 'expo-status-bar';
 import { useCallback, useState } from 'react';
 
 import { AnimatedSplash } from '@/components/splash/animated-splash';
+import { AuthProvider, useAuth } from '@/features/auth/auth-provider';
 import { queryClient } from '@/lib/query-client';
 import { ThemeProvider, useTheme } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
 
 function AppShell() {
+  const { session, isLoading } = useAuth();
   const { colors, scheme } = useTheme();
   const [splashDone, setSplashDone] = useState(false);
 
@@ -21,10 +23,37 @@ function AppShell() {
   return (
     <>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
+      {!isLoading && (
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="terms" />
+          <Stack.Protected guard={!session}>
+            <Stack.Screen name="login" />
+            <Stack.Screen name="sign-up" />
+          </Stack.Protected>
+          <Stack.Protected guard={!!session}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="search" />
+            <Stack.Screen name="match/[id]/index" />
+            <Stack.Screen name="match/[id]/info" />
+            <Stack.Screen name="match/[id]/overs" />
+            <Stack.Screen name="match/[id]/scorecard" />
+            <Stack.Screen name="match/[id]/wagon" />
+            <Stack.Screen name="team/[id]/index" />
+            <Stack.Screen name="team/[id]/matches" />
+            <Stack.Screen name="team/[id]/members" />
+            <Stack.Screen name="team/[id]/squad" />
+            <Stack.Screen name="tournament/[id]/index" />
+            <Stack.Screen name="tournament/[id]/head-to-head" />
+            <Stack.Screen name="tournament/[id]/matches" />
+            <Stack.Screen name="tournament/[id]/stats" />
+            <Stack.Screen name="tournament/[id]/table" />
+            <Stack.Screen name="tournament/[id]/teams" />
+          </Stack.Protected>
+        </Stack>
+      )}
       {!splashDone && (
-        // TODO: also wait for the restored auth session once auth lands.
-        <AnimatedSplash ready onShown={hideNativeSplash} onDone={endSplash} />
+        <AnimatedSplash ready={!isLoading} onShown={hideNativeSplash} onDone={endSplash} />
       )}
     </>
   );
@@ -34,7 +63,9 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
-        <AppShell />
+        <AuthProvider>
+          <AppShell />
+        </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );

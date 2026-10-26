@@ -1,4 +1,4 @@
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import { useRef, useState, type ComponentRef } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
@@ -7,13 +7,12 @@ import { spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { AuthLayout } from './auth-layout';
 import { AuthSwitchLink } from './auth-switch-link';
-import { SKIP_AUTH } from './dev-bypass';
+import { resendConfirmation } from './resend-confirmation';
 import { signUpSchema, signUpWithEmail } from './sign-up';
 
 type FieldErrors = { email?: string; password?: string; confirm?: string; accepted?: string };
 
 export function SignUpScreen() {
-  const router = useRouter();
   const styles = useThemedStyles(createStyles);
   const passwordRef = useRef<ComponentRef<typeof TextInput>>(null);
   const confirmRef = useRef<ComponentRef<typeof TextInput>>(null);
@@ -25,12 +24,13 @@ export function SignUpScreen() {
   const [formError, setFormError] = useState<string | null>(null);
   const [confirmSent, setConfirmSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const inFlight = useRef(false);
+  const [submittedEmail, setSubmittedEmail] = useState('');
+  const [resent, setResent] = useState(false);
 
   async function submit() {
-    if (SKIP_AUTH) {
-      router.replace('/home');
-      return;
-    }
+    if (inFlight.current) return;
+    setFormError(null);
     const parsed = signUpSchema.safeParse({ email: email.trim(), password, confirm, accepted });
     if (!parsed.success) {
       const flat = parsed.error.flatten().fieldErrors;
@@ -40,12 +40,45 @@ export function SignUpScreen() {
     setErrors({});
     setFormError(null);
     setConfirmSent(false);
+    inFlight.current = true;
     setLoading(true);
     const result = await signUpWithEmail(parsed.data);
     setLoading(false);
+    inFlight.current = false;
     if (!result.ok) setFormError(result.message);
-    else if (result.signedIn) router.replace('/home');
-    else setConfirmSent(true);
+    else {
+      setPassword('');
+      setConfirm('');
+      if (!result.signedIn) {
+        setSubmittedEmail(parsed.data.email);
+        setConfirmSent(true);
+      }
+    }
+  }
+
+  async function resend() {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setLoading(true);
+    setFormError(null);
+    setResent(false);
+    const result = await resendConfirmation(submittedEmail);
+    if (result.ok) setResent(true);
+    else setFormError(result.message);
+    setLoading(false);
+    inFlight.current = false;
+  }
+
+  if (confirmSent) {
+    return (
+      <AuthLayout scrollable title="Check your email." subtitle="Confirm your account, then return to EsSports to log in.">
+        <Text accessibilityLiveRegion="polite">A confirmation link has been requested for {submittedEmail}. Check your inbox and spam folder.</Text>
+        {resent ? <Text style={styles.sent} accessibilityLiveRegion="polite">Confirmation email requested again.</Text> : null}
+        {formError ? <Text style={styles.formError} accessibilityLiveRegion="polite">{formError}</Text> : null}
+        <Button label="Resend confirmation email" variant="secondary" loading={loading} onPress={resend} />
+        <AuthSwitchLink prompt="Confirmed your email?" action="Log in" href="/login" replace />
+      </AuthLayout>
+    );
   }
 
   return (
@@ -54,6 +87,7 @@ export function SignUpScreen() {
         <TextField
           label="Email"
           value={email}
+          editable={!loading}
           onChangeText={setEmail}
           error={errors.email}
           placeholder="you@example.com"
@@ -69,6 +103,7 @@ export function SignUpScreen() {
           ref={passwordRef}
           placeholder="Add password"
           value={password}
+          editable={!loading}
           onChangeText={setPassword}
           error={errors.password}
           autoComplete="new-password"
@@ -81,6 +116,7 @@ export function SignUpScreen() {
           label="Confirm password"
           placeholder="Add password"
           value={confirm}
+          editable={!loading}
           onChangeText={setConfirm}
           error={errors.confirm}
           autoComplete="new-password"
@@ -102,11 +138,6 @@ export function SignUpScreen() {
         {formError ? (
           <Text variant="caption" style={styles.formError} accessibilityLiveRegion="polite">
             {formError}
-          </Text>
-        ) : null}
-        {confirmSent ? (
-          <Text variant="caption" style={styles.sent} accessibilityLiveRegion="polite">
-            Check your email to confirm your account, then log in.
           </Text>
         ) : null}
         <Button label="Create account" onPress={submit} loading={loading} />

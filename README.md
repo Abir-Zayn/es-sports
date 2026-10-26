@@ -8,7 +8,7 @@ Multi-tenant cricket tournament platform. Pilot: HSF Premier League. Android onl
 
 ```bash
 npm install
-cp .env.example .env   # fill in the Supabase URL and anon key
+cp .env.example .env   # fill in the Supabase publishable key
 npx expo start
 ```
 
@@ -19,9 +19,19 @@ Run on an Android emulator or device with a [development build](https://docs.exp
 | Variable | Purpose |
 | --- | --- |
 | `EXPO_PUBLIC_SUPABASE_URL` | Supabase project URL |
-| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `EXPO_PUBLIC_SUPABASE_KEY` | Supabase publishable key (`sb_publishable_...`) |
 
 `EXPO_PUBLIC_*` values are bundled into the app and readable by anyone. Never put `service_role`, payment or admin secrets in the app. Privileged actions run in Edge Functions.
+
+### Authentication
+
+The app connects to the `es-sports` Supabase project (`tedgyfczmqqnwrlucsoc`). Email and password are the only enabled login method. Google and phone login are deferred.
+
+Sign-up validates the email, an eight-character minimum password, matching confirmation and acceptance of the terms. For the current pilot, keep **Confirm email** switched off in Supabase under **Authentication → Sign In / Providers → Email**. Supabase then returns a session on successful sign-up, and the app signs the user in immediately without a confirmation email. This is a hosted project setting; changing app code or pushing to GitHub does not change it.
+
+Sessions persist in encrypted Expo SecureStore on native platforms. Values are chunked below the native size limit, with a manifest committed only after all chunks are written. The app restores the session behind the splash screen and refreshes it while foregrounded. Logging out revokes only the current session, clears its stored credentials and removes cached user queries. All application screens require a session; login, sign-up and terms remain available without one. Route guards protect navigation; database access still requires appropriate Supabase RLS policies.
+
+If email confirmation is enabled again, the app shows confirmation instructions and allows resending from sign-up and login. The hosted email link opens the configured Auth Site URL in the browser; the user then returns to the app to log in. Automatic email-link sign-in and password recovery are separate flows. Configure a reachable Auth Site URL and a production SMTP provider before enabling confirmation for a public release.
 
 ## Scripts
 
