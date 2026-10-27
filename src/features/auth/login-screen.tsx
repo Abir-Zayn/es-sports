@@ -1,3 +1,4 @@
+import { Link } from 'expo-router';
 import { useRef, useState, type ComponentRef } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
@@ -88,6 +89,11 @@ export function LoginScreen() {
           returnKeyType="done"
           onSubmitEditing={submit}
         />
+        <Text variant="caption" style={styles.forgot}>
+          <Link href="/forgot-password" style={styles.forgotAction}>
+            Forgot password?
+          </Link>
+        </Text>
         {formError ? (
           <Text variant="caption" style={styles.formError} accessibilityLiveRegion="polite">
             {formError}
@@ -108,4 +114,6 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     form: { gap: spacing.lg },
     formError: { color: colors.danger },
+    forgot: { alignSelf: 'flex-end' },
+    forgotAction: { color: colors.link, fontWeight: '700' },
   });

@@ -10,5 +10,7 @@ export { SearchField } from './search-field';
 export { SegmentedControl, type SegmentedOption } from './segmented-control';
 export { Section } from './section';
 export { SectionHeader } from './section-header';
+export { SettingsGroup } from './settings-group';
+export { SettingsRow } from './settings-row';
 export { Text } from './text';
 export { TextField } from './text-field';

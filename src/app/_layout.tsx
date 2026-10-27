@@ -6,6 +6,7 @@ import { useCallback, useState } from 'react';
 
 import { AnimatedSplash } from '@/components/splash/animated-splash';
 import { AuthProvider, useAuth } from '@/features/auth/auth-provider';
+import { ProfileProvider } from '@/features/profile/profile-provider';
 import { queryClient } from '@/lib/query-client';
 import { ThemeProvider, useTheme } from '@/theme';
 
@@ -27,13 +28,17 @@ function AppShell() {
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="terms" />
+          <Stack.Screen name="privacy" />
           <Stack.Protected guard={!session}>
             <Stack.Screen name="login" />
             <Stack.Screen name="sign-up" />
+            <Stack.Screen name="forgot-password" />
           </Stack.Protected>
           <Stack.Protected guard={!!session}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="search" />
+            <Stack.Screen name="settings" />
+            <Stack.Screen name="profile/edit" />
             <Stack.Screen name="match/[id]/index" />
             <Stack.Screen name="match/[id]/info" />
             <Stack.Screen name="match/[id]/overs" />
@@ -64,7 +69,9 @@ export default function RootLayout() {
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <AppShell />
+          <ProfileProvider>
+            <AppShell />
+          </ProfileProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>

@@ -1,12 +1,15 @@
 import { supabase } from '@/lib/supabase';
 
 import { resendConfirmation } from '../resend-confirmation';
+import { sendResetEmail } from '../send-reset-email';
 import { signInSchema, signInWithEmail } from '../sign-in';
 import { signOut } from '../sign-out';
 import { signUpSchema, signUpWithEmail } from '../sign-up';
 
 jest.mock('@/lib/supabase', () => ({
-  supabase: { auth: { signInWithPassword: jest.fn(), signUp: jest.fn(), resend: jest.fn(), signOut: jest.fn() } },
+  supabase: {
+    auth: { signInWithPassword: jest.fn(), signUp: jest.fn(), resend: jest.fn(), signOut: jest.fn(), resetPasswordForEmail: jest.fn() },
+  },
 }));
 
 const input = { email: 'player@example.com', password: 'Cricket123!', confirm: 'Cricket123!', accepted: true };
@@ -64,6 +67,27 @@ it('validates the resend address and uses signup confirmation rather than passwo
 it('surfaces confirmation delivery limits', async () => {
   jest.mocked(supabase.auth.resend).mockResolvedValue({ data: {}, error: { code: 'over_email_send_rate_limit' } } as never);
   expect(await resendConfirmation(input.email)).toMatchObject({ ok: false, message: expect.stringContaining('Wait a minute') });
+});
+
+it('requests a reset link without revealing whether the account exists', async () => {
+  expect((await sendResetEmail('invalid')).ok).toBe(false);
+  expect(supabase.auth.resetPasswordForEmail).not.toHaveBeenCalled();
+  jest.mocked(supabase.auth.resetPasswordForEmail).mockResolvedValue({ data: {}, error: null } as never);
+  expect(await sendResetEmail(' player@example.com ')).toEqual({ ok: true });
+  expect(supabase.auth.resetPasswordForEmail).toHaveBeenCalledWith(input.email);
+  // Unknown accounts and unrelated server errors look identical to success.
+  jest.mocked(supabase.auth.resetPasswordForEmail).mockResolvedValue({ data: null, error: { code: 'user_not_found' } } as never);
+  expect(await sendResetEmail(input.email)).toEqual({ ok: true });
+});
+
+it('surfaces reset email delivery limits', async () => {
+  jest.mocked(supabase.auth.resetPasswordForEmail).mockResolvedValue({ data: null, error: { code: 'over_email_send_rate_limit' } } as never);
+  expect(await sendResetEmail(input.email)).toMatchObject({ ok: false, message: expect.stringContaining('Wait a minute') });
+});
+
+it('allows retry after a network failure when requesting a reset link', async () => {
+  jest.mocked(supabase.auth.resetPasswordForEmail).mockRejectedValue(new Error('offline'));
+  expect(await sendResetEmail(input.email)).toMatchObject({ ok: false, message: expect.stringContaining('connection') });
 });
 
 it('revokes only the current device session and reports failed logout', async () => {

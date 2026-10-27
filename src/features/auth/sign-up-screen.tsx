@@ -128,11 +128,15 @@ export function SignUpScreen() {
           checked={accepted}
           onChange={setAccepted}
           error={errors.accepted}
-          accessibilityLabel="I agree to the Terms and Conditions"
+          accessibilityLabel="I agree to the Terms and Conditions and Privacy Policy"
         >
           I agree to the{' '}
           <Link href="/terms" style={styles.link}>
             Terms and Conditions
+          </Link>{' '}
+          and{' '}
+          <Link href="/privacy" style={styles.link}>
+            Privacy Policy
           </Link>
         </Checkbox>
         {formError ? (
