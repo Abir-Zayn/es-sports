@@ -1,68 +1,154 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# Learn more: https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
-# dependencies
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
+.pnpm-store/
 
-# Expo
+# Expo & EAS
 .expo/
+.expo-shared/
 dist/
 web-build/
 expo-env.d.ts
+.eas/
+*.eas-build-*
 
-# Native
+# Generated native folders (Continuous Native Generation)
+/ios/
+/android/
+
+# Native build & SDK files
 .kotlin/
+.gradle/
+local.properties
+*.hprof
 *.orig.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
 
-# Metro
+# Native build outputs
+*.apk
+*.aab
+*.aar
+*.ap_
+*.dex
+*.ipa
+*.app
+*.dSYM/
+*.dSYM.zip
+
+# Metro bundler & caches
 .metro-health-check*
+.metro/
+metro-cache/
+.cache/
+.turbo/
 
-# debug
+# Debugging & logs
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+pnpm-debug.log*
+*.log
 
-# macOS
-.DS_Store
-*.pem
+# Python / Hooks / Agent runtime caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.pytest_cache/
 
-
-# typescript
+# TypeScript
 *.tsbuildinfo
 
-
-# generated native folders
-/ios
-/android
-
-# supabase
+# Supabase
 supabase/.temp/
 supabase/.branches/
+**/supabase/.temp/
+**/supabase/.branches/
 
-# env (names only in .env.example)
+# Environment variables (names only in .env.example)
 .env
 .env.*
 !.env.example
 
-# credentials
+# Credentials, keys & certificates
+*.jks
 *.keystore
+*.p8
+*.p12
+*.key
+*.cer
+*.der
+*.pfx
+*.crt
+*.pem
+*.mobileprovision
 google-services.json
+GoogleService-Info.plist
 service-account*.json
 
-# tests
+# Tests & coverage
 coverage/
+*.lcov
+.nyc_output/
 
-# Windows
+# IDEs & editors
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/*.local.json
+*.swp
+*.swo
+*~
+*.bak
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
 desktop.ini
 
-# local tooling
+# AI Agents, Transcripts & Local Tooling (memory.md Section 10)
 .claude/settings.local.json
+.claude/transcripts/
+.claude/history/
+CLAUDE.local.md
+.codex/sessions/
+.warp/
+.gemini/
+*.session.json
+**/scratch/
 graphify-out/
 
 # UI design files (local only)
 /design/
+
+# ActionBoard agent tooling installed into the project (local and machine-specific; the plugin recreates it)
+/.codex/
+/.agents/skills/actionboard-devops-mission/
+/.agents/skills/actionboard-kb/
+/.agents/skills/mission-brief/
+/.agents/skills/mission-harness/
+/.agents/skills/mission-plan/
+/.agents/skills/mission-preflight/
+/.agents/skills/mission-report/
+/.agents/skills/openshell-admin/
+/.agents/skills/policy-widen/
+/.agents/skills/sandbox-down/
+/.agents/skills/sandbox-status/
+/.agents/skills/sandbox-up/
+/.agents/skills/skills-registry/
+/.agents/skills/start-mission/
+/.agents/skills/terse-output/
+
+# Debug screenshots dropped in the project root (they can show client IDs and console pages)
+/*.png

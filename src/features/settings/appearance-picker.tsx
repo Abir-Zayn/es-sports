@@ -15,10 +15,7 @@ export function AppearancePicker() {
   const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.wrap}>
-      <Text variant="caption" muted>
-        Appearance
-      </Text>
-      <View style={styles.row} accessibilityRole="radiogroup">
+      <View style={styles.row} accessibilityRole="radiogroup" accessibilityLabel="Appearance">
         {options.map(({ value, label }) => {
           const selected = preference === value;
           return (

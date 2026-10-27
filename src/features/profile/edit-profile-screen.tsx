@@ -1,7 +1,7 @@
 import * as ImagePicker from 'expo-image-picker';
 import { usePreventRemove, useRouter } from 'expo-router';
 import { useRef, useState, type ComponentRef } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, InitialsAvatar, SegmentedControl, Text, TextField } from '@/components/ui';
@@ -25,7 +25,7 @@ const battingOptions = (Object.keys(battingLabels) as BattingStyle[]).map((id) =
 }));
 
 /** Name, area, district, phone, National ID, blood group, photo and playing style. Saving returns to Profile; leaving with unsaved edits asks first. */
-export function EditProfileScreen() {
+function EditProfileForm() {
   const router = useRouter();
   const { session } = useAuth();
   const { profile, saveProfile } = useProfile();
@@ -97,7 +97,7 @@ export function EditProfileScreen() {
     inFlight.current = true;
     setSaving(true);
     try {
-      await saveProfile(parsed.data, avatarUri);
+      await saveProfile(parsed.data, avatarUri ?? null);
       allowLeave();
       router.back();
     } catch {
@@ -117,9 +117,16 @@ export function EditProfileScreen() {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.photo}>
             <InitialsAvatar label={initialsOf(fullName.trim() || profile.fullName)} imageUri={avatarUri} size={96} accessibilityLabel="Profile picture" />
-            <Pressable accessibilityRole="button" hitSlop={sizes.hitSlop} onPress={pickPhoto} style={styles.photoButton}>
-              <Text style={styles.link}>Change photo</Text>
-            </Pressable>
+            <View style={styles.photoActions}>
+              <Pressable accessibilityRole="button" hitSlop={sizes.hitSlop} onPress={pickPhoto} style={styles.photoButton}>
+                <Text style={styles.link}>{avatarUri ? 'Change photo' : 'Add photo'}</Text>
+              </Pressable>
+              {avatarUri ? (
+                <Pressable accessibilityRole="button" hitSlop={sizes.hitSlop} onPress={() => setAvatarUri(undefined)} style={styles.photoButton}>
+                  <Text style={styles.remove}>Remove</Text>
+                </Pressable>
+              ) : null}
+            </View>
           </View>
 
           {formError ? (
@@ -242,6 +249,28 @@ export function EditProfileScreen() {
   );
 }
 
+/** Waits for the stored profile, so the form never starts from placeholder values. */
+export function EditProfileScreen() {
+  const { status, reload } = useProfile();
+  const styles = useThemedStyles(createStyles);
+  if (status === 'ready') return <EditProfileForm />;
+  return (
+    <SafeAreaView style={styles.safe}>
+      <ScreenHeader title="Edit Profile" />
+      <View style={styles.centered}>
+        {status === 'loading' ? (
+          <ActivityIndicator accessibilityLabel="Loading your profile" />
+        ) : (
+          <>
+            <Text muted>Couldn’t load your profile.</Text>
+            <Button label="Try again" size="compact" onPress={reload} />
+          </>
+        )}
+      </View>
+    </SafeAreaView>
+  );
+}
+
 function BloodGroupChip({ id, selected, onPress }: { id: BloodGroup; selected: boolean; onPress: () => void }) {
   const styles = useThemedStyles(createStyles);
   return (
@@ -263,7 +292,10 @@ const createStyles = (colors: Palette) =>
     flex: { flex: 1 },
     content: { paddingHorizontal: sizes.gutter, paddingTop: spacing.md, paddingBottom: spacing.xxl, gap: spacing.xl },
     photo: { alignItems: 'center', gap: spacing.sm },
+    photoActions: { flexDirection: 'row', alignItems: 'center', gap: spacing.xl },
     photoButton: { minHeight: 44, justifyContent: 'center' },
+    remove: { fontSize: 15, lineHeight: 20, fontWeight: '600', color: colors.textMuted },
+    centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.lg, paddingHorizontal: sizes.gutter },
     link: { fontSize: 15, lineHeight: 20, fontWeight: '600', color: colors.link },
     error: { color: colors.danger },
     fields: { gap: spacing.lg },

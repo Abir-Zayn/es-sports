@@ -4,8 +4,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BOTTOM_NAV_CLEARANCE } from '@/components/navigation/bottom-nav';
 import { useOpenMatch } from '@/features/match/use-match-routes';
+import { useProfile } from '@/features/profile/profile-provider';
 import { useOpenTeam } from '@/features/team/use-team-routes';
 import { comingSoon } from '@/lib/coming-soon';
+import { initialsOf } from '@/lib/initials';
 import { sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { liveMatches, myTeams, sampleUser, tournaments, upcoming } from './sample-data';
@@ -22,6 +24,14 @@ export function HomeScreen() {
   const openTeam = useOpenTeam();
   const insets = useSafeAreaInsets();
   const styles = useThemedStyles(createStyles);
+  const { profile } = useProfile();
+  // The greeting and avatar come from the player's own profile, not from Google.
+  const user = {
+    ...sampleUser,
+    name: profile.fullName.split(' ')[0],
+    initials: initialsOf(profile.fullName),
+    avatarUri: profile.avatarUri,
+  };
 
   return (
     <ScrollView
@@ -29,7 +39,7 @@ export function HomeScreen() {
       contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.lg, paddingBottom: BOTTOM_NAV_CLEARANCE + insets.bottom }]}
     >
       <TopBar
-        user={sampleUser}
+        user={user}
         onProfile={() => router.navigate('/profile')}
         onSearch={() => router.push('/search')}
         onNotifications={() => comingSoon('Notifications')}

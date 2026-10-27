@@ -30,7 +30,7 @@ export function ProfileScreen() {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const { session } = useAuth();
-  const { profile, batting, bowling, teams, recent } = useProfile();
+  const { profile, batting, bowling, teams, recent, status, reload } = useProfile();
   const [loggingOut, setLoggingOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inFlight = useRef(false);
@@ -52,6 +52,14 @@ export function ProfileScreen() {
       contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.lg, paddingBottom: BOTTOM_NAV_CLEARANCE + insets.bottom }]}
     >
       <ProfileHeader profile={profile} onSettings={() => router.push('/settings')} onEdit={() => router.push('/profile/edit')} />
+      {status === 'error' ? (
+        <View style={styles.loadError}>
+          <Text variant="caption" style={styles.error} accessibilityLiveRegion="polite">
+            Couldn’t load your saved profile.
+          </Text>
+          <Button label="Try again" variant="secondary" size="compact" onPress={reload} />
+        </View>
+      ) : null}
       <StatStrip batting={batting} bowling={bowling} teams={teams} />
       <PlayingStyle profile={profile} />
       <PersonalInfo profile={profile} email={session?.user.email} onEdit={() => router.push('/profile/edit')} />
@@ -93,4 +101,5 @@ const createStyles = (colors: Palette) =>
     content: { gap: sizes.sectionGap },
     links: { paddingHorizontal: sizes.gutter, gap: spacing.lg },
     error: { color: colors.danger },
+    loadError: { paddingHorizontal: sizes.gutter, alignItems: 'center', gap: spacing.sm },
   });

@@ -13,6 +13,13 @@ export function authErrorMessage(error: AuthError, fallback: string): string {
     case 'over_email_send_rate_limit':
     case 'over_request_rate_limit':
       return 'Too many attempts. Wait a minute and try again.';
+    case 'identity_already_exists':
+      return 'That Google account is already linked to another esSports account.';
+    case 'manual_linking_disabled':
+      return 'Linking accounts isn’t available right now. Try again later.';
+    case 'provider_disabled':
+    case 'validation_failed':
+      return 'Google sign-in isn’t available right now. Try again later.';
     case 'signup_disabled':
     case 'email_provider_disabled':
       return 'Email sign-up is unavailable right now. Try again later.';

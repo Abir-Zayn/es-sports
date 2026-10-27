@@ -1,15 +1,19 @@
 import ChevronRight from 'lucide-react-native/icons/chevron-right';
-import type { ReactNode } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui/text';
-import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+
+type IconComponent = ComponentType<{ size?: number; color?: string }>;
 
 type Props = {
   label: string;
   /** Read-only text on the right, e.g. an email or version. */
   value?: string;
-  /** Shown before the label, e.g. an icon. */
+  /** A lucide icon shown before the label, in the row's text colour. */
+  icon?: IconComponent;
+  /** Custom content before the label, for artwork that is not a lucide icon. Overrides `icon`. */
   leading?: ReactNode;
   /** Replaces the value and chevron, e.g. a switch. */
   trailing?: ReactNode;
@@ -22,12 +26,12 @@ type Props = {
 const ROW_HEIGHT = 56;
 
 /** One line in a `SettingsGroup`. */
-export function SettingsRow({ label, value, leading, trailing, onPress, destructive = false }: Props) {
+export function SettingsRow({ label, value, icon: Icon, leading, trailing, onPress, destructive = false }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const content = (
     <>
-      {leading}
+      {leading ?? (Icon ? <Icon size={sizes.icon} color={destructive ? colors.danger : colors.textMuted} /> : null)}
       <Text style={[styles.label, destructive && styles.destructive]} numberOfLines={1}>
         {label}
       </Text>

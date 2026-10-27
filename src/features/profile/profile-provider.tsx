@@ -1,38 +1,155 @@
-import { createContext, use, useCallback, useMemo, useState, type ReactNode } from 'react';
+import { createContext, use, useCallback, useEffect, useEffectEvent, useMemo, useState, type ReactNode } from 'react';
 
+import { useAuth } from '@/features/auth/auth-provider';
+import type { ProviderProfile } from '@/features/auth/provider-profile';
 import type { PlayerProfile, ProfileData } from '@/types/profile';
 
 import type { ProfileInput } from './profile-schema';
+import { fetchProfile, isLocalImage, updateProfile, uploadAvatar, type StoredProfile } from './profile-repository';
 import { sampleProfile } from './sample-data';
 
+type Status = 'loading' | 'ready' | 'error';
+
+type LoadResult = { userId: string; stored: StoredProfile } | { userId: string; failed: true };
+
+/** `fill-empty` only fills what is still blank. `overwrite` replaces the current name and photo. */
+export type ImportMode = 'fill-empty' | 'overwrite';
+
 type ProfileContextValue = ProfileData & {
-  /** Saves edits. `avatarUri: null` removes the picture, `undefined` keeps it. */
-  saveProfile: (input: ProfileInput, avatarUri?: string | null) => Promise<void>;
+  status: Status;
+  reload: () => void;
+  /** Saves edits. A picked photo on the device is uploaded; `null` removes the photo. Never touches the auth session. */
+  saveProfile: (input: ProfileInput, avatarUri: string | null) => Promise<void>;
+  /** Copies a provider's name and photo into the profile. Resolves true when something changed. */
+  importFromProvider: (provider: ProviderProfile, mode: ImportMode) => Promise<boolean>;
 };
 
 const ProfileContext = createContext<ProfileContextValue | null>(null);
 
-/** Holds the signed-in player's profile in memory so Profile and Edit profile stay in sync. Swap `saveProfile` for a Supabase upsert later. */
-export function ProfileProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<ProfileData>(sampleProfile);
+const emptyStored: StoredProfile = {
+  fullName: null,
+  avatarUrl: null,
+  area: null,
+  district: null,
+  role: null,
+  battingStyle: null,
+  phone: null,
+  nationalId: null,
+  bloodGroup: null,
+};
 
-  const saveProfile = useCallback(async (input: ProfileInput, avatarUri?: string | null) => {
-    setData((current) => {
-      const next: PlayerProfile = {
-        ...current.profile,
-        ...input,
-        area: input.area || undefined,
-        district: input.district || undefined,
-        bloodGroup: input.bloodGroup || undefined,
-        phone: input.phone || undefined,
-        nationalId: input.nationalId || undefined,
-        avatarUri: avatarUri === undefined ? current.profile.avatarUri : (avatarUri ?? undefined),
-      };
-      return { ...current, profile: next };
-    });
+function toPlayerProfile(userId: string, email: string | undefined, stored: StoredProfile | null): PlayerProfile {
+  return {
+    id: userId,
+    // A profile that never had a name shows the email's first part until the player picks one.
+    fullName: stored?.fullName ?? email?.split('@')[0] ?? 'Player',
+    area: stored?.area ?? undefined,
+    district: stored?.district ?? undefined,
+    bloodGroup: stored?.bloodGroup ?? undefined,
+    phone: stored?.phone ?? undefined,
+    nationalId: stored?.nationalId ?? undefined,
+    role: stored?.role ?? 'all-rounder',
+    battingStyle: stored?.battingStyle ?? 'right',
+    avatarUri: stored?.avatarUrl ?? undefined,
+  };
+}
+
+/**
+ * Holds the signed-in player's profile, stored in Supabase. The name and photo are copied from Google only once,
+ * at sign-up; after that they belong to the player and are edited here without touching the auth session.
+ * Stats, teams and recent matches are still sample data.
+ */
+export function ProfileProvider({ children }: { children: ReactNode }) {
+  const { session } = useAuth();
+  const user = session?.user;
+  const userId = user?.id;
+  const [result, setResult] = useState<LoadResult | null>(null);
+  const [attempt, setAttempt] = useState(0);
+
+  // A result belongs to one user. After a different user signs in, the old one no longer counts.
+  const current = result && result.userId === userId ? result : null;
+  const stored = current && 'stored' in current ? current.stored : null;
+  const status: Status = current ? ('stored' in current ? 'ready' : 'error') : 'loading';
+
+  // Reads the latest session without re-running the load on every token refresh.
+  const load = useEffectEvent(() => (user ? fetchProfile(user) : Promise.resolve(null)));
+
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    load()
+      .then((profile) => {
+        if (!cancelled && profile) setResult({ userId, stored: profile });
+      })
+      .catch(() => {
+        if (!cancelled) setResult({ userId, failed: true });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, attempt]);
+
+  const reload = useCallback(() => {
+    setResult(null);
+    setAttempt((n) => n + 1);
   }, []);
 
-  const value = useMemo(() => ({ ...data, saveProfile }), [data, saveProfile]);
+  const write = useCallback(
+    async (patch: Partial<StoredProfile>) => {
+      if (!userId) throw new Error('Not signed in');
+      await updateProfile(userId, patch);
+      setResult((previous) => ({
+        userId,
+        stored: { ...(previous && 'stored' in previous ? previous.stored : emptyStored), ...patch },
+      }));
+    },
+    [userId],
+  );
+
+  const saveProfile = useCallback(
+    async (input: ProfileInput, avatarUri: string | null) => {
+      if (!userId) throw new Error('Not signed in');
+      const avatarUrl = avatarUri && isLocalImage(avatarUri) ? await uploadAvatar(userId, avatarUri) : avatarUri;
+      await write({
+        fullName: input.fullName,
+        area: input.area || null,
+        district: input.district || null,
+        bloodGroup: input.bloodGroup || null,
+        phone: input.phone || null,
+        nationalId: input.nationalId || null,
+        role: input.role,
+        battingStyle: input.battingStyle,
+        avatarUrl,
+      });
+    },
+    [userId, write],
+  );
+
+  const importFromProvider = useCallback(
+    async (provider: ProviderProfile, mode: ImportMode) => {
+      // Until the profile has loaded we cannot tell what is blank, so never guess.
+      if (!stored) return false;
+      const patch: Partial<StoredProfile> = {};
+      if (provider.fullName && (mode === 'overwrite' || !stored.fullName)) patch.fullName = provider.fullName;
+      if (provider.avatarUrl && (mode === 'overwrite' || !stored.avatarUrl)) patch.avatarUrl = provider.avatarUrl;
+      if (Object.keys(patch).length === 0) return false;
+      await write(patch);
+      return true;
+    },
+    [stored, write],
+  );
+
+  const value = useMemo<ProfileContextValue>(
+    () => ({
+      ...sampleProfile,
+      profile: toPlayerProfile(userId ?? 'me', user?.email, stored),
+      status,
+      reload,
+      saveProfile,
+      importFromProvider,
+    }),
+    [userId, user?.email, stored, status, reload, saveProfile, importFromProvider],
+  );
   return <ProfileContext value={value}>{children}</ProfileContext>;
 }
 
