@@ -1,33 +1,29 @@
 import { useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
-import { SegmentedControl, type SegmentedOption } from '@/components/ui';
-import type { FixtureStage } from '@/types/cricket';
+import { AppTabs, Text } from '@/components/ui';
 
 import { TournamentScreenFrame } from './components/tournament-screen-frame';
-import { tournamentFixtureGroups } from './sample-matches';
-import { FixtureGroupSection } from './sections/fixture-group-section';
+import { tournamentFixtures } from './sample-matches';
+import { buildSchedule, emptyScheduleText, scheduleTabs, type ScheduleFilter } from './schedule';
+import { ScheduleGroupSection } from './sections/schedule-group-section';
 
-type StageFilter = 'all' | FixtureStage;
-
-const stageOptions: SegmentedOption<StageFilter>[] = [
-  { id: 'all', label: 'All' },
-  { id: 'league', label: 'League' },
-  { id: 'knockout', label: 'Knockouts' },
-];
-
-/** Every match in the tournament, grouped as live, upcoming, knockouts and results, with a stage filter. */
+/** The tournament's match schedule: filter by Live, Upcoming or Results, matches grouped by day. */
 export function TournamentMatchesScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [stage, setStage] = useState<StageFilter>('all');
-  const groups = tournamentFixtureGroups.filter((group) => stage === 'all' || group.stage === stage);
+  const [filter, setFilter] = useState<ScheduleFilter>('all');
+  const groups = useMemo(() => buildSchedule(tournamentFixtures, filter), [filter]);
 
   return (
     <TournamentScreenFrame tournamentId={id ?? 't1'} section="matches">
-      <SegmentedControl options={stageOptions} selected={stage} onSelect={setStage} accessibilityLabel="Stage" />
-      {groups.map((group) => (
-        <FixtureGroupSection key={group.title} group={group} />
-      ))}
+      <AppTabs tabs={scheduleTabs} selected={filter} onSelect={setFilter} />
+      {groups.length > 0 ? (
+        groups.map((group) => <ScheduleGroupSection key={group.state} group={group} showTitle={filter === 'all'} />)
+      ) : (
+        <Text muted accessibilityLiveRegion="polite">
+          {emptyScheduleText[filter]}
+        </Text>
+      )}
     </TournamentScreenFrame>
   );
 }

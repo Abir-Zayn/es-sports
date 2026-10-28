@@ -8,10 +8,16 @@ import { useTournamentRoutes } from '../use-tournament-routes';
 import { TournamentCompactHeader } from './tournament-compact-header';
 import { TournamentSectionTabs } from './tournament-section-tabs';
 
-type Props = { tournamentId: string; section: TournamentSectionId; children: ReactNode };
+type Props = {
+  tournamentId: string;
+  section: TournamentSectionId;
+  /** Lets the content run edge to edge, with no side gutter. */
+  flush?: boolean;
+  children: ReactNode;
+};
 
 /** Shared shell of a tournament's inner screens: compact header, section tabs, then the screen's own content. */
-export function TournamentScreenFrame({ tournamentId, section, children }: Props) {
+export function TournamentScreenFrame({ tournamentId, section, flush = false, children }: Props) {
   const styles = useThemedStyles(createStyles);
   const tournament = getTournamentOverview(tournamentId);
   const { goBack } = useTournamentRoutes(tournamentId);
@@ -26,7 +32,7 @@ export function TournamentScreenFrame({ tournamentId, section, children }: Props
         onBack={goBack}
       />
       <TournamentSectionTabs tournamentId={tournamentId} selected={section} />
-      <View style={styles.body}>{children}</View>
+      <View style={[styles.body, flush && styles.flush]}>{children}</View>
     </ScrollView>
   );
 }
@@ -36,4 +42,5 @@ const createStyles = (colors: Palette) =>
     screen: { flex: 1, backgroundColor: colors.background },
     content: { paddingBottom: spacing.xxl + spacing.xl },
     body: { paddingHorizontal: sizes.gutter, paddingTop: spacing.lg, gap: 18 },
+    flush: { paddingHorizontal: 0, paddingTop: 0 },
   });

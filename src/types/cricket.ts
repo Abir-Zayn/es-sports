@@ -78,27 +78,33 @@ export type TournamentOverview = {
   results: MatchResult[];
 };
 
-export type FixtureStage = 'league' | 'knockout';
 export type FixtureState = 'live' | 'upcoming' | 'result';
 
-export type FixtureSide = { team: TeamInfo; score: string; emphasised: boolean };
+export type FixtureSide = {
+  team: TeamInfo;
+  /** Runs and wickets as shown, e.g. "176/6". Empty before the side has batted. */
+  score: string;
+  /** Overs faced as shown, e.g. "20" or "15.2". Shown beside the score of a finished match. */
+  overs?: string;
+  emphasised: boolean;
+};
 
 /** One match in a tournament's schedule, whether live, still to play, or finished. */
 export type Fixture = {
   id: string;
   state: FixtureState;
-  /** Match number and date, e.g. "MATCH 13 · FRI 24 OCT". */
-  label: string;
-  /** Start time as shown, e.g. "4:00 PM". Only for matches not yet played. */
+  /** Which match it is, e.g. "Match 13" or "Semi-final 1". */
+  title: string;
+  /** The calendar date, "YYYY-MM-DD". Upcoming matches are grouped by its month and show its day and weekday. */
+  date: string;
+  /** The day as shown, e.g. "Fri, 24 Oct" or "Yesterday". Results are grouped under it. */
+  day: string;
+  /** Start time as shown, e.g. "4:00 PM". For matches not yet played and finished ones. */
   time?: string;
   sides: [FixtureSide, FixtureSide];
   /** Bottom line: what the game needs, who won, or the ground. */
   note: string;
 };
-
-export type FixtureGroup = { title: string; stage: FixtureStage; fixtures: Fixture[] };
-
-export type FormResult = 'W' | 'L';
 
 export type PointsRow = {
   pos: number;
@@ -106,27 +112,18 @@ export type PointsRow = {
   played: number;
   won: number;
   lost: number;
+  /** Ties and abandoned matches. Played is won + lost + no result. */
+  noResult: number;
   nrr: string;
   points: number;
-  /** Most recent results, oldest first. */
-  form: FormResult[];
 };
 
-export type BracketSide = { seed: string; name: string; tone: AvatarTone };
-
-export type SemiFinal = { id: string; label: string; sides: [BracketSide, BracketSide] };
-
 export type PointsTableData = {
-  title: string;
-  /** Progress line, e.g. "After 11 matches". */
-  progress: string;
   /** How many teams from the top go through. */
   qualifyCount: number;
   qualifyNote: string;
   rules: string;
   rows: PointsRow[];
-  semis: SemiFinal[];
-  final: { date: string; caption: string };
 };
 
 export type StatMode = 'bat' | 'bowl';
