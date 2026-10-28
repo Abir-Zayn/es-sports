@@ -1,5 +1,3 @@
-import { ComingSoonScreen } from '@/components/coming-soon-screen';
+import { MatchesScreen } from '@/features/matches/matches-screen';
 
-export default function MatchesTab() {
-  return <ComingSoonScreen title="Matches" />;
-}
+export default MatchesScreen;

@@ -10,7 +10,7 @@ type Props = { rows: StandingRow[] };
 export function StandingsTable({ rows }: Props) {
   const styles = useThemedStyles(createStyles);
   return (
-    <View style={styles.table}>
+    <View>
       <View style={[styles.row, styles.head]}>
         <Text style={[styles.headText, styles.pos]}>#</Text>
         <Text style={[styles.headText, styles.team]}>TEAM</Text>
@@ -38,8 +38,7 @@ export function StandingsTable({ rows }: Props) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    table: { borderRadius: 20, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
-    row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 14 },
+    row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
     head: { borderBottomWidth: 1, borderBottomColor: colors.border },
     rowDivider: { borderBottomWidth: 1, borderBottomColor: colors.border },
     headText: { fontSize: 11, lineHeight: 14, fontWeight: '700', letterSpacing: 1, color: colors.textMuted },

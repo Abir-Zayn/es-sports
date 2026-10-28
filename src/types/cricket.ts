@@ -40,9 +40,12 @@ export type StandingRow = { pos: number; team: TeamInfo; played: number; points:
 
 export type Performer = {
   id: string;
-  /** What they lead in, e.g. "MOST RUNS". */
+  /** What they lead in, e.g. "Highest runs". */
   label: string;
   initials: string;
+  /** Colour of the initials fallback, and the photo when there is one. A team leader uses its team's. */
+  tone?: AvatarTone;
+  imageUri?: string;
   name: string;
   team: string;
   value: string;
@@ -72,10 +75,17 @@ export type TournamentOverview = {
   format: string;
   statusLabel: string;
   progress: string;
+  /** Matches finished so far and in the whole tournament, for the progress bar. */
+  matchesPlayed: number;
+  matchesTotal: number;
+  teamCount: number;
+  /** Date of the final as shown, e.g. "30 Nov". */
+  finalDate: string;
   live: { label: string; match: LiveMatch };
   standings: StandingRow[];
   performers: Performer[];
-  results: MatchResult[];
+  /** Finished matches, newest first. */
+  results: Fixture[];
 };
 
 export type FixtureState = 'live' | 'upcoming' | 'result';

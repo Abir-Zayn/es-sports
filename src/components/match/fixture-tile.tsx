@@ -39,29 +39,32 @@ export function FixtureTile({ fixture, onPress }: Props) {
         <Text style={styles.weekday}>{weekday}</Text>
       </View>
       <View style={styles.body}>
-        <View style={styles.line}>
-          <Text style={styles.versus}>vs</Text>
-          <View style={styles.column}>
-            <View style={styles.nameLine}>
-              <Text style={[styles.first, styles.shrink]} numberOfLines={1}>
-                {one.team.name}
+        {/* Beside the whole block, so it stays level with the date circle when a result line is shown. */}
+        <Text style={styles.versus}>vs</Text>
+        <View style={styles.main}>
+          <View style={styles.line}>
+            <View style={styles.column}>
+              <View style={styles.nameLine}>
+                <Text style={[styles.first, styles.shrink]} numberOfLines={1}>
+                  {one.team.name}
+                </Text>
+                {live ? <AppBadge dot label="LIVE" backgroundColor={colors.live} color={colors.onLive} /> : null}
+              </View>
+              <Text style={styles.second} numberOfLines={1}>
+                {two.team.name}
               </Text>
-              {live ? <AppBadge dot label="LIVE" backgroundColor={colors.live} color={colors.onLive} /> : null}
             </View>
-            <Text style={styles.second} numberOfLines={1}>
-              {two.team.name}
-            </Text>
+            {played ? (
+              <View style={styles.scores}>
+                <Text style={[styles.first, styles.figure, !one.emphasised && styles.dim]}>{scoreText(one)}</Text>
+                <Text style={[styles.second, styles.figure, !two.emphasised && styles.dim]}>{scoreText(two)}</Text>
+              </View>
+            ) : null}
+            {played && fixture.time ? <View style={styles.rule} /> : null}
+            {fixture.time ? <Text style={styles.time}>{fixture.time}</Text> : null}
           </View>
-          {played ? (
-            <View style={styles.scores}>
-              <Text style={[styles.first, styles.figure, !one.emphasised && styles.dim]}>{scoreText(one)}</Text>
-              <Text style={[styles.second, styles.figure, !two.emphasised && styles.dim]}>{scoreText(two)}</Text>
-            </View>
-          ) : null}
-          {played && fixture.time ? <View style={styles.rule} /> : null}
-          {fixture.time ? <Text style={styles.time}>{fixture.time}</Text> : null}
+          {played && fixture.note ? <Text style={styles.result}>{fixture.note}</Text> : null}
         </View>
-        {played && fixture.note ? <Text style={styles.result}>{fixture.note}</Text> : null}
       </View>
     </Pressable>
   );
@@ -77,25 +80,38 @@ const createStyles = (colors: Palette) =>
       width: CIRCLE,
       height: CIRCLE,
       borderRadius: radius.pill,
-      backgroundColor: colors.primarySoft,
+      backgroundColor: colors.surfaceRaised,
       alignItems: 'center',
       justifyContent: 'center',
     },
     day: { fontSize: 13, lineHeight: 15, fontWeight: '800', color: colors.text },
-    weekday: { fontSize: 8, lineHeight: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.3, color: colors.link },
+    weekday: { fontSize: 8, lineHeight: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.3, color: colors.textMuted },
     body: {
       flex: 1,
       minWidth: 0,
       alignSelf: 'stretch',
-      justifyContent: 'center',
-      gap: 4,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
       marginLeft: spacing.sm,
       paddingVertical: 9,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
+    main: { flex: 1, minWidth: 0, gap: 4 },
     line: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-    versus: { width: 18, fontSize: 12, lineHeight: 16, fontWeight: '500', color: colors.textMuted },
+    // The line box hugs the glyphs (no Android font padding), and a lowercase word with no ascenders sits low
+    // in it, so a small bottom pad lifts "vs" to the optical middle of the block beside it.
+    versus: {
+      width: 18,
+      fontSize: 12,
+      lineHeight: 12,
+      paddingBottom: 2,
+      fontWeight: '500',
+      color: colors.textMuted,
+      includeFontPadding: false,
+      textAlignVertical: 'center',
+    },
     column: { flex: 1, minWidth: 0, gap: 1 },
     nameLine: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
     shrink: { flexShrink: 1 },
@@ -106,5 +122,5 @@ const createStyles = (colors: Palette) =>
     dim: { color: colors.textMuted },
     rule: { alignSelf: 'stretch', width: 1, marginVertical: 2, backgroundColor: colors.border },
     time: { fontSize: 12, lineHeight: 16, fontWeight: '700', color: colors.text, textAlign: 'right' },
-    result: { marginLeft: 26, fontSize: 12, lineHeight: 16, fontWeight: '600', color: colors.link },
+    result: { fontSize: 12, lineHeight: 16, fontWeight: '600', color: colors.link },
   });
