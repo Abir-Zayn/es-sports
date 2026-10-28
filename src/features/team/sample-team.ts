@@ -1,9 +1,41 @@
 // TODO: replace with data from Supabase once the project and tables exist. Sample values from the design file.
 import { blasters, hawks, kings, lions, riders, strikers, titans } from '@/features/tournament/sample-teams';
 
-import type { SquadPlayer, TeamMatch, TeamMember, TeamProfile } from './types';
+import type { PlayerCareerStats, SquadPlayer, TeamMatch, TeamMember, TeamProfile } from './types';
 
-const player = (name: string, role: string, tag?: string): SquadPlayer => ({ name, role, tag });
+const PLAYER_STATS_MAP: Record<string, PlayerCareerStats> = {
+  'Rafi Hasan': { highestRun: '86*', totalMatches: 14, totalWickets: 2, avg: '44.5' },
+  'Tanvir Hossain': { highestRun: '74', totalMatches: 12, totalWickets: 0, avg: '38.2' },
+  'Mehrab Hossain': { highestRun: '62*', totalMatches: 14, totalWickets: 0, avg: '32.0' },
+  'Sakib Mahmud': { highestRun: '58', totalMatches: 13, totalWickets: 11, avg: '31.4' },
+  'Arafat Sunny': { highestRun: '45*', totalMatches: 14, totalWickets: 16, avg: '27.8' },
+  'Rony Talukdar': { highestRun: '52', totalMatches: 11, totalWickets: 8, avg: '26.5' },
+  'Imran Kayes': { highestRun: '41', totalMatches: 10, totalWickets: 7, avg: '22.3' },
+  'Sohan Ali': { highestRun: '18*', totalMatches: 12, totalWickets: 15, avg: '17.4' },
+  'Liton Roy': { highestRun: '14', totalMatches: 13, totalWickets: 14, avg: '19.1' },
+  'Akib Javed': { highestRun: '12*', totalMatches: 11, totalWickets: 13, avg: '16.8' },
+  'Nayeem Islam': { highestRun: '22', totalMatches: 14, totalWickets: 18, avg: '15.2' },
+  'Jahid Alam': { highestRun: '34', totalMatches: 6, totalWickets: 0, avg: '21.0' },
+  'Fahad Reza': { highestRun: '15*', totalMatches: 8, totalWickets: 9, avg: '18.5' },
+  'Ripon Das': { highestRun: '28', totalMatches: 5, totalWickets: 3, avg: '23.0' },
+  'Saif Uddin': { highestRun: '16', totalMatches: 7, totalWickets: 8, avg: '17.0' },
+};
+
+export function getPlayerStats(name: string): PlayerCareerStats {
+  return PLAYER_STATS_MAP[name] ?? {
+    highestRun: '35*',
+    totalMatches: 8,
+    totalWickets: 4,
+    avg: '24.5',
+  };
+}
+
+const player = (name: string, role: string, tag?: string): SquadPlayer => ({
+  name,
+  role,
+  tag,
+  stats: getPlayerStats(name),
+});
 
 const member = (name: string, kind: TeamMember['kind'], detail: string, tag?: TeamMember['tag']): TeamMember => ({
   name,

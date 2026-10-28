@@ -31,11 +31,19 @@ export type KeyPlayer = {
   unit: string;
 };
 
+export type PlayerCareerStats = {
+  highestRun: string;
+  totalMatches: number;
+  totalWickets: number;
+  avg: string;
+};
+
 export type SquadPlayer = {
   name: string;
   role: string;
   /** Badge on the avatar: "C" for captain, "WK" for keeper. */
   tag?: string;
+  stats?: PlayerCareerStats;
 };
 
 export type MemberKind = 'bat' | 'ar' | 'bowl' | 'staff';
