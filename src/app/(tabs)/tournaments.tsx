@@ -1,5 +1,2 @@
-import { ComingSoonScreen } from '@/components/coming-soon-screen';
-
-export default function TournamentsTab() {
-  return <ComingSoonScreen title="Tournaments" />;
-}
+export { ErrorBoundary } from 'expo-router';
+export { TournamentDraftsScreen as default } from '@/features/tournament/create';
