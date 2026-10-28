@@ -43,4 +43,16 @@ describe('account-scoped tournament draft storage', () => {
     expect(discardCover).toHaveBeenCalledWith('player-a', 'file:///new-cover.jpg');
     expect(discardCover).not.toHaveBeenCalledWith('player-a', 'file:///old-cover.jpg');
   });
+  it('persists both photos with distinct destinations', async () => {
+    const photos = { ...emptyDraft, coverUri: 'file:///cover.jpg', profileUri: 'file:///profile.jpg' };
+    await expect(saveDraft('player-a', photos)).resolves.toEqual(photos);
+    expect(persistCover).toHaveBeenCalledWith('player-a', photos.coverUri);
+    expect(persistCover).toHaveBeenCalledWith('player-a', photos.profileUri, 'profile');
+  });
+  it('cleans up a new cover if the profile photo fails before metadata is written', async () => {
+    jest.mocked(persistCover).mockResolvedValueOnce('file:///new-cover.jpg').mockRejectedValueOnce(new Error('Photo copy failed'));
+    await expect(saveDraft('player-a', { ...emptyDraft, coverUri: 'file:///picked.jpg', profileUri: 'file:///profile.jpg' })).rejects.toThrow('Photo copy failed');
+    expect(discardCover).toHaveBeenCalledWith('player-a', 'file:///new-cover.jpg');
+    expect(setItem).not.toHaveBeenCalled();
+  });
 });

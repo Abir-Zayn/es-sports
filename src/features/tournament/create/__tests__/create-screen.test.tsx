@@ -40,14 +40,17 @@ describe('create tournament form', () => {
     jest.clearAllMocks(); load.mockResolvedValue(null); save.mockImplementation(async (_id, draft) => draft);
     pick.mockResolvedValue({ canceled: true, assets: null });
   });
-  it('shows all requested fields together and marks Add teams as deferred', async () => {
+  it('shows all requested fields together, with Add teams opening the teams screen', async () => {
     await show();
     expect(await screen.findByRole('button', { name: 'Add tournament cover' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Add tournament profile photo' })).toBeTruthy();
+    expect(screen.queryByText('Add tournament cover')).toBeNull();
     expect(screen.getByLabelText('Tournament name')).toBeTruthy();
     for (const name of ['Start date, Choose a date', 'End date, Choose a date', 'Match format, T20', 'Knockout type, League + knockout', 'Number of teams, 8 teams']) {
       expect(screen.getByRole('button', { name })).toBeTruthy();
     }
-    expect(screen.getByRole('button', { name: 'Add teams, coming next' }).props.accessibilityState.disabled).toBe(true);
+    await fireEvent.press(screen.getByRole('button', { name: 'Add teams and staff' }));
+    expect(mockPush).toHaveBeenLastCalledWith({ pathname: '/tournament/add-teams', params: { teams: '8', name: '' } });
     expect(screen.queryByText('Continue to format')).toBeNull();
   });
   it('validates and saves the form with the selected format', async () => {
@@ -85,6 +88,16 @@ describe('create tournament form', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Change tournament cover' })).toBeTruthy());
     await fireEvent.press(screen.getByRole('button', { name: 'Save tournament draft' }));
     await waitFor(() => expect(save).toHaveBeenCalledWith('organizer', { ...valid, coverUri: 'file:///picked.jpg' }));
+  });
+  it('selects the tournament profile photo independently of the cover', async () => {
+    load.mockResolvedValue({ ...valid, coverUri: 'file:///cover.jpg' });
+    pick.mockResolvedValue({ canceled: false, assets: [{ uri: 'file:///profile.jpg', width: 600, height: 600 }] });
+    await show();
+    await fireEvent.press(await screen.findByRole('button', { name: 'Add tournament profile photo' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Change tournament profile photo' })).toBeTruthy());
+    expect(pick).toHaveBeenCalledWith(expect.objectContaining({ aspect: [1, 1], allowsEditing: true }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Save tournament draft' }));
+    await waitFor(() => expect(save).toHaveBeenCalledWith('organizer', { ...valid, coverUri: 'file:///cover.jpg', profileUri: 'file:///profile.jpg' }));
   });
   it('preserves existing values when photo selection or saving fails', async () => {
     load.mockResolvedValue(valid); pick.mockRejectedValue(new Error('Photos unavailable')); save.mockRejectedValue(new Error('Storage unavailable'));

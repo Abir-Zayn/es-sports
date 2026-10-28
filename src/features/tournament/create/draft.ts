@@ -16,6 +16,7 @@ export const draftSchema = z.object({
   startDate: z.string().max(10),
   endDate: z.string().max(10).default(''),
   coverUri: z.string().max(3_000_000).default(''),
+  profileUri: z.string().max(3_000_000).default(''),
   matchFormat: z.enum(matchFormats),
   competition: z.enum(['league-knockout', 'league', 'knockout']),
   teams: z.union([z.literal(4), z.literal(6), z.literal(8), z.literal(12), z.literal(16)]),
@@ -24,7 +25,7 @@ export const draftSchema = z.object({
 export type TournamentDraft = z.infer<typeof draftSchema>;
 export type DraftErrors = Partial<Record<keyof TournamentDraft, string>>;
 export const emptyDraft: TournamentDraft = {
-  version: 1, name: '', city: '', venue: '', startDate: '', endDate: '', coverUri: '',
+  version: 1, name: '', city: '', venue: '', startDate: '', endDate: '', coverUri: '', profileUri: '',
   matchFormat: 'T20', competition: 'league-knockout', teams: 8, ball: 'Tennis',
 };
 

@@ -3,26 +3,34 @@ import MapPin from 'lucide-react-native/icons/map-pin';
 import Plus from 'lucide-react-native/icons/plus';
 import Users from 'lucide-react-native/icons/users';
 import Volleyball from 'lucide-react-native/icons/volleyball';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { Text } from '@/components/ui';
 import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import { CoverPicker } from './cover-picker';
+import { CoverPicker, ProfilePhotoPicker } from './cover-picker';
 import { DatePicker } from './date-picker';
 import { competitionFormats, matchFormats, teamCounts, type DraftErrors, type TournamentDraft } from './draft';
 import { CardDivider, SelectionField, SettingsCard } from './settings-card';
 
 type Props = {
-  draft: TournamentDraft; errors: DraftErrors; onBusyChange: (busy: boolean) => void;
+  draft: TournamentDraft; errors: DraftErrors; onBusyChange: (busy: boolean) => void; onAddTeams: () => void;
   onChange: <K extends keyof TournamentDraft>(key: K, value: TournamentDraft[K]) => void;
 };
 
-export function TournamentFields({ draft, errors, onChange, onBusyChange }: Props) {
+export function TournamentFields({ draft, errors, onChange, onBusyChange, onAddTeams }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
+  const [photoError, setPhotoError] = useState('');
   return <View style={styles.stack}>
-    <CoverPicker uri={draft.coverUri} onChange={(uri) => onChange('coverUri', uri)} onBusyChange={onBusyChange} />
+    <View>
+      <View style={styles.artwork}>
+        <CoverPicker uri={draft.coverUri} onChange={(uri) => onChange('coverUri', uri)} onBusyChange={onBusyChange} onError={setPhotoError} />
+        <ProfilePhotoPicker uri={draft.profileUri} onChange={(uri) => onChange('profileUri', uri)} onBusyChange={onBusyChange} onError={setPhotoError} />
+      </View>
+      {photoError ? <Text variant="caption" accessibilityRole="alert" style={styles.error}>{photoError}</Text> : null}
+    </View>
     <View style={styles.nameWrap}>
       <TextInput accessibilityLabel="Tournament name" placeholder="Tournament name…" placeholderTextColor={colors.textMuted}
         selectionColor={colors.primary} value={draft.name} onChangeText={(name) => onChange('name', name)} maxLength={80}
@@ -52,21 +60,24 @@ export function TournamentFields({ draft, errors, onChange, onBusyChange }: Prop
       {errors.teams ? <Text variant="caption" style={[styles.error, styles.locationError]} accessibilityLiveRegion="polite">{errors.teams}</Text> : null}
     </SettingsCard>
     <SettingsCard>
-      <View style={styles.addTeams} accessible accessibilityRole="button" accessibilityLabel="Add teams, coming next" accessibilityState={{ disabled: true }}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Add teams and staff" onPress={onAddTeams}
+        style={({ pressed }) => [styles.addTeams, pressed && styles.pressed]}>
         <Users size={20} color={colors.textMuted} strokeWidth={1.6} />
-        <View style={styles.addCopy}><Text muted>Add teams</Text><Text variant="caption" muted>Team selection is coming next</Text></View>
-        <Plus size={19} color={colors.textMuted} />
-      </View>
+        <View style={styles.addCopy}><Text>Add teams</Text><Text variant="caption" muted>Create teams, invite team owners and moderators</Text></View>
+        <Plus size={19} color={colors.link} />
+      </Pressable>
     </SettingsCard>
     <Text variant="caption" muted style={styles.note}>Save a private draft on this device. Your tournament is not published yet.</Text>
   </View>;
 }
 const createStyles = (colors: Palette) => StyleSheet.create({
   stack: { gap: spacing.xl }, nameWrap: { gap: spacing.sm },
-  name: { fontSize: 28, lineHeight: 36, fontWeight: '700', color: colors.text, paddingVertical: spacing.sm, paddingHorizontal: 0, minHeight: 56, textAlignVertical: 'top' },
+  artwork: { paddingBottom: 28 },
+  name: { fontSize: 20, lineHeight: 28, fontWeight: '500', color: colors.text, paddingVertical: spacing.sm, paddingHorizontal: 0, minHeight: 48, textAlignVertical: 'center' },
   locationHeading: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, paddingBottom: 0 },
   locationInput: { minHeight: 54, fontSize: 16, color: colors.text, marginLeft: 48, paddingRight: spacing.lg, paddingVertical: spacing.md },
   error: { color: colors.dangerSoftText }, locationError: { paddingHorizontal: spacing.lg, paddingBottom: spacing.md },
   addTeams: { minHeight: 76, padding: spacing.lg, flexDirection: 'row', alignItems: 'center', gap: spacing.md }, addCopy: { flex: 1, gap: spacing.xs },
+  pressed: { opacity: 0.65 },
   note: { textAlign: 'center', paddingHorizontal: spacing.lg },
 });

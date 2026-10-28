@@ -22,7 +22,7 @@ describe('tournament form validation', () => {
     expect(validateDraft({ ...valid, competition: 'league', teams: 6 }, '2030-11-02')).toEqual({});
   });
   it('restores older drafts with empty cover and end date fields', () => {
-    const { coverUri, endDate, ...legacy } = emptyDraft;
-    expect(draftSchema.parse(legacy)).toEqual({ ...legacy, coverUri, endDate });
+    const { coverUri, endDate, profileUri, ...legacy } = emptyDraft;
+    expect(draftSchema.parse(legacy)).toEqual({ ...legacy, coverUri, endDate, profileUri });
   });
 });

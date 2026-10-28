@@ -29,7 +29,7 @@ export function DatePicker({ label = 'Start date', value, onChange, error, minim
     <Pressable accessibilityRole="button" accessibilityLabel={`${label}, ${formatDate(value)}`} onPress={showCalendar}
       style={({ pressed }) => [styles.field, Boolean(error) && styles.invalid, pressed && styles.pressed]}>
       <View style={styles.marker} />
-      <Text muted style={styles.flex}>{label}</Text>
+      <Text muted style={styles.label}>{label}</Text>
       <Text style={styles.value} muted={!value}>{value ? formatDate(value) : 'Select date'}</Text>
     </Pressable>
     {error ? <Text variant="caption" style={styles.error} accessibilityLiveRegion="polite">{error}</Text> : null}
@@ -64,11 +64,11 @@ export function DatePicker({ label = 'Start date', value, onChange, error, minim
   </View>;
 }
 const createStyles = (colors: Palette) => StyleSheet.create({
-  wrap: { gap: spacing.xs }, flex: { flex: 1 },
-  field: { minHeight: 64, paddingHorizontal: spacing.lg, flexDirection: 'row', alignItems: 'center', gap: spacing.md, flexWrap: 'wrap' },
+  wrap: { gap: spacing.xs }, label: { flex: 1, lineHeight: 22, includeFontPadding: false, textAlignVertical: 'center' },
+  field: { minHeight: 64, paddingHorizontal: spacing.lg, paddingVertical: spacing.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
   marker: { width: 8, height: 8, borderRadius: 4, borderWidth: 1.5, borderColor: colors.outline },
-  value: { fontWeight: '500' },
-  invalid: { borderColor: colors.danger }, error: { color: colors.dangerSoftText },
+  value: { flexShrink: 1, fontWeight: '500', lineHeight: 22, textAlign: 'right', textAlignVertical: 'center', includeFontPadding: false },
+  invalid: { borderColor: colors.danger }, error: { color: colors.dangerSoftText, paddingHorizontal: spacing.lg, paddingBottom: spacing.sm },
   overlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
   sheet: { backgroundColor: colors.background, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, paddingTop: spacing.xl },
   month: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.md },

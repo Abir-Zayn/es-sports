@@ -22,24 +22,30 @@ export async function loadDraft(userId: string): Promise<TournamentDraft | null>
 export async function saveDraft(userId: string, draft: TournamentDraft): Promise<TournamentDraft> {
   const validated = draftSchema.parse(draft);
   const previous = await loadDraft(userId);
-  const coverUri = await persistCover(userId, validated.coverUri);
-  const stored = { ...validated, coverUri, name: validated.name.trim(), city: validated.city.trim(), venue: validated.venue.trim() };
-  const value = JSON.stringify(stored);
+  const created: string[] = [];
   try {
+    const coverUri = await persistCover(userId, validated.coverUri);
+    if (coverUri !== validated.coverUri) created.push(coverUri);
+    const profileUri = await persistCover(userId, validated.profileUri, 'profile');
+    if (profileUri !== validated.profileUri) created.push(profileUri);
+    const stored = { ...validated, coverUri, profileUri, name: validated.name.trim(), city: validated.city.trim(), venue: validated.venue.trim() };
+    const value = JSON.stringify(stored);
     if (Platform.OS === 'web') globalThis.localStorage.setItem(storageKey(userId), value);
     else {
       if (new TextEncoder().encode(value).length > 2048) throw new Error('Tournament draft is too large to save.');
       await SecureStore.setItemAsync(storageKey(userId), value);
     }
+    // Old images are removed only after metadata commits, and only if neither photo still uses them.
+    for (const uri of new Set([previous?.coverUri, previous?.profileUri])) {
+      if (uri && uri !== coverUri && uri !== profileUri) {
+        try { discardCover(userId, uri); } catch {}
+      }
+    }
+    return stored;
   } catch (error) {
-    if (coverUri !== validated.coverUri) {
-      try { discardCover(userId, coverUri); } catch {}
+    for (const uri of created) {
+      try { discardCover(userId, uri); } catch {}
     }
     throw error;
   }
-  // Failed image cleanup must not turn a successfully stored draft into a save error.
-  if (previous?.coverUri && previous.coverUri !== coverUri) {
-    try { discardCover(userId, previous.coverUri); } catch {}
-  }
-  return stored;
 }

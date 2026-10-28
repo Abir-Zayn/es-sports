@@ -94,7 +94,8 @@ function TournamentForm({ userId, initial }: { userId: string; initial: Tourname
     <ScrollView ref={scroll} style={styles.flex} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}
       keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" showsVerticalScrollIndicator={false}>
       <View pointerEvents={mutation.isPending ? 'none' : 'auto'}>
-        <TournamentFields draft={draft} errors={errors} onChange={change} onBusyChange={setPickingCover} />
+        <TournamentFields draft={draft} errors={errors} onChange={change} onBusyChange={setPickingCover}
+          onAddTeams={() => router.push({ pathname: '/tournament/add-teams', params: { teams: String(draft.teams), name: draft.name } })} />
       </View>
       {Object.values(errors).some(Boolean) ? <Text accessibilityRole="alert" style={styles.error}>Check the highlighted fields to save your tournament.</Text> : null}
       {mutation.isError ? <Text accessibilityRole="alert" style={styles.error}>Could not save your draft. Your entries are still here. Please try again.</Text> : null}

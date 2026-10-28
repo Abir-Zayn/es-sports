@@ -40,4 +40,12 @@ describe('persistent tournament covers', () => {
     await expect(persistCover('player-a', 'file:///cache/picked.jpg')).rejects.toThrow('Disk full');
     expect(mockDelete).toHaveBeenCalledTimes(1);
   });
+  it('uses a separate filename for the tournament profile photo', async () => {
+    const cover = await persistCover('player-a', 'file:///cache/cover.jpg');
+    const profile = await persistCover('player-a', 'file:///cache/profile.jpg', 'profile');
+    expect(profile).toMatch(/\/profile-\d+\.jpg$/);
+    expect(profile).not.toBe(cover);
+    discardCover('player-a', profile);
+    expect(mockDelete).toHaveBeenCalledWith(profile);
+  });
 });
