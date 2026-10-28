@@ -1,12 +1,14 @@
 // TODO: replace with data from Supabase once the project and tables exist. All sample values from the design file.
 import type { TournamentOverview } from '@/types/cricket';
 
-import { blasters, hawks, kings, riders, strikers } from './sample-teams';
+import { tournamentFixtures } from './sample-matches';
+import { hawks, kings, riders, strikers } from './sample-teams';
 
 export const tournamentSections = [
   { id: 'overview', label: 'Overview' },
   { id: 'matches', label: 'Matches' },
   { id: 'table', label: 'Table' },
+  { id: 'knockout', label: 'Knockout' },
   { id: 'stats', label: 'Stats' },
   { id: 'teams', label: 'Teams' },
 ] as const;
@@ -22,6 +24,10 @@ const hsf: TournamentOverview = {
   format: 'League + Knockout · T20',
   statusLabel: 'Ongoing',
   progress: 'Match 12 of 31 · Final on 30 Nov',
+  matchesPlayed: 11,
+  matchesTotal: 31,
+  teamCount: 8,
+  finalDate: '30 Nov',
   live: {
     label: 'MATCH 12 · LEAGUE',
     match: {
@@ -42,32 +48,35 @@ const hsf: TournamentOverview = {
     { pos: 4, team: hawks, played: 5, points: 6, nrr: '-0.105' },
   ],
   performers: [
-    { id: 'runs', label: 'MOST RUNS', initials: 'RH', name: 'Rafi Hasan', team: 'Chattogram Strikers', value: '312', unit: 'runs' },
-    { id: 'wickets', label: 'MOST WICKETS', initials: 'NI', name: 'Nayeem Islam', team: 'Chattogram Strikers', value: '14', unit: 'wickets' },
-  ],
-  results: [
+    { id: 'runs', label: 'Highest runs', initials: 'RH', name: 'Rafi Hasan', team: 'Chattogram Strikers', value: '312', unit: 'runs' },
+    { id: 'wickets', label: 'Highest wickets', initials: 'NI', name: 'Nayeem Islam', team: 'Chattogram Strikers', value: '14', unit: 'wickets' },
     {
-      id: 'm11',
-      label: 'MATCH 11 · YESTERDAY',
-      result: 'Strikers won by 18 runs',
-      teams: [
-        { team: strikers, score: '176/6', won: true },
-        { team: hawks, score: '158/9', won: false },
-      ],
-    },
-    {
-      id: 'm10',
-      label: 'MATCH 10 · 19 OCT',
-      result: 'Riders won by 5 wickets',
-      teams: [
-        { team: blasters, score: '131/8', won: false },
-        { team: riders, score: '134/5', won: true },
-      ],
+      id: 'team-total',
+      label: 'Highest team total',
+      initials: strikers.short,
+      tone: strikers.tone,
+      name: strikers.name,
+      team: strikers.name,
+      value: '176/6',
+      unit: '20 overs',
     },
   ],
+  // The same finished matches the Matches section lists, newest first.
+  results: tournamentFixtures.filter((fixture) => fixture.state === 'result'),
 };
 
-/** Every id shows the HSF sample until real tournaments exist. */
+/** Tournament overview data. Shows UEFA Champions League or sample tournament. */
 export function getTournamentOverview(id: string): TournamentOverview {
+  if (id === 'ucl') {
+    return {
+      ...hsf,
+      id: 'ucl',
+      short: 'UCL',
+      name: 'UEFA Champions League',
+      tone: 'blue',
+      meta: 'Knockout Stage · 2024/25 Season · 16 Teams',
+      format: '2024/25',
+    };
+  }
   return { ...hsf, id };
 }

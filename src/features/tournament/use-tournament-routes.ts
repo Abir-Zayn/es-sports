@@ -14,6 +14,8 @@ export function useTournamentRoutes(id: string) {
         return router.replace({ pathname: '/tournament/[id]/matches', params: { id } });
       case 'table':
         return router.replace({ pathname: '/tournament/[id]/table', params: { id } });
+      case 'knockout':
+        return router.replace({ pathname: '/tournament/[id]/knockout', params: { id } });
       case 'stats':
         return router.replace({ pathname: '/tournament/[id]/stats', params: { id } });
       case 'teams':

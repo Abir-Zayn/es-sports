@@ -7,7 +7,6 @@ import type { ComponentRef, ComponentType, Ref } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Text } from '@/components/ui';
 import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { BallIcon } from './ball-icon';
@@ -29,7 +28,6 @@ function TabButton({ label, icon: Icon, isFocused, ref, ...props }: TabButtonPro
     // The router types `ref` against a different element type than Pressable's; they are the same host view.
     <Pressable {...props} ref={ref as unknown as Ref<ComponentRef<typeof Pressable>>} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected: !!isFocused }} style={styles.tab}>
       <Icon size={22} color={color} strokeWidth={2} />
-      <Text style={[styles.tabLabel, { color, fontWeight: isFocused ? '700' : '600' }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -76,8 +74,7 @@ const createStyles = (colors: Palette) =>
       flexDirection: 'row',
       alignItems: 'center',
     },
-    tab: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.xs, height: NAV_HEIGHT },
-    tabLabel: { fontSize: 11, lineHeight: 14 },
+    tab: { flex: 1, alignItems: 'center', justifyContent: 'center', height: NAV_HEIGHT },
     createSlot: { flex: 1, alignItems: 'center' },
     create: {
       marginTop: -30,

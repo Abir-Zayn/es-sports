@@ -4,12 +4,12 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { useOpenMatch } from '@/features/match/use-match-routes';
 import { comingSoon } from '@/lib/coming-soon';
-import { sizes, spacing, useThemedStyles, type Palette } from '@/theme';
+import { spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { LiveMatchSummary } from './components/live-match-summary';
+import { SeasonProgressCard } from './components/season-progress-card';
 import { TournamentSectionTabs } from './components/tournament-section-tabs';
 import { getTournamentOverview } from './sample-data';
-import { HeadToHeadLink } from './sections/head-to-head-link';
 import { RecentResultsSection } from './sections/recent-results-section';
 import { StandingsSection } from './sections/standings-section';
 import { TopPerformersSection } from './sections/top-performers-section';
@@ -40,6 +40,12 @@ export function TournamentOverviewScreen() {
 
       <View style={styles.sections}>
         <LiveMatchSummary match={tournament.live.match} onPress={() => openMatch(tournament.live.match.id, 'live')} />
+        <SeasonProgressCard
+          played={tournament.matchesPlayed}
+          total={tournament.matchesTotal}
+          teamCount={tournament.teamCount}
+          finalDate={tournament.finalDate}
+        />
         <StandingsSection rows={tournament.standings} onFullTable={() => routes.openSection('table')} />
         <TopPerformersSection performers={tournament.performers} onAllStats={() => routes.openSection('stats')} />
         <RecentResultsSection
@@ -47,7 +53,6 @@ export function TournamentOverviewScreen() {
           onAllMatches={() => routes.openSection('matches')}
           onResultPress={(result) => openMatch(result.id, 'result')}
         />
-        <HeadToHeadLink onPress={routes.openHeadToHead} />
       </View>
     </ScrollView>
   );
@@ -57,5 +62,5 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.background },
     content: { paddingBottom: spacing.xxl + spacing.xl },
-    sections: { paddingHorizontal: sizes.gutter, paddingTop: 22, gap: 28 },
+    sections: { paddingHorizontal: spacing.lg, paddingTop: 20, gap: 24 },
   });

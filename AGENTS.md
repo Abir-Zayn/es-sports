@@ -55,3 +55,17 @@ Rules:
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
 - A committed graphify-out/graph.json is rewritten whole on every build, so a large diff to it in a pull request is expected. Do not flag it as churn or suggest skipping the graph rebuild or its hooks.
+
+<!-- actionboard:begin -->
+## ActionBoard V5 Agent Formation
+
+Run `$start-mission <objective>` to plan a mission: this session acts as Black Agent,
+spawns `green-agent` for recon, drafts the Mission Brief, Agent Assignments (with file
+ownership), Skills Gap and Risk Register, then STOPS for go/no-go. After "go" it spawns
+`red-agent`, `blue-agent` and `yellow-agent` (custom agents in `.codex/agents/`).
+
+- Only spawn the ActionBoard agents when a mission is running.
+- Specialists never spawn other agents and never commit.
+- `openshell` commands are checked by the ActionBoard hook (`.codex/hooks.json`) and
+  `.codex/rules/actionboard.rules`.
+<!-- actionboard:end -->

@@ -1,4 +1,6 @@
 import ChevronLeft from 'lucide-react-native/icons/chevron-left';
+import Star from 'lucide-react-native/icons/star';
+import { useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -13,13 +15,24 @@ type Props = {
   /** Format line under the name. */
   format: string;
   onBack: () => void;
+  rightAction?: ReactNode;
 };
 
 /** Slim header for the tournament's inner screens: back, logo, name and format. */
-export function TournamentCompactHeader({ short, name, tone, avatarUri, format, onBack }: Props) {
+export function TournamentCompactHeader({
+  short,
+  name,
+  tone,
+  avatarUri,
+  format,
+  onBack,
+  rightAction,
+}: Props) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = useThemedStyles(createStyles);
+  const [favorite, setFavorite] = useState(false);
+
   return (
     <View style={[styles.row, { paddingTop: insets.top + spacing.sm }]}>
       <AppIconTile
@@ -41,6 +54,18 @@ export function TournamentCompactHeader({ short, name, tone, avatarUri, format, 
           {format}
         </Text>
       </View>
+      {rightAction ?? (
+        <AppIconTile
+          icon={Star}
+          size={44}
+          borderRadius={radius.pill}
+          backgroundColor={colors.surface}
+          borderColor={colors.border}
+          borderWidth={1}
+          accessibilityLabel={favorite ? 'Unfavorite tournament' : 'Favorite tournament'}
+          onPress={() => setFavorite((val) => !val)}
+        />
+      )}
     </View>
   );
 }

@@ -1,24 +1,23 @@
 import { StyleSheet, View } from 'react-native';
 
-import { ResultCard } from '@/components/match/result-card';
+import { FixtureTile } from '@/components/match/fixture-tile';
 import { Section, SectionHeader } from '@/components/ui';
-import { spacing } from '@/theme';
-import type { MatchResult } from '@/types/cricket';
+import type { Fixture } from '@/types/cricket';
 
 type Props = {
-  results: MatchResult[];
+  results: Fixture[];
   onAllMatches: () => void;
-  onResultPress: (result: MatchResult) => void;
+  onResultPress: (result: Fixture) => void;
 };
 
-/** The latest finished matches. */
+/** The latest finished matches, as the same bars the Matches section uses. */
 export function RecentResultsSection({ results, onAllMatches, onResultPress }: Props) {
   return (
     <Section>
-      <SectionHeader title="Recent Results" action="All matches" onAction={onAllMatches} />
+      <SectionHeader flush compact title="Recent Results" action="All matches" onAction={onAllMatches} />
       <View style={styles.list}>
         {results.map((result) => (
-          <ResultCard key={result.id} result={result} onPress={() => onResultPress(result)} />
+          <FixtureTile key={result.id} fixture={result} onPress={() => onResultPress(result)} />
         ))}
       </View>
     </Section>
@@ -26,5 +25,5 @@ export function RecentResultsSection({ results, onAllMatches, onResultPress }: P
 }
 
 const styles = StyleSheet.create({
-  list: { gap: spacing.md },
+  list: { gap: 4 },
 });

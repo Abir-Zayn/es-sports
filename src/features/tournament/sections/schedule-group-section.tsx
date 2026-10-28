@@ -37,5 +37,5 @@ const createStyles = (colors: Palette) =>
     group: { gap: 14 },
     title: { fontSize: 12, lineHeight: 16, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase', color: colors.textMuted },
     slice: { gap: 4 },
-    heading: { fontSize: 18, lineHeight: 24, fontWeight: '800', color: colors.text },
+    heading: { fontSize: 14, lineHeight: 20, fontWeight: '700', color: colors.text },
   });

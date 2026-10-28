@@ -8,7 +8,7 @@ type Props = { rows: StandingRow[]; onFullTable: () => void };
 export function StandingsSection({ rows, onFullTable }: Props) {
   return (
     <Section>
-      <SectionHeader title="Standings" action="Full table" onAction={onFullTable} />
+      <SectionHeader flush compact title="Standings" action="Full table" onAction={onFullTable} />
       <StandingsTable rows={rows} />
     </Section>
   );
