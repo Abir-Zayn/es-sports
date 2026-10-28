@@ -29,10 +29,11 @@ function AppShell() {
           <Stack.Screen name="index" />
           <Stack.Screen name="terms" />
           <Stack.Screen name="privacy" />
+          <Stack.Screen name="reset-password" />
+          <Stack.Screen name="forgot-password" />
           <Stack.Protected guard={!session}>
             <Stack.Screen name="login" />
             <Stack.Screen name="sign-up" />
-            <Stack.Screen name="forgot-password" />
           </Stack.Protected>
           <Stack.Protected guard={!!session}>
             <Stack.Screen name="(tabs)" />

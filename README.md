@@ -33,6 +33,20 @@ Sessions persist in encrypted Expo SecureStore on native platforms. Values are c
 
 If email confirmation is enabled again, the app shows confirmation instructions and allows resending from sign-up and login. The hosted email link opens the configured Auth Site URL in the browser; the user then returns to the app to log in. Automatic email-link sign-in and password recovery are separate flows. Configure a reachable Auth Site URL and a production SMTP provider before enabling confirmation for a public release.
 
+### Password recovery
+
+From **Log in → Forgot password?**, enter the account email, open the newest reset email on the device with esSports installed, and choose and confirm a new password (at least eight characters). After saving, tap **Continue** to enter the app. The request screen offers a resend after 60 seconds and allows correcting the email address. Unknown accounts receive the same confirmation. Invalid or expired links offer a fresh request; connection failures allow retrying.
+
+Required hosted Supabase configuration (app changes do not apply these settings):
+
+- Under **Authentication → URL Configuration → Redirect URLs**, allow the exact URL `essports://reset-password`. The existing app scheme handles this in development and production builds. Use an installed build for email-link testing, rather than Expo Go.
+- Under **Authentication → Email Templates → Reset Password**, retain a link using `{{ .ConfirmationURL }}` so Supabase verifies the one-time recovery token before redirecting into the app. Keep the client's existing implicit flow; the callback expects a `type=recovery` fragment with access and refresh tokens. Do not substitute the Site URL or a plain redirect URL for the confirmation link.
+- Configure a production SMTP sender and verify delivery and rate limits. Email confirmation may remain disabled; password recovery still requires email delivery. If web support is enabled later, also allow its exact `/reset-password` URL.
+
+The reset route stays available during session establishment so signing in from the recovery link cannot redirect past the password form. It removes the fragment from navigation after verification and checks the authenticated user with Supabase before saving. Tokens and passwords are never logged. Supabase HTTP requests have a 20-second timeout and release their abort listeners and timers after completion.
+
+Manual release check: request a real email; open it with the app closed and again while it is running; change the password; sign out; confirm the old password fails and the new password succeeds. Also check an expired/used link, offline retry, resend cooldown, and opening a link while another account is signed in.
+
 ## Scripts
 
 | Command | What it does |

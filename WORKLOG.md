@@ -53,7 +53,7 @@ Entry template:
 **Open / next (in order)**
 1. Look at Settings on the phone (flush list, icons, theme switch above Log out) and say what looks off.
 2. Confirm **Allow manual linking** is on in Supabase (Authentication → Sign In / Providers). Linking worked for the user, so it likely is.
-3. Change password flow, so Google-only accounts can add a password; then the password-reset deep link (app scheme `essports` plus a Supabase redirect URL, an update-password screen, and `PASSWORD_RECOVERY` handling).
+3. Password reset link: built by Codex and reviewed (reset route `/reset-password`, resend cooldown, 20 s request timeout; see README "Password recovery"). Still to do: allow `essports://reset-password` under Supabase Authentication → URL Configuration → Redirect URLs, keep `{{ .ConfirmationURL }}` in the Reset Password email template, and run the manual release check from the README on a real build. Also still open: a Change password flow in Settings, so Google-only accounts can add a password.
 4. Replace the absolute `file:///c:/office-work/...` links in `AGENTS.md`, `CLAUDE.md`, `memory.md` and `WARP.md` with relative links (they break on GitHub and other machines).
 5. Before shipping: register the release and Google Play signing SHA-1s on the Android OAuth client, set the three `EXPO_PUBLIC_*` variables in EAS (`.env` is not uploaded), and install `expo-dev-client` if using the `development` EAS profile.
 6. Account deletion: a Supabase Edge Function plus `GoogleSignin.revokeAccess()` (Google Play requires an in-app path). The Delete account button only shows "coming soon" today.

@@ -11,6 +11,7 @@ jest.mock('@/lib/supabase', () => ({
     auth: { signInWithPassword: jest.fn(), signUp: jest.fn(), resend: jest.fn(), signOut: jest.fn(), resetPasswordForEmail: jest.fn() },
   },
 }));
+jest.mock('expo-linking', () => ({ createURL: () => 'essports://reset-password' }));
 
 const input = { email: 'player@example.com', password: 'Cricket123!', confirm: 'Cricket123!', accepted: true };
 
@@ -74,8 +75,8 @@ it('requests a reset link without revealing whether the account exists', async (
   expect(supabase.auth.resetPasswordForEmail).not.toHaveBeenCalled();
   jest.mocked(supabase.auth.resetPasswordForEmail).mockResolvedValue({ data: {}, error: null } as never);
   expect(await sendResetEmail(' player@example.com ')).toEqual({ ok: true });
-  expect(supabase.auth.resetPasswordForEmail).toHaveBeenCalledWith(input.email);
-  // Unknown accounts and unrelated server errors look identical to success.
+  expect(supabase.auth.resetPasswordForEmail).toHaveBeenCalledWith(input.email, { redirectTo: 'essports://reset-password' });
+  // Unknown accounts look identical to success.
   jest.mocked(supabase.auth.resetPasswordForEmail).mockResolvedValue({ data: null, error: { code: 'user_not_found' } } as never);
   expect(await sendResetEmail(input.email)).toEqual({ ok: true });
 });
@@ -83,6 +84,11 @@ it('requests a reset link without revealing whether the account exists', async (
 it('surfaces reset email delivery limits', async () => {
   jest.mocked(supabase.auth.resetPasswordForEmail).mockResolvedValue({ data: null, error: { code: 'over_email_send_rate_limit' } } as never);
   expect(await sendResetEmail(input.email)).toMatchObject({ ok: false, message: expect.stringContaining('Wait a minute') });
+});
+
+it.each(['unexpected_failure', 'email_provider_disabled'])('reports %s instead of claiming a reset email was sent', async (code) => {
+  jest.mocked(supabase.auth.resetPasswordForEmail).mockResolvedValue({ data: null, error: { code, message: 'private details' } } as never);
+  expect(await sendResetEmail(input.email)).toEqual({ ok: false, message: 'Couldn’t send the reset email. Try again later.' });
 });
 
 it('allows retry after a network failure when requesting a reset link', async () => {
