@@ -42,7 +42,7 @@ export function HomeScreen() {
         user={user}
         onProfile={() => router.navigate('/profile')}
         onSearch={() => router.push('/search')}
-        onNotifications={() => comingSoon('Notifications')}
+        onNotifications={() => router.push('/invitations')}
       />
       <LiveSection matches={liveMatches} onSeeAll={() => comingSoon('Live matches')} onMatchPress={(match) => openMatch(match.id, 'live')} />
       <ContractedTeams
