@@ -4,8 +4,10 @@ import { StyleSheet } from 'react-native';
 
 import { ChoiceTabs, type ChoiceTab } from '@/components/match/choice-tabs';
 import { AppTabs, Text } from '@/components/ui';
+import { quadrantSplit } from '@/lib/pitch-quadrant';
 
 import { MatchScreenFrame } from './components/match-screen-frame';
+import { QuadrantSplitCards } from './components/quadrant-split-cards';
 import { SideSplitCards } from './components/side-split-cards';
 import { WagonLegend } from './components/wagon-legend';
 import { WagonWheel } from './components/wagon-wheel';
@@ -41,6 +43,7 @@ export function MatchWagonScreen() {
       />
       <WagonLegend />
       <SideSplitCards {...split} />
+      <QuadrantSplitCards split={quadrantSplit(batter.shots)} />
       <Text muted style={styles.note}>
         Shot direction is tapped by the scorer for each scoring shot. Organizers can switch it off per match to keep
         scoring fast.

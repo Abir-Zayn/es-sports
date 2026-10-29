@@ -2,6 +2,8 @@ import type { Delivery, DeliveryInput, ScoreState } from '../types';
 
 export const oversLabel = (balls: number) => `${Math.floor(balls / 6)}.${balls % 6}`;
 export const bowlerQuota = (score: ScoreState) => Math.ceil(score.oversLimit / 5) * 6;
+/** Wickets that end an innings: one fewer than the side, as the last batter has no partner. */
+export const allOutAt = (score: ScoreState) => Math.max(1, score.playingXi[score.battingTeam].length - 1);
 export const swapEnds = (score: ScoreState): ScoreState => ({
   ...score, strikerId: score.nonStrikerId, nonStrikerId: score.strikerId,
 });
@@ -27,7 +29,7 @@ function validateWicket(score: ScoreState, input: DeliveryInput) {
   if (['Caught', 'Stumped', 'Run out'].includes(dismissal) && !score.bowlers[fielderId ?? '']) {
     throw new Error('Choose the fielder.');
   }
-  if (score.wickets < 9 && (!nextBatterId || !score.batters[nextBatterId] ||
+  if (score.wickets < allOutAt(score) - 1 && (!nextBatterId || !score.batters[nextBatterId] ||
       score.batters[nextBatterId].out || [score.strikerId, score.nonStrikerId].includes(nextBatterId))) {
     throw new Error('Choose a batter who has not been dismissed and is not at the crease.');
   }
@@ -43,6 +45,7 @@ export function applyDelivery(score: ScoreState, input: DeliveryInput, id: strin
   const penalty = legal ? 0 : 1;
   const total = input.runs + penalty;
   const batRuns = ['runs', 'no-ball', 'wicket'].includes(input.kind) ? input.runs : 0;
+  const boundary = input.kind === 'runs' || input.kind === 'no-ball';
   const labels = { runs: String(input.runs), wide: 'Wd', 'no-ball': 'Nb', bye: 'B', 'leg-bye': 'Lb', wicket: 'W' };
   const delivery: Delivery = {
     ...input, id, total, legal, label: labels[input.kind],
@@ -59,6 +62,7 @@ export function applyDelivery(score: ScoreState, input: DeliveryInput, id: strin
     batters: { ...score.batters, [batter.id]: {
       // A no-ball is faced by the batter, but is not a legal ball in the over.
       ...batter, runs: batter.runs + batRuns, balls: batter.balls + Number(input.kind !== 'wide'),
+      fours: batter.fours + Number(boundary && input.runs === 4), sixes: batter.sixes + Number(boundary && input.runs === 6),
     } },
     bowlers: { ...score.bowlers, [bowler.id]: {
       ...bowler, balls: bowler.balls + Number(legal),
@@ -70,15 +74,21 @@ export function applyDelivery(score: ScoreState, input: DeliveryInput, id: strin
   if (input.runs % 2 === 1) next = swapEnds(next);
   if (input.kind === 'wicket' && input.outId) {
     next.batters[input.outId] = { ...next.batters[input.outId], out: true };
-    if (input.nextBatterId && next.wickets < 10) {
+    if (input.nextBatterId && next.wickets < allOutAt(score)) {
       if (next.strikerId === input.outId) next.strikerId = input.nextBatterId;
       else next.nonStrikerId = input.nextBatterId;
     }
   }
-  next.complete = next.wickets >= 10 || next.balls >= next.oversLimit * 6 ||
+  next.complete = next.wickets >= allOutAt(score) || next.balls >= next.oversLimit * 6 ||
     (next.target !== null && next.runs >= next.target);
   if (legal && next.balls % 6 === 0) {
     next = swapEnds(next);
+    // Byes and leg byes are not the bowler's runs, so they do not spoil a maiden.
+    const conceded = deliveries.reduce((sum, d) => sum + (d.kind === 'bye' || d.kind === 'leg-bye' ? 0 : d.total), 0);
+    if (conceded === 0) {
+      const over = next.bowlers[score.bowlerId];
+      next.bowlers = { ...next.bowlers, [over.id]: { ...over, maidens: over.maidens + 1 } };
+    }
     next.lastOver = {
       number: next.balls / 6, runs: deliveries.reduce((sum, d) => sum + d.total, 0),
       deliveries, bowlerId: score.bowlerId,

@@ -9,11 +9,13 @@ import { ScorerFrame, ScorerNotice } from './components/scorer-ui';
 import { loadScorer, type LoadedScorer } from './data/load-scorer';
 import { localEventId } from './local-id';
 import { scorerReducer, type ScorerAction, type ScorerSession } from './session-reducer';
+import { useCareerRollup } from './use-career-rollup';
 import { useMatchSync, type SyncInfo } from './use-match-sync';
 
 export { localEventId };
 
-type ScorerContextValue = ScorerSession & { dispatch: Dispatch<ScorerAction>; matchId: string; sync: SyncInfo };
+/** `matchId` is the route id; `savedId` is the id the match is stored under. */
+type ScorerContextValue = ScorerSession & { dispatch: Dispatch<ScorerAction>; matchId: string; savedId: string; sync: SyncInfo };
 const ScorerContext = createContext<ScorerContextValue | null>(null);
 
 type Settled = { phase: 'error'; message: string } | { phase: 'ready'; loaded: LoadedScorer };
@@ -58,7 +60,8 @@ export function ScorerProvider({ matchId, children }: { matchId: string; childre
 function ScorerSessionProvider({ routeId, loaded, children }: { routeId: string; loaded: LoadedScorer; children: ReactNode }) {
   const [session, dispatch] = useReducer(scorerReducer, loaded.session);
   const sync = useMatchSync({ session, matchId: loaded.matchId, fixtureRef: loaded.fixtureRef, saved: loaded.saved });
-  return <ScorerContext value={{ ...session, dispatch, matchId: routeId, sync }}>{children}</ScorerContext>;
+  useCareerRollup(session, loaded.matchId);
+  return <ScorerContext value={{ ...session, dispatch, matchId: routeId, savedId: loaded.matchId, sync }}>{children}</ScorerContext>;
 }
 
 export function useScorer() {

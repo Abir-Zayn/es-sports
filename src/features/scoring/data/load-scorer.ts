@@ -2,8 +2,9 @@ import { localEventId } from '../local-id';
 import { newSession, type ScorerSession } from '../session-reducer';
 import { computeResult } from './match-result';
 import { fetchEvents, fetchPlayers, findMatch, isUuid } from './match-repository';
-import { setupFromRows } from './match-rows';
+import { FRIENDLY_REF_PREFIX, setupFromRows } from './match-rows';
 import { replayEvents } from './replay';
+import { stagedSetup } from './staged-setups';
 import { whenAllSaved } from './sync-queue';
 
 /** What the save layer must know about the stored state a session was loaded from. */
@@ -26,8 +27,11 @@ export async function loadScorer(routeId: string, userId: string): Promise<Loade
   const match = await findMatch(routeId, userId);
   if (!match) {
     if (isUuid(routeId)) throw new Error('This match could not be found.');
+    const staged = stagedSetup(routeId);
+    // A friendly is only known on the phone that set it up until its first ball, so it cannot fall back to a preview.
+    if (!staged && routeId.startsWith(FRIENDLY_REF_PREFIX)) throw new Error('This friendly match was not started. Set it up again.');
     return {
-      matchId: localEventId(), fixtureRef: routeId, session: newSession(),
+      matchId: staged?.matchId ?? localEventId(), fixtureRef: routeId, session: newSession(staged?.setup),
       saved: { matchExists: false, auditLength: 0, resultKey: null },
     };
   }

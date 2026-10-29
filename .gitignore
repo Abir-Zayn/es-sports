@@ -150,5 +150,25 @@ graphify-out/
 /.agents/skills/start-mission/
 /.agents/skills/terse-output/
 
-# Debug screenshots dropped in the project root (they can show client IDs and console pages)
+# Debug screenshots and recordings dropped in the project root (they can show client IDs and console pages).
+# App images live in assets/ and stay tracked.
 /*.png
+/*.jpg
+/*.jpeg
+/*.gif
+/*.webp
+/*.heic
+/*.bmp
+/*.mp4
+/*.mov
+/*.webm
+# Screenshots saved anywhere by the OS, simulators or agents
+**/Screenshot*.png
+**/Screenshot*.jpg
+**/Screen Shot*.png
+**/screenshot-*.png
+**/image copy*.png
+# Browser automation recordings and test screenshots
+*.gif.tmp
+**/__screenshots__/
+**/test-results/

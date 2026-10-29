@@ -16,7 +16,11 @@ type Props = {
   error: string | null;
   onAdd: (input: GuestPlayerInput, reason: string) => void;
   onClose: () => void;
+  /** What happens after adding, under the fields. */
+  note?: string;
 };
+
+const GUEST_NOTE = 'You can share a link with them next. When they join, they claim this profile and keep its stats.';
 
 /** Adds a player who is not on the app yet, by name and an optional phone, so match day is never blocked. */
 export function AddGuestSheet({ visible, onClose, ...form }: Props) {
@@ -28,7 +32,7 @@ export function AddGuestSheet({ visible, onClose, ...form }: Props) {
   );
 }
 
-function GuestForm({ locked, adding, error, onAdd }: Omit<Props, 'visible' | 'onClose'>) {
+function GuestForm({ locked, adding, error, onAdd, note = GUEST_NOTE }: Omit<Props, 'visible' | 'onClose'>) {
   const { colors } = useTheme();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -42,7 +46,7 @@ function GuestForm({ locked, adding, error, onAdd }: Omit<Props, 'visible' | 'on
       </View>
       <PlayerChangeFields role={role} onRole={setRole} locked={locked} reason={reason} onReason={setReason} />
       <Text variant="caption" muted>
-        You can share a link with them next. When they join, they claim this profile and keep its stats.
+        {note}
       </Text>
       {error ? (
         <Text accessibilityRole="alert" style={{ color: colors.dangerSoftText }}>

@@ -1,8 +1,9 @@
+import { normalisePhone, phoneProblem } from '@/lib/phone';
+
 import { registrationStatus } from './registration';
 import type { Roster, RosterTeam } from './types';
 
 const PLAYER_NAME = { min: 2, max: 40 };
-const PHONE = /^\+?\d{10,15}$/;
 
 /** A player about to join: a member found in search has a `userId`, a guest may have a phone. */
 export type PlayerCandidate = { name: string; userId: string | null; phone: string | null };
@@ -12,15 +13,7 @@ export function squadManagerId(team: RosterTeam): string | null {
   return team.owner?.status === 'accepted' ? team.owner.user.id : null;
 }
 
-/** "+880 1712-345678" becomes "+8801712345678". Empty stays empty. */
-export function normalisePhone(phone: string): string {
-  return phone.trim().replace(/[\s().-]/g, '');
-}
-
-export function phoneProblem(phone: string): string | null {
-  const value = normalisePhone(phone);
-  return value === '' || PHONE.test(value) ? null : 'Enter a phone number of 10 to 15 digits.';
-}
+export { normalisePhone, phoneProblem };
 
 /** How many more players the squad needs to reach the tournament minimum. */
 export function squadShortfall(roster: Roster, team: RosterTeam): number {
