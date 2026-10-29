@@ -50,6 +50,12 @@ export async function fetchPlayers(matchId: string): Promise<PlayerRow[]> {
   return data;
 }
 
+/** The account the app is signed in as now, read from the stored session without a network call. */
+export async function signedInUserId(): Promise<string | null> {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.user.id ?? null;
+}
+
 /** Ask the database, the authority for scoring permission, before opening a saved match. */
 export async function canScoreMatch(matchId: string): Promise<boolean> {
   const { data, error } = await supabase.rpc('can_score_match', { p_match: matchId });
@@ -88,9 +94,9 @@ export async function createMatch(match: MatchInsert, players: PlayerRow[], scor
 }
 
 /** Start a previously saved setup. RLS still checks the creator or assigned scorer. */
-export async function startSavedMatch(matchId: string, recordShots: boolean): Promise<void> {
+export async function startSavedMatch(matchId: string, recordShots: boolean, startedAt: string): Promise<void> {
   const { data, error } = await supabase.from('matches')
-    .update({ status: 'live', started_at: new Date().toISOString(), record_shots: recordShots })
+    .update({ status: 'live', started_at: startedAt, record_shots: recordShots })
     .eq('id', matchId).in('status', ['scheduled', 'live']).select('id');
   if (error) throw error;
   expectChange(data, 'start this match');

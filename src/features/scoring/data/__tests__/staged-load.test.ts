@@ -10,6 +10,7 @@ jest.mock('../match-repository', () => ({
   fetchPlayers: jest.fn(),
   fetchEvents: jest.fn(),
   canScoreMatch: jest.fn().mockResolvedValue(true),
+  signedInUserId: jest.fn().mockResolvedValue('user-1'),
 }));
 
 const MATCH = '55555555-5555-4555-8555-555555555555';

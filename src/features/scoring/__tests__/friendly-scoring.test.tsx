@@ -33,6 +33,7 @@ jest.mock('../data/match-repository', () => ({
   applyOp: jest.fn().mockResolvedValue(undefined),
   saveResult: jest.fn().mockResolvedValue(undefined),
   reopenMatch: jest.fn().mockResolvedValue(undefined),
+  signedInUserId: jest.fn().mockResolvedValue('user-1'),
 }));
 
 const REF = 'friendly-test';

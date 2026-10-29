@@ -25,6 +25,7 @@ jest.mock('../match-repository', () => ({
   fetchPlayers: jest.fn(),
   fetchEvents: jest.fn(),
   canScoreMatch: jest.fn().mockResolvedValue(true),
+  signedInUserId: jest.fn().mockResolvedValue('user-1'),
   createMatch: jest.fn().mockResolvedValue(undefined),
   startSavedMatch: jest.fn().mockResolvedValue(undefined),
   applyOp: jest.fn().mockResolvedValue(undefined),

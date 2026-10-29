@@ -29,7 +29,7 @@ The remote `friendly_exclusive_scorer` migration is applied. For a friendly matc
 
 Opening an eligible saved match loads its players and saved ball events and replays the event log into the scorer session. After reopening the app, the authorized scorer can go to Friendly Match Setup and choose the match under “Your saved matches”, or reopen the shared scorer link. This restores the **last successfully saved** state.
 
-**Important limitation:** `src/features/scoring/data/sync-queue.ts` holds queued operations only in memory. If the app is force-closed or killed before an operation reaches Supabase, that operation can be lost. The save indicator and retry queue help while the process remains alive, but they do not provide durable offline recovery. Do not describe the current implementation as lossless after a crash.
+**Update (durable outbox):** scoring changes are now written to a per-account, per-match file (`src/features/scoring/data/outbox*.ts`) before they are sent, and removed only after Supabase accepts them. On the next run they are reconciled against the server and resent in order; a conflict with newer server scoring is reported instead of overwritten. Remaining limits: a match cannot be opened with no connection, and if the disk write itself fails the change is only held in memory. Device kill tests are still required.
 
 `createMatch` saves the match, players and scorer in separate requests. A failure can leave a partial setup or uploaded images behind. The scorer loader detects a scheduled friendly with missing playing squads and refuses to open it, but this is not an atomic creation or cleanup mechanism. Consider a transactional server operation and idempotent recovery as part of the next reliability pass.
 
