@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import X from 'lucide-react-native/icons/x';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 
@@ -23,6 +24,7 @@ export function PlayerDetailSheet({
   onSubstitute,
 }: Props) {
   const styles = useThemedStyles(createStyles);
+  const router = useRouter();
 
   if (!player) return null;
 
@@ -101,6 +103,10 @@ export function PlayerDetailSheet({
 
           {/* Actions */}
           <View style={styles.actions}>
+            <Button label="View Full Career Profile" onPress={() => {
+              onClose();
+              router.push({ pathname: '/player/[id]', params: { id: player.id ?? player.name, name: player.name, role: player.role } });
+            }} />
             {onSubstitute ? (
               <Button
                 label="Substitute with Bench"
@@ -112,7 +118,7 @@ export function PlayerDetailSheet({
                 }}
               />
             ) : null}
-            <Button label="Done" variant="primary" size="compact" onPress={onClose} />
+            <Button label="Done" variant="secondary" size="compact" onPress={onClose} />
           </View>
         </Pressable>
       </Pressable>
