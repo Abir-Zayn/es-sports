@@ -30,6 +30,19 @@ export async function findMatch(routeId: string, userId: string): Promise<MatchR
   return data;
 }
 
+/**
+ * Finds a match for someone watching it. A uuid opens that match; any other id is a fixture reference, which
+ * opens the newest match scored from it by anyone. Null when there is none.
+ */
+export async function findSpectatorMatch(id: string): Promise<MatchRow | null> {
+  const query = supabase.from('matches').select(MATCH_COLUMNS);
+  const { data, error } = isUuid(id)
+    ? await query.eq('id', id).maybeSingle<MatchRow>()
+    : await query.eq('fixture_ref', id).order('created_at', { ascending: false }).limit(1).maybeSingle<MatchRow>();
+  if (error) throw error;
+  return data;
+}
+
 export async function fetchPlayers(matchId: string): Promise<PlayerRow[]> {
   const { data, error } = await supabase.from('match_players').select(PLAYER_COLUMNS).eq('match_id', matchId)
     .returns<PlayerRow[]>();

@@ -1,10 +1,11 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { ActivityIndicator, StyleSheet } from 'react-native';
 
 import { ChoiceTabs, type ChoiceTab } from '@/components/match/choice-tabs';
 import { AppTabs, Text } from '@/components/ui';
 import { quadrantSplit } from '@/lib/pitch-quadrant';
+import { useTheme } from '@/theme';
 
 import { MatchScreenFrame } from './components/match-screen-frame';
 import { QuadrantSplitCards } from './components/quadrant-split-cards';
@@ -13,9 +14,8 @@ import { WagonLegend } from './components/wagon-legend';
 import { WagonWheel } from './components/wagon-wheel';
 import { sideSplit, type ShotFilter } from './components/wagon-geometry';
 import { matchHeader } from './sample-match';
-import { wagonBatters } from './sample-wagon';
-
-const batterTabs: ChoiceTab<string>[] = wagonBatters.map((b) => ({ id: b.id, title: b.name, subtitle: b.line }));
+import type { WagonBatter } from './types';
+import { useLiveMatchData } from './use-live-match-data';
 
 const filterTabs: { id: ShotFilter; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -24,17 +24,37 @@ const filterTabs: { id: ShotFilter; label: string }[] = [
   { id: 'sixes', label: '6s' },
 ];
 
-/** Where a batter hit the ball: a wagon wheel with shot filters and the off/leg split. */
+/** Where each batter hit the ball, from the match's recorded shots: wagon wheel, off/leg split and the four pitch zones. */
 export function MatchWagonScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [batterId, setBatterId] = useState(wagonBatters[0].id);
-  const [filter, setFilter] = useState<ShotFilter>('all');
-  const batter = wagonBatters.find((b) => b.id === batterId) ?? wagonBatters[0];
-  const split = sideSplit(batter.shots);
-
+  const matchId = id ?? matchHeader.id;
+  const { colors } = useTheme();
+  const live = useLiveMatchData(matchId);
+  const view = live.data;
   return (
-    <MatchScreenFrame matchId={id ?? matchHeader.id} tab="wagon">
-      <ChoiceTabs tabs={batterTabs} selected={batterId} onSelect={setBatterId} accessibilityLabel="Batter" />
+    <MatchScreenFrame matchId={matchId} tab="wagon" title={view?.header.title} subtitle={view?.header.subtitle}>
+      {!view ? (
+        <ActivityIndicator accessibilityLabel="Loading shots" color={colors.link} />
+      ) : view.wagonBatters.length === 0 ? (
+        <Text muted accessibilityLiveRegion="polite">
+          No shot directions recorded yet. They appear here as the scorer taps where each scoring shot went.
+        </Text>
+      ) : (
+        <BatterWagon batters={view.wagonBatters} />
+      )}
+    </MatchScreenFrame>
+  );
+}
+
+function BatterWagon({ batters }: { batters: WagonBatter[] }) {
+  const [batterId, setBatterId] = useState(batters[0].id);
+  const [filter, setFilter] = useState<ShotFilter>('all');
+  const batter = batters.find((b) => b.id === batterId) ?? batters[0];
+  const split = sideSplit(batter.shots);
+  const tabs: ChoiceTab<string>[] = batters.map((b) => ({ id: b.id, title: b.name, subtitle: b.line }));
+  return (
+    <>
+      <ChoiceTabs tabs={tabs} selected={batter.id} onSelect={setBatterId} accessibilityLabel="Batter" />
       <AppTabs tabs={filterTabs} selected={filter} onSelect={setFilter} />
       <WagonWheel
         shots={batter.shots}
@@ -48,7 +68,7 @@ export function MatchWagonScreen() {
         Shot direction is tapped by the scorer for each scoring shot. Organizers can switch it off per match to keep
         scoring fast.
       </Text>
-    </MatchScreenFrame>
+    </>
   );
 }
 
