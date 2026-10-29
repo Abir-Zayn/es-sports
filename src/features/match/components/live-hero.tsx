@@ -7,21 +7,25 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppBadge, AppIconTile, InitialsAvatar, Text } from '@/components/ui';
 import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import type { LiveSide, LiveSnapshot } from '../types';
+import type { LiveMatchViewData } from '../live/live-view';
+import type { LiveSide } from '../types';
 
 type Props = {
-  label: string;
-  live: LiveSnapshot;
+  view: Pick<LiveMatchViewData, 'header' | 'sides' | 'summary' | 'currentRunRate' | 'requiredRunRate'>;
   onBack: () => void;
   onShare: () => void;
 };
 
-/** Top of the live screen: back and share, both teams with scores, and what the chase needs. */
-export function LiveHero({ label, live, onBack, onShare }: Props) {
+/** Top of the live screen: back and share, both teams with scores, and the chase, result or what comes next. */
+export function LiveHero({ view, onBack, onShare }: Props) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = useThemedStyles(createStyles);
-  const [first, second] = live.sides;
+  const [first, second] = view.sides;
+  const status = view.header.status;
+  const badge = status === 'live' ? { label: 'LIVE', background: colors.live, color: colors.onLive }
+    : status === 'completed' ? { label: 'RESULT', background: colors.primarySoft, color: colors.link }
+    : { label: 'UPCOMING', background: colors.surfaceRaised, color: colors.textMuted };
   return (
     <View style={[styles.hero, { paddingTop: insets.top + spacing.sm }]}>
       <Svg width="100%" height={300} viewBox="0 0 390 300" preserveAspectRatio="xMidYMin slice" style={styles.art}>
@@ -40,7 +44,7 @@ export function LiveHero({ label, live, onBack, onShare }: Props) {
           onPress={onBack}
         />
         <Text accessibilityRole="header" style={styles.label} numberOfLines={1}>
-          {label}
+          {view.header.label}
         </Text>
         <AppIconTile
           icon={Share2}
@@ -58,22 +62,26 @@ export function LiveHero({ label, live, onBack, onShare }: Props) {
       <View style={styles.teams}>
         <TeamColumn side={first} />
         <View style={styles.middle}>
-          <AppBadge dot label="LIVE" backgroundColor={colors.live} color={colors.onLive} />
+          <AppBadge dot={status === 'live'} label={badge.label} backgroundColor={badge.background} color={badge.color} />
           <Text style={styles.vs}>VS</Text>
         </View>
         <TeamColumn side={second} />
       </View>
 
       <View style={styles.chase}>
-        <Text style={styles.target}>{live.target}</Text>
-        <View style={styles.rates}>
-          <Text muted style={styles.rate}>
-            CRR <Text style={styles.rateValue}>{live.currentRunRate}</Text>
-          </Text>
-          <Text muted style={styles.rate}>
-            RRR <Text style={styles.rateValue}>{live.requiredRunRate}</Text>
-          </Text>
-        </View>
+        <Text style={styles.target} accessibilityLiveRegion="polite">{view.summary}</Text>
+        {status === 'scheduled' ? null : (
+          <View style={styles.rates}>
+            <Text muted style={styles.rate}>
+              CRR <Text style={styles.rateValue}>{view.currentRunRate}</Text>
+            </Text>
+            {view.requiredRunRate !== null ? (
+              <Text muted style={styles.rate}>
+                RRR <Text style={styles.rateValue}>{view.requiredRunRate}</Text>
+              </Text>
+            ) : null}
+          </View>
+        )}
       </View>
     </View>
   );

@@ -95,7 +95,8 @@ export type Shot = { runs: number; angle: number };
 export type WagonBatter = { id: string; name: string; line: string; shots: Shot[] };
 
 export type MatchInfoData = {
-  tossNote: { team: string; decision: string };
+  /** Null before the toss. */
+  tossNote: { team: string; decision: string } | null;
   details: { label: string; value: string }[];
   streams: { id: string; label: string; tone: 'red' | 'blue' }[];
   squads: { team: TeamInfo; playingXi: SquadPlayer[]; bench: string[] }[];

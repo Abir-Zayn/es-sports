@@ -1,9 +1,36 @@
 {
   "cli": { "version": ">= 16.0.0", "appVersionSource": "remote" },
   "build": {
-    "development": { "developmentClient": true, "distribution": "internal", "android": { "buildType": "apk" } },
-    "preview": { "distribution": "internal", "channel": "preview", "android": { "buildType": "apk" } },
-    "production": { "channel": "production", "autoIncrement": true, "android": { "buildType": "app-bundle" } }
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": { "buildType": "apk" },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://tedgyfczmqqnwrlucsoc.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_KEY": "sb_publishable_R1Mm97GnqaRaRrOITGuCcg_SHlIeSFF",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "839431537303-ete6han4f0lkfe7jrbs1503spvtup7ll.apps.googleusercontent.com"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "channel": "preview",
+      "android": { "buildType": "apk" },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://tedgyfczmqqnwrlucsoc.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_KEY": "sb_publishable_R1Mm97GnqaRaRrOITGuCcg_SHlIeSFF",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "839431537303-ete6han4f0lkfe7jrbs1503spvtup7ll.apps.googleusercontent.com"
+      }
+    },
+    "production": {
+      "channel": "production",
+      "autoIncrement": true,
+      "android": { "buildType": "app-bundle" },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://tedgyfczmqqnwrlucsoc.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_KEY": "sb_publishable_R1Mm97GnqaRaRrOITGuCcg_SHlIeSFF",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "839431537303-ete6han4f0lkfe7jrbs1503spvtup7ll.apps.googleusercontent.com"
+      }
+    }
   },
   "submit": { "production": {} }
 }

@@ -10,18 +10,21 @@ type Props = {
   title: string;
   /** e.g. "Strikers · 2nd innings". */
   caption: string;
-  /** Runs scored in each over, first over first. The last bar is the over in progress. */
+  /** Runs scored in each over, first over first. */
   runsPerOver: number[];
   /** Overs (1-based) in which a wicket fell. */
   wicketOvers: number[];
+  /** Whether the last bar is an over still being bowled, drawn highlighted. */
+  lastInProgress?: boolean;
 };
 
 /** Bar chart of runs in each over, with a dot above the overs that lost a wicket. */
-export function RunsPerOverChart({ title, caption, runsPerOver, wicketOvers }: Props) {
+export function RunsPerOverChart({ title, caption, runsPerOver, wicketOvers, lastInProgress = true }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
-  const max = Math.max(...runsPerOver, 1);
-  const summary = `Runs per over, overs 1 to ${runsPerOver.length}. Wickets in overs ${wicketOvers.join(', ')}.`;
+  const max = Math.max(...runsPerOver.filter(Number.isFinite), 1);
+  const wickets = wicketOvers.length > 0 ? `Wickets in overs ${wicketOvers.join(', ')}.` : 'No wickets.';
+  const summary = `Runs per over, overs 1 to ${runsPerOver.length}: ${runsPerOver.join(', ')}. ${wickets}`;
   return (
     <View style={styles.card}>
       <View style={styles.header}>
@@ -34,14 +37,14 @@ export function RunsPerOverChart({ title, caption, runsPerOver, wicketOvers }: P
       </View>
       <View accessible accessibilityRole="image" accessibilityLabel={summary} style={styles.plot}>
         {runsPerOver.map((runs, i) => {
-          const live = i === runsPerOver.length - 1;
+          const live = lastInProgress && i === runsPerOver.length - 1;
           return (
             <View key={i} style={styles.slot}>
               {wicketOvers.includes(i + 1) ? <View style={styles.wicket} /> : null}
               <View
                 style={[
                   styles.bar,
-                  { height: Math.round((runs / max) * (PLOT_HEIGHT - 16)) },
+                  { height: Math.max(0, Math.round(((Number.isFinite(runs) ? runs : 0) / max) * (PLOT_HEIGHT - 16))) },
                   live && styles.barLive,
                 ]}
               />

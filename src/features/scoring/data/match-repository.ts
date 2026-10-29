@@ -30,6 +30,19 @@ export async function findMatch(routeId: string, userId: string): Promise<MatchR
   return data;
 }
 
+/**
+ * Finds a match for someone watching it. A uuid opens that match; any other id is a fixture reference, which
+ * opens the newest match scored from it by anyone. Null when there is none.
+ */
+export async function findSpectatorMatch(id: string): Promise<MatchRow | null> {
+  const query = supabase.from('matches').select(MATCH_COLUMNS);
+  const { data, error } = isUuid(id)
+    ? await query.eq('id', id).maybeSingle<MatchRow>()
+    : await query.eq('fixture_ref', id).order('created_at', { ascending: false }).limit(1).maybeSingle<MatchRow>();
+  if (error) throw error;
+  return data;
+}
+
 export async function fetchPlayers(matchId: string): Promise<PlayerRow[]> {
   const { data, error } = await supabase.from('match_players').select(PLAYER_COLUMNS).eq('match_id', matchId)
     .returns<PlayerRow[]>();
@@ -92,7 +105,7 @@ export async function saveResult(matchId: string, result: ResultUpdate): Promise
 /** Undoing the last ball of a finished match puts it back to live and clears the result. */
 export async function reopenMatch(matchId: string): Promise<void> {
   const cleared = {
-    status: 'live', completed_at: null, winner_side: null, result_type: null, result_margin: null,
+    status: 'live' as const, completed_at: null, winner_side: null, result_type: null, result_margin: null,
     result_summary: null, team_a_runs: null, team_a_wickets: null, team_a_balls: null,
     team_b_runs: null, team_b_wickets: null, team_b_balls: null,
   };

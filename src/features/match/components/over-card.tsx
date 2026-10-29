@@ -1,10 +1,10 @@
 import { StyleSheet, View } from 'react-native';
 
-import { BallChip } from '@/components/match/ball-chip';
 import { Text } from '@/components/ui';
 import { useThemedStyles, type Palette } from '@/theme';
 
 import type { OverSummary } from '../types';
+import { LiveBallPill, spokenBall } from './live-ball-pill';
 
 /** One over: its number, bowler and batters, runs and score after it, and every ball. The live over is outlined. */
 export function OverCard({ over }: { over: OverSummary }) {
@@ -12,7 +12,7 @@ export function OverCard({ over }: { over: OverSummary }) {
   return (
     <View
       accessible
-      accessibilityLabel={`Over ${over.number}, ${over.bowler} ${over.to}. ${over.runs} runs, ${over.score}. Balls: ${over.balls.filter(Boolean).join(', ')}`}
+      accessibilityLabel={`Over ${over.number}, ${over.bowler} ${over.to}. ${over.runs} runs, ${over.score}. Balls: ${over.balls.filter(Boolean).map(spokenBall).join(', ')}`}
       style={[styles.card, over.inProgress && styles.cardLive]}
     >
       <View style={styles.top}>
@@ -37,7 +37,7 @@ export function OverCard({ over }: { over: OverSummary }) {
       </View>
       <View style={styles.balls}>
         {over.balls.map((ball, i) => (
-          <BallChip key={i} value={ball} size={32} />
+          <LiveBallPill key={i} value={ball} size={32} />
         ))}
       </View>
     </View>

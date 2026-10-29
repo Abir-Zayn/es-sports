@@ -7,8 +7,12 @@
     "icon": "./assets/images/icon.png",
     "scheme": "essports",
     "userInterfaceStyle": "automatic",
-    "platforms": ["android"],
-    "runtimeVersion": { "policy": "appVersion" },
+    "platforms": [
+      "android"
+    ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "android": {
       "package": "com.essports.app",
       "adaptiveIcon": {
@@ -30,21 +34,21 @@
           "imageWidth": 288
         }
       ],
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "cmakeVersion": "3.31.6",
-            "enableMinifyInReleaseBuilds": true,
-            "enableShrinkResourcesInReleaseBuilds": true
-          }
-        }
-      ],
       "@react-native-google-signin/google-signin"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "74f43d02-4e84-4d11-8bf9-f3c3b920fe97"
+      }
     }
   }
 }

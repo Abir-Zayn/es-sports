@@ -1,7 +1,7 @@
+import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppAvatar, Text } from '@/components/ui';
-import { comingSoon } from '@/lib/coming-soon';
 import { initialsOf } from '@/lib/initials';
 import { useToneColors } from '@/features/tournament/use-tone-colors';
 import { useThemedStyles, type AvatarTone, type Palette } from '@/theme';
@@ -12,6 +12,7 @@ type Props = { players: KeyPlayer[]; tone: AvatarTone };
 
 /** The players who define the team: name, what they are known for, and their headline figure. */
 export function KeyPlayersSection({ players, tone }: Props) {
+  const router = useRouter();
   const styles = useThemedStyles(createStyles);
   const ring = useToneColors()(tone).fill;
   return (
@@ -24,7 +25,7 @@ export function KeyPlayersSection({ players, tone }: Props) {
           key={player.name}
           accessibilityRole="button"
           accessibilityLabel={`${player.name}, ${player.label}, ${player.value} ${player.unit}`}
-          onPress={() => comingSoon('Player')}
+          onPress={() => router.push({ pathname: '/player/[id]', params: { id: player.name, name: player.name } })}
           style={({ pressed }) => [styles.row, pressed && styles.pressed]}
         >
           <AppAvatar label={initialsOf(player.name)} size={44} borderColor={ring} borderWidth={2} />

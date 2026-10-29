@@ -8,6 +8,7 @@
     "@shopify/flash-list": "2.3.2",
     "@supabase/supabase-js": "2.118.0",
     "@tanstack/react-query": "5.104.5",
+    "babel-preset-expo": "~58.0.19",
     "date-fns": "4.4.0",
     "expo": "58.0.17",
     "expo-build-properties": "58.0.11",
@@ -52,7 +53,12 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "gen:types": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID > src/lib/database.types.ts",
-    "doctor": "expo-doctor"
+    "gen:types:offline": "node scripts/gen-database-types.js",
+    "doctor": "expo-doctor",
+    "db:reset-and-seed": "supabase db reset",
+    "db:seed": "supabase db seed",
+    "check:all": "node scripts/verify-all.js",
+    "check:quick": "node scripts/verify-all.js --quick"
   },
   "private": true
 }

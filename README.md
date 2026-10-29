@@ -4,6 +4,25 @@ Multi-tenant cricket tournament platform. Pilot: HSF Premier League. Android onl
 
 **Stack:** React Native + Expo SDK 58 (TypeScript strict, Expo Router), Supabase (Postgres, Auth, Realtime, Edge Functions), TanStack Query, EAS Build/Update.
 
+---
+
+## 📱 Download Android APK (Client Preview)
+
+> [!IMPORTANT]
+> **Latest Build:** `v1.0.0-preview` (EAS Cloud Build `#e73421fe-9549-4bb6-8cb2-64777f4287a9`)  
+> **Backend:** Supabase live database connected (`tedgyfczmqqnwrlucsoc`)
+
+- **Direct APK Download:** [Download esSports-v1.0.0-preview.apk (GitHub Release)](https://github.com/Abir-Zayn/es-sports/releases/download/v1.0.0-preview/esSports-v1.0.0-preview.apk)
+- **GitHub Release Page:** [GitHub Releases - v1.0.0-preview](https://github.com/Abir-Zayn/es-sports/releases/tag/v1.0.0-preview)
+- **Expo Hosted Build:** [Expo EAS Artifacts](https://expo.dev/accounts/abirzayn/projects/esSports/builds/e73421fe-9549-4bb6-8cb2-64777f4287a9)
+
+### Installation Note:
+1. Open the [Direct APK Download Link](https://github.com/Abir-Zayn/es-sports/releases/download/v1.0.0-preview/esSports-v1.0.0-preview.apk) on your Android device.
+2. Tap the downloaded `.apk` file and tap **Install** (allow "Install from unknown sources" if prompted by your browser).
+3. Open **esSports** and sign in or sign up with any email & password.
+
+---
+
 ## Getting started
 
 ```bash
