@@ -52,7 +52,12 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "gen:types": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID > src/lib/database.types.ts",
-    "doctor": "expo-doctor"
+    "gen:types:offline": "node scripts/gen-database-types.js",
+    "doctor": "expo-doctor",
+    "db:reset-and-seed": "supabase db reset",
+    "db:seed": "supabase db seed",
+    "check:all": "node scripts/verify-all.js",
+    "check:quick": "node scripts/verify-all.js --quick"
   },
   "private": true
 }

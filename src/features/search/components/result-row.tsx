@@ -16,7 +16,7 @@ export function ResultRow({ row, onPress }: Props) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${row.name}, ${row.meta}`}
+      accessibilityLabel={[row.name, row.badge, row.meta].filter(Boolean).join(', ')}
       onPress={onPress}
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}
     >
@@ -30,6 +30,7 @@ export function ResultRow({ row, onPress }: Props) {
       />
       <View style={styles.text}>
         <Text style={styles.name}>{row.name}</Text>
+        {row.badge ? <Text style={styles.badge}>{row.badge}</Text> : null}
         <Text style={styles.meta}>{row.meta}</Text>
       </View>
       <ChevronRight size={18} color={colors.outline} />
@@ -51,5 +52,6 @@ const createStyles = (colors: Palette) =>
     pressed: { opacity: 0.7 },
     text: { flex: 1, minWidth: 0, gap: 3 },
     name: { fontSize: 15, lineHeight: 20, fontWeight: '600' },
+    badge: { alignSelf: 'flex-start', overflow: 'hidden', borderRadius: 8, backgroundColor: colors.primarySoft, color: colors.link, paddingHorizontal: 8, paddingVertical: 2, fontSize: 11, lineHeight: 16, fontWeight: '600' },
     meta: { fontSize: 12, lineHeight: 16, color: colors.textMuted },
   });

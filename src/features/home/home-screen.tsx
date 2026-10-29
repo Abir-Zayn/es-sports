@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BOTTOM_NAV_CLEARANCE } from '@/components/navigation/bottom-nav';
 import { FriendlyMatchCta } from '@/features/match/components/friendly-match-cta';
 import { useOpenMatch } from '@/features/match/use-match-routes';
+import { useNotifications } from '@/features/notifications';
 import { useProfile } from '@/features/profile/profile-provider';
 import { useOpenTeam } from '@/features/team/use-team-routes';
 import { comingSoon } from '@/lib/coming-soon';
@@ -26,9 +27,11 @@ export function HomeScreen() {
   const insets = useSafeAreaInsets();
   const styles = useThemedStyles(createStyles);
   const { profile } = useProfile();
+  const { unreadCount } = useNotifications();
   // The greeting and avatar come from the player's own profile, not from Google.
   const user = {
     ...sampleUser,
+    unreadNotifications: unreadCount,
     name: profile.fullName.split(' ')[0],
     initials: initialsOf(profile.fullName),
     avatarUri: profile.avatarUri,
@@ -43,7 +46,7 @@ export function HomeScreen() {
         user={user}
         onProfile={() => router.navigate('/profile')}
         onSearch={() => router.push('/search')}
-        onNotifications={() => router.push('/invitations')}
+        onNotifications={() => router.push('/notifications')}
       />
       <LiveSection matches={liveMatches} onSeeAll={() => comingSoon('Live matches')} onMatchPress={(match) => openMatch(match.id, 'live')} />
       <View style={styles.gutter}><FriendlyMatchCta onPress={() => router.push('/match/friendly/setup')} /></View>

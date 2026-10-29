@@ -5,25 +5,35 @@ import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, AppTabs, SearchField, Text } from '@/components/ui';
-import { useOpenTeam } from '@/features/team/use-team-routes';
-import { comingSoon } from '@/lib/coming-soon';
 import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { RecentSearches } from './components/recent-searches';
 import { ResultRow } from './components/result-row';
-import { recentSearches, searchAll, searchTabs, type SearchTab } from './sample-data';
+import { clearSearches, saveSearch, useRecentSearches } from './recent-history';
+import { searchAll, searchTabs, type SearchGroupId, type SearchRow, type SearchTab } from './sample-data';
 
 export function SearchScreen() {
   const router = useRouter();
-  const openTeam = useOpenTeam();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState<SearchTab>('all');
+  const recentSearches = useRecentSearches();
 
   const hasQuery = query.trim().length > 0;
   const groups = searchAll(query, tab);
+
+  function openResult(row: SearchRow, group: SearchGroupId) {
+    saveSearch(query);
+    if (group === 'players') {
+      router.push({ pathname: '/player/[id]', params: { id: row.id, name: row.name, role: row.role ?? '' } });
+    } else if (group === 'teams') {
+      router.push({ pathname: '/team/[id]', params: { id: row.id } });
+    } else {
+      router.push({ pathname: '/tournament/[id]', params: { id: row.id } });
+    }
+  }
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior="padding">
@@ -46,6 +56,7 @@ export function SearchScreen() {
           <SearchField
             value={query}
             onChangeText={setQuery}
+            onSubmit={() => saveSearch(query)}
             placeholder="Tournaments, teams, players"
             accessibilityLabel="Search tournaments, teams, players"
             autoFocus
@@ -54,7 +65,7 @@ export function SearchScreen() {
 
         <AppTabs tabs={searchTabs} selected={tab} onSelect={setTab} />
 
-        {!hasQuery ? <RecentSearches searches={recentSearches} onPick={setQuery} /> : null}
+        {!hasQuery ? <RecentSearches searches={recentSearches} onPick={(value) => { setQuery(value); saveSearch(value); }} onClear={clearSearches} /> : null}
 
         {hasQuery && groups.length === 0 ? (
           <View style={styles.empty}>
@@ -69,7 +80,7 @@ export function SearchScreen() {
               {group.title.toUpperCase()}
             </Text>
             {group.rows.map((row) => (
-              <ResultRow key={row.id} row={row} onPress={() => (group.id === 'teams' ? openTeam(row.short) : comingSoon(group.title))} />
+              <ResultRow key={row.id} row={row} onPress={() => openResult(row, group.id)} />
             ))}
           </View>
         ))}

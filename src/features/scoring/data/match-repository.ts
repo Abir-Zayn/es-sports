@@ -105,7 +105,7 @@ export async function saveResult(matchId: string, result: ResultUpdate): Promise
 /** Undoing the last ball of a finished match puts it back to live and clears the result. */
 export async function reopenMatch(matchId: string): Promise<void> {
   const cleared = {
-    status: 'live', completed_at: null, winner_side: null, result_type: null, result_margin: null,
+    status: 'live' as const, completed_at: null, winner_side: null, result_type: null, result_margin: null,
     result_summary: null, team_a_runs: null, team_a_wickets: null, team_a_balls: null,
     team_b_runs: null, team_b_wickets: null, team_b_balls: null,
   };

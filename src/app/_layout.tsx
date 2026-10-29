@@ -40,6 +40,7 @@ function AppShell() {
             <Stack.Screen name="search" />
             <Stack.Screen name="settings" />
             <Stack.Screen name="profile/edit" />
+            <Stack.Screen name="player/[id]" />
             <Stack.Screen name="scorer/[id]" />
             <Stack.Screen name="match/friendly/setup" />
             <Stack.Screen name="match/[id]/index" />
@@ -57,6 +58,7 @@ function AppShell() {
             <Stack.Screen name="claim/[token]" />
             <Stack.Screen name="tournament/schedule" />
             <Stack.Screen name="invitations" />
+            <Stack.Screen name="notifications" />
             <Stack.Screen name="tournament/[id]/index" />
             <Stack.Screen name="tournament/[id]/head-to-head" />
             <Stack.Screen name="tournament/[id]/matches" />
