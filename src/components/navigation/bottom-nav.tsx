@@ -14,7 +14,7 @@ import { BallIcon } from './ball-icon';
 type IconComponent = ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
 
 /** Space a screen should leave at its bottom so content clears the floating bar. */
-export const BOTTOM_NAV_CLEARANCE = 120;
+export const BOTTOM_NAV_CLEARANCE = 104;
 const NAV_HEIGHT = 68;
 const CREATE_SIZE = 60;
 
@@ -38,7 +38,7 @@ export function BottomNav({ onCreate }: { onCreate: () => void }) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   return (
-    <View style={[styles.bar, { bottom: spacing.xl + insets.bottom }]} accessibilityRole="tablist">
+    <View style={[styles.bar, { bottom: spacing.sm + insets.bottom }]} accessibilityRole="tablist">
       <TabTrigger name="home" asChild>
         <TabButton label="Home" icon={House} />
       </TabTrigger>
