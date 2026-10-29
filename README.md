@@ -9,16 +9,17 @@ Multi-tenant cricket tournament platform. Pilot: HSF Premier League. Android onl
 ## 📱 Download Android APK (Client Preview)
 
 > [!IMPORTANT]
-> **Latest Build:** `v1.0.0-preview` (EAS Cloud Build `#e73421fe-9549-4bb6-8cb2-64777f4287a9`)  
-> **Backend:** Supabase live database connected (`tedgyfczmqqnwrlucsoc`)
+> **Latest Build:** `v1.0.0-preview.2` (EAS Cloud Build `#63229964-0ed0-4318-88c3-02c21da9dfcf`)  
+> **Backend:** Supabase live database connected (`tedgyfczmqqnwrlucsoc`)  
+> **Updates:** Over-the-air updates enabled on the `preview` channel. If you installed `v1.0.0-preview`, install this build once; later fixes arrive automatically.
 
-- **Direct APK Download:** [Download esSports-v1.0.0-preview.apk (GitHub Release)](https://github.com/Abir-Zayn/es-sports/releases/download/v1.0.0-preview/esSports-v1.0.0-preview.apk)
-- **GitHub Release Page:** [GitHub Releases - v1.0.0-preview](https://github.com/Abir-Zayn/es-sports/releases/tag/v1.0.0-preview)
-- **Expo Hosted Build:** [Expo EAS Artifacts](https://expo.dev/accounts/abirzayn/projects/esSports/builds/e73421fe-9549-4bb6-8cb2-64777f4287a9)
+- **Direct APK Download:** [Download esSports-v1.0.0-preview.2.apk (GitHub Release)](https://github.com/Abir-Zayn/es-sports/releases/download/v1.0.0-preview.2/esSports-v1.0.0-preview.2.apk)
+- **GitHub Release Page:** [GitHub Releases - v1.0.0-preview.2](https://github.com/Abir-Zayn/es-sports/releases/tag/v1.0.0-preview.2)
+- **Expo Hosted Build:** [Expo EAS Artifacts](https://expo.dev/accounts/abirzayn/projects/esSports/builds/63229964-0ed0-4318-88c3-02c21da9dfcf)
 
 ### Installation Note:
-1. Open the [Direct APK Download Link](https://github.com/Abir-Zayn/es-sports/releases/download/v1.0.0-preview/esSports-v1.0.0-preview.apk) on your Android device.
-2. Tap the downloaded `.apk` file and tap **Install** (allow "Install from unknown sources" if prompted by your browser).
+1. Open the [Direct APK Download Link](https://github.com/Abir-Zayn/es-sports/releases/download/v1.0.0-preview.2/esSports-v1.0.0-preview.2.apk) on your Android device.
+2. Tap the downloaded `.apk` file and tap **Install** (allow "Install from unknown sources" if prompted by your browser). It installs over the previous preview.
 3. Open **esSports** and sign in or sign up with any email & password.
 
 ---
