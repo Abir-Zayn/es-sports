@@ -39,6 +39,7 @@ export type PlayerCareerStats = {
 };
 
 export type SquadPlayer = {
+  id?: string;
   name: string;
   role: string;
   /** Badge on the avatar: "C" for captain, "WK" for keeper. */
