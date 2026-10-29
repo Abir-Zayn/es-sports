@@ -48,7 +48,8 @@ export function ScorerPadScreen() {
       : routes.leave();
   const footer = score.complete ? <>
     <Text style={s.result}>{score.innings === 1 ? 'Innings complete' : computeResult(score)?.result_summary ?? 'Match complete'}</Text>
-    {score.innings === 1 ? <Button label="Set up the chase" onPress={() => routes.replace('setup')} /> : null}
+    {score.innings === 1 ? <Button label="Set up the chase" onPress={() => routes.replace('setup')} />
+      : <Button label="Match summary" onPress={() => routes.push('result')} />}
     <Button label="Undo last ball" variant="secondary" disabled={!history.length} onPress={undo} />
   </> : pendingShot ? <>
     <Button label="Finish shot direction" onPress={() => routes.push('shot')} />
@@ -62,7 +63,7 @@ export function ScorerPadScreen() {
       else setExtra(({ WD: 'wide', NB: 'no-ball', BYE: 'bye', LB: 'leg-bye' } as Record<string, ExtraKind>)[label]);
     }} />;
   return <ScorerFrame footer={footer}>
-    <ScorerHeader title="Scoring · Match 12" subtitle={`Kings vs Strikers · ${score.innings === 1 ? '1st' : '2nd'} innings`} onBack={leave}
+    <ScorerHeader title="Scoring" subtitle={`${setup.title} · ${score.innings === 1 ? '1st' : '2nd'} innings`} onBack={leave}
       trailing={<AppIconTile icon={Radio} accessibilityLabel="Open stream overlay" onPress={() => routes.push('overlay')} />} />
     <SyncBadge sync={sync} />
     <ScoreSummary score={score} />

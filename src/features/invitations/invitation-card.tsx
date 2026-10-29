@@ -5,7 +5,7 @@ import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import type { Invitation } from './types';
 
-type Props = { invitation: Invitation; busy: boolean; onAccept: () => void; onDecline: () => void };
+type Props = { invitation: Invitation; busy: boolean; onAccept: () => void; onDecline: () => void; onManageSquad: () => void };
 
 function headline({ kind, teamName, tournamentName }: Invitation): string {
   return kind === 'team-owner' ? `Own ${teamName ?? 'a team'} in ${tournamentName}` : `Moderate ${tournamentName}`;
@@ -17,7 +17,7 @@ const roleText: Record<Invitation['kind'], string> = {
 };
 
 /** One invite: what it is, who sent it, and Accept or Decline until it is answered. */
-export function InvitationCard({ invitation, busy, onAccept, onDecline }: Props) {
+export function InvitationCard({ invitation, busy, onAccept, onDecline, onManageSquad }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const answered = invitation.status !== 'pending';
@@ -39,6 +39,11 @@ export function InvitationCard({ invitation, busy, onAccept, onDecline }: Props)
       <Text variant="caption" muted>
         {roleText[invitation.kind]}
       </Text>
+      {invitation.kind === 'team-owner' && invitation.status === 'accepted' ? (
+        <View style={styles.actions}>
+          <Button label="Manage squad" size="compact" accessibilityLabel={`Manage ${invitation.teamName ?? 'team'} squad`} onPress={onManageSquad} />
+        </View>
+      ) : null}
       {answered ? null : (
         <View style={styles.actions}>
           <Button label="Accept" size="compact" disabled={busy} accessibilityLabel={`Accept: ${headline(invitation)}`} onPress={onAccept} />

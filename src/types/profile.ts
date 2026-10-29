@@ -66,3 +66,31 @@ export type ProfileData = {
   teams: TeamInfo[];
   recent: Performance[];
 };
+
+/** One player's figures from one completed match, the unit a career is built from. */
+export type PlayerMatchPerformance = {
+  playerId: string;
+  playerName: string;
+  /** False when the player was picked but never came in to bat. */
+  batted: boolean;
+  runs: number;
+  ballsFaced: number;
+  fours: number;
+  sixes: number;
+  isNotOut: boolean;
+  /** Legal balls bowled. Overs as shown are derived from this. */
+  ballsBowled: number;
+  runsConceded: number;
+  wicketsTaken: number;
+  maidens: number;
+};
+
+/** The headline career figures a completed match changes, as shown on the profile. */
+export type PlayerCareerStatsUpdate = {
+  /** Best score, "*" marks not out, e.g. "86*" or "74". */
+  highestRun: string;
+  totalMatches: number;
+  totalWickets: number;
+  /** Career runs per dismissal, e.g. "34.0", or "-" before the first dismissal. */
+  avg: string;
+};

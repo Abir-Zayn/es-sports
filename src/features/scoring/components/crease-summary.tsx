@@ -7,14 +7,22 @@ import { useTheme, useThemedStyles, type Palette } from '@/theme';
 import { oversLabel } from '../engine/score-delivery';
 import type { ScoreState } from '../types';
 
+const strikeRate = (runs: number, balls: number) => (balls > 0 ? ((runs / balls) * 100).toFixed(1) : '0.0');
+const economy = (runs: number, balls: number) => (balls > 0 ? ((runs / balls) * 6).toFixed(2) : '0.00');
+
+/** The two batters with strike rate and boundaries, and the bowler's figures as overs-maidens-runs-wickets. */
 export function CreaseSummary({ score, onSwap, disabled }: { score: ScoreState; onSwap: () => void; disabled: boolean }) {
   const s = useThemedStyles(styles);
   const { colors } = useTheme();
   const bowler = score.bowlers[score.bowlerId];
-  const batter = (id: string, onStrike: boolean) => <View style={[s.batter, onStrike && s.active]}>
-    <Text style={s.name}>{score.batters[id].name}{onStrike ? ' ●' : ''}</Text>
-    <Text style={s.runs}>{score.batters[id].runs} <Text muted style={s.balls}>({score.batters[id].balls})</Text></Text>
-  </View>;
+  const batter = (id: string, onStrike: boolean) => {
+    const b = score.batters[id];
+    return <View style={[s.batter, onStrike && s.active]}>
+      <Text style={s.name}>{b.name}{onStrike ? ' ●' : ''}</Text>
+      <Text style={s.runs}>{b.runs} <Text muted style={s.balls}>({b.balls})</Text></Text>
+      <Text muted style={s.balls}>SR {strikeRate(b.runs, b.balls)} · {b.fours}×4 · {b.sixes}×6</Text>
+    </View>;
+  };
   return <View style={s.wrap}>
     <View style={s.row}>
       {batter(score.strikerId, true)}
@@ -25,7 +33,7 @@ export function CreaseSummary({ score, onSwap, disabled }: { score: ScoreState; 
       {batter(score.nonStrikerId, false)}
     </View>
     <View style={s.bowler}><Text muted style={s.caption}>BOWLER</Text><Text style={s.name}>{bowler.name}</Text>
-      <Text muted style={s.figures}>{oversLabel(bowler.balls)} · {bowler.runs} runs · {bowler.wickets} wkts</Text></View>
+      <Text muted style={s.figures}>{oversLabel(bowler.balls)}-{bowler.maidens}-{bowler.runs}-{bowler.wickets} · Econ {economy(bowler.runs, bowler.balls)}</Text></View>
   </View>;
 }
 const styles = (c: Palette) => StyleSheet.create({

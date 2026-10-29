@@ -14,11 +14,13 @@ type Props = {
   onCreate: () => void;
   onInviteOwner: (team: RosterTeam) => void;
   onCancelInvite: (team: RosterTeam) => void;
+  onShareInvite: (team: RosterTeam) => void;
+  onViewSquad: (team: RosterTeam) => void;
   onDisband: (team: RosterTeam) => void;
 };
 
 /** The tournament's teams, up to its team count, with hairlines between them and a button to add one. */
-export function TeamsSection({ roster, caps, busy, onCreate, onInviteOwner, onCancelInvite, onDisband }: Props) {
+export function TeamsSection({ roster, caps, busy, onCreate, onInviteOwner, onCancelInvite, onShareInvite, onViewSquad, onDisband }: Props) {
   const styles = useThemedStyles(createStyles);
   const full = roster.teams.length >= roster.maxTeams;
   return (
@@ -44,10 +46,13 @@ export function TeamsSection({ roster, caps, busy, onCreate, onInviteOwner, onCa
             <View key={team.id} style={i > 0 ? styles.divided : undefined}>
               <TeamRow
                 team={team}
+                maxSquad={roster.squadRules.maxSquad}
                 caps={caps}
                 busy={busy}
                 onInviteOwner={() => onInviteOwner(team)}
                 onCancelInvite={() => onCancelInvite(team)}
+                onShareInvite={() => onShareInvite(team)}
+                onViewSquad={() => onViewSquad(team)}
                 onDisband={() => onDisband(team)}
               />
             </View>

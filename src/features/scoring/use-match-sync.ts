@@ -42,7 +42,7 @@ export function useMatchSync({ session, matchId, fixtureRef, saved }: Args): Syn
       if (event.type === 'start' && !matchCreated.current) {
         matchCreated.current = true;
         const rows = buildMatchRows(matchId, fixtureRef, session.setup, new Date());
-        jobs.push(() => createMatch(rows.match, rows.players));
+        jobs.push(() => createMatch(rows.match, rows.players, rows.scorers));
       }
       const op = auditToOp(matchId, event);
       if (op) jobs.push(() => applyOp(matchId, op));

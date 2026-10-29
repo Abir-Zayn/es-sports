@@ -7,8 +7,10 @@ export type InvitationStatus = 'pending' | 'accepted' | 'declined';
 export type Invitation = {
   id: string;
   kind: InvitationKind;
+  tournamentId: string;
   tournamentName: string;
   /** The team, for a team owner invite. */
+  teamId: string | null;
   teamName: string | null;
   fromName: string;
   /** When it was sent, as shown, e.g. "2h ago". */

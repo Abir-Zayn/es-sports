@@ -12,6 +12,7 @@ import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from 
 
 import { emptyDraft, validateDraft, type DraftErrors, type TournamentDraft } from './draft';
 import { draftQueryKey, loadDraft, saveDraft } from './draft-storage';
+import { setupParams } from '../roster/setup';
 import { TournamentFields } from './tournament-fields';
 
 export function CreateTournamentScreen() {
@@ -95,7 +96,7 @@ function TournamentForm({ userId, initial }: { userId: string; initial: Tourname
       keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" showsVerticalScrollIndicator={false}>
       <View pointerEvents={mutation.isPending ? 'none' : 'auto'}>
         <TournamentFields draft={draft} errors={errors} onChange={change} onBusyChange={setPickingCover}
-          onAddTeams={() => router.push({ pathname: '/tournament/add-teams', params: { teams: String(draft.teams), name: draft.name } })} />
+          onAddTeams={() => router.push({ pathname: '/tournament/add-teams', params: setupParams(draft) })} />
       </View>
       {Object.values(errors).some(Boolean) ? <Text accessibilityRole="alert" style={styles.error}>Check the highlighted fields to save your tournament.</Text> : null}
       {mutation.isError ? <Text accessibilityRole="alert" style={styles.error}>Could not save your draft. Your entries are still here. Please try again.</Text> : null}

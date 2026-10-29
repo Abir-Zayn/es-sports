@@ -41,6 +41,8 @@ export type PlayerRow = {
   role: string | null;
   in_playing_xi: boolean;
   sort_order: number;
+  /** The app account this player is, or null for a guest. */
+  profile_id: string | null;
 };
 
 export type EventKind = 'innings_start' | 'delivery' | 'bowler' | 'swap_ends';

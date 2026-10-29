@@ -1,3 +1,4 @@
+import type { AvatarTone } from '@/theme';
 import type { TeamInfo } from '@/types/cricket';
 
 export type MatchTabId = 'live' | 'scorecard' | 'overs' | 'wagon' | 'info';
@@ -101,3 +102,55 @@ export type MatchInfoData = {
 };
 
 export type SquadPlayer = { name: string; role: string };
+
+// ---------------------------------------------------------------------------------------------------------------
+// Friendly match: two teams picked on the spot, a toss on the phone, then straight to the scorer.
+// ---------------------------------------------------------------------------------------------------------------
+
+export type TossCall = 'heads' | 'tails';
+export type TossDecision = 'bat' | 'bowl';
+export type FriendlySide = 'teamA' | 'teamB';
+
+export type FriendlyTossResult = {
+  /** The side whose captain called. */
+  calledBy: FriendlySide;
+  call: TossCall;
+  /** How the coin landed. */
+  landed: TossCall;
+  winner: FriendlySide;
+  decision: TossDecision;
+  tossedAt: string;
+};
+
+/** A player in a friendly squad: an app user (`userId`) or a guest added by name and an optional phone. */
+export type FriendlyPlayer = {
+  id: string;
+  name: string;
+  role: string;
+  userId: string | null;
+  phone: string | null;
+  /** False for a reserve on the bench. */
+  playing: boolean;
+};
+
+export type FriendlyTeamSquad = {
+  name: string;
+  short: string;
+  tone: AvatarTone;
+  players: FriendlyPlayer[];
+};
+
+export type FriendlyMatchSetup = {
+  id: string;
+  matchType: 'friendly';
+  overs: number;
+  /** How many players each side fields. Squads may carry up to the squad limit, the rest on the bench. */
+  playersPerSide: number;
+  teamA: FriendlyTeamSquad;
+  teamB: FriendlyTeamSquad;
+  /** Account allowed to enter scores. The creator can always score as well. */
+  assignedScorerId: string;
+  toss: FriendlyTossResult | null;
+  status: 'draft' | 'tossed' | 'live' | 'completed';
+  createdAt: string;
+};

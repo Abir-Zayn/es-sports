@@ -3,9 +3,11 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, Text } from '@/components/ui';
+import { quadrantAngle } from '@/lib/pitch-quadrant';
 import { useThemedStyles, type Palette } from '@/theme';
 
 import { ScorerFrame, ScorerNotice } from './components/scorer-ui';
+import { PitchQuadrantBar } from './components/pitch-quadrant-bar';
 import { directionLabel, ShotField } from './components/shot-field';
 import { localEventId, useScorer } from './scorer-provider';
 import { useScorerRoutes } from './use-scorer-routes';
@@ -28,6 +30,8 @@ export function ShotDirectionScreen() {
       <ScrollView contentContainerStyle={s.content}>
         <View style={s.heading}><View style={s.badge}><Text style={s.runs}>{pendingShot.runs}</Text></View>
           <View style={s.title}><Text variant="heading">Where did the ball go?</Text><Text muted style={s.caption}>{pendingShot.batter} · {pendingShot.ball}</Text></View></View>
+        <Text muted style={s.caption}>One tap saves the zone. Or place it on the field and save.</Text>
+        <PitchQuadrantBar angle={null} onPick={(zone) => finish(quadrantAngle(zone))} />
         <ShotField runs={pendingShot.runs} angle={angle} onChange={setAngle} />
         <Text muted style={s.direction}>Direction <Text style={s.selected}>{directionLabel(angle)}</Text></Text>
         <View style={s.actions}><View style={s.skip}><Button label="Skip" variant="secondary" onPress={() => finish()} /></View>

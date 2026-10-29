@@ -8,7 +8,7 @@ import { PlayingXiEditor } from './components/playing-xi-editor';
 import { ScorerFrame, ScorerHeader, ScorerNotice, ScorerSection } from './components/scorer-ui';
 import { SwitchRow } from './components/switch-row';
 import { createInnings } from './engine/create-innings';
-import { battingFirst, scorerTeams } from './sample-data';
+import { battingFirst, teamCodes } from './sample-data';
 import { localEventId, useScorer } from './scorer-provider';
 import type { MatchSetup } from './types';
 import { useScorerRoutes } from './use-scorer-routes';
@@ -17,6 +17,7 @@ export function ScorerSetupScreen() {
   const { setup, score, dispatch } = useScorer();
   const routes = useScorerRoutes();
   const s = useThemedStyles(styles);
+  const teams = setup.teams;
   const chase = score?.complete && score.innings === 1;
   const batting = chase ? score.bowlingTeam : battingFirst(setup);
   const normalized = normalizeOpeners(setup, batting);
@@ -35,28 +36,30 @@ export function ScorerSetupScreen() {
     <Button label={score.complete ? 'View final score' : 'Resume scoring'} onPress={() => routes.replace('pad')} />
   </ScorerFrame>;
   return <ScorerFrame footer={<Button label={chase ? 'Start second innings' : 'Start match'} onPress={start} />}>
-    <ScorerHeader title={chase ? 'Chase setup' : 'Match setup'} subtitle="Match 12 · Kings vs Strikers · 3:00 PM" onBack={chase ? routes.toPad : routes.leave} />
-    {!chase ? <>
+    <ScorerHeader title={chase ? 'Chase setup' : setup.preset ? 'Openers' : 'Match setup'} subtitle={setup.title} onBack={chase ? routes.toPad : routes.leave} />
+    {chase ? <ScorerNotice>{teams[batting].team.name} need {score.runs + 1} runs to win.</ScorerNotice>
+    : setup.preset ? <ScorerNotice>{teams[setup.tossWinner].team.name} won the toss and chose to {setup.decision}. {teams[batting].team.name} bat first.</ScorerNotice>
+    : <>
       <ScorerSection title="Who won the toss?">
-        <View style={s.teams}>{(['KK', 'CS'] as const).map((code) => <Pressable key={code}
+        <View style={s.teams}>{teamCodes.map((code) => <Pressable key={code}
           accessibilityRole="button" accessibilityState={{ selected: setup.tossWinner === code }}
           onPress={() => configure({ ...setup, tossWinner: code })} style={[s.team, setup.tossWinner === code && s.selected]}>
-          <InitialsAvatar label={code} tone={scorerTeams[code].team.tone} size={40} />
-          <Text style={s.teamName}>{scorerTeams[code].team.name}</Text>
+          <InitialsAvatar label={teams[code].team.short} tone={teams[code].team.tone} size={40} />
+          <Text style={s.teamName}>{teams[code].team.name}</Text>
         </Pressable>)}</View>
       </ScorerSection>
       <ScorerSection title="Chose to">
         <SegmentedControl height={44} options={[{ id: 'bat', label: 'Bat first' }, { id: 'bowl', label: 'Bowl first' }]}
           selected={setup.decision} onSelect={(decision) => configure({ ...setup, decision })} />
-        <Text style={s.batting}>{scorerTeams[batting].team.name} will bat first</Text>
+        <Text style={s.batting}>{teams[batting].team.name} will bat first</Text>
       </ScorerSection>
       <PlayingXiEditor setup={normalized} onChange={configure} />
-    </> : <ScorerNotice>{scorerTeams[batting].team.name} need {score.runs + 1} runs to win.</ScorerNotice>}
+    </>}
     <OpeningPlayers setup={normalized} batting={batting} onChange={configure} />
     <SwitchRow title="Record shot direction" detail="One extra tap per scoring shot, for the wagon wheel" value={setup.recordShots}
       onChange={(recordShots) => configure({ ...normalized, recordShots })} />
     <ScorerNotice>{chase ? 'The result is saved when the chase ends.' : 'Balls are saved to your account as you score. You can resume an unfinished match from here.'}</ScorerNotice>
-    {!chase ? <Button label="Try the reference match" variant="ghost" onPress={() => {
+    {!chase && !setup.preset ? <Button label="Try the reference match" variant="ghost" onPress={() => {
       dispatch({ type: 'demo', id: localEventId() }); routes.replace('pad');
     }} /> : null}
   </ScorerFrame>;

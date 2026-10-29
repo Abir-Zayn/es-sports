@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/theme';
 import { emptyDraft } from '../../create/draft';
 import { loadDraft } from '../../create/draft-storage';
 import { createTeam, fetchRoster, resetRosters } from '../../roster/roster-repository';
+import { parseSetup } from '../../roster/setup';
 import { resetSchedules } from '../schedule-repository';
 import { ScheduleBuilderScreen } from '../schedule-builder-screen';
 
@@ -40,7 +41,7 @@ describe('schedule builder', () => {
     resetRosters();
     resetSchedules();
     jest.mocked(loadDraft).mockResolvedValue(setup);
-    await fetchRoster('draft:me', 4, me);
+    await fetchRoster('draft:me', me, parseSetup({ teams: '4' }));
     for (const [name, short] of [['Strikers', 'CS'], ['Kings', 'KK'], ['Riders', 'PR'], ['Hawks', 'HH']]) {
       await createTeam('draft:me', 'me', { name, short });
     }

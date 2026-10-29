@@ -50,7 +50,10 @@ describe('create tournament form', () => {
       expect(screen.getByRole('button', { name })).toBeTruthy();
     }
     await fireEvent.press(screen.getByRole('button', { name: 'Add teams and staff' }));
-    expect(mockPush).toHaveBeenLastCalledWith({ pathname: '/tournament/add-teams', params: { teams: '8', name: '' } });
+    expect(mockPush).toHaveBeenLastCalledWith({
+      pathname: '/tournament/add-teams',
+      params: { teams: '8', name: '', side: '11', minSquad: '14', maxSquad: '16', opens: '', deadline: '', starts: '' },
+    });
     expect(screen.queryByText('Continue to format')).toBeNull();
   });
   it('validates and saves the form with the selected format', async () => {

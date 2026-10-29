@@ -175,3 +175,6 @@ export type HeadToHead = {
   figures: Record<HeadToHeadScope, HeadToHeadFigures>;
   meetings: HeadToHeadMeeting[];
 };
+
+/** One of the four zones a scorer taps for a scoring shot, seen from the batter facing the bowler. */
+export type PitchQuadrant = 'off_side' | 'straight_v' | 'leg_side' | 'behind_square';

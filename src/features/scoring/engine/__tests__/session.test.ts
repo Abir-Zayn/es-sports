@@ -57,3 +57,12 @@ describe('scorer session', () => {
     expect(scorerReducer(swapped, { type: 'undo', id: 'undo' }).score).toEqual(state.score);
   });
 });
+
+describe('shot records', () => {
+  it('keeps each saved shot direction for the wagon wheel, and nothing for a skipped one', () => {
+    const saved = scorerReducer(record(begin()), { type: 'shot', angle: 270, id: 'save' });
+    expect(saved.score?.shots).toEqual([{ batterId: 'KK-0', runs: 4, angle: 270 }]);
+    const skipped = scorerReducer(record(saved, 2, 'two'), { type: 'shot', id: 'skip' });
+    expect(skipped.score?.shots).toHaveLength(1);
+  });
+});

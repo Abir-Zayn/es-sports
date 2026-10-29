@@ -2,11 +2,13 @@ import { createContext, use, useCallback, useEffect, useEffectEvent, useMemo, us
 
 import { useAuth } from '@/features/auth/auth-provider';
 import type { ProviderProfile } from '@/features/auth/provider-profile';
+import { addPerformances, toBattingStats, toBowlingStats } from '@/lib/career-stats';
 import type { PlayerProfile, ProfileData } from '@/types/profile';
 
 import type { ProfileInput } from './profile-schema';
 import { fetchProfile, isLocalImage, updateProfile, uploadAvatar, type StoredProfile } from './profile-repository';
-import { sampleProfile } from './sample-data';
+import { careerOf, useLedger } from './career-ledger';
+import { sampleCareer, sampleProfile } from './sample-data';
 
 type Status = 'loading' | 'ready' | 'error';
 
@@ -139,16 +141,26 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     [stored, write],
   );
 
+  const ledger = useLedger();
+  const career = useMemo(() => {
+    // Matches finished on this device add to the career; with none, the figures stay as they were.
+    const mine = careerOf(ledger, userId ?? 'me');
+    if (mine.performances.length === 0) return null;
+    const totals = addPerformances(sampleCareer, mine.performances);
+    return { batting: toBattingStats(totals), bowling: toBowlingStats(totals), recent: [...mine.recent, ...sampleProfile.recent] };
+  }, [ledger, userId]);
+
   const value = useMemo<ProfileContextValue>(
     () => ({
       ...sampleProfile,
+      ...career,
       profile: toPlayerProfile(userId ?? 'me', user?.email, stored),
       status,
       reload,
       saveProfile,
       importFromProvider,
     }),
-    [userId, user?.email, stored, status, reload, saveProfile, importFromProvider],
+    [userId, user?.email, stored, status, reload, saveProfile, importFromProvider, career],
   );
   return <ProfileContext value={value}>{children}</ProfileContext>;
 }

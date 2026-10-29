@@ -1,8 +1,10 @@
+import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BOTTOM_NAV_CLEARANCE } from '@/components/navigation/bottom-nav';
+import { FriendlyMatchCta } from '@/features/match/components/friendly-match-cta';
 import { Button, Text } from '@/components/ui';
 import { buildSchedule, emptyScheduleText } from '@/features/tournament/schedule';
 import { ScheduleGroupSection } from '@/features/tournament/sections/schedule-group-section';
@@ -12,6 +14,7 @@ import { useUpcomingMatches } from './use-upcoming-matches';
 
 /** The Matches tab: every upcoming match, grouped by month, as the same bars a tournament's schedule uses. */
 export function MatchesScreen() {
+  const router = useRouter();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = useThemedStyles(createStyles);
@@ -30,6 +33,7 @@ export function MatchesScreen() {
         </Text>
         <Text muted>Upcoming fixtures</Text>
       </View>
+      <FriendlyMatchCta onPress={() => router.push('/match/friendly/setup')} />
       {isPending ? (
         <ActivityIndicator accessibilityLabel="Loading matches" color={colors.textMuted} style={styles.status} />
       ) : isError ? (

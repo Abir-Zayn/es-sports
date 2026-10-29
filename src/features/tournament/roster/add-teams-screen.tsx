@@ -7,55 +7,44 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppIconTile, Button, Text } from '@/components/ui';
 import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import { teamCounts } from '../create/draft';
 import { ConfirmSheet } from './components/confirm-sheet';
 import { CreateTeamSheet } from './components/create-team-sheet';
+import { RegistrationSection } from './components/registration-section';
+import { SquadAlertsSection } from './components/squad-alerts-section';
 import { StaffSection } from './components/staff-section';
 import { TeamsSection } from './components/teams-section';
 import { UserSearchSheet } from './components/user-search-sheet';
 import { capabilitiesOf, roleIn } from './permissions';
-import * as repo from './roster-repository';
-import type { NewTeam, RosterTeam, UserSummary } from './types';
-import { rosterErrorText, useMe, useRoster, useRosterAction } from './use-roster';
+import { parseSetup, type SetupParams } from './setup';
+import { ownerInviteMessage, shareText } from './share-invite';
+import type { RosterTeam } from './types';
+import { rosterErrorText, useMe, useRoster } from './use-roster';
+import { useRosterActions } from './use-roster-actions';
 
-type OpenSheet = { kind: 'moderator' } | { kind: 'create-team' } | { kind: 'team-owner'; team: RosterTeam } | { kind: 'disband'; team: RosterTeam } | null;
+type OpenSheet = { kind: 'moderator' } | { kind: 'create-team' } | { kind: 'team-owner'; team: RosterTeam } | { kind: 'disband'; team: RosterTeam } | { kind: 'lock' } | null;
 
-/** "8" from the route becomes 8; anything that is not a team count the setup offers falls back to 8. */
-function parseTeamCount(value: string | undefined): number {
-  const count = Number(value);
-  return (teamCounts as readonly number[]).includes(count) ? count : 8;
-}
-
-/** Staff and teams of the tournament being set up. What each person may change depends on their role. */
+/** Staff, teams and registration of the tournament being set up. What each person may change depends on their role. */
 export function AddTeamsScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ teams?: string; name?: string }>();
+  const params = useLocalSearchParams<SetupParams>();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const me = useMe();
-  const maxTeams = parseTeamCount(params.teams);
   // One tournament is set up per account until publishing gives it a real id.
   const tournamentId = `draft:${me.id}`;
-  const roster = useRoster(tournamentId, maxTeams, me);
+  const roster = useRoster(tournamentId, me, parseSetup(params));
+  const actions = useRosterActions(tournamentId, me.id);
   const [sheet, setSheet] = useState<OpenSheet>(null);
-
-  const inviteModerator = useRosterAction(tournamentId, maxTeams, (user: UserSummary) => repo.inviteModerator(tournamentId, me.id, user));
-  const removeModerator = useRosterAction(tournamentId, maxTeams, (userId: string) => repo.removeModerator(tournamentId, me.id, userId));
-  const createTeam = useRosterAction(tournamentId, maxTeams, (team: NewTeam) => repo.createTeam(tournamentId, me.id, team));
-  const inviteOwner = useRosterAction(tournamentId, maxTeams, (a: { teamId: string; user: UserSummary }) => repo.inviteTeamOwner(tournamentId, me.id, a.teamId, a.user));
-  const cancelOwner = useRosterAction(tournamentId, maxTeams, (teamId: string) => repo.cancelTeamOwnerInvite(tournamentId, me.id, teamId));
-  const disband = useRosterAction(tournamentId, maxTeams, (teamId: string) => repo.disbandTeam(tournamentId, me.id, teamId));
-  const mutations = [inviteModerator, removeModerator, createTeam, inviteOwner, cancelOwner, disband];
-  const busy = mutations.some((m) => m.isPending);
-  const inlineError = [removeModerator, cancelOwner].find((m) => m.isError)?.error;
+  const { busy, inviteModerator, inviteOwner, createTeam, disband, lock } = actions;
 
   function open(next: OpenSheet) {
-    mutations.forEach((m) => m.reset());
+    actions.reset();
     setSheet(next);
   }
   const close = () => setSheet(null);
   const goBack = () => (router.canGoBack() ? router.back() : router.replace('/tournament/create'));
+  const viewSquad = (team: RosterTeam) => router.push({ pathname: '/tournament/squad', params: { tournamentId, teamId: team.id } });
 
   const data = roster.data;
   const role = data ? roleIn(data, me.id) : null;
@@ -63,6 +52,8 @@ export function AddTeamsScreen() {
   // Each search leaves out people who already hold that role; a moderator may still own a team.
   const staffIds = data ? data.staff.map((m) => m.user.id) : [];
   const ownerIds = data ? data.teams.flatMap((t) => (t.owner ? [t.owner.user.id] : [])) : [];
+  const shareInvite = (team: RosterTeam) =>
+    void shareText(ownerInviteMessage({ fromName: me.name, teamName: team.name, tournamentName: data?.tournamentName ?? '' }));
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
@@ -88,18 +79,29 @@ export function AddTeamsScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}>
-          {inlineError ? (
+          {actions.inlineError ? (
             <Text accessibilityRole="alert" style={styles.error}>
-              {rosterErrorText(inlineError)}
+              {rosterErrorText(actions.inlineError)}
             </Text>
           ) : null}
+          <RegistrationSection
+            roster={data}
+            caps={caps}
+            busy={busy}
+            error={actions.registrationError ? rosterErrorText(actions.registrationError) : null}
+            onSetDeadline={(deadline) => actions.setDeadline.mutate(deadline)}
+            onClose={() => actions.closeRegistration.mutate()}
+            onReopen={() => actions.reopenRegistration.mutate()}
+            onLock={() => open({ kind: 'lock' })}
+          />
+          {caps.seeSquadAlerts && data.locked ? <SquadAlertsSection events={data.audit} /> : null}
           <StaffSection
             roster={data}
             meId={me.id}
             caps={caps}
             busy={busy}
             onInvite={() => open({ kind: 'moderator' })}
-            onRemove={(member) => removeModerator.mutate(member.user.id)}
+            onRemove={(member) => actions.removeModerator.mutate(member.user.id)}
           />
           <TeamsSection
             roster={data}
@@ -107,7 +109,9 @@ export function AddTeamsScreen() {
             busy={busy}
             onCreate={() => open({ kind: 'create-team' })}
             onInviteOwner={(team) => open({ kind: 'team-owner', team })}
-            onCancelInvite={(team) => cancelOwner.mutate(team.id)}
+            onCancelInvite={(team) => actions.cancelOwner.mutate(team.id)}
+            onShareInvite={shareInvite}
+            onViewSquad={viewSquad}
             onDisband={(team) => open({ kind: 'disband', team })}
           />
           {/* Next step once the teams are in: the owner draws the schedule; the rest of the staff can view it. */}
@@ -164,6 +168,16 @@ export function AddTeamsScreen() {
         busy={disband.isPending}
         error={disband.isError ? rosterErrorText(disband.error) : null}
         onConfirm={() => sheet?.kind === 'disband' && disband.mutate(sheet.team.id, { onSuccess: close })}
+        onClose={close}
+      />
+      <ConfirmSheet
+        visible={sheet?.kind === 'lock'}
+        title="Lock all rosters?"
+        message="Registration ends for every team. After this, each squad change needs a reason and alerts you and your moderators. This cannot be undone."
+        confirmLabel="Lock rosters"
+        busy={lock.isPending}
+        error={lock.isError ? rosterErrorText(lock.error) : null}
+        onConfirm={() => lock.mutate(undefined, { onSuccess: close })}
         onClose={close}
       />
     </View>

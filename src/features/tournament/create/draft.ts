@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { SQUAD_LIMITS, defaultSquadRules, sideFormats, squadRulesProblem } from './squad-formats';
+
 export const competitionFormats = [
   { value: 'league-knockout', label: 'League + knockout', detail: 'A league stage, then the race to the final.' },
   { value: 'league', label: 'Round robin', detail: 'Every team plays every other team.' },
@@ -21,16 +23,28 @@ export const draftSchema = z.object({
   competition: z.enum(['league-knockout', 'league', 'knockout']),
   teams: z.union([z.literal(4), z.literal(6), z.literal(8), z.literal(12), z.literal(16)]),
   ball: z.enum(['Tennis', 'Leather']),
+  sideFormat: z.enum(sideFormats).default('standard_11'),
+  playersPerSide: z.number().int().min(SQUAD_LIMITS.sideMin).max(SQUAD_LIMITS.sideMax).default(defaultSquadRules.playersPerSide),
+  minSquad: z.number().int().min(SQUAD_LIMITS.sideMin).max(SQUAD_LIMITS.squadMax).default(defaultSquadRules.minSquad),
+  maxSquad: z.number().int().min(SQUAD_LIMITS.sideMin).max(SQUAD_LIMITS.squadMax).default(defaultSquadRules.maxSquad),
+  /** Both optional: empty means open from now, and until the tournament starts. */
+  registrationOpens: z.string().max(10).default(''),
+  registrationDeadline: z.string().max(10).default(''),
 });
 export type TournamentDraft = z.infer<typeof draftSchema>;
 export type DraftErrors = Partial<Record<keyof TournamentDraft, string>>;
 export const emptyDraft: TournamentDraft = {
   version: 1, name: '', city: '', venue: '', startDate: '', endDate: '', coverUri: '', profileUri: '',
   matchFormat: 'T20', competition: 'league-knockout', teams: 8, ball: 'Tennis',
+  sideFormat: 'standard_11', ...defaultSquadRules, registrationOpens: '', registrationDeadline: '',
 };
 
 export function localDateKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+export function isDateKey(value: string): boolean {
+  return formatDate(value) !== 'Choose a date';
 }
 
 export function formatDate(value: string): string {
@@ -51,5 +65,16 @@ export function validateDraft(draft: TournamentDraft, today = localDateKey(new D
   if (draft.competition === 'knockout' && ![4, 8, 16].includes(draft.teams)) {
     errors.teams = 'Choose 4, 8, or 16 teams for a knockout tournament.';
   }
-  return errors;
+  const squad = squadRulesProblem(draft);
+  if (squad) errors.maxSquad = squad;
+  return { ...errors, ...registrationErrors(draft) };
+}
+
+function registrationErrors({ registrationOpens: opens, registrationDeadline: deadline, startDate }: TournamentDraft): DraftErrors {
+  if (opens && !isDateKey(opens)) return { registrationOpens: 'Choose a valid opening date.' };
+  if (!deadline) return {};
+  if (!isDateKey(deadline)) return { registrationDeadline: 'Choose a valid deadline.' };
+  if (opens && deadline < opens) return { registrationDeadline: 'The deadline must be on or after registrations open.' };
+  if (isDateKey(startDate) && deadline > startDate) return { registrationDeadline: 'Registrations must close by the start date.' };
+  return {};
 }

@@ -22,8 +22,8 @@ export type ScorerSession = {
   pendingShot: ShotDraft | null;
   overlay: OverlaySettings;
 };
-export const newSession = (): ScorerSession => ({
-  setup: initialSetup, score: null, history: [], audit: [], pendingShot: null,
+export const newSession = (setup: MatchSetup = initialSetup): ScorerSession => ({
+  setup, score: null, history: [], audit: [], pendingShot: null,
   overlay: { flashes: true, milestones: true, color: 'blue' },
 });
 export type ScorerAction =
@@ -71,11 +71,16 @@ export function scorerReducer(state: ScorerSession, action: ScorerAction): Score
   if (action.type === 'shot') {
     const update = (deliveries: ScoreState['currentOver']) => deliveries.map((d) =>
       d.id === state.pendingShot?.deliveryId ? { ...d, angle: action.angle } : d);
+    const shot = [...state.score.currentOver, ...(state.score.lastOver?.deliveries ?? [])]
+      .find((d) => d.id === state.pendingShot?.deliveryId);
+    const angle = action.angle;
     return {
       ...state, pendingShot: null,
-      audit: log({ id: action.id, type: 'shot', deliveryId: state.pendingShot?.deliveryId, angle: action.angle }),
+      audit: log({ id: action.id, type: 'shot', deliveryId: state.pendingShot?.deliveryId, angle }),
       score: {
         ...state.score, currentOver: update(state.score.currentOver),
+        shots: shot && angle !== undefined && Number.isFinite(angle)
+          ? [...state.score.shots, { batterId: shot.batterId, runs: shot.runs, angle }] : state.score.shots,
         lastOver: state.score.lastOver ? {
           ...state.score.lastOver, deliveries: update(state.score.lastOver.deliveries),
         } : null,

@@ -7,8 +7,9 @@ import { ThemeProvider } from '@/theme';
 import { AddTeamsScreen } from '../add-teams-screen';
 import { resetRosters } from '../roster-repository';
 
+const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
+  useRouter: () => ({ push: mockPush, back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
   useLocalSearchParams: () => ({ teams: '4', name: 'Port City Cup' }),
 }));
 jest.mock('react-native-safe-area-context', () => ({
@@ -62,16 +63,18 @@ describe('add teams screen', () => {
     await fireEvent.changeText(screen.getByLabelText('Team name'), 'Chattogram Strikers');
     await fireEvent.press(screen.getAllByRole('button', { name: 'Create team' }).at(-1)!);
     expect(await screen.findByText('Chattogram Strikers')).toBeTruthy();
-    expect(screen.getByText('No team owner yet')).toBeTruthy();
+    expect(screen.getByText('No team owner yet · 0/16 players')).toBeTruthy();
+    expect(screen.getByText('Vacant')).toBeTruthy();
 
     await fireEvent.press(screen.getByRole('button', { name: 'Invite owner for Chattogram Strikers' }));
     await searchAndInvite('Nayeem Islam');
-    expect(await screen.findByText('Owner invite sent to Nayeem Islam')).toBeTruthy();
+    expect(await screen.findByText('Owner invite sent to Nayeem Islam · 0/16 players')).toBeTruthy();
+    expect(screen.getByText('Invite pending')).toBeTruthy();
 
     await fireEvent.press(screen.getByRole('button', { name: 'Disband Chattogram Strikers' }));
     expect(screen.getByText(/will be removed from the tournament/)).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Disband team' }));
-    await waitFor(() => expect(screen.queryByText('Owner invite sent to Nayeem Islam')).toBeNull());
+    await waitFor(() => expect(screen.queryByText('Invite pending')).toBeNull());
     expect(screen.getByText('No teams yet.')).toBeTruthy();
   });
 
@@ -81,5 +84,32 @@ describe('add teams screen', () => {
     await fireEvent.changeText(screen.getByLabelText('Team name'), 'K');
     await fireEvent.press(screen.getAllByRole('button', { name: 'Create team' }).at(-1)!);
     expect(await screen.findByText('Enter a team name of 2 to 40 characters.')).toBeTruthy();
+  });
+
+  it('lets the owner close and re-open registration, then lock the rosters after confirming', async () => {
+    await show();
+    expect(screen.getByText('Open until rosters lock')).toBeTruthy();
+    expect(screen.getByText(/11 a side · squads of 14 to 16/)).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Close now' }));
+    expect(await screen.findByText('Registration closed')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Re-open' }));
+    expect(await screen.findByText('Open until rosters lock')).toBeTruthy();
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Lock rosters' }));
+    expect(screen.getByText(/each squad change needs a reason/)).toBeTruthy();
+    await fireEvent.press(screen.getAllByRole('button', { name: 'Lock rosters' }).at(-1)!);
+    expect(await screen.findByText('Rosters locked')).toBeTruthy();
+    expect(screen.getByText('Squad alerts')).toBeTruthy();
+    expect(screen.getByText('No squad changes since the rosters locked.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Close now' })).toBeNull();
+  });
+
+  it('opens a team squad from its row', async () => {
+    await show();
+    await fireEvent.press(screen.getByRole('button', { name: 'Create team' }));
+    await fireEvent.changeText(screen.getByLabelText('Team name'), 'Chattogram Strikers');
+    await fireEvent.press(screen.getAllByRole('button', { name: 'Create team' }).at(-1)!);
+    await fireEvent.press(await screen.findByRole('button', { name: 'View Chattogram Strikers squad' }));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/tournament/squad', params: { tournamentId: 'draft:me', teamId: 'team-1' } });
   });
 });

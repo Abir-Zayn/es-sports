@@ -5,10 +5,12 @@ import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
+import { rosterErrorText, rosterKey, useMe } from '@/features/tournament/roster';
 import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { InvitationCard } from './invitation-card';
 import { answerInvitation, fetchInvitations } from './invitations-repository';
+import type { Invitation } from './types';
 
 export const invitationsKey = ['invitations'] as const;
 
@@ -20,10 +22,17 @@ export function InvitationsScreen() {
   const styles = useThemedStyles(createStyles);
   const queryClient = useQueryClient();
   const invitations = useQuery({ queryKey: invitationsKey, queryFn: fetchInvitations });
+  const me = useMe();
   const answer = useMutation({
-    mutationFn: (a: { id: string; answer: 'accepted' | 'declined' }) => answerInvitation(a.id, a.answer),
-    onSuccess: (list) => queryClient.setQueryData(invitationsKey, list),
+    mutationFn: (a: { invitation: Invitation; answer: 'accepted' | 'declined' }) => answerInvitation(a.invitation.id, a.answer, me),
+    onSuccess: (list, a) => {
+      queryClient.setQueryData(invitationsKey, list);
+      void queryClient.invalidateQueries({ queryKey: rosterKey(a.invitation.tournamentId) });
+    },
   });
+  function manageSquad({ tournamentId, teamId }: Invitation) {
+    if (teamId) router.push({ pathname: '/tournament/squad', params: { tournamentId, teamId } });
+  }
   const list = invitations.data ?? [];
 
   return (
@@ -51,7 +60,7 @@ export function InvitationsScreen() {
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}>
           {answer.isError ? (
             <Text accessibilityRole="alert" style={styles.error}>
-              Could not send your answer. Please try again.
+              {rosterErrorText(answer.error)}
             </Text>
           ) : null}
           {list.length === 0 ? (
@@ -64,8 +73,9 @@ export function InvitationsScreen() {
                 <InvitationCard
                   invitation={invitation}
                   busy={answer.isPending}
-                  onAccept={() => answer.mutate({ id: invitation.id, answer: 'accepted' })}
-                  onDecline={() => answer.mutate({ id: invitation.id, answer: 'declined' })}
+                  onAccept={() => answer.mutate({ invitation, answer: 'accepted' })}
+                  onDecline={() => answer.mutate({ invitation, answer: 'declined' })}
+                  onManageSquad={() => manageSquad(invitation)}
                 />
               </View>
             ))

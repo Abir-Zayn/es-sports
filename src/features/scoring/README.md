@@ -30,6 +30,8 @@ How it fits together (all under `data/`):
 - When the chase ends, `match-result.ts` works out the winner, margin and summary and writes them with both team totals. Undoing that last ball puts the match back to live and clears the result. Level scores are a tie; super overs are not scored.
 - "Try the reference match" is a local demo and is never saved.
 
-Not done yet: a screen to create a standalone match with chosen teams (the scorer still uses the sample squads), the UI to assign extra scorers, spectator screens reading live data, offline storage (unsent balls live in memory, so closing the app while offline loses them), and a tournaments table. Hosted overlay links, automatic stream animations and advanced scoring cases also remain. The overlay Copy button is disabled until a real hosted link exists.
+Friendly matches (`/match/friendly/setup`) hand the scorer a ready setup (`data/staged-setups.ts`): real teams, side size, toss, and an assigned scorer written to `match_scorers`. The engine works for 2 to 16 a side (all out at side size - 1).
+
+Not done yet: spectator screens reading live data, offline storage (unsent balls live in memory, so closing the app while offline loses them), and a tournaments table. Hosted overlay links, automatic stream animations and advanced scoring cases also remain. The overlay Copy button is disabled until a real hosted link exists.
 
 The panel supports the displayed dismissal choices on legal balls. A dismissal combined with a wide/no-ball, no-ball byes, penalty runs, retirements, DLS, and exceptional dismissals need additional entry flows before production use.

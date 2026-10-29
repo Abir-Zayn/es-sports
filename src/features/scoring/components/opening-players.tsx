@@ -5,7 +5,7 @@ import { Pressable, StyleSheet } from 'react-native';
 import { Text } from '@/components/ui';
 import { useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import { otherTeam, playerName, scorerTeams } from '../sample-data';
+import { otherTeam, playerName } from '../sample-data';
 import type { MatchSetup, TeamCode } from '../types';
 import { ScorerSheet } from './scorer-sheet';
 import { ScorerChoice, ScorerSection } from './scorer-ui';
@@ -28,13 +28,13 @@ export function OpeningPlayers({ setup, batting, onChange }: { setup: MatchSetup
   const excluded = field === 'strikerId' ? setup.nonStrikerId : field === 'nonStrikerId' ? setup.strikerId : '';
   return <ScorerSection title="Openers & opening bowler">
     {(Object.keys(labels) as (keyof typeof labels)[]).map((key) => <Pressable key={key}
-      accessibilityRole="button" accessibilityLabel={`Choose ${labels[key]}: ${playerName(setup[key])}`}
+      accessibilityRole="button" accessibilityLabel={`Choose ${labels[key]}: ${playerName(setup, setup[key])}`}
       style={s.row} onPress={() => setField(key)}>
-      <Text muted style={s.label}>{labels[key]}</Text><Text style={s.name}>{playerName(setup[key])}</Text>
+      <Text muted style={s.label}>{labels[key]}</Text><Text style={s.name}>{playerName(setup, setup[key])}</Text>
       <ChevronDown size={18} color={colors.textMuted} />
     </Pressable>)}
     <ScorerSheet visible={field !== null} title={`Choose ${field ? labels[field].toLowerCase() : 'player'}`} onClose={() => setField(null)}>
-      {scorerTeams[team].players.filter((p) => setup.playingXi[team].includes(p.id) && p.id !== excluded).map((p) =>
+      {setup.teams[team].players.filter((p) => setup.playingXi[team].includes(p.id) && p.id !== excluded).map((p) =>
         <ScorerChoice key={p.id} label={p.name} detail={p.role} selected={!!field && setup[field] === p.id}
           onPress={() => { if (field) onChange({ ...setup, [field]: p.id }); setField(null); }} />)}
     </ScorerSheet>
