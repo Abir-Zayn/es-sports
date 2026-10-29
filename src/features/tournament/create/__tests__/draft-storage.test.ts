@@ -1,13 +1,14 @@
 import * as SecureStore from 'expo-secure-store';
 
 import { emptyDraft } from '../draft';
-import { loadDraft, saveDraft } from '../draft-storage';
+import { clearDraft, loadDraft, saveDraft } from '../draft-storage';
 import { discardCover, persistCover } from '../cover-storage';
 
-jest.mock('expo-secure-store', () => ({ getItemAsync: jest.fn(), setItemAsync: jest.fn() }));
+jest.mock('expo-secure-store', () => ({ getItemAsync: jest.fn(), setItemAsync: jest.fn(), deleteItemAsync: jest.fn() }));
 jest.mock('../cover-storage', () => ({ persistCover: jest.fn(async (_id: string, uri: string) => uri), discardCover: jest.fn() }));
 const getItem = jest.mocked(SecureStore.getItemAsync);
 const setItem = jest.mocked(SecureStore.setItemAsync);
+const deleteItem = jest.mocked(SecureStore.deleteItemAsync);
 
 describe('account-scoped tournament draft storage', () => {
   beforeEach(() => { jest.clearAllMocks(); getItem.mockResolvedValue(null); setItem.mockResolvedValue(); });
@@ -54,5 +55,12 @@ describe('account-scoped tournament draft storage', () => {
     await expect(saveDraft('player-a', { ...emptyDraft, coverUri: 'file:///picked.jpg', profileUri: 'file:///profile.jpg' })).rejects.toThrow('Photo copy failed');
     expect(discardCover).toHaveBeenCalledWith('player-a', 'file:///new-cover.jpg');
     expect(setItem).not.toHaveBeenCalled();
+  });
+  it('clears draft and discards both cover and profile images', async () => {
+    getItem.mockResolvedValue(JSON.stringify({ ...emptyDraft, coverUri: 'file:///cover.jpg', profileUri: 'file:///profile.jpg' }));
+    await clearDraft('player-a');
+    expect(deleteItem).toHaveBeenCalledWith('tournament-draft-v1.player-a');
+    expect(discardCover).toHaveBeenCalledWith('player-a', 'file:///cover.jpg');
+    expect(discardCover).toHaveBeenCalledWith('player-a', 'file:///profile.jpg');
   });
 });

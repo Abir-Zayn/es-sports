@@ -49,3 +49,16 @@ export async function saveDraft(userId: string, draft: TournamentDraft): Promise
     throw error;
   }
 }
+
+/** Deletes a saved draft and cleans up all associated cover and profile images from disk. */
+export async function clearDraft(userId: string): Promise<void> {
+  const previous = await loadDraft(userId);
+  const key = storageKey(userId);
+  if (Platform.OS === 'web') globalThis.localStorage.removeItem(key);
+  else await SecureStore.deleteItemAsync(key);
+  for (const uri of new Set([previous?.coverUri, previous?.profileUri])) {
+    if (uri) {
+      try { discardCover(userId, uri); } catch {}
+    }
+  }
+}

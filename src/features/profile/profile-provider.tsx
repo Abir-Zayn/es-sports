@@ -6,7 +6,14 @@ import { addPerformances, toBattingStats, toBowlingStats } from '@/lib/career-st
 import type { PlayerProfile, ProfileData } from '@/types/profile';
 
 import type { ProfileInput } from './profile-schema';
-import { fetchProfile, isLocalImage, updateProfile, uploadAvatar, type StoredProfile } from './profile-repository';
+import {
+  deleteAvatar,
+  fetchProfile,
+  isLocalImage,
+  updateProfile,
+  uploadAvatar,
+  type StoredProfile,
+} from './profile-repository';
 import { careerOf, useLedger } from './career-ledger';
 import { sampleCareer, sampleProfile } from './sample-data';
 
@@ -111,7 +118,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const saveProfile = useCallback(
     async (input: ProfileInput, avatarUri: string | null) => {
       if (!userId) throw new Error('Not signed in');
-      const avatarUrl = avatarUri && isLocalImage(avatarUri) ? await uploadAvatar(userId, avatarUri) : avatarUri;
+      let avatarUrl = avatarUri;
+      if (avatarUri && isLocalImage(avatarUri)) {
+        avatarUrl = await uploadAvatar(userId, avatarUri);
+      } else if (!avatarUri && stored?.avatarUrl) {
+        await deleteAvatar(userId);
+      }
       await write({
         fullName: input.fullName,
         area: input.area || null,
@@ -124,7 +136,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         avatarUrl,
       });
     },
-    [userId, write],
+    [userId, write, stored?.avatarUrl],
   );
 
   const importFromProvider = useCallback(
@@ -133,12 +145,15 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       if (!stored) return false;
       const patch: Partial<StoredProfile> = {};
       if (provider.fullName && (mode === 'overwrite' || !stored.fullName)) patch.fullName = provider.fullName;
-      if (provider.avatarUrl && (mode === 'overwrite' || !stored.avatarUrl)) patch.avatarUrl = provider.avatarUrl;
+      if (provider.avatarUrl && (mode === 'overwrite' || !stored.avatarUrl)) {
+        patch.avatarUrl = provider.avatarUrl;
+        if (userId && stored.avatarUrl) await deleteAvatar(userId);
+      }
       if (Object.keys(patch).length === 0) return false;
       await write(patch);
       return true;
     },
-    [stored, write],
+    [stored, write, userId],
   );
 
   const ledger = useLedger();

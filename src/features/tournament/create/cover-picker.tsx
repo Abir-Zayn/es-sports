@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import Trophy from 'lucide-react-native/icons/trophy';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
@@ -52,9 +52,27 @@ function TournamentPhotoPicker({ uri, onChange, onBusyChange, onError, kind }: P
       if (mounted.current) { setBusy(false); onBusyChange(false); }
     }
   }
+
+  function handlePress() {
+    if (busy) return;
+    if (uri && uri !== failedUri) {
+      Alert.alert(
+        `Tournament ${profile ? 'profile photo' : 'cover'}`,
+        'Choose an action for this image',
+        [
+          { text: 'Change photo', onPress: () => { void pick(); } },
+          { text: 'Remove', style: 'destructive', onPress: () => onChange('') },
+          { text: 'Cancel', style: 'cancel' },
+        ],
+      );
+    } else {
+      void pick();
+    }
+  }
+
   return <View style={profile ? styles.profileWrap : styles.wrap}>
     <Pressable accessibilityRole="button" accessibilityLabel={`${uri ? 'Change' : 'Add'} tournament ${kind}`}
-      accessibilityState={{ busy, disabled: busy }} disabled={busy} onPress={() => { void pick(); }}
+      accessibilityState={{ busy, disabled: busy }} disabled={busy} onPress={handlePress}
       style={({ pressed }) => [profile ? styles.profile : styles.cover, pressed && styles.pressed]}>
       {uri && uri !== failedUri ? <Image source={{ uri }} style={StyleSheet.absoluteFill} contentFit="cover" accessibilityLabel={`Tournament ${kind}`}
         onError={() => { setFailedUri(uri); onError(`This ${kind} is unavailable. Tap to choose another photo.`); }} /> : profile ? <Trophy size={28} color={colors.link} strokeWidth={1.5} /> : (

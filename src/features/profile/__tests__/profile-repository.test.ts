@@ -1,6 +1,17 @@
-import { isLocalImage, toDbPatch, toStoredProfile } from '../profile-repository';
+import { deleteAvatar, isLocalImage, toDbPatch, toStoredProfile } from '../profile-repository';
 
-jest.mock('@/lib/supabase', () => ({ supabase: {} }));
+const mockList = jest.fn();
+const mockRemove = jest.fn();
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    storage: {
+      from: jest.fn(() => ({
+        list: mockList,
+        remove: mockRemove,
+      })),
+    },
+  },
+}));
 
 describe('toStoredProfile', () => {
   it('combines the public and private rows', () => {
@@ -56,5 +67,25 @@ describe('isLocalImage', () => {
     expect(isLocalImage('file:///data/user/0/cache/ImagePicker/x.jpg')).toBe(true);
     expect(isLocalImage('content://media/picker/0/x')).toBe(true);
     expect(isLocalImage('https://lh3.googleusercontent.com/a/x')).toBe(false);
+  });
+});
+
+describe('deleteAvatar', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('lists the user folder and removes all old avatars', async () => {
+    mockList.mockResolvedValueOnce({ data: [{ name: 'avatar-1.jpg' }, { name: 'avatar-2.jpg' }] });
+    mockRemove.mockResolvedValueOnce({ data: [], error: null });
+    await deleteAvatar('user-123');
+    expect(mockList).toHaveBeenCalledWith('user-123');
+    expect(mockRemove).toHaveBeenCalledWith(['user-123/avatar-1.jpg', 'user-123/avatar-2.jpg']);
+  });
+
+  it('does nothing if no files exist in the user folder', async () => {
+    mockList.mockResolvedValueOnce({ data: [] });
+    await deleteAvatar('user-456');
+    expect(mockRemove).not.toHaveBeenCalled();
   });
 });

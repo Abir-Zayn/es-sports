@@ -119,5 +119,14 @@ export async function uploadAvatar(userId: string, localUri: string): Promise<st
   return supabase.storage.from(AVATAR_BUCKET).getPublicUrl(path).data.publicUrl;
 }
 
+/** Removes all uploaded avatars in the user's folder from Supabase Storage. */
+export async function deleteAvatar(userId: string): Promise<void> {
+  try {
+    const { data: files } = await supabase.storage.from(AVATAR_BUCKET).list(userId);
+    const stale = (files ?? []).map((file) => `${userId}/${file.name}`);
+    if (stale.length > 0) await supabase.storage.from(AVATAR_BUCKET).remove(stale);
+  } catch {}
+}
+
 /** True for a picked photo on the device, false for a hosted URL such as an uploaded or Google photo. */
 export const isLocalImage = (uri: string) => !/^https?:\/\//.test(uri);
