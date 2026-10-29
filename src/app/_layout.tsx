@@ -57,6 +57,7 @@ function AppShell() {
             <Stack.Screen name="claim/[token]" />
             <Stack.Screen name="tournament/schedule" />
             <Stack.Screen name="invitations" />
+            <Stack.Screen name="notifications" />
             <Stack.Screen name="tournament/[id]/index" />
             <Stack.Screen name="tournament/[id]/head-to-head" />
             <Stack.Screen name="tournament/[id]/matches" />
