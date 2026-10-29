@@ -10,6 +10,7 @@ import {
   RosterError,
   searchUsers,
 } from '../roster-repository';
+import { parseSetup } from '../setup';
 import type { Roster, UserSummary } from '../types';
 
 const me: UserSummary = { id: 'me', name: 'Organiser', area: null, avatarUrl: null };
@@ -19,7 +20,7 @@ const T = 'draft:me';
 
 /** The stored roster, with `id` made an accepted moderator, as accepting the invite will do. */
 async function asAcceptedModerator(id: string): Promise<Roster> {
-  const roster = await fetchRoster(T, 4, me);
+  const roster = await fetchRoster(T, me, parseSetup({ teams: '4' }));
   roster.staff = roster.staff.map((m) => (m.user.id === id ? { ...m, status: 'accepted' } : m));
   return roster;
 }
@@ -28,7 +29,7 @@ describe('roster repository (mock)', () => {
   beforeEach(resetRosters);
 
   it('makes the first viewer the owner', async () => {
-    const roster = await fetchRoster(T, 8, me);
+    const roster = await fetchRoster(T, me, parseSetup({ teams: '8' }));
     expect(roster.staff).toEqual([{ user: me, role: 'owner', status: 'accepted' }]);
     expect(roster.maxTeams).toBe(8);
   });
@@ -41,7 +42,7 @@ describe('roster repository (mock)', () => {
   });
 
   it('invites and removes moderators, refusing anyone but the owner', async () => {
-    await fetchRoster(T, 4, me);
+    await fetchRoster(T, me, parseSetup({ teams: '4' }));
     const invited = await inviteModerator(T, 'me', rafi);
     expect(invited.staff[1]).toEqual({ user: rafi, role: 'moderator', status: 'pending' });
     await expect(inviteModerator(T, 'u-rafi', nayeem)).rejects.toBeInstanceOf(RosterError);
@@ -50,7 +51,7 @@ describe('roster repository (mock)', () => {
   });
 
   it('lets an accepted moderator add teams and invite owners, but not disband', async () => {
-    await fetchRoster(T, 4, me);
+    await fetchRoster(T, me, parseSetup({ teams: '4' }));
     await inviteModerator(T, 'me', rafi);
     await asAcceptedModerator('u-rafi');
     const withTeam = await createTeam(T, 'u-rafi', { name: 'Chattogram Strikers', short: 'CS' });
@@ -65,7 +66,7 @@ describe('roster repository (mock)', () => {
   });
 
   it('refuses a team past the tournament team count', async () => {
-    await fetchRoster(T, 4, me);
+    await fetchRoster(T, me, parseSetup({ teams: '4' }));
     for (const [name, short] of [['Alpha', 'AL'], ['Bravo', 'BR'], ['Charlie', 'CH'], ['Delta', 'DE']]) {
       await createTeam(T, 'me', { name, short });
     }

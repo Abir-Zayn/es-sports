@@ -13,6 +13,7 @@ import { CoverPicker, ProfilePhotoPicker } from './cover-picker';
 import { DatePicker } from './date-picker';
 import { competitionFormats, matchFormats, teamCounts, type DraftErrors, type TournamentDraft } from './draft';
 import { CardDivider, SelectionField, SettingsCard } from './settings-card';
+import { SquadFormatFields } from './squad-format-fields';
 
 type Props = {
   draft: TournamentDraft; errors: DraftErrors; onBusyChange: (busy: boolean) => void; onAddTeams: () => void;
@@ -59,6 +60,7 @@ export function TournamentFields({ draft, errors, onChange, onBusyChange, onAddT
       <SelectionField label="Number of teams" icon={Users} value={draft.teams} options={teamCounts.map((value) => ({ value, label: `${value} teams` }))} onChange={(value) => onChange('teams', value)} />
       {errors.teams ? <Text variant="caption" style={[styles.error, styles.locationError]} accessibilityLiveRegion="polite">{errors.teams}</Text> : null}
     </SettingsCard>
+    <SquadFormatFields draft={draft} errors={errors} onChange={onChange} />
     <SettingsCard>
       <Pressable accessibilityRole="button" accessibilityLabel="Add teams and staff" onPress={onAddTeams}
         style={({ pressed }) => [styles.addTeams, pressed && styles.pressed]}>

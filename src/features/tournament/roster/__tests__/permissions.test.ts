@@ -7,23 +7,17 @@ import {
   suggestShortName,
   teamOwnerInviteProblem,
 } from '../permissions';
-import type { Roster, UserSummary } from '../types';
-
-const user = (id: string): UserSummary => ({ id, name: id, area: null, avatarUrl: null });
-
-const roster = (over: Partial<Roster> = {}): Roster => ({
-  tournamentId: 't',
-  maxTeams: 4,
-  staff: [{ user: user('owner'), role: 'owner', status: 'accepted' }],
-  teams: [],
-  ...over,
-});
+import { roster, team, user } from '../__fixtures__/roster-fixture';
 
 describe('tournament roles', () => {
-  it('gives the owner everything, a moderator teams only, anyone else nothing', () => {
-    expect(capabilitiesOf('owner')).toEqual({ manageStaff: true, manageTeams: true, disbandTeams: true, manageSchedule: true });
-    expect(capabilitiesOf('moderator')).toEqual({ manageStaff: false, manageTeams: true, disbandTeams: false, manageSchedule: false });
-    expect(capabilitiesOf(null)).toEqual({ manageStaff: false, manageTeams: false, disbandTeams: false, manageSchedule: false });
+  it('gives the owner everything, a moderator teams and alerts only, anyone else nothing', () => {
+    expect(capabilitiesOf('owner')).toEqual({
+      manageStaff: true, manageTeams: true, disbandTeams: true, manageSchedule: true, manageRegistration: true, seeSquadAlerts: true,
+    });
+    expect(capabilitiesOf('moderator')).toEqual({
+      manageStaff: false, manageTeams: true, disbandTeams: false, manageSchedule: false, manageRegistration: false, seeSquadAlerts: true,
+    });
+    expect(Object.values(capabilitiesOf(null)).every((allowed) => !allowed)).toBe(true);
   });
 
   it('counts a moderator only after they accept', () => {
@@ -57,7 +51,7 @@ describe('moderator invites', () => {
 });
 
 describe('teams', () => {
-  const one = roster({ teams: [{ id: 'a', name: 'Chattogram Strikers', short: 'CS', owner: { user: user('o1'), status: 'pending' } }] });
+  const one = roster({ teams: [team('a', { name: 'Chattogram Strikers', short: 'CS', owner: { user: user('o1'), status: 'pending' } })] });
 
   it('lets the owner and moderators add teams up to the team count, with unique names', () => {
     expect(createTeamProblem(one, null, { name: 'Kings', short: 'KK' })).toMatch(/owner or a moderator/);
@@ -70,7 +64,7 @@ describe('teams', () => {
   });
 
   it('gives each team one owner, and each person at most one team', () => {
-    const two = roster({ teams: [...one.teams, { id: 'b', name: 'Kings', short: 'KK', owner: null }] });
+    const two = roster({ teams: [...one.teams, team('b', { name: 'Kings', short: 'KK' })] });
     expect(teamOwnerInviteProblem(two, 'owner', 'a', 'o2')).toMatch(/already has an owner/);
     expect(teamOwnerInviteProblem(two, 'owner', 'b', 'o1')).toMatch(/already owns a team/);
     expect(teamOwnerInviteProblem(two, 'moderator', 'b', 'o2')).toBeNull();

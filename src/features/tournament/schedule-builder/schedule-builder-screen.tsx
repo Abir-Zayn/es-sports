@@ -24,7 +24,8 @@ export function ScheduleBuilderScreen() {
   const me = useMe();
   const draft = useQuery({ queryKey: draftQueryKey(me.id), queryFn: () => loadDraft(me.id), enabled: Boolean(me.id) });
   const tournamentId = `draft:${me.id}`;
-  const roster = useRoster(tournamentId, draft.data?.teams ?? 8, me);
+  // Reached from the teams screen, which has already created the roster.
+  const roster = useRoster(tournamentId, me);
   const goBack = () => (router.canGoBack() ? router.back() : router.replace('/tournament/create'));
 
   let body: ReactNode;

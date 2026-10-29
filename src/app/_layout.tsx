@@ -52,6 +52,8 @@ function AppShell() {
             <Stack.Screen name="team/[id]/squad" />
             <Stack.Screen name="tournament/create" />
             <Stack.Screen name="tournament/add-teams" />
+            <Stack.Screen name="tournament/squad" />
+            <Stack.Screen name="claim/[token]" />
             <Stack.Screen name="tournament/schedule" />
             <Stack.Screen name="invitations" />
             <Stack.Screen name="tournament/[id]/index" />

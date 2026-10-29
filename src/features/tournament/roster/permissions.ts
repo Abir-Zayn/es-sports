@@ -6,10 +6,17 @@ const SHORT_NAME = /^[A-Z]{2,4}$/;
 
 /**
  * What each tournament role may do. The owner runs everything; moderators help with teams but cannot change
- * the staff, disband a team or set the schedule. Anyone else only looks. The server enforces the same rules;
- * these are for the UI.
+ * the staff, disband a team, set the schedule or run registration. Both see squad alerts. Anyone else only
+ * looks. The server enforces the same rules; these are for the UI.
  */
-export type Capabilities = { manageStaff: boolean; manageTeams: boolean; disbandTeams: boolean; manageSchedule: boolean };
+export type Capabilities = {
+  manageStaff: boolean;
+  manageTeams: boolean;
+  disbandTeams: boolean;
+  manageSchedule: boolean;
+  manageRegistration: boolean;
+  seeSquadAlerts: boolean;
+};
 
 export function capabilitiesOf(role: TournamentRole | null): Capabilities {
   return {
@@ -17,6 +24,8 @@ export function capabilitiesOf(role: TournamentRole | null): Capabilities {
     manageTeams: role === 'owner' || role === 'moderator',
     disbandTeams: role === 'owner',
     manageSchedule: role === 'owner',
+    manageRegistration: role === 'owner',
+    seeSquadAlerts: role === 'owner' || role === 'moderator',
   };
 }
 

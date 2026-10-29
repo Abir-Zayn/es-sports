@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Button, SearchField, Text } from '@/components/ui';
@@ -24,6 +24,10 @@ type Props = {
   error: string | null;
   onInvite: (user: UserSummary) => void;
   onClose: () => void;
+  /** The button on each result. */
+  actionLabel?: string;
+  /** Fields shown under the hint that apply to whoever is picked, e.g. their playing role. */
+  children?: ReactNode;
 };
 
 /** Finds a person by name and sends them an invite. Typing is debounced and stale searches are cancelled. */
@@ -36,7 +40,7 @@ export function UserSearchSheet({ visible, title, onClose, ...body }: Props) {
   );
 }
 
-function SearchBody({ hint, excludeIds, inviting, error, onInvite }: Omit<Props, 'visible' | 'title' | 'onClose'>) {
+function SearchBody({ hint, excludeIds, inviting, error, onInvite, actionLabel = 'Invite', children }: Omit<Props, 'visible' | 'title' | 'onClose'>) {
   const { colors } = useTheme();
   const [text, setText] = useState('');
   const [query, setQuery] = useState('');
@@ -56,6 +60,7 @@ function SearchBody({ hint, excludeIds, inviting, error, onInvite }: Omit<Props,
   return (
     <>
       <Text muted>{hint}</Text>
+      {children}
       {/* SearchField grows along its parent's main axis; a row makes that its width, not its height. */}
       <View style={styles.searchRow}>
         <SearchField value={text} onChangeText={setText} placeholder="Search players by name" accessibilityLabel="Search players by name" autoFocus />
@@ -92,10 +97,10 @@ function SearchBody({ hint, excludeIds, inviting, error, onInvite }: Omit<Props,
               trailing={
                 <View>
                   <Button
-                    label="Invite"
+                    label={actionLabel}
                     size="compact"
                     disabled={inviting}
-                    accessibilityLabel={`Invite ${user.name}`}
+                    accessibilityLabel={`${actionLabel} ${user.name}`}
                     onPress={() => onInvite(user)}
                   />
                 </View>
