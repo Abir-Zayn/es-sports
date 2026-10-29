@@ -1,5 +1,5 @@
 import Plus from 'lucide-react-native/icons/plus';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
@@ -24,6 +24,7 @@ const filters: { id: MemberFilter; label: string }[] = [
 
 /** Everyone attached to the team, filterable by role, with an invite button. */
 export function TeamMembersScreen() {
+  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const teamId = id ?? 'CS';
   const { colors } = useTheme();
@@ -45,7 +46,7 @@ export function TeamMembersScreen() {
           size="compact"
           label="Invite player"
           leading={<Plus size={16} color={colors.primaryText} strokeWidth={2.6} />}
-          onPress={() => comingSoon('Inviting players')}
+          onPress={() => router.push('/tournament/squad')}
         />
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll} contentContainerStyle={styles.chips}>
@@ -53,7 +54,12 @@ export function TeamMembersScreen() {
       </ScrollView>
       <View>
         {shown.map((member) => (
-          <MemberRow key={member.name} member={member} tone={team.tone} onPress={() => comingSoon('Player')} />
+          <MemberRow
+            key={member.name}
+            member={member}
+            tone={team.tone}
+            onPress={() => router.push({ pathname: '/player/[id]', params: { id: member.name, name: member.name, role: member.detail } })}
+          />
         ))}
       </View>
     </TeamScreenFrame>

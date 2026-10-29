@@ -1,8 +1,8 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppAvatar, SegmentedControl, Text, type SegmentedOption } from '@/components/ui';
-import { comingSoon } from '@/lib/coming-soon';
 import { initialsOf } from '@/lib/initials';
 import { useThemedStyles, type Palette } from '@/theme';
 
@@ -10,6 +10,7 @@ import type { MatchInfoData } from '../types';
 
 /** Both squads: pick a team, then see its playing XI and the bench. */
 export function SquadsSection({ squads }: { squads: MatchInfoData['squads'] }) {
+  const router = useRouter();
   const styles = useThemedStyles(createStyles);
   const [selected, setSelected] = useState(squads[0].team.short);
   const squad = squads.find((s) => s.team.short === selected) ?? squads[0];
@@ -31,7 +32,7 @@ export function SquadsSection({ squads }: { squads: MatchInfoData['squads'] }) {
             key={player.name}
             accessibilityRole="button"
             accessibilityLabel={`${player.name}, ${player.role}`}
-            onPress={() => comingSoon('Player')}
+            onPress={() => router.push({ pathname: '/player/[id]', params: { id: player.name, name: player.name, role: player.role } })}
             style={({ pressed }) => [styles.player, pressed && styles.pressed]}
           >
             <AppAvatar label={initialsOf(player.name)} size={32} />

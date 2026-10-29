@@ -48,15 +48,15 @@ export function HomeScreen() {
         onSearch={() => router.push('/search')}
         onNotifications={() => router.push('/notifications')}
       />
-      <LiveSection matches={liveMatches} onSeeAll={() => comingSoon('Live matches')} onMatchPress={(match) => openMatch(match.id, 'live')} />
+      <LiveSection matches={liveMatches} onSeeAll={() => router.navigate('/matches')} onMatchPress={(match) => openMatch(match.id, 'live')} />
       <View style={styles.gutter}><FriendlyMatchCta onPress={() => router.push('/match/friendly/setup')} /></View>
       <ContractedTeams
         teams={myTeams}
-        onManage={() => comingSoon('Team management')}
+        onManage={() => openTeam('cs')}
         onTeamPress={(team) => openTeam(team.short)}
-        onJoin={() => comingSoon('Joining a team')}
+        onJoin={() => router.push('/tournament/schedule')}
       />
-      <UpcomingFixtures fixtures={upcoming} onAllFixtures={() => comingSoon('Fixtures')} onRemind={() => comingSoon('Reminders')} />
+      <UpcomingFixtures fixtures={upcoming} onAllFixtures={() => router.navigate('/matches')} onRemind={() => comingSoon('Reminders')} />
       <TournamentsToFollow tournaments={tournaments} onTournamentPress={(t) => router.push({ pathname: '/tournament/[id]', params: { id: t.id } })} />
     </ScrollView>
   );

@@ -1,9 +1,8 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, Share, StyleSheet, View } from 'react-native';
 
 import { useOpenMatch } from '@/features/match/use-match-routes';
-import { comingSoon } from '@/lib/coming-soon';
 import { sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { TeamHero } from './components/team-hero';
@@ -35,7 +34,9 @@ export function TeamOverviewScreen() {
         following={following}
         onToggleFollow={() => setFollowing((value) => !value)}
         onBack={routes.goBack}
-        onShare={() => comingSoon('Sharing')}
+        onShare={() => {
+          void Share.share({ message: `Check out ${profile.team.name} on esSports!` }).catch(() => {});
+        }}
       />
       <TeamTabs teamId={teamId} selected="overview" />
       <View style={styles.body}>

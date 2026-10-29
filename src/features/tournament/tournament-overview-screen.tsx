@@ -1,9 +1,8 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, Share, StyleSheet, View } from 'react-native';
 
 import { useOpenMatch } from '@/features/match/use-match-routes';
-import { comingSoon } from '@/lib/coming-soon';
 import { spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { LiveMatchSummary } from './components/live-match-summary';
@@ -33,7 +32,9 @@ export function TournamentOverviewScreen() {
         following={following}
         onToggleFollow={() => setFollowing((value) => !value)}
         onBack={routes.goBack}
-        onShare={() => comingSoon('Sharing')}
+        onShare={() => {
+          void Share.share({ message: `Follow ${tournament.name} on esSports!` }).catch(() => {});
+        }}
       />
 
       <TournamentSectionTabs tournamentId={tournamentId} selected="overview" />
