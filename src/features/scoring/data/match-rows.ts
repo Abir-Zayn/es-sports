@@ -20,7 +20,9 @@ export function buildMatchRows(
   const match: MatchInsert = {
     id: matchId, fixture_ref: fixtureRef, title: setup.title || `${a.name} vs ${b.name}`,
     team_a_name: a.name, team_a_short: a.short, team_a_tone: a.tone,
+    ...(a.avatarUri ? { team_a_image_url: a.avatarUri } : {}),
     team_b_name: b.name, team_b_short: b.short, team_b_tone: b.tone,
+    ...(b.avatarUri ? { team_b_image_url: b.avatarUri } : {}),
     overs_limit: setup.oversLimit, status: 'live', toss_winner_side: sideOf[setup.tossWinner],
     toss_decision: setup.decision, record_shots: setup.recordShots, started_at: startedAt.toISOString(),
   };
@@ -41,7 +43,8 @@ function teamFromRows(match: MatchRow, players: PlayerRow[], side: Side): Scorer
     ? [match.team_a_name, match.team_a_short, match.team_a_tone]
     : [match.team_b_name, match.team_b_short, match.team_b_tone];
   return {
-    team: { name, short, tone: tone(colour) },
+    team: { name, short, tone: tone(colour), ...((side === 'a' ? match.team_a_image_url : match.team_b_image_url)
+      ? { avatarUri: (side === 'a' ? match.team_a_image_url : match.team_b_image_url) ?? undefined } : {}) },
     players: players.filter((p) => p.side === side).sort((x, y) => x.sort_order - y.sort_order)
       .map((p) => ({ id: p.key, name: p.name, role: p.role ?? '', profileId: p.profile_id })),
   };

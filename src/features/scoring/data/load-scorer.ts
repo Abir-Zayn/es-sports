@@ -1,7 +1,7 @@
 import { localEventId } from '../local-id';
 import { newSession, type ScorerSession } from '../session-reducer';
 import { computeResult } from './match-result';
-import { fetchEvents, fetchPlayers, findMatch, isUuid } from './match-repository';
+import { canScoreMatch, fetchEvents, fetchPlayers, findMatch, isUuid } from './match-repository';
 import { FRIENDLY_REF_PREFIX, setupFromRows } from './match-rows';
 import { replayEvents } from './replay';
 import { stagedSetup } from './staged-setups';
@@ -35,7 +35,13 @@ export async function loadScorer(routeId: string, userId: string): Promise<Loade
       saved: { matchExists: false, auditLength: 0, resultKey: null },
     };
   }
+  if (!(await canScoreMatch(match.id))) throw new Error('Only the assigned scorer can score this match.');
   const [players, events] = await Promise.all([fetchPlayers(match.id), fetchEvents(match.id)]);
+  if (match.status === 'scheduled' && (match.fixture_ref ?? '').startsWith(FRIENDLY_REF_PREFIX)) {
+    const a = players.filter((player) => player.side === 'a' && player.in_playing_xi).length;
+    const b = players.filter((player) => player.side === 'b' && player.in_playing_xi).length;
+    if (a < 4 || a !== b) throw new Error('This match setup is incomplete. Create the match again.');
+  }
   const session = replayEvents({ ...newSession(), setup: setupFromRows(match, players) }, events);
   const stored = match.status === 'completed' && session.score ? resultKey(computeResult(session.score)) : null;
   return {

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { auditToOp } from './data/event-rows';
 import type { SavedMark } from './data/load-scorer';
 import { resultKey } from './data/load-scorer';
-import { applyOp, createMatch, reopenMatch, saveResult } from './data/match-repository';
+import { applyOp, createMatch, reopenMatch, saveResult, startSavedMatch } from './data/match-repository';
 import { computeResult } from './data/match-result';
 import { buildMatchRows } from './data/match-rows';
 import { SyncQueue, type SyncSnapshot } from './data/sync-queue';
@@ -25,6 +25,7 @@ export function useMatchSync({ session, matchId, fixtureRef, saved }: Args): Syn
   const queue = useRef<SyncQueue | null>(null);
   const handled = useRef(saved.auditLength);
   const matchCreated = useRef(saved.matchExists);
+  const startPending = useRef(saved.matchExists && saved.auditLength === 0);
   const storedResult = useRef(saved.resultKey);
   const local = session.audit.some((event) => event.type === 'demo');
 
@@ -43,6 +44,10 @@ export function useMatchSync({ session, matchId, fixtureRef, saved }: Args): Syn
         matchCreated.current = true;
         const rows = buildMatchRows(matchId, fixtureRef, session.setup, new Date());
         jobs.push(() => createMatch(rows.match, rows.players, rows.scorers));
+      } else if (event.type === 'start' && startPending.current) {
+        startPending.current = false;
+        const recordShots = session.setup.recordShots;
+        jobs.push(() => startSavedMatch(matchId, recordShots));
       }
       const op = auditToOp(matchId, event);
       if (op) jobs.push(() => applyOp(matchId, op));

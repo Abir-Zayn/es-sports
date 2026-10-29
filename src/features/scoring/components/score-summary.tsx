@@ -19,7 +19,7 @@ export function ScoreSummary({ score }: { score: ScoreState }) {
   const remaining = score.oversLimit * 6 - score.balls;
   const rate = score.target !== null && remaining > 0 ? ((Math.max(0, score.target - score.runs) / remaining) * 6).toFixed(2) : '0.00';
   return <View style={s.card} accessibilityLiveRegion="polite">
-    <InitialsAvatar label={score.teams[score.battingTeam].short} tone={score.teams[score.battingTeam].tone} size={38} />
+    <InitialsAvatar label={score.teams[score.battingTeam].short} tone={score.teams[score.battingTeam].tone} imageUri={score.teams[score.battingTeam].avatarUri} size={38} />
     <View style={s.scoreRow}><Text style={s.score}>{score.runs}/{score.wickets}</Text><Text muted style={s.overs}>({oversLabel(score.balls)})</Text></View>
     <View style={s.chase}><Text style={s.target}>{chaseLabel(score)}</Text>
       {score.target !== null ? <Text muted style={s.caption}>Target {score.target} · RRR {rate}</Text> : null}

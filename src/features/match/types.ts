@@ -129,6 +129,7 @@ export type FriendlyPlayer = {
   name: string;
   role: string;
   userId: string | null;
+  avatarUrl?: string | null;
   phone: string | null;
   /** False for a reserve on the bench. */
   playing: boolean;
@@ -138,6 +139,8 @@ export type FriendlyTeamSquad = {
   name: string;
   short: string;
   tone: AvatarTone;
+  imageUri?: string;
+  imageMimeType?: string;
   players: FriendlyPlayer[];
 };
 

@@ -23,6 +23,8 @@ type Props = {
   names: Record<FriendlySide, string>;
   onClose: () => void;
   onStart: (toss: FriendlyTossResult) => void;
+  saving?: boolean;
+  error?: string | null;
   /** For tests: a fixed coin and no animation time. */
   random?: () => number;
   spinMs?: number;
@@ -38,7 +40,7 @@ export function TossCoinModal({ visible, onClose, ...body }: Props) {
   </Sheet>;
 }
 
-function TossBody({ names, onStart, random, spinMs = SPIN_MS }: Omit<Props, 'visible' | 'onClose'>) {
+function TossBody({ names, onStart, saving = false, error, random, spinMs = SPIN_MS }: Omit<Props, 'visible' | 'onClose'>) {
   const s = useThemedStyles(styles);
   const [calledBy, setCalledBy] = useState<FriendlySide>('teamA');
   const [call, setCall] = useState<TossCall>('heads');
@@ -86,11 +88,12 @@ function TossBody({ names, onStart, random, spinMs = SPIN_MS }: Omit<Props, 'vis
         <Text muted style={s.center}>{names[flip!.calledBy]} called {flip!.call}; it landed {flip!.landed}.</Text>
         <View style={s.choices}>
           {(['bat', 'bowl'] as const).map((choice) => <View key={choice} style={s.choice}>
-            <Button label={choice === 'bat' ? 'Bat first' : 'Bowl first'} variant={decision === choice ? 'primary' : 'secondary'}
+            <Button label={choice === 'bat' ? 'Bat first' : 'Bowl first'} variant={decision === choice ? 'primary' : 'secondary'} disabled={saving || Boolean(error)}
               accessibilityState={{ selected: decision === choice }} onPress={() => setDecision(choice)} />
           </View>)}
         </View>
-        <Button label="Start scoring" disabled={!decision}
+        {error ? <Text accessibilityRole="alert">{error}</Text> : null}
+        <Button label={saving ? 'Saving match…' : 'Start scoring'} disabled={!decision || saving}
           onPress={() => { if (flip && decision) onStart(decideToss(flip, decision, new Date())); }} />
       </> : null}
   </View>;

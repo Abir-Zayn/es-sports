@@ -21,7 +21,7 @@ export function MatchResultSummaryCard({ headline, teams, highlights }: Props) {
     </View>
     <View style={s.body}>
       {teams.map((line) => <View key={line.team.short} style={s.team}>
-        <InitialsAvatar label={line.team.short} tone={line.team.tone} size={36} />
+        <InitialsAvatar label={line.team.short} tone={line.team.tone} imageUri={line.team.avatarUri} size={36} />
         <Text style={[s.teamName, line.won && s.winner]} numberOfLines={1}>{line.team.name}</Text>
         <Text style={s.score}>{line.score} <Text muted style={s.overs}>({line.overs})</Text></Text>
       </View>)}

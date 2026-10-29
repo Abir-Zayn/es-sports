@@ -66,7 +66,7 @@ export function joinProblem(setup: FriendlyMatchSetup, side: FriendlySide, who: 
 }
 
 /** Adds a player to a squad: playing while the side has room, otherwise on the bench. Throws a message to show. */
-export function addPlayer(setup: FriendlyMatchSetup, side: FriendlySide, input: { id: string; name: string; role: string; userId?: string | null; phone?: string }): FriendlyMatchSetup {
+export function addPlayer(setup: FriendlyMatchSetup, side: FriendlySide, input: { id: string; name: string; role: string; userId?: string | null; phone?: string; avatarUrl?: string | null }): FriendlyMatchSetup {
   const name = input.name.trim().replace(/\s+/g, ' ');
   if (name.length < 2 || name.length > 40) throw new Error('Enter a player name of 2 to 40 characters.');
   const phoneError = phoneProblem(input.phone ?? '');
@@ -76,7 +76,7 @@ export function addPlayer(setup: FriendlyMatchSetup, side: FriendlySide, input: 
   const problem = joinProblem(setup, side, { userId, phone });
   if (problem) throw new Error(problem);
   const squad = setup[side];
-  const player: FriendlyPlayer = { id: input.id, name, role: input.role, userId, phone, playing: playingCount(squad) < setup.playersPerSide };
+  const player: FriendlyPlayer = { id: input.id, name, role: input.role, userId, phone, avatarUrl: input.avatarUrl ?? null, playing: playingCount(squad) < setup.playersPerSide };
   return { ...setup, [side]: { ...squad, players: [...squad.players, player] } };
 }
 

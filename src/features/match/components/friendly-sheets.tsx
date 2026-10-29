@@ -8,6 +8,7 @@ import { AddGuestSheet } from '@/features/tournament/squad';
 import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import type { FriendlyMatchSetup, FriendlySide } from '../types';
+import { searchPlayers } from '../friendly/search-players';
 
 export type FriendlySheet = { kind: 'find' | 'guest'; side: FriendlySide } | { kind: 'scorer' } | null;
 
@@ -38,7 +39,7 @@ export function FriendlySheets({ sheet, error, meId, setup, onClose, onAddMember
   return <>
     <UserSearchSheet visible={sheet?.kind === 'find'} title={`Add to ${sideName(setup, side)}`}
       hint="Find a player on esSports. Their runs and wickets from this match go on their profile."
-      excludeIds={taken} inviting={false} error={error} actionLabel="Add" onClose={onClose}
+      search={searchPlayers} excludeIds={taken} inviting={false} error={error} actionLabel="Add" onClose={onClose}
       onInvite={(user) => onAddMember(side, user, role)}>
       <SegmentedControl options={roleOptions} selected={role} onSelect={setRole} accessibilityLabel="Playing role" />
     </UserSearchSheet>
