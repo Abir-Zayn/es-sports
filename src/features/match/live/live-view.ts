@@ -1,4 +1,4 @@
-import type { BowlerLine, LiveBatter, LiveSide, OverSummary, WagonBatter } from '../types';
+import type { BowlerLine, Innings, LiveBatter, LiveSide, MatchInfoData, OverSummary, OversData, WagonBatter } from '../types';
 
 export type LiveStatus = 'live' | 'completed' | 'scheduled';
 
@@ -28,6 +28,11 @@ export type LiveMatchViewData = {
   recentOvers: OverSummary[];
   /** Every batter with a recorded shot direction, for the wagon wheel. */
   wagonBatters: WagonBatter[];
+  /** Full scorecard of every innings started, first innings first. */
+  innings: Innings[];
+  /** Overs of every innings started, for the Overs tab. */
+  overs: OversData[];
+  info: MatchInfoData;
   stream: { label: string; source: string } | null;
 };
 

@@ -1,9 +1,9 @@
 import { findSpectatorMatch } from '@/features/scoring/data/match-repository';
 import { clearStagedSetups, stageMatchSetup } from '@/features/scoring/data/staged-setups';
-import type { BallEventRow, MatchRow, PlayerRow } from '@/features/scoring/data/types';
 import { initialSetup } from '@/features/scoring/sample-data';
 import { quadrantSplit } from '@/lib/pitch-quadrant';
 
+import { SEED_MATCH_ID as MATCH, seedEvents as events, seedMatch as match, seedPlayers as players } from '../__fixtures__/seed-match';
 import { ballKind, spokenBall } from '../components/live-ball-pill';
 import { buildLiveView, stagedLiveView } from '../live/build-live-view';
 import { chaseLine, nickname, padOver } from '../live/live-view';
@@ -15,43 +15,6 @@ jest.mock('@/features/scoring/data/match-repository', () => ({
   fetchPlayers: jest.fn(),
   fetchEvents: jest.fn(),
 }));
-
-// Node built-ins, typed by hand: the app does not ship Node type definitions.
-const { readFileSync } = jest.requireActual<{ readFileSync: (path: string, encoding: 'utf8') => string }>('fs');
-const { cwd } = jest.requireActual<{ cwd: () => string }>('process');
-
-const MATCH = '22222222-2222-4222-8222-000000000001';
-type Value = string | number | boolean | null;
-
-/** The value tuples of one `insert into public.<table>` block of the seed, for the seeded completed match. */
-function seedTuples(sql: string, table: string): Value[][] {
-  const block = sql.split(`insert into public.${table} (`)[1]?.split(';\n')[0] ?? '';
-  return block.split('\n').filter((line) => line.trim().startsWith(`('`) && line.includes(MATCH)).map((line) =>
-    (line.match(/'(?:[^']|'')*'|[^,\s()]+/g) ?? []).map((token): Value => {
-      if (token.startsWith(`'`)) return token.slice(1, -1).replace(/''/g, `'`);
-      if (token === 'null') return null;
-      if (token === 'true' || token === 'false') return token === 'true';
-      return Number(token);
-    }));
-}
-
-const sql = readFileSync(`${cwd()}/supabase/seed.sql`, 'utf8');
-const players: PlayerRow[] = seedTuples(sql, 'match_players').map(([match_id, key, side, name, role, in_playing_xi, sort_order, profile_id]) => ({
-  match_id, key, side, name, role, in_playing_xi, sort_order, profile_id,
-}) as PlayerRow);
-const events: BallEventRow[] = seedTuples(sql, 'ball_events').map((t, seq) => ({
-  id: t[0], match_id: t[1], innings: t[2], kind: t[3], striker_key: t[4], non_striker_key: t[5], bowler_key: t[6],
-  delivery_kind: t[7], runs: t[8], total_runs: t[9], is_legal: t[10], dismissal: t[11], out_key: t[12],
-  next_batter_key: t[13], fielder_key: t[14], angle: t[15], seq, voided_at: null,
-}) as BallEventRow);
-const match: MatchRow = {
-  id: MATCH, tournament_id: null, fixture_ref: 'hpl-2026-hss-agt', created_by: 'organiser',
-  title: 'Halishahar Premier League 2026 · Halishahar Strikers vs Agrabad Tigers',
-  team_a_name: 'Halishahar Strikers', team_a_short: 'HSS', team_a_tone: 'blue',
-  team_b_name: 'Agrabad Tigers', team_b_short: 'AGT', team_b_tone: 'yellow',
-  overs_limit: 6, status: 'completed', toss_winner_side: 'a', toss_decision: 'bat', record_shots: true,
-  started_at: null, completed_at: null, result_type: 'runs',
-};
 
 describe('live view of the seeded completed match', () => {
   const view = buildLiveView(match, players, events);

@@ -8,6 +8,8 @@ import type { Batter, MatchSetup, ScoreState, TeamCode } from '@/features/scorin
 
 import type { LiveSide, WagonBatter } from '../types';
 import { chaseLine, nickname, oversText, runRate, type LiveMatchViewData, type LiveStatus } from './live-view';
+import { matchCardsOf } from './match-cards';
+import { stagedInfoOf } from './match-details';
 import { oversOf, partnershipOf } from './over-rows';
 
 /** "Halishahar Strikers won the toss and chose to bat", or null before the toss. */
@@ -66,11 +68,14 @@ export function buildLiveView(match: MatchRow, players: PlayerRow[], rows: BallE
   const toss = tossLine(setup, match.toss_winner_side !== null);
   const status: LiveStatus = match.status === 'completed' ? 'completed' : score || match.status === 'live' ? 'live' : 'scheduled';
   const header = headerOf(setup, status, toss);
+  const nameOf = (key: string | null) => setup.teams.KK.players.concat(setup.teams.CS.players).find((p) => p.id === key)?.name ?? 'Unknown';
+  const result = score ? computeResult(score)?.result_summary ?? null : null;
+  const cards = matchCardsOf({ match, players, rows, setup, score, status, result, nameOf });
   if (!score) {
     return {
       source: 'stored', header, summary: toss ?? 'Yet to start', currentRunRate: '0.00', requiredRunRate: null,
       sides: [side(setup, 'KK', null, false), side(setup, 'CS', null, false)],
-      crease: null, recentOvers: [], wagonBatters: [], stream: null,
+      crease: null, recentOvers: [], wagonBatters: [], stream: null, ...cards,
     };
   }
   const first = score.previousInnings;
@@ -79,7 +84,6 @@ export function buildLiveView(match: MatchRow, players: PlayerRow[], rows: BallE
   const [a, b] = teamCodes.map((code) => side(setup, code, figuresOf(code), battingNow(code)));
   const ballsLeft = score.oversLimit * 6 - score.balls;
   const chasing = status === 'live' && score.innings === 2 && !score.complete && ballsLeft > 0 && score.target !== null;
-  const nameOf = (key: string | null) => setup.teams.KK.players.concat(setup.teams.CS.players).find((p) => p.id === key)?.name ?? 'Unknown';
   const batter = (id: string, onStrike: boolean) => {
     const x = score.batters[id];
     return { name: x?.name ?? nameOf(id), onStrike, runs: x?.runs ?? 0, balls: x?.balls ?? 0, fours: x?.fours ?? 0, sixes: x?.sixes ?? 0 };
@@ -98,6 +102,7 @@ export function buildLiveView(match: MatchRow, players: PlayerRow[], rows: BallE
     recentOvers: oversOf(rows, score.innings, nameOf, score.complete || status === 'completed'),
     wagonBatters: wagonBattersOf(score),
     stream: null,
+    ...cards,
   };
 }
 
@@ -110,5 +115,6 @@ export function stagedLiveView(setup: MatchSetup): LiveMatchViewData {
     sides: [side(setup, 'KK', null, false), side(setup, otherTeam('KK'), null, false)],
     summary: `${nickname(batting)} bat first · ${setup.oversLimit} overs a side`,
     currentRunRate: '0.00', requiredRunRate: null, crease: null, recentOvers: [], wagonBatters: [], stream: null,
+    innings: [], overs: [], info: stagedInfoOf(setup),
   };
 }

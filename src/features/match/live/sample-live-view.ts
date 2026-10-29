@@ -1,4 +1,5 @@
-import { liveSnapshot, matchHeader } from '../sample-match';
+import { matchInfo } from '../sample-info';
+import { innings, liveSnapshot, matchHeader } from '../sample-match';
 import { oversData } from '../sample-overs';
 import { wagonBatters } from '../sample-wagon';
 import type { LiveMatchViewData } from './live-view';
@@ -15,6 +16,9 @@ export function sampleLiveView(): LiveMatchViewData {
     crease: { batters: liveSnapshot.batters, partnership: liveSnapshot.partnership, bowler: liveSnapshot.bowler },
     recentOvers: oversData.overs,
     wagonBatters,
+    innings,
+    overs: [oversData],
+    info: matchInfo,
     stream: { label: liveSnapshot.streamLabel, source: liveSnapshot.streamSource },
   };
 }
