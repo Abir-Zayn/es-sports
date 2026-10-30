@@ -10,7 +10,7 @@ Plan for the next stretch of work on friendly matches and scoring. Read `AGENTS.
 | One assigned scorer per friendly, enforced by RLS | Done, migration applied on `es-sports` |
 | Durable scoring outbox (scores survive app kill) | Done (`feat/durable-scoring-outbox`, `57aa58f`), unit tested; informal device check passed |
 | APK with OTA updates on the `preview` channel | Released as `v1.0.0-preview.2` (EAS build `63229964`) |
-| Feature branches merged to `main` | Done (item 1) |
+| Feature branches merged to `main` | PR #5 open, waiting for merge |
 
 ## Recommended order
 
@@ -33,7 +33,7 @@ Plan for the next stretch of work on friendly matches and scoring. Read `AGENTS.
 - Fix the lint warning: unused `comingSoon` import in `src/features/team/team-members-screen.tsx`.
 - Add a short "Shipping an OTA update" section to the README. It covers when OTA is allowed (JS only, same `version` in `app.json`), the command `npx eas-cli@latest update --channel preview`, and when a new APK is required (native module added, `version` changed).
 
-**Status:** merged; local migration files renamed to the remote versions; lint clean; README has OTA steps. **Remaining:** link the CLI to `es-sports` and run `supabase migration repair --status applied 20261028000000`, then check `supabase migration list` (needs the account that owns `es-sports`).
+**Status:** PR #5 open; local migration files renamed to the remote versions; lint clean; README has OTA steps. **Remaining:** link the CLI to `es-sports` and run `supabase migration repair --status applied 20261028000000`, then check `supabase migration list` (needs the account that owns `es-sports`).
 
 **Done when**
 - `main` holds all the work.
