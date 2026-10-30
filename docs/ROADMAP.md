@@ -1,0 +1,112 @@
+# esSports roadmap
+
+Snapshot taken 2026-10-31 on branch `feat/durable-scoring-outbox` (`139fecf`). Sources: `graphify-out/GRAPH_REPORT.md` (built from `d4a8d47`), `supabase/migrations/`, `src/app/` routes, the `sample-*` imports in `src/features/`, and `NEXT_WORK.md`.
+
+## 1. Done so far
+
+### Backend: what is really in Supabase (5 migrations)
+
+| Migration | Adds |
+| --- | --- |
+| `20261028000000_profiles` | `profiles`, `profile_private`, sign-up trigger `handle_new_user`, `avatars` bucket with owner-only policies |
+| `20261029181703_matches` | `matches`, `match_players`, `match_scorers`, `ball_events`, `can_score_match()`, `void_events_from()`, RLS |
+| `20261029181705_player_career_stats` | `player_match_figures` view and career totals derived from `ball_events` |
+| `20261029192151_match_team_images` | Team image paths for friendlies (in `avatars/<user>/friendly/<match>/`) |
+| `20261029194934_friendly_exclusive_scorer` | One scorer per friendly (`friendly_single_scorer` trigger) |
+
+There are **no tables yet** for tournaments, teams, team members, invitations, squads, fixtures or notifications.
+
+### App: real vs. sample data
+
+| Area | State |
+| --- | --- |
+| Auth (email, Google, password reset, sessions) | **Real** (Supabase Auth) |
+| Profile, edit profile, avatar upload | **Real** (`profiles`, `avatars`) |
+| Friendly setup, player search, team images, saved friendlies | **Real** |
+| Scorer (pad, shot, wicket, over, result, undo) | **Real**, with a durable per-account outbox |
+| Career rollup after a match | **Real** (server views) |
+| Spectator match screens (live, scorecard, overs, wagon, info) | **Mixed**: screens import `sample-match` / `sample-info` |
+| Player profile `/player/[id]` | **Sample** (`sample-players`) |
+| Home, search | **Sample** (`home/sample-data`, `search/sample-data`) |
+| Matches tab (upcoming) | **Sample** (`sample-upcoming`) |
+| Team screens (overview, squad, members, matches) | **Sample** (`sample-team`) |
+| Tournament create, add teams, schedule | Local only (`draft-storage` in SecureStore) |
+| Tournament overview, table, stats, teams, knockout, head-to-head | **Sample** |
+| Roster, invitations, claim link | **Sample** (`roster-store`, `sample-rosters`) |
+| Notifications | **Sample** (`sample-notifications`) |
+| Settings: change password, notifications, delete account | `comingSoon` stubs |
+
+### Release
+
+- APK `v1.0.0-preview.2` with OTA updates on the `preview` channel.
+- PR #5 (friendly scorer + outbox into `main`) is merged; migration history reconciliation remains pending.
+
+## 2. Why it feels scattered
+
+The UI was built screen by screen for the whole product, but the backend only covers profiles and friendly matches. About two thirds of the screens still run on sample data. The plan below builds the backend in dependency order (player → team → tournament → fixtures → stats) and swaps each group of screens onto it before starting the next.
+
+## 3. Feature plan, in order
+
+Each step ends with migrations plus rolled-back SQL checks, `pnpm typecheck`, `pnpm lint`, the affected Jest suites, and the memory.md §11 report. Do not start a step until the one before is merged.
+
+### Phase A: stabilise what exists
+
+1. **Merge PR #5 and repair migration history.** Run `supabase migration repair --status applied 20261028000000` and confirm `supabase migration list` agrees. (NEXT_WORK item 1)
+2. **Device test the preview APK.** Run the 12-row checklist and record it in `docs/device-test-log.md`. (NEXT_WORK item 2)
+
+### Phase B: finish friendly scoring
+
+3. **Atomic friendly creation.** RPC `create_friendly_match(match, players, scorer)`, idempotent, with orphan image cleanup. (NEXT_WORK item 3)
+4. **Server-side write ordering guard.** `expected_tail` check on ball writes, void, result and reopen; conflicts surface as `OutboxConflictError`. (NEXT_WORK item 4)
+5. **Spectator screens on real data.** Replace `sample-match` / `sample-info` in the five match tabs with queries on `matches` + `ball_events`, plus one Realtime channel per open match.
+6. **Scorer handover.** `scorer_handover` table and accept RPC. Product decisions first. (NEXT_WORK item 5)
+7. **Open and score a match offline.** Local snapshot per match; decide JSON files (OTA) or `expo-sqlite` (new APK). (NEXT_WORK item 6)
+
+### Phase C: players and discovery
+
+8. **Player profile on real data.** `/player/[id]` reads `profiles` + career views; guest players show match-only figures.
+9. **Matches tab on real data.** Live, upcoming and recent from `matches`, filtered to the user's matches and followed ones.
+10. **Search on real data.** Players from `profiles`; teams and tournaments added as each table lands (steps 11 and 14).
+
+### Phase D: teams
+
+11. **Teams backend.** Tables `teams`, `team_members` (role: owner, captain, player, staff), team logo in storage, RLS by membership.
+12. **Team screens on real data.** Overview, squad, members, matches; create team; edit Playing XI; substitutes.
+13. **Team invitations.** `team_invitations` table, invite by search or share link, accept/decline, wired to `/invitations` and `/claim/[token]`.
+
+### Phase E: tournaments
+
+14. **Tournament backend.** `tournaments` (organiser, format, overs, dates, cover image) and `tournament_staff`; move create and draft from SecureStore to the server.
+15. **Team registration and squads.** `tournament_teams`, `tournament_squads`, registration requests, roster lock date. Replaces `roster-store` and `sample-rosters`.
+16. **Fixtures and schedule.** `fixtures` rows linked to `matches` (`tournament_id`, round, venue, time); schedule builder saves to the server; the scorer is assigned per fixture.
+17. **Tournament match scoring.** Start a fixture's match from its squads (reuses the friendly scorer and the step 4 guard); the result updates the fixture.
+18. **Points table, stats, knockout.** Server views for standings (points, NRR), leaderboards and bracket progress; replace `sample-table` and `sample-stats`; head-to-head from completed matches.
+19. **Tournament overview, follow and home.** Overview, favourite or follow, and the home feed (live, upcoming, my teams, tournaments to follow) built from the tables above. Removes `home/sample-data`.
+
+### Phase F: notifications and account
+
+20. **Notifications backend.** `notifications` table written by triggers (invitation, registration, match start, result, scorer handover); replace `sample-notifications`; unread badge.
+21. **Push notifications.** `expo-notifications` and a device token table; an Edge Function sends the push. Native module, so it needs a new APK.
+22. **Settings gaps.** Change password, notification preferences, and **account deletion** via an Edge Function using the service role (Google Play requires it).
+
+### Phase G: platform and launch
+
+23. **Multi-tenant scope.** An organisation or league tenant (HSF Premier League pilot) with tenant-scoped RLS on tournaments and teams, and an admin role.
+24. **Auction** (listed in the README structure). Player pool, bids and budgets per tournament. Confirm it is still in scope before building it.
+25. **Play Store release.** Production EAS profile, privacy policy and data safety form, store listing, a production Supabase project with SMTP and email confirmation, crash reporting.
+
+## 4. Open decisions
+
+| Decision | Needed before step |
+| --- | --- |
+| Who can start a scorer handover, and the timeout | 6 |
+| Offline storage: JSON files (OTA) or `expo-sqlite` (new APK) | 7 |
+| Can a player belong to several teams in one tournament? | 15 |
+| Points rules (tie, no result, NRR) and knockout formats | 18 |
+| Is auction in the pilot? | 24 |
+
+## 5. Housekeeping
+
+- Rebuild the graph after merging (`graphify update .`). The current graph is from `d4a8d47` and also indexes skill and docs folders, so the code communities are noisy. Excluding `.agents/`, `.claude/` and `.codex/` would make it cleaner.
+- Delete each `sample-*.ts` file once nothing imports it. That makes progress visible: when no `sample-*` imports are left, the app runs fully on real data.
+- The `workfile-*.md` files and `NEXT_WORK.md` overlap with this roadmap. Keep this file as the single ordered list and link the workfiles from their steps.
