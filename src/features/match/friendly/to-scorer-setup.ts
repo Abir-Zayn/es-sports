@@ -4,7 +4,7 @@ import type { FriendlyMatchSetup, FriendlyTeamSquad } from '../types';
 import { teamLabel } from './toss';
 
 const scorerTeam = (squad: FriendlyTeamSquad, label: string): ScorerTeam => ({
-  team: { name: label, short: squad.short || label.slice(0, 2).toUpperCase(), tone: squad.tone },
+  team: { name: label, short: squad.short || label.slice(0, 2).toUpperCase(), tone: squad.tone, avatarUri: squad.imageUri },
   players: squad.players.map((p) => ({ id: p.id, name: p.name, role: p.role, profileId: p.userId })),
 });
 

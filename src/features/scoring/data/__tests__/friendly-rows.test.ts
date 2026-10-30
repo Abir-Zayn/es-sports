@@ -54,8 +54,16 @@ describe('friendly match rows', () => {
     expect(setup.teams.KK.players[0]).toEqual({ id: 'a1', name: 'Player a1', role: 'Batter', profileId: ACCOUNT });
   });
 
+  it('keeps team image URLs when a saved match is reopened', () => {
+    const row: MatchRow = { ...match, team_a_image_url: 'https://example.com/a.png', team_b_image_url: 'https://example.com/b.png',
+      tournament_id: null, created_by: ACCOUNT, completed_at: null, result_type: null };
+    const setup = setupFromRows(row, players);
+    expect(setup.teams.KK.team.avatarUri).toBe('https://example.com/a.png');
+    expect(setup.teams.CS.team.avatarUri).toBe('https://example.com/b.png');
+  });
+
   it('writes only columns that exist in the matches migration', () => {
-    const sql = readFileSync(`${cwd()}/supabase/migrations/20261029000000_matches.sql`, 'utf8');
+    const sql = readFileSync(`${cwd()}/supabase/migrations/20261029181703_matches.sql`, 'utf8');
     const matchColumns = columnsOf(sql, 'matches');
     const playerColumns = columnsOf(sql, 'match_players');
     expect(matchColumns.has('team_a_name')).toBe(true);

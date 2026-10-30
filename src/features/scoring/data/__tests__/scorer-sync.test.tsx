@@ -6,6 +6,8 @@ import { ThemeProvider } from '@/theme';
 import { ScorerProvider, useScorer } from '../../scorer-provider';
 import type { ScorerAction } from '../../session-reducer';
 import * as repository from '../match-repository';
+import { buildMatchRows } from '../match-rows';
+import { initialSetup } from '../../sample-data';
 
 jest.mock('expo-secure-store', () => ({
   getItemAsync: jest.fn().mockResolvedValue(null),
@@ -22,7 +24,10 @@ jest.mock('../match-repository', () => ({
   findMatch: jest.fn().mockResolvedValue(null),
   fetchPlayers: jest.fn(),
   fetchEvents: jest.fn(),
+  canScoreMatch: jest.fn().mockResolvedValue(true),
+  signedInUserId: jest.fn().mockResolvedValue('user-1'),
   createMatch: jest.fn().mockResolvedValue(undefined),
+  startSavedMatch: jest.fn().mockResolvedValue(undefined),
   applyOp: jest.fn().mockResolvedValue(undefined),
   saveResult: jest.fn().mockResolvedValue(undefined),
   reopenMatch: jest.fn().mockResolvedValue(undefined),
@@ -45,6 +50,23 @@ async function openScorer() {
 beforeEach(() => jest.clearAllMocks());
 
 describe('saving a scoring session', () => {
+  it('starts a saved friendly before writing its first innings', async () => {
+    const rows = buildMatchRows('55555555-5555-4555-8555-555555555555', 'friendly-1',
+      { ...initialSetup, preset: true }, new Date());
+    repo.findMatch.mockResolvedValueOnce({ ...rows.match, status: 'scheduled', started_at: null,
+      tournament_id: null, created_by: 'user-1', completed_at: null, result_type: null });
+    repo.fetchPlayers.mockResolvedValueOnce(rows.players);
+    repo.fetchEvents.mockResolvedValueOnce([]);
+    const calls: string[] = [];
+    repo.startSavedMatch.mockImplementationOnce(async () => { calls.push('start match'); });
+    repo.applyOp.mockImplementationOnce(async () => { calls.push('innings'); });
+    const { send, saved } = await openScorer();
+    await send({ type: 'start', id: 'start-saved' });
+    await saved();
+    expect(calls).toEqual(['start match', 'innings']);
+    expect(repo.createMatch).not.toHaveBeenCalled();
+  });
+
   it('creates the match once, then saves each ball in order, and voids an undone one', async () => {
     const calls: string[] = [];
     repo.createMatch.mockImplementation(async () => { calls.push('match'); });

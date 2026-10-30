@@ -1,5 +1,7 @@
 import { initialSetup } from '../../sample-data';
 import { loadScorer } from '../load-scorer';
+import { buildMatchRows } from '../match-rows';
+import { canScoreMatch, fetchEvents, fetchPlayers, findMatch } from '../match-repository';
 import { clearStagedSetups, stageMatchSetup } from '../staged-setups';
 
 jest.mock('../match-repository', () => ({
@@ -7,6 +9,8 @@ jest.mock('../match-repository', () => ({
   findMatch: jest.fn().mockResolvedValue(null),
   fetchPlayers: jest.fn(),
   fetchEvents: jest.fn(),
+  canScoreMatch: jest.fn().mockResolvedValue(true),
+  signedInUserId: jest.fn().mockResolvedValue('user-1'),
 }));
 
 const MATCH = '55555555-5555-4555-8555-555555555555';
@@ -30,5 +34,35 @@ describe('opening a staged friendly', () => {
   it('still opens a fixture reference with the preview setup', async () => {
     const loaded = await loadScorer('m12', 'user-1');
     expect(loaded.session.setup).toBe(initialSetup);
+  });
+
+  it('opens a saved friendly from its match id before the first innings', async () => {
+    const setup = { ...initialSetup, title: 'Friendly', preset: true };
+    const rows = buildMatchRows(MATCH, 'friendly-1', setup, new Date());
+    jest.mocked(findMatch).mockResolvedValueOnce({ ...rows.match, status: 'scheduled', started_at: null,
+      tournament_id: null, created_by: 'user-1', completed_at: null, result_type: null });
+    jest.mocked(fetchPlayers).mockResolvedValueOnce(rows.players);
+    jest.mocked(fetchEvents).mockResolvedValueOnce([]);
+    const loaded = await loadScorer(MATCH, 'user-2');
+    expect(loaded.saved).toMatchObject({ matchExists: true, auditLength: 0 });
+    expect(loaded.session.setup).toMatchObject({ title: 'Friendly', preset: true, playingXi: setup.playingXi });
+    expect(loaded.session.score).toBeNull();
+  });
+
+  it('does not open a partially saved friendly with missing squads', async () => {
+    const rows = buildMatchRows(MATCH, 'friendly-1', { ...initialSetup, preset: true }, new Date());
+    jest.mocked(findMatch).mockResolvedValueOnce({ ...rows.match, status: 'scheduled', started_at: null,
+      tournament_id: null, created_by: 'user-1', completed_at: null, result_type: null });
+    jest.mocked(fetchPlayers).mockResolvedValueOnce([]);
+    jest.mocked(fetchEvents).mockResolvedValueOnce([]);
+    await expect(loadScorer(MATCH, 'user-1')).rejects.toThrow('This match setup is incomplete');
+  });
+
+  it('refuses to open a match when the database denies scoring permission', async () => {
+    const rows = buildMatchRows(MATCH, 'friendly-1', { ...initialSetup, preset: true }, new Date());
+    jest.mocked(findMatch).mockResolvedValueOnce({ ...rows.match, status: 'live',
+      tournament_id: null, created_by: 'user-1', completed_at: null, result_type: null });
+    jest.mocked(canScoreMatch).mockResolvedValueOnce(false);
+    await expect(loadScorer(MATCH, 'user-1')).rejects.toThrow('Only the assigned scorer can score this match.');
   });
 });

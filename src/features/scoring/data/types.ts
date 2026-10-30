@@ -17,9 +17,11 @@ export type MatchRow = {
   team_a_name: string;
   team_a_short: string;
   team_a_tone: AvatarTone;
+  team_a_image_url?: string | null;
   team_b_name: string;
   team_b_short: string;
   team_b_tone: AvatarTone;
+  team_b_image_url?: string | null;
   overs_limit: number;
   status: MatchStatus;
   toss_winner_side: Side | null;

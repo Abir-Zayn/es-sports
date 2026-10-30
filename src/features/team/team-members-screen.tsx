@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppTabs, Button, Text } from '@/components/ui';
-import { comingSoon } from '@/lib/coming-soon';
 import { sizes, useTheme, useThemedStyles } from '@/theme';
 
 import { MemberRow } from './components/member-row';

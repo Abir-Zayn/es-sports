@@ -7,6 +7,7 @@ import { useCallback, useState } from 'react';
 import { AnimatedSplash } from '@/components/splash/animated-splash';
 import { AuthProvider, useAuth } from '@/features/auth/auth-provider';
 import { ProfileProvider } from '@/features/profile/profile-provider';
+import { useOutboxRecovery } from '@/features/scoring/use-outbox-recovery';
 import { queryClient } from '@/lib/query-client';
 import { ThemeProvider, useTheme } from '@/theme';
 
@@ -16,6 +17,7 @@ function AppShell() {
   const { session, isLoading } = useAuth();
   const { colors, scheme } = useTheme();
   const [splashDone, setSplashDone] = useState(false);
+  useOutboxRecovery(session?.user.id);
 
   // The animated splash starts on the same frame as the native one, so the native one can go.
   const hideNativeSplash = useCallback(() => SplashScreen.hide(), []);

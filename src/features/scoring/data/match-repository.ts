@@ -5,8 +5,8 @@ import { FRIENDLY_REF_PREFIX } from './match-rows';
 import type { BallEventRow, MatchInsert, MatchRow, PlayerRow, ResultUpdate } from './types';
 import { isUuid } from './uuid';
 
-const MATCH_COLUMNS = 'id, tournament_id, fixture_ref, created_by, title, team_a_name, team_a_short, team_a_tone, '
-  + 'team_b_name, team_b_short, team_b_tone, overs_limit, status, toss_winner_side, toss_decision, record_shots, '
+const MATCH_COLUMNS = 'id, tournament_id, fixture_ref, created_by, title, team_a_name, team_a_short, team_a_tone, team_a_image_url, '
+  + 'team_b_name, team_b_short, team_b_tone, team_b_image_url, overs_limit, status, toss_winner_side, toss_decision, record_shots, '
   + 'started_at, completed_at, result_type';
 const PLAYER_COLUMNS = 'match_id, key, side, name, role, in_playing_xi, sort_order, profile_id';
 const EVENT_COLUMNS = 'id, match_id, seq, innings, kind, striker_key, non_striker_key, bowler_key, delivery_kind, '
@@ -50,6 +50,19 @@ export async function fetchPlayers(matchId: string): Promise<PlayerRow[]> {
   return data;
 }
 
+/** The account the app is signed in as now, read from the stored session without a network call. */
+export async function signedInUserId(): Promise<string | null> {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.user.id ?? null;
+}
+
+/** Ask the database, the authority for scoring permission, before opening a saved match. */
+export async function canScoreMatch(matchId: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc('can_score_match', { p_match: matchId });
+  if (error) throw error;
+  return data === true;
+}
+
 /** Every event of a match that has not been undone, in order, fetched a page at a time. */
 export async function fetchEvents(matchId: string): Promise<BallEventRow[]> {
   const rows: BallEventRow[] = [];
@@ -67,13 +80,26 @@ export async function fetchEvents(matchId: string): Promise<BallEventRow[]> {
 export async function createMatch(match: MatchInsert, players: PlayerRow[], scorers: string[] = []): Promise<void> {
   const created = await supabase.from('matches').upsert(match, { onConflict: 'id', ignoreDuplicates: true });
   if (created.error) throw created.error;
-  const squads = await supabase.from('match_players')
-    .upsert(players, { onConflict: 'match_id,key', ignoreDuplicates: true });
-  if (squads.error) throw squads.error;
+  const existing = await fetchPlayers(match.id);
+  const missing = players.filter((player) => !existing.some((row) => row.key === player.key));
+  if (missing.length) {
+    const squads = await supabase.from('match_players')
+      .upsert(missing, { onConflict: 'match_id,key', ignoreDuplicates: true });
+    if (squads.error) throw squads.error;
+  }
   if (scorers.length === 0) return;
   const assigned = await supabase.from('match_scorers')
     .upsert(scorers.map((user_id) => ({ match_id: match.id, user_id })), { onConflict: 'match_id,user_id', ignoreDuplicates: true });
   if (assigned.error) throw assigned.error;
+}
+
+/** Start a previously saved setup. RLS still checks the creator or assigned scorer. */
+export async function startSavedMatch(matchId: string, recordShots: boolean, startedAt: string): Promise<void> {
+  const { data, error } = await supabase.from('matches')
+    .update({ status: 'live', started_at: startedAt, record_shots: recordShots })
+    .eq('id', matchId).in('status', ['scheduled', 'live']).select('id');
+  if (error) throw error;
+  expectChange(data, 'start this match');
 }
 
 /** Applies one saved change. Inserts are keyed by event id, so a retry after a lost reply cannot duplicate a ball. */

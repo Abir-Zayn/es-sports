@@ -26,6 +26,7 @@ type Props = {
   onClose: () => void;
   /** The button on each result. */
   actionLabel?: string;
+  search?: (query: string, excludeIds: string[], signal?: AbortSignal) => Promise<UserSummary[]>;
   /** Fields shown under the hint that apply to whoever is picked, e.g. their playing role. */
   children?: ReactNode;
 };
@@ -40,7 +41,7 @@ export function UserSearchSheet({ visible, title, onClose, ...body }: Props) {
   );
 }
 
-function SearchBody({ hint, excludeIds, inviting, error, onInvite, actionLabel = 'Invite', children }: Omit<Props, 'visible' | 'title' | 'onClose'>) {
+function SearchBody({ hint, excludeIds, inviting, error, onInvite, actionLabel = 'Invite', children, search: findUsers = searchUsers }: Omit<Props, 'visible' | 'title' | 'onClose'>) {
   const { colors } = useTheme();
   const [text, setText] = useState('');
   const [query, setQuery] = useState('');
@@ -51,8 +52,8 @@ function SearchBody({ hint, excludeIds, inviting, error, onInvite, actionLabel =
   }, [text]);
 
   const search = useQuery({
-    queryKey: ['user-search', query, excludeIds],
-    queryFn: ({ signal }) => searchUsers(query, excludeIds, signal),
+    queryKey: ['user-search', findUsers === searchUsers ? 'sample' : 'profiles', query, excludeIds],
+    queryFn: ({ signal }) => findUsers(query, excludeIds, signal),
     enabled: query.length >= 2,
   });
   const results = search.data ?? [];
