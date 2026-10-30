@@ -127,7 +127,7 @@ Use OTA only when **all** of these hold:
 Steps:
 
 1. `pnpm typecheck`, `pnpm lint` and `pnpm test` all pass on `main`.
-2. `npx eas-cli@latest update --channel preview --message "<what changed>"`
+2. `npx eas-cli@latest update --channel preview --environment preview --message "<what changed>"`
 3. On a phone with the current APK, close and reopen the app twice; the update loads on the next launch after it downloads.
 4. If the update misbehaves, roll back with `npx eas-cli@latest update:rollback` (or republish the previous commit).
 
