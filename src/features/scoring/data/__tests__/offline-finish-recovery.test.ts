@@ -8,7 +8,7 @@ const mockUpsert = jest.fn();
 const mockSelect = jest.fn();
 jest.mock('@/lib/supabase', () => ({ supabase: { from: (table: string) => ({
   upsert: (row: unknown) => mockUpsert(table, row),
-  update: (row: unknown) => ({ eq: () => ({ select: () => mockSelect(table, row) }) }),
+  update: (row: unknown) => ({ eq: (column: string, value: unknown) => ({ select: () => mockSelect(table, row, column, value) }) }),
 }) } }));
 
 const userId = 'user-1';
@@ -54,6 +54,7 @@ it('recovers a legacy offline finish in order after reopening, without dropping 
   await registry.recover(userId, matchId);
 
   expect(mockUpsert.mock.calls[0][1]).toMatchObject({ id: 'last-wicket', next_batter_key: null });
+  expect(mockSelect).toHaveBeenCalledWith('matches', result.kind === 'result' ? result.result : null, 'id', matchId);
   expect(sent).toEqual(['last-wicket', 'chase', 'winner', 'result']);
   expect(store.read(userId, matchId)).toBeNull();
 });

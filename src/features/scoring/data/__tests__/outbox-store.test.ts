@@ -48,6 +48,20 @@ describe('fileOutboxStore', () => {
     expect(mockDisk.size).toBe(0);
   });
 
+  it.each([null, ''])('round-trips an offline finish with next-batter key %p', (nextBatter) => {
+    const finish: OutboxRecord['ops'] = [
+      { kind: 'event', op: { kind: 'insert', row: { id: 'wicket', match_id: MATCH, innings: 1,
+        kind: 'delivery', delivery_kind: 'wicket', next_batter_key: nextBatter } } },
+      { kind: 'event', op: { kind: 'insert', row: { id: 'chase', match_id: MATCH, innings: 2, kind: 'innings_start' } } },
+      { kind: 'event', op: { kind: 'insert', row: { id: 'winner', match_id: MATCH, innings: 2, kind: 'delivery', runs: 4 } } },
+      { kind: 'result', result: { status: 'completed', completed_at: '2026-10-31T00:00:00Z',
+        team_a_runs: 3, team_a_wickets: 3, team_a_balls: 7, team_b_runs: 4, team_b_wickets: 0, team_b_balls: 1,
+        winner_side: 'b', result_type: 'wickets', result_margin: 3, result_summary: 'B won by 3 wickets' } },
+    ];
+    fileOutboxStore.write(record(finish));
+    expect(fileOutboxStore.read('user-1', MATCH)).toEqual(record(finish));
+  });
+
   it('moves an unreadable file aside instead of deleting it', () => {
     mockDisk.set(`file:///documents/scoring-outbox/user-1/${MATCH}.json`, '{"version":1,"ops":[');
     expect(fileOutboxStore.read('user-1', MATCH)).toBeNull();

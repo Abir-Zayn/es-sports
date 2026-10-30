@@ -128,6 +128,7 @@ Steps:
 
 1. `pnpm typecheck`, `pnpm lint` and `pnpm test` all pass on `main`.
 2. `npx eas-cli@latest update --channel preview --environment preview --message "<what changed>"`
+   The EAS `preview` environment must contain `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_KEY`; without them the update fails at startup. `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` is optional. The `eas.json` build `env` block does not supply variables to updates.
 3. On a phone with the current APK, close and reopen the app twice; the update loads on the next launch after it downloads.
 4. If the update misbehaves, roll back with `npx eas-cli@latest update:rollback` (or republish the previous commit).
 
