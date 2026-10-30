@@ -6,7 +6,7 @@ import { useThemedStyles, type Palette } from '@/theme';
 
 import { ScorerChips, ScorerChoice, ScorerFrame, ScorerHeader, ScorerNotice, ScorerSection } from './components/scorer-ui';
 import { FielderPicker } from './components/fielder-picker';
-import { applyDelivery, oversLabel } from './engine/score-delivery';
+import { allOutAt, applyDelivery, oversLabel } from './engine/score-delivery';
 import { localEventId, useScorer } from './scorer-provider';
 import type { DeliveryInput, Dismissal } from './types';
 import { useScorerRoutes } from './use-scorer-routes';
@@ -28,7 +28,8 @@ export function WicketScreen() {
     <ScorerNotice>Return to scoring to complete the current step.</ScorerNotice><Button label="Back to scoring" onPress={() => routes.replace('pad')} />
   </ScorerFrame>;
   const needsFielder = ['Caught', 'Stumped', 'Run out'].includes(dismissal);
-  const input: DeliveryInput = { kind: 'wicket', runs: dismissal === 'Run out' ? completedRuns : 0, outId, dismissal, nextBatterId, fielderId };
+  const input: DeliveryInput = { kind: 'wicket', runs: dismissal === 'Run out' ? completedRuns : 0, outId, dismissal,
+    nextBatterId: nextBatterId || undefined, fielderId: needsFielder ? fielderId : undefined };
   const confirm = () => {
     try {
       const id = localEventId();
@@ -60,7 +61,7 @@ export function WicketScreen() {
     {dismissal === 'Run out' ? <ScorerSection title="Runs completed before the wicket"><ScorerChips>
       {[0, 1, 2, 3].map((n) => <ScorerChoice key={n} label={String(n)} selected={completedRuns === n} onPress={() => setCompletedRuns(n)} />)}
     </ScorerChips></ScorerSection> : null}
-    {score.wickets < 9 ? <ScorerSection title="Next batter"><ScorerChips>
+    {score.wickets < allOutAt(score) - 1 ? <ScorerSection title="Next batter"><ScorerChips>
       {available.map((p) => <ScorerChoice key={p.id} label={p.name} selected={nextBatterId === p.id} onPress={() => setNextBatterId(p.id)} />)}
     </ScorerChips></ScorerSection> : <ScorerNotice>This wicket will end the innings.</ScorerNotice>}
   </ScorerFrame>;

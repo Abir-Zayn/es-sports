@@ -135,7 +135,7 @@ const functions = {
   void_events_from: { args: [['p_match', 'string'], ['p_event', 'string']], returns: 'number' },
 };
 
-const field = (name, type, optional) => `          ${name}${optional ? '?' : ''}: ${type}`;
+const field = (name, type, optional) => `          ${name}${optional ? '?' : ''}: ${type};`;
 const block = (lines) => lines.join('\n');
 
 function renderTable([name, columns]) {

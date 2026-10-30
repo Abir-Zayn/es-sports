@@ -162,6 +162,21 @@ describe('durable scoring outbox', () => {
     await next.recover(USER, MATCH);
     expect(server.live()).toEqual(['b1']);
   });
+
+  it('reports the blocked operation and server error while preserving the queue', async () => {
+    const store = memoryOutboxStore();
+    const box = createOutboxRegistry({
+      store, currentUserId: async () => USER, fetchLiveIds: async () => [],
+      send: async () => { throw { message: 'violates roster foreign key', code: '23503' }; },
+      queue: { attempts: 1, wait: () => Promise.resolve() },
+    }).outboxFor(USER, MATCH, REF);
+    box.push(ball('last'));
+    box.push(result);
+    await expect(box.flush()).rejects.toThrow('Save ball: violates roster foreign key (23503)');
+    expect(box.status).toMatchObject({ status: 'error', pending: 2,
+      error: 'Save ball: violates roster foreign key (23503)' });
+    expect(store.read(USER, MATCH)?.ops).toEqual([ball('last'), result]);
+  });
 });
 
 describe('resumeIndex', () => {

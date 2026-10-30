@@ -1,5 +1,5 @@
 export type SyncStatus = 'idle' | 'saving' | 'error';
-export type SyncSnapshot = { status: SyncStatus; pending: number };
+export type SyncSnapshot = { status: SyncStatus; pending: number; error?: string };
 type Job = () => Promise<void>;
 
 export type SyncQueueOptions = {
@@ -27,6 +27,7 @@ export class SyncQueue {
   private running = false;
   private disposed = false;
   private waiting: (() => void)[] = [];
+  private lastError: string | undefined;
   private readonly attempts: number;
   private readonly baseDelayMs: number;
   private readonly wait: (ms: number) => Promise<void>;
@@ -60,7 +61,8 @@ export class SyncQueue {
 
   private emit(status: SyncStatus): void {
     this.status = status;
-    if (!this.disposed) this.onChange({ status, pending: this.jobs.length });
+    if (!this.disposed) this.onChange({ status, pending: this.jobs.length,
+      ...(status === 'error' && this.lastError ? { error: this.lastError } : {}) });
   }
 
   private async drain(): Promise<void> {
@@ -89,7 +91,8 @@ export class SyncQueue {
       try {
         await job();
         return true;
-      } catch {
+      } catch (error: unknown) {
+        this.lastError = error instanceof Error ? error.message : 'The server did not accept this change.';
         if (attempt === this.attempts) break;
         await this.wait(this.baseDelayMs * 2 ** (attempt - 1) * (0.5 + Math.random()));
       }

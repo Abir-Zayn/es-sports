@@ -39,7 +39,7 @@ There are **no tables yet** for tournaments, teams, team members, invitations, s
 ### Release
 
 - APK `v1.0.0-preview.2` with OTA updates on the `preview` channel.
-- PR #5 (friendly scorer + outbox into `main`) is merged; migration history reconciliation remains pending.
+- PR #5 (friendly scorer + outbox into `main`) is merged; all five local and remote migration versions now agree.
 
 ## 2. Why it feels scattered
 
@@ -51,7 +51,7 @@ Each step ends with migrations plus rolled-back SQL checks, `pnpm typecheck`, `p
 
 ### Phase A: stabilise what exists
 
-1. **Merge PR #5 and repair migration history.** Run `supabase migration repair --status applied 20261028000000` and confirm `supabase migration list` agrees. (NEXT_WORK item 1)
+1. **Merge PR #5 and repair migration history.** Done: PR #5 is merged and `supabase migration list` shows all five versions locally and remotely. (NEXT_WORK item 1)
 2. **Device test the preview APK.** Run the 12-row checklist and record it in `docs/device-test-log.md`. (NEXT_WORK item 2)
 
 ### Phase B: finish friendly scoring
