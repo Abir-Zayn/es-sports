@@ -63,7 +63,7 @@ describe('friendly match rows', () => {
   });
 
   it('writes only columns that exist in the matches migration', () => {
-    const sql = readFileSync(`${cwd()}/supabase/migrations/20261029000000_matches.sql`, 'utf8');
+    const sql = readFileSync(`${cwd()}/supabase/migrations/20261029181703_matches.sql`, 'utf8');
     const matchColumns = columnsOf(sql, 'matches');
     const playerColumns = columnsOf(sql, 'match_players');
     expect(matchColumns.has('team_a_name')).toBe(true);

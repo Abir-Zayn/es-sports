@@ -19,7 +19,7 @@ Screen files compose smaller components and stay below 200 lines. Routes only ex
 
 ## Saving matches
 
-Migration `supabase/migrations/20261029000000_matches.sql` adds `matches`, `match_players`, `match_scorers` and the append-only `ball_events` log. `matches.tournament_id` is nullable (no tournaments table yet, so no foreign key). Teams and players are a per-match snapshot. Anyone signed in can read; only the creator and assigned scorers can write (`can_score_match`).
+Migration `supabase/migrations/20261029181703_matches.sql` adds `matches`, `match_players`, `match_scorers` and the append-only `ball_events` log. `matches.tournament_id` is nullable (no tournaments table yet, so no foreign key). Teams and players are a per-match snapshot. Anyone signed in can read; only the creator and assigned scorers can write (`can_score_match`).
 
 How it fits together (all under `data/`):
 

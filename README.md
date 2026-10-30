@@ -113,3 +113,22 @@ design/                Claude-created UI designs (local only, gitignored)
 - Release builds enable R8 and resource shrinking (`expo-build-properties`) and strip `console.*`.
 - `runtimeVersion` uses the `appVersion` policy. JS-only fixes ship via EAS Update with staged rollout; any native change needs a new store build.
 - Profiles in `eas.json`: `development`, `preview`, `production`.
+
+### Shipping an over-the-air (OTA) update
+
+Builds from `v1.0.0-preview.2` onward check the `preview` channel for updates. Older APKs (`v1.0.0-preview`) cannot receive updates and must install a newer APK once.
+
+Use OTA only when **all** of these hold:
+
+- Only JavaScript/TypeScript, images or other assets changed.
+- No package with native code was added, removed or upgraded (anything installed with `npx expo install` that has Android code).
+- `version` in `app.json` is unchanged (it sets `runtimeVersion`, so a new version needs a new APK).
+
+Steps:
+
+1. `pnpm typecheck`, `pnpm lint` and `pnpm test` all pass on `main`.
+2. `npx eas-cli@latest update --channel preview --message "<what changed>"`
+3. On a phone with the current APK, close and reopen the app twice; the update loads on the next launch after it downloads.
+4. If the update misbehaves, roll back with `npx eas-cli@latest update:rollback` (or republish the previous commit).
+
+Anything else (a native package, app permissions, `app.json` plugin changes, a new `version`) needs a new APK: `npx eas-cli@latest build -p android --profile preview`, then a new GitHub release and README link.

@@ -36,8 +36,8 @@ Opening an eligible saved match loads its players and saved ball events and repl
 ## Supabase details
 
 - Remote project name: `es-sports`; project ref: `tedgyfczmqqnwrlucsoc`.
-- Local migration files: `20261029000000_matches.sql`, `20261030000000_player_career_stats.sql`, `20261031000000_match_team_images.sql` and `20261101000000_friendly_exclusive_scorer.sql`.
-- The remote migration history uses MCP-generated versions `20261029181703`, `20261029181705`, `20261029192151` and `20261029194934` respectively. The earlier profile schema already existed remotely and was not recorded in the MCP migration history. **Reconcile local and remote migration histories before using `supabase db push`; do not blindly replay migrations.**
+- Local migration files (renamed to match the remote history): `20261029181703_matches.sql`, `20261029181705_player_career_stats.sql`, `20261029192151_match_team_images.sql` and `20261029194934_friendly_exclusive_scorer.sql`.
+- The remote history should list `20261029181703`, `20261029181705`, `20261029192151` and `20261029194934` (recorded by the MCP session; not re-checked since). The profile schema (`20261028000000_profiles.sql`) exists remotely but is not in the history. **Before any `supabase db push`:** `supabase link --project-ref tedgyfczmqqnwrlucsoc`, then `supabase migration repair --status applied 20261028000000`, then confirm `supabase migration list` shows local and remote matching.
 - `supabase/seed_bengali_players.sql` was run against this project. It created 40 fictional, non-login player accounts: 20 batters, 5 all-rounders, 5 keepers and 10 bowlers. All have batting and bowling figures from two fictional matches. The script refuses to overwrite its existing fixture IDs.
 - Career statistics are database views derived from completed, non-voided ball events. They are current when queried. Supabase Realtime publication was not enabled for these tables; the spectator live-match hook polls stored live matches every 15 seconds.
 
