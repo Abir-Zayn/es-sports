@@ -41,3 +41,7 @@ Device: PLR110, Android 16. Installed release APK `v1.0.0-preview.2`; SHA-256 ma
 | 12 | Publish a preview OTA update | PARTIAL | Published Android update group `66d55126-28ce-4ed4-ab27-d2b25eecaaeb` to `preview`. Device logs reported an update available and the app reopened after a second launch, but the running update ID was not independently verified. |
 
 The three passing scenarios were tested only on this device. The required low-end and mid-range device coverage is still incomplete. Do not discard the test match's queued changes while investigating row 7.
+
+## 2026-10-31: row 7 retest after issue #6 fix
+
+**PASS on PLR110, Android 16:** the original four queued changes synced after installing preview OTA update group `0ed3ba83-001e-413e-99ca-95f52914eeb4`. The server recorded the final first-innings wicket with a null next-batter key, the chase start, and the winning four in order; the match result was saved as QA_Device_B winning by three wickets. Opening the match on the phone showed the same result and the **Saved** indicator. No queued changes were discarded. A second device remains untested.
