@@ -66,6 +66,7 @@ export function ScorerPadScreen() {
     <ScorerHeader title="Scoring" subtitle={`${setup.title} · ${score.innings === 1 ? '1st' : '2nd'} innings`} onBack={leave}
       trailing={<AppIconTile icon={Radio} accessibilityLabel="Open stream overlay" onPress={() => routes.push('overlay')} />} />
     <SyncBadge sync={sync} />
+    {sync.status === 'error' && sync.error ? <ScorerNotice>{sync.error}</ScorerNotice> : null}
     <ScoreSummary score={score} />
     <CreaseSummary score={score} disabled={disabled} onSwap={() => dispatch({ type: 'swap', id: localEventId() })} />
     <OverBalls deliveries={score.currentOver} number={Math.floor(score.balls / 6) + 1} />

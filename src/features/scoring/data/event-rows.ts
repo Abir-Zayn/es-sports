@@ -25,8 +25,8 @@ export function auditToOp(matchId: string, event: AuditEvent): PersistOp | null 
         striker_key: delivery.batterId, non_striker_key: event.nonStrikerId, bowler_key: delivery.bowlerId,
         delivery_kind: delivery.kind, runs: delivery.runs,
         total_runs: delivery.total, is_legal: delivery.legal, dismissal: delivery.dismissal ?? null,
-        out_key: delivery.outId ?? null, next_batter_key: delivery.nextBatterId ?? null,
-        fielder_key: delivery.fielderId ?? null,
+        out_key: delivery.outId || null, next_batter_key: delivery.nextBatterId || null,
+        fielder_key: delivery.fielderId || null,
       } };
     }
     case 'bowler':

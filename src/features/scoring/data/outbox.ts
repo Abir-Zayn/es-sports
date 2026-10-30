@@ -22,6 +22,23 @@ export class OutboxConflictError extends Error {
 
 const plural = (count: number) => `${count} change${count === 1 ? '' : 's'}`;
 
+function operationName(op: OutboxOp): string {
+  if (op.kind === 'event') {
+    if (op.op.kind === 'insert') return op.op.row.kind === 'delivery' ? 'Save ball' : 'Save innings event';
+    return op.op.kind === 'angle' ? 'Save shot direction' : 'Undo ball';
+  }
+  return { create: 'Create match', start: 'Start match', result: 'Save result', reopen: 'Reopen match' }[op.kind];
+}
+
+function errorMessage(error: unknown): string {
+  const message = error instanceof Error ? error.message
+    : typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string'
+      ? error.message : 'The server did not accept this change.';
+  const code = typeof error === 'object' && error !== null && 'code' in error && typeof error.code === 'string'
+    && /^[a-zA-Z0-9_-]{1,20}$/.test(error.code) ? ` (${error.code})` : '';
+  return `${message.replace(/[\r\n]+/g, ' ').slice(0, 240)}${code}`;
+}
+
 /**
  * The unsent changes of one match for one account. Each change is written to the phone before it is sent and
  * removed only after the server accepted it, so closing the app at any point loses nothing: the next run finds
@@ -84,7 +101,7 @@ export class Outbox {
     await this.queue.settled();
     if (this.pending > 0) {
       throw new Error(`${plural(this.pending)} to this match are saved on this phone but not sent yet. `
-        + 'Check your connection and try again.');
+        + `${this.snapshot.error ?? 'Check your connection and try again.'}`);
     }
   }
 
@@ -103,8 +120,12 @@ export class Outbox {
 
   private async send(op: OutboxOp): Promise<void> {
     // A change belongs to the account that made it; after a switch it waits on the phone for that account.
-    if ((await this.deps.currentUserId()) !== this.userId) throw new Error('Signed in as a different account.');
-    await this.deps.send(this.matchId, op);
+    try {
+      if ((await this.deps.currentUserId()) !== this.userId) throw new Error('Sign in with the account that recorded these changes.');
+      await this.deps.send(this.matchId, op);
+    } catch (error: unknown) {
+      throw new Error(`${operationName(op)}: ${errorMessage(error)}`);
+    }
     // The queue sends in order, so the change just accepted is the oldest one kept.
     const [, ...rest] = this.record.ops;
     this.record = { ...this.record, base: applyToIds(this.record.base, op), ops: rest };

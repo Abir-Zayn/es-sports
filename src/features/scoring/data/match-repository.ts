@@ -105,7 +105,13 @@ export async function startSavedMatch(matchId: string, recordShots: boolean, sta
 /** Applies one saved change. Inserts are keyed by event id, so a retry after a lost reply cannot duplicate a ball. */
 export async function applyOp(matchId: string, op: PersistOp): Promise<void> {
   if (op.kind === 'insert') {
-    const { error } = await supabase.from('ball_events').upsert(op.row, { onConflict: 'id', ignoreDuplicates: true });
+    // Older outboxes can contain empty optional player keys, which violate roster foreign keys.
+    const row = { ...op.row,
+      ...(op.row.out_key === '' ? { out_key: null } : {}),
+      ...(op.row.next_batter_key === '' ? { next_batter_key: null } : {}),
+      ...(op.row.fielder_key === '' ? { fielder_key: null } : {}),
+    };
+    const { error } = await supabase.from('ball_events').upsert(row, { onConflict: 'id', ignoreDuplicates: true });
     if (error) throw error;
   } else if (op.kind === 'angle') {
     const { data, error } = await supabase.from('ball_events').update({ angle: op.angle }).eq('id', op.id).select('id');

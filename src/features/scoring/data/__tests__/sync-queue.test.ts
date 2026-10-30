@@ -34,7 +34,7 @@ describe('SyncQueue', () => {
     queue.push(async () => { if (!online) throw new Error('offline'); sent.push('first'); });
     queue.push(async () => { sent.push('second'); });
     await settle();
-    expect(seen.at(-1)).toEqual({ status: 'error', pending: 2 });
+    expect(seen.at(-1)).toEqual({ status: 'error', pending: 2, error: 'offline' });
     expect(sent).toEqual([]);
     online = true;
     queue.retry();
