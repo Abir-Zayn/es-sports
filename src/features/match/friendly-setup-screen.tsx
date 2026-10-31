@@ -5,7 +5,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
-import { createMatch } from '@/features/scoring/data/match-repository';
+import { createFriendlyMatch, FriendlySetupExpiredError } from '@/features/scoring/data/friendly-create';
 import { buildMatchRows, FRIENDLY_REF_PREFIX } from '@/features/scoring/data/match-rows';
 import { localEventId } from '@/features/scoring/local-id';
 import { useMe } from '@/features/tournament/roster';
@@ -21,6 +21,7 @@ import {
   addPlayer, friendlyProblems, newFriendly, removePlayer, renameTeam, sides, togglePlaying, withPlayersPerSide,
 } from './friendly/friendly-rules';
 import { teamLabel } from './friendly/toss';
+import { sweepOrphanTeamImagesDaily } from './friendly/team-image-sweep';
 import { uploadTeamImage } from './friendly/team-images';
 import { toScorerSetup } from './friendly/to-scorer-setup';
 import type { FriendlyMatchSetup, FriendlySide, FriendlyTossResult } from './types';
@@ -43,6 +44,7 @@ export function FriendlySetupScreen() {
   const mounted = useRef(true);
   const matchId = useRef(localEventId());
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  useEffect(() => { if (me.id) void sweepOrphanTeamImagesDaily(me.id); }, [me.id]);
   const [attempted, setAttempted] = useState(false);
   const [notice, setNotice] = useState<{ side: FriendlySide; message: string } | null>(null);
   const problems = friendlyProblems(setup, me.id);
@@ -67,6 +69,13 @@ export function FriendlySetupScreen() {
     setSheet(next);
   }
   const close = () => router.canGoBack() ? router.back() : router.replace('/matches');
+  /** Leaving the toss starts a new match id. Images of an unsaved one are left to the daily sweep. */
+  function closeToss() {
+    if (saving) return;
+    setTossing(false);
+    setSaveError(null);
+    matchId.current = localEventId();
+  }
 
   async function start(toss: FriendlyTossResult) {
     if (saveLock.current) return;
@@ -84,15 +93,21 @@ export function FriendlySetupScreen() {
         }
       }
       const rows = buildMatchRows(matchId.current, tossed.id, toScorerSetup(ready, me.id), new Date());
-      await createMatch({ ...rows.match, status: 'scheduled', started_at: null }, rows.players, rows.scorers);
+      await createFriendlyMatch({ ...rows.match, status: 'scheduled', started_at: null }, rows.players, rows.scorers);
       if (!mounted.current) return;
       setTossing(false);
       if (scorer) {
         void shareText(`${me.name || 'Your teammate'} made you the scorer for ${teamLabel(tossed, 'teamA')} vs ${teamLabel(tossed, 'teamB')} on esSports: ${appLink(`scorer/${matchId.current}`)}`);
       }
       router.replace({ pathname: scorer ? '/match/[id]' : '/scorer/[id]', params: { id: matchId.current } });
-    } catch {
-      if (mounted.current) setSaveError('Could not save this match or its images. Check your connection and image size, then try again.');
+    } catch (error) {
+      // The old id can never be saved now; the next tap uploads the images again under a new one.
+      const expired = error instanceof FriendlySetupExpiredError;
+      if (expired) matchId.current = localEventId();
+      if (mounted.current) {
+        setSaveError(expired ? 'This setup was paused too long to save. Tap start again.'
+          : 'Could not save this match or its images. Check your connection and image size, then try again.');
+      }
     } finally {
       saveLock.current = false;
       if (mounted.current) setSaving(false);
@@ -135,7 +150,7 @@ export function FriendlySetupScreen() {
       onAddGuest={(side, input) => { if (change((c) => addPlayer(c, side, { id: localEventId(), ...input }))) setSheet(null); }}
       onPickScorer={(id) => { setSetup({ ...setup, assignedScorerId: id === me.id ? '' : id }); setSheet(null); }} />
     <TossCoinModal visible={tossing} names={{ teamA: teamLabel(setup, 'teamA'), teamB: teamLabel(setup, 'teamB') }}
-      saving={saving} error={saveError} onClose={() => { if (!saving) { setTossing(false); setSaveError(null); matchId.current = localEventId(); } }}
+      saving={saving} error={saveError} onClose={closeToss}
       onStart={(toss) => void start(toss)} />
   </View>;
 }

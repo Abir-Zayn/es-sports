@@ -8,9 +8,11 @@ Plan for the next stretch of work on friendly matches and scoring. Read `AGENTS.
 | --- | --- |
 | Friendly setup, player search, team images, saved friendlies | Done (`feat/friendly-match-scorer`, `d4a8d47`) |
 | One assigned scorer per friendly, enforced by RLS | Done, migration applied on `es-sports` |
-| Durable scoring outbox (scores survive app kill) | Done (`feat/durable-scoring-outbox`, `57aa58f`), unit tested; informal device check passed |
-| APK with OTA updates on the `preview` channel | Released as `v1.0.0-preview.2` (EAS build `63229964`) |
-| Feature branches merged to `main` | PR #5 open, waiting for merge |
+| Durable scoring outbox (scores survive app kill) | Done (`feat/durable-scoring-outbox`, `57aa58f`), unit tested; device rows 4–7 pass on one phone |
+| APK with OTA updates on the `preview` channel | Released as `v1.0.0-preview.2` (EAS build `63229964`); issue #6 fix published as an OTA update from `b68e7ec` |
+| Feature branches merged to `main` | Done: PR #5 and PR #7 merged |
+
+The ordered plan for the whole product is in `docs/ROADMAP.md`. Items 1–6 here are its steps 1–4, 6 and 7. Its "Current status" section is where to start each day.
 
 ## Recommended order
 
@@ -23,7 +25,7 @@ Plan for the next stretch of work on friendly matches and scoring. Read `AGENTS.
 
 ---
 
-## 1. Merge, migration history and release workflow — DONE except remote repair
+## 1. Merge, migration history and release workflow — DONE
 
 **Why:** the new code and README link live only on feature branches. Local and remote migration versions differ, so `supabase db push` is unsafe.
 
@@ -33,7 +35,7 @@ Plan for the next stretch of work on friendly matches and scoring. Read `AGENTS.
 - Fix the lint warning: unused `comingSoon` import in `src/features/team/team-members-screen.tsx`.
 - Add a short "Shipping an OTA update" section to the README. It covers when OTA is allowed (JS only, same `version` in `app.json`), the command `npx eas-cli@latest update --channel preview`, and when a new APK is required (native module added, `version` changed).
 
-**Status:** PR #5 open; local migration files renamed to the remote versions; lint clean; README has OTA steps. **Remaining:** link the CLI to `es-sports` and run `supabase migration repair --status applied 20261028000000`, then check `supabase migration list` (needs the account that owns `es-sports`).
+**Status:** Done. PR #5 merged as `253995f`; migration history repaired, and `supabase migration list` shows all five versions locally and remotely; lint clean; README has OTA steps.
 
 **Done when**
 - `main` holds all the work.
@@ -43,7 +45,9 @@ Plan for the next stretch of work on friendly matches and scoring. Read `AGENTS.
 
 ---
 
-## 2. Device verification of the shipped build — informal pass; record results
+## 2. Device verification of the shipped build — IN PROGRESS
+
+**Status (2026-10-31):** one phone (PLR110, Android 16). Rows 4, 5 and 6 pass. Row 7 failed (issue #6), was fixed in PR #7 and passes on retest. Rows 8 and 9 not run (next: phone plus emulator). Rows 10–12 partly checked. Low-end performance deferred until a cheap device is available. Details in `docs/device-test-log.md`.
 
 **Why:** nothing has been tested on a real phone yet. The outbox in particular is only unit tested.
 

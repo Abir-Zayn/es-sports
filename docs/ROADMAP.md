@@ -38,8 +38,43 @@ There are **no tables yet** for tournaments, teams, team members, invitations, s
 
 ### Release
 
-- APK `v1.0.0-preview.2` with OTA updates on the `preview` channel.
+- APK `v1.0.0-preview.2` with OTA updates on the `preview` channel (runtime `1.0.0`).
 - PR #5 (friendly scorer + outbox into `main`) is merged; all five local and remote migration versions now agree.
+- PR #7 (fix for issue #6) is merged as `b68e7ec` and published as an OTA update on `preview`. Issue #6 is closed.
+
+## Current status (end of 2026-10-31)
+
+**Where we are:** Phase A, step 2 (device testing) is partly done. Step 1 is done. `main` = `origin/main` at `b68e7ec`, working tree clean.
+
+**Done today**
+- Merged PR #5; repaired the migration history (5 versions agree locally and remotely).
+- Device run on PLR110 (Android 16), recorded in `docs/device-test-log.md`: rows 4, 5 and 6 pass; row 7 failed, then passed after the fix.
+- Fixed issue #6: when the last wicket ended an innings, the app sent an empty next-batter id, which Postgres rejected (`23503`). The wicket screen now works out the all-out wicket from the team size. Empty optional player ids are sent as `null`, including in changes saved before the fix. The unsent notice now names the blocked change and the server error. The original phone queue synced with nothing discarded.
+- Checks on `b68e7ec`: typecheck, lint and 413 tests in 71 suites pass.
+
+**Start tomorrow with**
+1. Finish step 2: rows 8 (account switch) and 9 (two phones) on the phone plus an emulator, marked `emulator` in the log. Then confirm the image uploads and the 2 MB limit (row 10), guest player search (row 11) and that the phone is running the OTA update (row 12).
+2. Then step 3: atomic friendly creation (migration + RPC). The migration history is repaired, so nothing blocks it.
+
+**Deferred or open**
+- Low-end phone performance check: skipped until a cheap device (or a cloud device lab) is available. Must be done before the Play Store release.
+- Show plain wording for common server error codes (`23503`, `42501`) in the unsent notice instead of the raw Postgres message. Before the Play Store release.
+- CodeRabbit's follow-up review on PR #7 was rate-limited, so the last docs and test commit was not reviewed.
+- The graphify SQL extractor dependency is missing, so `database.types.ts` is only partly in the graph.
+- Old merged branches `feat/tournament-squad-lifecycle` (local and remote), `feat/notifications-center` and `feat/player-career-profile` (remote) can be deleted.
+
+## Model routing
+
+Every task brief names the model for each part, sized by workload.
+
+| Size | Signals | Model |
+| --- | --- | --- |
+| **L** (hard) | Migrations, RLS, RPCs, concurrency or ordering, offline sync, security, cross-feature design | **Claude Opus 5.5** builds it |
+| **M** (standard) | Screen wiring, swapping sample data for queries, hooks, Jest tests, refactors within one feature | **Claude Sonnet 5.5** |
+| **S** (light) | Docs, test logs, status updates, mechanical renames, deleting unused `sample-*` files | **Gemini Flash 3.8** |
+| Review | Independent second opinion on every L task and any risky M task, before merge | **GPT 6.1** (a different model family catches different mistakes) |
+
+Device tests and Supabase dashboard or account actions stay with you.
 
 ## 2. Why it feels scattered
 
@@ -52,7 +87,7 @@ Each step ends with migrations plus rolled-back SQL checks, `pnpm typecheck`, `p
 ### Phase A: stabilise what exists
 
 1. **Merge PR #5 and repair migration history.** Done: PR #5 is merged and `supabase migration list` shows all five versions locally and remotely. (NEXT_WORK item 1)
-2. **Device test the preview APK.** Run the 12-row checklist and record it in `docs/device-test-log.md`. (NEXT_WORK item 2)
+2. **Device test the preview APK.** Run the 12-row checklist and record it in `docs/device-test-log.md`. (NEXT_WORK item 2) In progress: rows 4–7 pass on one phone (row 7 after the issue #6 fix); rows 8 and 9 not run; rows 10–12 partly checked; low-end performance deferred.
 
 ### Phase B: finish friendly scoring
 

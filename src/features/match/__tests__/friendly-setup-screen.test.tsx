@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { AccessibilityInfo } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
-import { createMatch } from '@/features/scoring/data/match-repository';
+import { createFriendlyMatch } from '@/features/scoring/data/friendly-create';
 import { uploadTeamImage } from '../friendly/team-images';
 import { searchPlayers } from '../friendly/search-players';
 import { ThemeProvider } from '@/theme';
@@ -12,10 +12,16 @@ import { ThemeProvider } from '@/theme';
 import { FriendlySetupScreen } from '../friendly-setup-screen';
 
 const mockReplace = jest.fn();
-jest.mock('@/features/scoring/data/match-repository', () => ({ createMatch: jest.fn().mockResolvedValue(undefined) }));
+jest.mock('@/features/scoring/data/friendly-create', () => ({
+  createFriendlyMatch: jest.fn().mockResolvedValue('match-id'),
+  FriendlySetupExpiredError: class FriendlySetupExpiredError extends Error {},
+}));
+jest.mock('../friendly/team-image-sweep', () => ({ sweepOrphanTeamImagesDaily: jest.fn().mockResolvedValue(undefined) }));
 jest.mock('../friendly/search-players', () => ({ searchPlayers: jest.fn().mockResolvedValue([]) }));
 jest.mock('../components/saved-friendlies', () => ({ SavedFriendlies: () => null }));
-jest.mock('../friendly/team-images', () => ({ uploadTeamImage: jest.fn().mockResolvedValue('https://example.com/team.png') }));
+jest.mock('../friendly/team-images', () => ({
+  uploadTeamImage: jest.fn().mockResolvedValue('https://example.com/team.png'),
+}));
 jest.mock('@/lib/share', () => ({ shareText: jest.fn().mockResolvedValue(undefined), appLink: (path: string) => `essports://${path}` }));
 jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn() }));
 jest.mock('expo-image', () => ({
@@ -64,7 +70,7 @@ async function fillForm() {
 
 describe('friendly match setup', () => {
   beforeEach(() => {
-    jest.mocked(createMatch).mockReset().mockResolvedValue(undefined);
+    jest.mocked(createFriendlyMatch).mockReset().mockResolvedValue('match-id');
     mockReplace.mockReset();
     jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
   });
@@ -128,7 +134,7 @@ describe('friendly match setup', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Start scoring' }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledTimes(1));
     expect(mockReplace.mock.calls[0][0]).toMatchObject({ pathname: '/match/[id]' });
-    expect(jest.mocked(createMatch).mock.calls[0][2]).toEqual([scorerId]);
+    expect(jest.mocked(createFriendlyMatch).mock.calls[0][2]).toEqual([scorerId]);
   });
 
   it('tosses, lets the winner choose, and hands the match to the scorer', async () => {
@@ -147,13 +153,13 @@ describe('friendly match setup', () => {
     await waitFor(() => expect(mockReplace).toHaveBeenCalledTimes(1));
     const { params } = mockReplace.mock.calls[0][0] as { params: { id: string } };
     expect(params.id).toMatch(/^[0-9a-f]{8}-/);
-    const [match, players] = jest.mocked(createMatch).mock.calls[0];
+    const [match, players] = jest.mocked(createFriendlyMatch).mock.calls[0];
     expect(match).toMatchObject({ id: params.id, status: 'scheduled', started_at: null, overs_limit: 6, toss_winner_side: 'a', toss_decision: 'bowl', team_b_name: 'Chattogram Strikers' });
     expect(players.filter((p) => p.in_playing_xi)).toHaveLength(8);
   });
 
   it('keeps the toss open and retries the same match if saving fails', async () => {
-    jest.mocked(createMatch).mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(undefined);
+    jest.mocked(createFriendlyMatch).mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce('match-id');
     await show();
     await fillForm();
     await fireEvent.press(screen.getByRole('button', { name: 'Proceed to Toss' }));
@@ -166,7 +172,7 @@ describe('friendly match setup', () => {
     expect(mockReplace).not.toHaveBeenCalled();
     await fireEvent.press(screen.getByRole('button', { name: 'Start scoring' }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledTimes(1));
-    const calls = jest.mocked(createMatch).mock.calls;
+    const calls = jest.mocked(createFriendlyMatch).mock.calls;
     expect(calls[0][0].id).toBe(calls[1][0].id);
   });
 
@@ -188,7 +194,7 @@ describe('friendly match setup', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Start scoring' }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledTimes(1));
     expect(jest.mocked(uploadTeamImage).mock.calls.map((call) => call[2])).toEqual(['a', 'b']);
-    expect(jest.mocked(createMatch).mock.calls[0][0]).toMatchObject({
+    expect(jest.mocked(createFriendlyMatch).mock.calls[0][0]).toMatchObject({
       team_a_image_url: 'https://example.com/team.png', team_b_image_url: 'https://example.com/team.png',
     });
   });
