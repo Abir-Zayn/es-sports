@@ -187,7 +187,8 @@ Only those three files. Short, plain wording.
 
 ```text
 Re-check round 2 of step 4 (docs/tasks/step-4-scoring-write-guard.md, "Round 2"). Target:
-git diff origin/main...feat/scoring-write-guard. Confirm R1-R4 are fixed and nothing regressed, in:
+git diff origin/main...origin/fix/scoring-score-head (PR #10). PR #9 merged round 1 only, so
+this diff is all of round 2. Confirm R1-R4 are fixed and nothing regressed, in:
 supabase/migrations/20261101010000_score_head.sql, supabase/tests/scoring_write_guard.sql,
 src/features/scoring/data/outbox.ts, outbox-ops.ts, outbox-errors.ts, sync-queue.ts,
 match-repository.ts, src/features/scoring/components/scorer-error.tsx.
