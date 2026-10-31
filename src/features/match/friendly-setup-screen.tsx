@@ -5,7 +5,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
-import { createMatch } from '@/features/scoring/data/match-repository';
+import { createFriendlyMatch } from '@/features/scoring/data/friendly-create';
 import { buildMatchRows, FRIENDLY_REF_PREFIX } from '@/features/scoring/data/match-rows';
 import { localEventId } from '@/features/scoring/local-id';
 import { useMe } from '@/features/tournament/roster';
@@ -21,7 +21,8 @@ import {
   addPlayer, friendlyProblems, newFriendly, removePlayer, renameTeam, sides, togglePlaying, withPlayersPerSide,
 } from './friendly/friendly-rules';
 import { teamLabel } from './friendly/toss';
-import { uploadTeamImage } from './friendly/team-images';
+import { sweepOrphanTeamImagesDaily } from './friendly/team-image-sweep';
+import { discardUnsavedTeamImages, uploadTeamImage } from './friendly/team-images';
 import { toScorerSetup } from './friendly/to-scorer-setup';
 import type { FriendlyMatchSetup, FriendlySide, FriendlyTossResult } from './types';
 
@@ -42,7 +43,10 @@ export function FriendlySetupScreen() {
   const saveLock = useRef(false);
   const mounted = useRef(true);
   const matchId = useRef(localEventId());
+  // Set when a save fails after images may have been uploaded under the current match id.
+  const failedSave = useRef(false);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  useEffect(() => { if (me.id) void sweepOrphanTeamImagesDaily(me.id); }, [me.id]);
   const [attempted, setAttempted] = useState(false);
   const [notice, setNotice] = useState<{ side: FriendlySide; message: string } | null>(null);
   const problems = friendlyProblems(setup, me.id);
@@ -67,6 +71,15 @@ export function FriendlySetupScreen() {
     setSheet(next);
   }
   const close = () => router.canGoBack() ? router.back() : router.replace('/matches');
+  /** Leaving the toss after a failed save starts a new match id; the old id's images go unless it was saved. */
+  function closeToss() {
+    if (saving) return;
+    if (failedSave.current) void discardUnsavedTeamImages(me.id, matchId.current);
+    failedSave.current = false;
+    setTossing(false);
+    setSaveError(null);
+    matchId.current = localEventId();
+  }
 
   async function start(toss: FriendlyTossResult) {
     if (saveLock.current) return;
@@ -84,7 +97,8 @@ export function FriendlySetupScreen() {
         }
       }
       const rows = buildMatchRows(matchId.current, tossed.id, toScorerSetup(ready, me.id), new Date());
-      await createMatch({ ...rows.match, status: 'scheduled', started_at: null }, rows.players, rows.scorers);
+      await createFriendlyMatch({ ...rows.match, status: 'scheduled', started_at: null }, rows.players, rows.scorers);
+      failedSave.current = false;
       if (!mounted.current) return;
       setTossing(false);
       if (scorer) {
@@ -92,6 +106,7 @@ export function FriendlySetupScreen() {
       }
       router.replace({ pathname: scorer ? '/match/[id]' : '/scorer/[id]', params: { id: matchId.current } });
     } catch {
+      failedSave.current = true;
       if (mounted.current) setSaveError('Could not save this match or its images. Check your connection and image size, then try again.');
     } finally {
       saveLock.current = false;
@@ -135,7 +150,7 @@ export function FriendlySetupScreen() {
       onAddGuest={(side, input) => { if (change((c) => addPlayer(c, side, { id: localEventId(), ...input }))) setSheet(null); }}
       onPickScorer={(id) => { setSetup({ ...setup, assignedScorerId: id === me.id ? '' : id }); setSheet(null); }} />
     <TossCoinModal visible={tossing} names={{ teamA: teamLabel(setup, 'teamA'), teamB: teamLabel(setup, 'teamB') }}
-      saving={saving} error={saveError} onClose={() => { if (!saving) { setTossing(false); setSaveError(null); matchId.current = localEventId(); } }}
+      saving={saving} error={saveError} onClose={closeToss}
       onStart={(toss) => void start(toss)} />
   </View>;
 }
