@@ -63,6 +63,19 @@ There are **no tables yet** for tournaments, teams, team members, invitations, s
 - The graphify SQL extractor dependency is missing, so `database.types.ts` is only partly in the graph.
 - Old merged branches `feat/tournament-squad-lifecycle` (local and remote), `feat/notifications-center` and `feat/player-career-profile` (remote) can be deleted.
 
+## Model routing
+
+Every task brief names the model for each part, sized by workload.
+
+| Size | Signals | Model |
+| --- | --- | --- |
+| **L** (hard) | Migrations, RLS, RPCs, concurrency or ordering, offline sync, security, cross-feature design | **Claude Opus 5.5** builds it |
+| **M** (standard) | Screen wiring, swapping sample data for queries, hooks, Jest tests, refactors within one feature | **Claude Sonnet 5.5** |
+| **S** (light) | Docs, test logs, status updates, mechanical renames, deleting unused `sample-*` files | **Gemini Flash 3.8** |
+| Review | Independent second opinion on every L task and any risky M task, before merge | **GPT 6.1** (a different model family catches different mistakes) |
+
+Device tests and Supabase dashboard or account actions stay with you.
+
 ## 2. Why it feels scattered
 
 The UI was built screen by screen for the whole product, but the backend only covers profiles and friendly matches. About two thirds of the screens still run on sample data. The plan below builds the backend in dependency order (player → team → tournament → fixtures → stats) and swaps each group of screens onto it before starting the next.
