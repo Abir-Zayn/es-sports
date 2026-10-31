@@ -142,9 +142,9 @@ begin
   if public.sgt_live(2) <> '' then raise exception 'FAIL d: match 2 has events'; end if;
 
   -- h) Empty optional player keys are stored as null (issue #6).
-  perform public.sgt_append(4, 1, 3, null, 'h empty keys', '{"kind":"delivery","delivery_kind":"runs","striker_key":"p1",'
+  perform public.sgt_append(4, 1, 3, null, 'h empty keys', ('{"kind":"delivery","delivery_kind":"runs","striker_key":"p1",'
     || '"non_striker_key":"p4","bowler_key":"p3","runs":1,"total_runs":1,"is_legal":true,"out_key":"",'
-    || '"next_batter_key":"","fielder_key":""}');
+    || '"next_batter_key":"","fielder_key":""}')::jsonb);
   select * into v_ev from public.ball_events where id = public.sgt_id('f3f20000', 4);
   if v_ev.out_key is not null or v_ev.next_batter_key is not null or v_ev.fielder_key is not null then
     raise exception 'FAIL h: empty keys were stored';
