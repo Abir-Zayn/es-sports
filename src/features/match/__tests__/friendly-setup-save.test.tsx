@@ -7,14 +7,13 @@ import { ThemeProvider } from '@/theme';
 
 import { FriendlySetupScreen } from '../friendly-setup-screen';
 import { sweepOrphanTeamImagesDaily } from '../friendly/team-image-sweep';
-import { discardUnsavedTeamImages } from '../friendly/team-images';
 
 const ME = '11111111-1111-4111-8111-111111111111';
 const mockReplace = jest.fn();
 jest.mock('@/features/scoring/data/friendly-create', () => ({ createFriendlyMatch: jest.fn() }));
 jest.mock('../friendly/team-image-sweep', () => ({ sweepOrphanTeamImagesDaily: jest.fn().mockResolvedValue(undefined) }));
 jest.mock('../friendly/team-images', () => ({
-  uploadTeamImage: jest.fn().mockResolvedValue('https://example.com/team.png'), discardUnsavedTeamImages: jest.fn().mockResolvedValue(undefined),
+  uploadTeamImage: jest.fn().mockResolvedValue('https://example.com/team.png'),
 }));
 jest.mock('../friendly/search-players', () => ({ searchPlayers: jest.fn().mockResolvedValue([]) }));
 jest.mock('../components/saved-friendlies', () => ({ SavedFriendlies: () => null }));
@@ -79,7 +78,6 @@ const savedIds = () => jest.mocked(createFriendlyMatch).mock.calls.map(([match])
 describe('saving a friendly', () => {
   beforeEach(() => {
     jest.mocked(createFriendlyMatch).mockReset().mockResolvedValue('match-id');
-    jest.mocked(discardUnsavedTeamImages).mockClear();
     jest.mocked(sweepOrphanTeamImagesDaily).mockClear();
     mockReplace.mockReset();
   });
@@ -98,7 +96,19 @@ describe('saving a friendly', () => {
     expect(createFriendlyMatch).toHaveBeenCalledTimes(1);
   });
 
-  it('discards the images of a failed save when the toss is closed, then saves under a new id', async () => {
+  it('retries a failed save under the same id', async () => {
+    jest.mocked(createFriendlyMatch).mockRejectedValueOnce(new Error('offline'));
+    await show();
+    await fillForm();
+    await press('Proceed to Toss');
+    await press('Start scoring');
+    await screen.findByText(SAVE_ERROR);
+    await press('Start scoring');
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledTimes(1));
+    expect(savedIds()).toEqual([savedIds()[0], savedIds()[0]]);
+  });
+
+  it('deletes nothing when the toss is closed after a failed save, and saves under a new id', async () => {
     jest.mocked(createFriendlyMatch).mockRejectedValueOnce(new Error('offline'));
     await show();
     await fillForm();
@@ -106,20 +116,11 @@ describe('saving a friendly', () => {
     await press('Start scoring');
     await screen.findByText(SAVE_ERROR);
     await press('Close toss');
-    expect(discardUnsavedTeamImages).toHaveBeenCalledWith(ME, savedIds()[0]);
+    // The lost save may still land on the server, so its images are left for the day-old sweep.
+    expect(sweepOrphanTeamImagesDaily).toHaveBeenCalledTimes(1);
     await press('Proceed to Toss');
     await press('Start scoring');
     await waitFor(() => expect(mockReplace).toHaveBeenCalledTimes(1));
     expect(savedIds()[1]).not.toBe(savedIds()[0]);
-    expect(discardUnsavedTeamImages).toHaveBeenCalledTimes(1);
-  });
-
-  it('leaves images alone when the toss is closed without a failed save', async () => {
-    await show();
-    await fillForm();
-    await press('Proceed to Toss');
-    await press('Close toss');
-    expect(discardUnsavedTeamImages).not.toHaveBeenCalled();
-    expect(createFriendlyMatch).not.toHaveBeenCalled();
   });
 });

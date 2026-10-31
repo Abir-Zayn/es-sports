@@ -17,7 +17,7 @@ jest.mock('../friendly/team-image-sweep', () => ({ sweepOrphanTeamImagesDaily: j
 jest.mock('../friendly/search-players', () => ({ searchPlayers: jest.fn().mockResolvedValue([]) }));
 jest.mock('../components/saved-friendlies', () => ({ SavedFriendlies: () => null }));
 jest.mock('../friendly/team-images', () => ({
-  uploadTeamImage: jest.fn().mockResolvedValue('https://example.com/team.png'), discardUnsavedTeamImages: jest.fn().mockResolvedValue(undefined),
+  uploadTeamImage: jest.fn().mockResolvedValue('https://example.com/team.png'),
 }));
 jest.mock('@/lib/share', () => ({ shareText: jest.fn().mockResolvedValue(undefined), appLink: (path: string) => `essports://${path}` }));
 jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn() }));

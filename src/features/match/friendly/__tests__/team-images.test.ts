@@ -3,7 +3,6 @@ import * as SecureStore from 'expo-secure-store';
 import { existingMatchIds } from '@/features/scoring/data/friendly-create';
 
 import { sweepOrphanTeamImages, sweepOrphanTeamImagesDaily } from '../team-image-sweep';
-import { discardUnsavedTeamImages } from '../team-images';
 
 const USER = '11111111-1111-4111-8111-111111111111';
 const OLD_MATCH = '22222222-2222-4222-8222-222222222222';
@@ -11,22 +10,32 @@ const YOUNG_MATCH = '33333333-3333-4333-8333-333333333333';
 const SAVED_MATCH = '44444444-4444-4444-8444-444444444444';
 const NOW = Date.parse('2026-10-31T12:00:00Z');
 const DAY = 24 * 60 * 60 * 1000;
+const ROOT = `${USER}/friendly`;
 
 const file = (name: string, ageMs: number) => {
   const at = new Date(NOW - ageMs).toISOString();
   return { name, id: `file-${name}`, created_at: at, updated_at: at };
 };
 const folder = (name: string) => ({ name, id: null, created_at: null, updated_at: null });
+/** A match id that sorts before the fixed ids above, numbered so folders list in order. */
+const savedId = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 
-/** Storage listing by folder path. */
+/** Storage listing by folder path, paged like the real API. */
 let tree: Record<string, unknown[]> = {};
-const mockList = jest.fn((path: string) => Promise.resolve({ data: tree[path] ?? [], error: null }));
+const mockList = jest.fn((path: string, options?: { limit?: number; offset?: number }) => {
+  const offset = options?.offset ?? 0;
+  return Promise.resolve({ data: (tree[path] ?? []).slice(offset, offset + (options?.limit ?? 100)), error: null });
+});
 const mockRemove = jest.fn((_paths: string[]) => Promise.resolve({ data: [], error: null }));
 jest.mock('@/lib/supabase', () => ({
   supabase: { storage: { from: () => ({ list: mockList, remove: mockRemove }) } },
 }));
 jest.mock('@/features/scoring/data/friendly-create', () => ({ existingMatchIds: jest.fn() }));
 jest.mock('expo-secure-store', () => ({ getItemAsync: jest.fn(), setItemAsync: jest.fn() }));
+
+/** The server knows these ids as saved matches. */
+const savedOnServer = (ids: Set<string>) =>
+  jest.mocked(existingMatchIds).mockImplementation(async (batch) => new Set(batch.filter((id) => ids.has(id))));
 
 beforeEach(() => {
   mockList.mockClear();
@@ -35,40 +44,39 @@ beforeEach(() => {
   jest.mocked(SecureStore.getItemAsync).mockReset().mockResolvedValue(null);
   jest.mocked(SecureStore.setItemAsync).mockReset().mockResolvedValue(undefined);
   tree = {
-    [`${USER}/friendly`]: [folder(OLD_MATCH), folder(YOUNG_MATCH), folder(SAVED_MATCH), folder('not-a-match')],
-    [`${USER}/friendly/${OLD_MATCH}`]: [file('a', 2 * DAY), file('b', 2 * DAY)],
-    [`${USER}/friendly/${YOUNG_MATCH}`]: [file('a', 2 * DAY), file('b', 60 * 1000)],
-    [`${USER}/friendly/${SAVED_MATCH}`]: [file('a', 3 * DAY)],
+    [ROOT]: [folder(OLD_MATCH), folder(YOUNG_MATCH), folder(SAVED_MATCH), folder('not-a-match')],
+    [`${ROOT}/${OLD_MATCH}`]: [file('a', 2 * DAY), file('b', 2 * DAY)],
+    [`${ROOT}/${YOUNG_MATCH}`]: [file('a', 2 * DAY), file('b', 60 * 1000)],
+    [`${ROOT}/${SAVED_MATCH}`]: [file('a', 3 * DAY)],
   };
-});
-
-describe('discarding the images of an abandoned save', () => {
-  it('removes the images when the match does not exist on the server', async () => {
-    await discardUnsavedTeamImages(USER, OLD_MATCH);
-    expect(existingMatchIds).toHaveBeenCalledWith([OLD_MATCH]);
-    expect(mockRemove).toHaveBeenCalledWith([`${USER}/friendly/${OLD_MATCH}/a`, `${USER}/friendly/${OLD_MATCH}/b`]);
-  });
-
-  it('keeps the images when the match exists', async () => {
-    jest.mocked(existingMatchIds).mockResolvedValue(new Set([SAVED_MATCH]));
-    await discardUnsavedTeamImages(USER, SAVED_MATCH);
-    expect(mockRemove).not.toHaveBeenCalled();
-  });
-
-  it('keeps the images and stays quiet when the server cannot answer', async () => {
-    jest.mocked(existingMatchIds).mockRejectedValue(new Error('offline'));
-    await expect(discardUnsavedTeamImages(USER, OLD_MATCH)).resolves.toBeUndefined();
-    expect(mockRemove).not.toHaveBeenCalled();
-  });
 });
 
 describe('sweeping orphaned team images', () => {
   it('removes only old folders that have no saved match', async () => {
-    jest.mocked(existingMatchIds).mockResolvedValue(new Set([SAVED_MATCH]));
+    savedOnServer(new Set([SAVED_MATCH]));
     await sweepOrphanTeamImages(USER, NOW);
-    expect(existingMatchIds).toHaveBeenCalledWith([OLD_MATCH, SAVED_MATCH]);
+    expect(existingMatchIds).toHaveBeenCalledWith([OLD_MATCH, YOUNG_MATCH, SAVED_MATCH]);
+    expect(mockList).not.toHaveBeenCalledWith(`${ROOT}/${SAVED_MATCH}`, expect.anything());
     expect(mockRemove).toHaveBeenCalledTimes(1);
-    expect(mockRemove).toHaveBeenCalledWith([`${USER}/friendly/${OLD_MATCH}/a`, `${USER}/friendly/${OLD_MATCH}/b`]);
+    expect(mockRemove).toHaveBeenCalledWith([`${ROOT}/${OLD_MATCH}/a`, `${ROOT}/${OLD_MATCH}/b`]);
+  });
+
+  it('reaches an orphan listed after more saved folders than one run checks', async () => {
+    const saved = Array.from({ length: 60 }, (_, i) => savedId(i));
+    tree[ROOT] = [...saved.map(folder), folder(OLD_MATCH)];
+    savedOnServer(new Set(saved));
+    await sweepOrphanTeamImages(USER, NOW);
+    expect(mockRemove).toHaveBeenCalledWith([`${ROOT}/${OLD_MATCH}/a`, `${ROOT}/${OLD_MATCH}/b`]);
+  });
+
+  it('follows the folder listing page by page and asks about ids in batches', async () => {
+    const saved = Array.from({ length: 150 }, (_, i) => savedId(i));
+    tree[ROOT] = [...saved.map(folder), folder(OLD_MATCH)];
+    savedOnServer(new Set(saved));
+    await sweepOrphanTeamImages(USER, NOW);
+    expect(mockList).toHaveBeenCalledWith(ROOT, { limit: 100, offset: 100 });
+    expect(jest.mocked(existingMatchIds).mock.calls.map(([batch]) => batch.length)).toEqual([100, 51]);
+    expect(mockRemove).toHaveBeenCalledWith([`${ROOT}/${OLD_MATCH}/a`, `${ROOT}/${OLD_MATCH}/b`]);
   });
 
   it('removes nothing when the server cannot say which matches exist', async () => {

@@ -6,8 +6,10 @@ import { isUuid } from '@/features/scoring/data/uuid';
 import { supabase } from '@/lib/supabase';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-/** Folders checked per sweep, so one run stays a handful of requests. */
+/** Unsaved folders whose files are checked per sweep, so one run stays a handful of requests. */
 const MAX_FOLDERS = 50;
+/** Entries per storage listing page, and match ids per existence query (keeps the request URL short). */
+const PAGE = 100;
 const sweepKey = (userId: string) => `friendly-image-sweep-v1.${userId}`;
 
 async function lastSweep(userId: string): Promise<number> {
@@ -23,30 +25,50 @@ async function markSwept(userId: string, at: number): Promise<void> {
   else await SecureStore.setItemAsync(key, String(at));
 }
 
+/** Every match-id folder under `root`, following the listing page by page. */
+async function matchFolders(root: string): Promise<string[]> {
+  const bucket = supabase.storage.from('avatars');
+  const names: string[] = [];
+  for (let offset = 0; ; offset += PAGE) {
+    const { data, error } = await bucket.list(root, { limit: PAGE, offset });
+    if (error) throw error;
+    names.push(...data.filter((entry) => entry.id === null && isUuid(entry.name)).map((entry) => entry.name));
+    if (data.length < PAGE) return names;
+  }
+}
+
+/** The ids among `ids` with no saved match, asked in batches. Throws when the server cannot answer. */
+async function unsavedIds(ids: string[]): Promise<string[]> {
+  const unsaved: string[] = [];
+  for (let at = 0; at < ids.length; at += PAGE) {
+    const batch = ids.slice(at, at + PAGE);
+    const saved = await existingMatchIds(batch);
+    unsaved.push(...batch.filter((id) => !saved.has(id)));
+  }
+  return unsaved;
+}
+
 /**
  * Removes team images of friendlies that were never saved: a folder under `<user>/friendly/` is removed only
- * when all its files are older than a day and the server confirms no match has its id. Young folders may
- * belong to a save in progress, so they are left alone.
+ * when the server confirms no match has its id and all its files are older than a day. The age is the safety
+ * margin: a save whose reply was lost can still land, but not a day after its images were uploaded. Saved
+ * matches are dropped first, so they never use up the per-run folder budget.
  */
 export async function sweepOrphanTeamImages(userId: string, now = Date.now()): Promise<void> {
   const root = `${userId}/friendly`;
   const bucket = supabase.storage.from('avatars');
-  const folders = await bucket.list(root, { limit: 1000 });
-  if (folders.error) throw folders.error;
-  const stale = new Map<string, string[]>();
-  for (const folder of folders.data.filter((entry) => entry.id === null && isUuid(entry.name)).slice(0, MAX_FOLDERS)) {
-    const files = await bucket.list(`${root}/${folder.name}`, { limit: 100 });
+  const candidates = (await unsavedIds(await matchFolders(root))).slice(0, MAX_FOLDERS);
+  const paths: string[] = [];
+  for (const matchId of candidates) {
+    const files = await bucket.list(`${root}/${matchId}`, { limit: PAGE });
     if (files.error) throw files.error;
     const rows = files.data.filter((entry) => entry.id !== null);
     const old = rows.length > 0 && rows.every((entry) => {
       const at = Date.parse(entry.updated_at ?? entry.created_at ?? '');
       return Number.isFinite(at) && now - at > DAY_MS;
     });
-    if (old) stale.set(folder.name, rows.map((entry) => `${root}/${folder.name}/${entry.name}`));
+    if (old) paths.push(...rows.map((entry) => `${root}/${matchId}/${entry.name}`));
   }
-  if (stale.size === 0) return;
-  const saved = await existingMatchIds([...stale.keys()]);
-  const paths = [...stale].filter(([matchId]) => !saved.has(matchId)).flatMap(([, files]) => files);
   if (paths.length === 0) return;
   const removed = await bucket.remove(paths);
   if (removed.error) throw removed.error;
