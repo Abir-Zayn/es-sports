@@ -9,6 +9,10 @@ export type SyncQueueOptions = {
   wait?: (ms: number) => Promise<void>;
 };
 
+/** An error with `final = true` cannot be fixed by trying again, so the queue stops on it without retries. */
+export const isFinalError = (error: unknown): boolean =>
+  typeof error === 'object' && error !== null && 'final' in error && error.final === true;
+
 const defaultWait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 // Queues that still hold unsent jobs. A screen that opens a match waits for these first, so it never
@@ -19,7 +23,7 @@ export const whenAllSaved = (): Promise<void> => Promise.all([...busy].map((queu
 /**
  * Runs saves one at a time, in the order they were added, so a ball is never written before the one
  * that preceded it. A failed save is retried with growing, jittered pauses; once the tries run out the
- * queue stops with status `error` and keeps every unsent job until `retry()`. Jobs must be safe to repeat.
+ * queue stops with status `error` and keeps every unsent job until `retry()`. A final error stops it at once, without retries. Jobs must be safe to repeat.
  */
 export class SyncQueue {
   private jobs: Job[] = [];
@@ -93,7 +97,7 @@ export class SyncQueue {
         return true;
       } catch (error: unknown) {
         this.lastError = error instanceof Error ? error.message : 'The server did not accept this change.';
-        if (attempt === this.attempts) break;
+        if (attempt === this.attempts || isFinalError(error)) break;
         await this.wait(this.baseDelayMs * 2 ** (attempt - 1) * (0.5 + Math.random()));
       }
     }

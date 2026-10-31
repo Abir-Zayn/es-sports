@@ -1,10 +1,12 @@
 import { applyToIds, resumeIndex, type OutboxOp } from './outbox-ops';
 import type { OutboxRecord, OutboxStore } from './outbox-store';
+import { FinalSendError, isFinalCode, ScoringConflictError } from './scoring-errors';
 import { SyncQueue, type SyncQueueOptions, type SyncSnapshot } from './sync-queue';
 
 export type OutboxDeps = {
   store: OutboxStore;
-  send: (matchId: string, op: OutboxOp) => Promise<void>;
+  /** `expectedTail` is the last live event this phone believes the server holds, or null when it expects none. */
+  send: (matchId: string, op: OutboxOp, expectedTail: string | null) => Promise<void>;
   /** The account the app is signed in as right now, or null when signed out. */
   currentUserId: () => Promise<string | null>;
   /** Live event ids the server holds for a match, in order. */
@@ -12,8 +14,15 @@ export type OutboxDeps = {
   queue?: SyncQueueOptions;
 };
 
-/** The server holds scoring this phone never wrote, so its unsent changes were kept and not sent. */
+/** What a screen sees: the queue's state, plus the conflict when the server refused a change as out of date. */
+export type OutboxSnapshot = SyncSnapshot & { conflict?: OutboxConflictError };
+
+/**
+ * The server holds scoring this phone never wrote, so its unsent changes were kept and not sent. Found when
+ * resuming after a restart, or mid-session when the server refuses a write whose expected tail is out of date.
+ */
 export class OutboxConflictError extends Error {
+  readonly final = true;
   constructor(readonly userId: string, readonly matchId: string, readonly pending: number) {
     super(`This match was changed elsewhere. ${pending} unsent change${pending === 1 ? '' : 's'} on this phone `
       + 'were kept but not sent, so they cannot overwrite the newer score.');
@@ -47,8 +56,10 @@ function errorMessage(error: unknown): string {
 export class Outbox {
   private record: OutboxRecord;
   private readonly queue: SyncQueue;
-  private readonly listeners = new Set<(snapshot: SyncSnapshot) => void>();
+  private readonly listeners = new Set<(snapshot: OutboxSnapshot) => void>();
   private snapshot: SyncSnapshot = { status: 'idle', pending: 0 };
+  /** Set when the server refused a change as out of date; cleared by the next attempt to send. */
+  private conflict: OutboxConflictError | null = null;
   /** True while the ops came from disk and have not been checked against the server yet. */
   private unchecked: boolean;
   private resuming: Promise<void> | null = null;
@@ -58,7 +69,7 @@ export class Outbox {
     this.unchecked = record.ops.length > 0;
     this.queue = new SyncQueue((snapshot) => {
       this.snapshot = snapshot;
-      this.listeners.forEach((listener) => listener(snapshot));
+      this.listeners.forEach((listener) => listener(this.view(snapshot)));
     }, deps.queue);
   }
 
@@ -66,9 +77,9 @@ export class Outbox {
   get matchId() { return this.record.matchId; }
   get fixtureRef() { return this.record.fixtureRef; }
   get pending() { return this.record.ops.length; }
-  get status() { return this.unchecked ? { status: 'error' as const, pending: this.pending } : this.snapshot; }
+  get status(): OutboxSnapshot { return this.unchecked ? { status: 'error', pending: this.pending } : this.view(this.snapshot); }
 
-  subscribe(listener: (snapshot: SyncSnapshot) => void): () => void {
+  subscribe(listener: (snapshot: OutboxSnapshot) => void): () => void {
     this.listeners.add(listener);
     return () => { this.listeners.delete(listener); };
   }
@@ -97,9 +108,11 @@ export class Outbox {
       await this.resuming;
     }
     if (this.pending === 0) return;
+    this.conflict = null;
     this.queue.retry();
     await this.queue.settled();
     if (this.pending > 0) {
+      if (this.conflict) throw this.conflict;
       throw new Error(`${plural(this.pending)} to this match are saved on this phone but not sent yet. `
         + `${this.snapshot.error ?? 'Check your connection and try again.'}`);
     }
@@ -122,14 +135,26 @@ export class Outbox {
     // A change belongs to the account that made it; after a switch it waits on the phone for that account.
     try {
       if ((await this.deps.currentUserId()) !== this.userId) throw new Error('Sign in with the account that recorded these changes.');
-      await this.deps.send(this.matchId, op);
+      // The server's live events are `base` plus what has been accepted since, so its last one is the tail.
+      await this.deps.send(this.matchId, op, this.record.base.at(-1) ?? null);
     } catch (error: unknown) {
-      throw new Error(`${operationName(op)}: ${errorMessage(error)}`);
+      if (error instanceof ScoringConflictError) {
+        // Another device scored this match. Stop and keep every change; the person decides what to do.
+        this.conflict = new OutboxConflictError(this.userId, this.matchId, this.pending);
+        throw this.conflict;
+      }
+      const message = `${operationName(op)}: ${errorMessage(error)}`;
+      throw isFinalCode(error) ? new FinalSendError(message) : new Error(message);
     }
+    this.conflict = null;
     // The queue sends in order, so the change just accepted is the oldest one kept.
     const [, ...rest] = this.record.ops;
     this.record = { ...this.record, base: applyToIds(this.record.base, op), ops: rest };
     this.persist();
+  }
+
+  private view(snapshot: SyncSnapshot): OutboxSnapshot {
+    return this.conflict ? { ...snapshot, conflict: this.conflict } : snapshot;
   }
 
   private persist(): void {

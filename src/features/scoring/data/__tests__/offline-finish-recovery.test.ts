@@ -4,12 +4,8 @@ import { sendOutboxOp, type OutboxOp } from '../outbox-ops';
 import { memoryOutboxStore } from '../outbox-store';
 import { createOutboxRegistry } from '../outboxes';
 
-const mockUpsert = jest.fn();
-const mockSelect = jest.fn();
-jest.mock('@/lib/supabase', () => ({ supabase: { from: (table: string) => ({
-  upsert: (row: unknown) => mockUpsert(table, row),
-  update: (row: unknown) => ({ eq: (column: string, value: unknown) => ({ select: () => mockSelect(table, row, column, value) }) }),
-}) } }));
+const mockRpc = jest.fn();
+jest.mock('@/lib/supabase', () => ({ supabase: { rpc: (name: string, args: unknown) => mockRpc(name, args) } }));
 
 const userId = 'user-1';
 const matchId = '11111111-1111-4111-8111-111111111111';
@@ -41,20 +37,17 @@ it('serializes an all-out wicket without an empty foreign key', () => {
 it('recovers a legacy offline finish in order after reopening, without dropping any changes', async () => {
   const store = memoryOutboxStore();
   store.write({ version: 1, userId, matchId, fixtureRef: 'friendly-test', base: [], ops: [wicket(''), chase, winner, result] });
-  const sent: string[] = [];
-  mockUpsert.mockImplementation(async (_table: string, row: { id: string; next_batter_key?: string | null }) => {
-    if (row.next_batter_key === '') return { error: { code: '23503', message: 'invalid next batter' } };
-    sent.push(row.id);
-    return { error: null };
-  });
-  mockSelect.mockImplementation(async () => { sent.push('result'); return { data: [{ id: matchId }], error: null }; });
+  mockRpc.mockResolvedValue({ error: null });
   const registry = createOutboxRegistry({ store, send: sendOutboxOp, currentUserId: async () => userId,
     fetchLiveIds: async () => [], queue: { attempts: 1 } });
 
   await registry.recover(userId, matchId);
 
-  expect(mockUpsert.mock.calls[0][1]).toMatchObject({ id: 'last-wicket', next_batter_key: null });
-  expect(mockSelect).toHaveBeenCalledWith('matches', result.kind === 'result' ? result.result : null, 'id', matchId);
-  expect(sent).toEqual(['last-wicket', 'chase', 'winner', 'result']);
+  // The server turns the legacy empty key into null (see supabase/tests/scoring_write_guard.sql, case h).
+  expect(mockRpc.mock.calls.map(([name, args]) => [name, args.p_row?.id, args.p_expected_tail])).toEqual([
+    ['append_ball_event', 'last-wicket', null], ['append_ball_event', 'chase', 'last-wicket'],
+    ['append_ball_event', 'winner', 'chase'], ['save_match_result', undefined, 'winner'],
+  ]);
+  expect(mockRpc.mock.calls[0][1].p_row).toMatchObject({ id: 'last-wicket', next_batter_key: '' });
   expect(store.read(userId, matchId)).toBeNull();
 });
