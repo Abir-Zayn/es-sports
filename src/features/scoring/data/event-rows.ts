@@ -6,7 +6,8 @@ import type { BallEventInsert, BallEventRow } from './types';
 export type PersistOp =
   | { kind: 'insert'; row: BallEventInsert }
   | { kind: 'angle'; id: string; angle: number }
-  | { kind: 'void'; fromId: string };
+  // `id` is the undo's own operation id. Changes saved before it existed get one when their outbox loads.
+  | { kind: 'void'; fromId: string; id?: string };
 
 /** Maps an accepted change to the write that saves it, or null when nothing needs saving. */
 export function auditToOp(matchId: string, event: AuditEvent): PersistOp | null {
@@ -40,7 +41,7 @@ export function auditToOp(matchId: string, event: AuditEvent): PersistOp | null 
       return event.deliveryId && event.angle !== undefined
         ? { kind: 'angle', id: event.deliveryId, angle: event.angle } : null;
     case 'undo':
-      return { kind: 'void', fromId: event.deliveryId };
+      return { kind: 'void', fromId: event.deliveryId, id: event.id };
     case 'demo':
       return null;
   }

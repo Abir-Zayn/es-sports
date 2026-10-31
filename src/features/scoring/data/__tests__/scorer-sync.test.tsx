@@ -81,7 +81,7 @@ describe('saving a scoring session', () => {
     const [match, players] = repo.createMatch.mock.calls[0];
     expect(match).toMatchObject({ fixture_ref: 'm12', status: 'live', toss_decision: 'bat', overs_limit: 20 });
     expect(players.filter((player) => player.in_playing_xi)).toHaveLength(22);
-    expect(repo.applyOp).toHaveBeenLastCalledWith(match.id, { kind: 'void', fromId: 'b2' }, 'b2');
+    expect(repo.applyOp).toHaveBeenLastCalledWith(match.id, { kind: 'void', fromId: 'b2', id: expect.any(String) }, expect.any(String), 'b2');
   });
 
   it('does not save the reference match', async () => {

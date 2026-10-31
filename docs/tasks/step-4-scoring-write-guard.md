@@ -162,3 +162,35 @@ Only those three files. Short, plain wording.
 2. Regenerate the types (Git Bash): `npx supabase gen types typescript --linked > src/lib/database.types.ts`.
 3. After Job 2: device row 9. Use your phone plus an emulator, signed in to the same account, on the same match: score on both. The second device should show the conflict at once, and **Discard unsent changes** should recover it.
 4. After merging: publish an OTA update to `preview`, then plan step 4b.
+
+---
+
+## Round 2: fixes from the Job 3 review
+
+| # | Finding | Fix |
+| --- | --- | --- |
+| R1 | A repeated append or undo was accepted even after another device voided or wrote past it, so the phone's view could drift without a conflict. | **Score head** (`20261101010000_score_head.sql`): `matches.score_head` holds the operation id of the last guarded write. A write is a repeat only when the head is its own id. An event that is stored but no longer the head is ESC01. |
+| R2 | Result and reopen do not move the tail, so a retried result after another device reopened completed the match again. | Results and reopens carry their own operation id and move the head, so a competing or late result is ESC01. |
+| R3 | After a final error, adding a change restarted the queue and resent the refused change. | `SyncQueue` stays halted after a final error until `retry()`. Ordinary network failures still restart on the next change. |
+| R4 | A change the server refused for good (for example 42501 after a handover) could not be cleared, so the match could not be opened. | `OutboxRejectedError` (shares `OutboxStoppedError` with the conflict) blocks scoring with the same confirmed **Discard unsent changes** action, worded as permanent. |
+
+**App:**
+- Every guarded op carries its id: the event id for an append, the audit id for an undo, and a new id for a result or reopen. Changes saved by older versions get ids when their outbox loads.
+- The outbox keeps `head`, reads it from the match on load, and resumes from it after a restart. Records from older versions still resume from the live event ids.
+- The expected-tail functions are dropped: no released build calls them.
+
+**Residual risk:** builds that still write the tables directly do not move the head. Step 4b closes that path.
+
+### Job 3b: re-check
+
+**Model:** GPT 6.1 · **Depends on:** migration `20261101010000` applied, types regenerated, branch pushed
+
+```text
+Re-check round 2 of step 4 (docs/tasks/step-4-scoring-write-guard.md, "Round 2"). Target:
+git diff origin/main...feat/scoring-write-guard. Confirm R1-R4 are fixed and nothing regressed, in:
+supabase/migrations/20261101010000_score_head.sql, supabase/tests/scoring_write_guard.sql,
+src/features/scoring/data/outbox.ts, outbox-ops.ts, outbox-errors.ts, sync-queue.ts,
+match-repository.ts, src/features/scoring/components/scorer-error.tsx.
+This is the last round: blockers and majors only; mark residual risks "accept"; minors go to the
+roadmap's deferred list. Output: `path:line — severity — problem — fix`, then Approve or Changes needed.
+```

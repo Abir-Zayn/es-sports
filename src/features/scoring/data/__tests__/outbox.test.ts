@@ -1,5 +1,5 @@
 import type { OutboxOp } from '../outbox-ops';
-import { resumeIndex } from '../outbox-ops';
+import { opId, resumeIndex } from '../outbox-ops';
 import { memoryOutboxStore, type OutboxStore } from '../outbox-store';
 import { OutboxConflictError } from '../outbox';
 import { createOutboxRegistry } from '../outboxes';
@@ -20,7 +20,7 @@ const result: OutboxOp = { kind: 'result', result: {
 /** A stand-in for Supabase with the same rules: inserts keyed by id, voids from an event onwards. */
 function fakeServer() {
   const events: { id: string; voided: boolean }[] = [];
-  const state = { online: true, user: USER as string | null, status: 'live', sent: [] as string[], dropReply: false };
+  const state = { online: true, user: USER as string | null, status: 'live', head: null as string | null, sent: [] as string[], dropReply: false };
   const send = async (_match: string, op: OutboxOp) => {
     if (!state.online) throw new Error('offline');
     if (op.kind === 'event' && op.op.kind === 'insert') {
@@ -31,6 +31,7 @@ function fakeServer() {
       if (at >= 0) events.slice(at).forEach((event) => { event.voided = true; });
     } else if (op.kind === 'result') state.status = 'completed';
     else if (op.kind === 'reopen') state.status = 'live';
+    state.head = opId(op) ?? state.head;
     state.sent.push(op.kind === 'event' ? `${op.op.kind}:${'row' in op.op ? op.op.row.id : 'fromId' in op.op ? op.op.fromId : ''}` : op.kind);
     // The write landed but the app died before hearing back.
     if (state.dropReply) throw new Error('connection lost');
@@ -42,7 +43,7 @@ function fakeServer() {
 /** One app run. A new run over the same store is what reopening the app after it was killed looks like. */
 const run = (store: OutboxStore, server: ReturnType<typeof fakeServer>) => createOutboxRegistry({
   store, send: server.send, currentUserId: async () => server.state.user,
-  fetchLiveIds: async () => server.live(), queue: { attempts: 1, wait: () => Promise.resolve() },
+  fetchLiveIds: async () => server.live(), fetchHead: async () => server.state.head, queue: { attempts: 1, wait: () => Promise.resolve() },
 });
 const settle = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
@@ -166,7 +167,7 @@ describe('durable scoring outbox', () => {
   it('reports the blocked operation and server error while preserving the queue', async () => {
     const store = memoryOutboxStore();
     const box = createOutboxRegistry({
-      store, currentUserId: async () => USER, fetchLiveIds: async () => [],
+      store, currentUserId: async () => USER, fetchLiveIds: async () => [], fetchHead: async () => null,
       send: async () => { throw { message: 'violates roster foreign key', code: '23503' }; },
       queue: { attempts: 1, wait: () => Promise.resolve() },
     }).outboxFor(USER, MATCH, REF);
@@ -175,7 +176,7 @@ describe('durable scoring outbox', () => {
     await expect(box.flush()).rejects.toThrow('Save ball: violates roster foreign key (23503)');
     expect(box.status).toMatchObject({ status: 'error', pending: 2,
       error: 'Save ball: violates roster foreign key (23503)' });
-    expect(store.read(USER, MATCH)?.ops).toEqual([ball('last'), result]);
+    expect(store.read(USER, MATCH)?.ops).toEqual([ball('last'), { ...result, id: expect.any(String) }]);
   });
 });
 

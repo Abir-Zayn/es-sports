@@ -30,10 +30,12 @@ export type MatchRow = {
   started_at: string | null;
   completed_at: string | null;
   result_type: ResultType | null;
+  /** Id of the last guarded scoring write the match accepted, or null for none. */
+  score_head?: string | null;
 };
 
 /** What the app writes when it starts a match. The database fills the rest. */
-export type MatchInsert = Omit<MatchRow, 'tournament_id' | 'created_by' | 'completed_at' | 'result_type'>;
+export type MatchInsert = Omit<MatchRow, 'tournament_id' | 'created_by' | 'completed_at' | 'result_type' | 'score_head'>;
 
 export type PlayerRow = {
   match_id: string;

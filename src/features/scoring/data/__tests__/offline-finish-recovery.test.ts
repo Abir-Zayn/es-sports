@@ -39,12 +39,12 @@ it('recovers a legacy offline finish in order after reopening, without dropping 
   store.write({ version: 1, userId, matchId, fixtureRef: 'friendly-test', base: [], ops: [wicket(''), chase, winner, result] });
   mockRpc.mockResolvedValue({ error: null });
   const registry = createOutboxRegistry({ store, send: sendOutboxOp, currentUserId: async () => userId,
-    fetchLiveIds: async () => [], queue: { attempts: 1 } });
+    fetchLiveIds: async () => [], fetchHead: async () => null, queue: { attempts: 1 } });
 
   await registry.recover(userId, matchId);
 
   // The server turns the legacy empty key into null (see supabase/tests/scoring_write_guard.sql, case h).
-  expect(mockRpc.mock.calls.map(([name, args]) => [name, args.p_row?.id, args.p_expected_tail])).toEqual([
+  expect(mockRpc.mock.calls.map(([name, args]) => [name, args.p_row?.id, args.p_expected_head])).toEqual([
     ['append_ball_event', 'last-wicket', null], ['append_ball_event', 'chase', 'last-wicket'],
     ['append_ball_event', 'winner', 'chase'], ['save_match_result', undefined, 'winner'],
   ]);

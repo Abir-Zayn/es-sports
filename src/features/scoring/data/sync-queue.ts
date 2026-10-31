@@ -23,7 +23,8 @@ export const whenAllSaved = (): Promise<void> => Promise.all([...busy].map((queu
 /**
  * Runs saves one at a time, in the order they were added, so a ball is never written before the one
  * that preceded it. A failed save is retried with growing, jittered pauses; once the tries run out the
- * queue stops with status `error` and keeps every unsent job until `retry()`. A final error stops it at once, without retries. Jobs must be safe to repeat.
+ * queue stops with status `error` and keeps every unsent job until `retry()`; a new job starts it again. A final
+ * error stops it at once, without retries, and only `retry()` starts it again. Jobs must be safe to repeat.
  */
 export class SyncQueue {
   private jobs: Job[] = [];
@@ -32,6 +33,8 @@ export class SyncQueue {
   private disposed = false;
   private waiting: (() => void)[] = [];
   private lastError: string | undefined;
+  /** Set when a job failed with a final error: new jobs wait until `retry()`, so the failed one is not resent. */
+  private halted = false;
   private readonly attempts: number;
   private readonly baseDelayMs: number;
   private readonly wait: (ms: number) => Promise<void>;
@@ -45,7 +48,7 @@ export class SyncQueue {
   push(job: Job): void {
     this.jobs.push(job);
     busy.add(this);
-    void this.drain();
+    if (!this.halted) void this.drain();
   }
 
   /** Resolves when the queue is empty, or has stopped on an error and is waiting for `retry()`. */
@@ -55,6 +58,7 @@ export class SyncQueue {
 
   /** Starts again after the queue stopped on an error. */
   retry(): void {
+    this.halted = false;
     void this.drain();
   }
 
@@ -97,7 +101,8 @@ export class SyncQueue {
         return true;
       } catch (error: unknown) {
         this.lastError = error instanceof Error ? error.message : 'The server did not accept this change.';
-        if (attempt === this.attempts || isFinalError(error)) break;
+        if (isFinalError(error)) this.halted = true;
+        if (attempt === this.attempts || this.halted) break;
         await this.wait(this.baseDelayMs * 2 ** (attempt - 1) * (0.5 + Math.random()));
       }
     }

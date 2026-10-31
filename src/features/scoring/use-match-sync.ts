@@ -7,6 +7,7 @@ import { computeResult } from './data/match-result';
 import { buildMatchRows } from './data/match-rows';
 import type { OutboxSnapshot } from './data/outbox';
 import { outboxes } from './data/outboxes';
+import { localEventId } from './local-id';
 import type { ScorerSession } from './session-reducer';
 
 /** `local` is the reference match, which is never sent anywhere. */
@@ -56,9 +57,9 @@ export function useMatchSync({ session, userId, matchId, fixtureRef, saved }: Ar
     const hadResult = storedResult.current !== null;
     storedResult.current = key;
     if (result) {
-      outbox.push({ kind: 'result', result: { status: 'completed', completed_at: new Date().toISOString(), ...result } });
+      outbox.push({ kind: 'result', id: localEventId(), result: { status: 'completed', completed_at: new Date().toISOString(), ...result } });
     } else if (hadResult) {
-      outbox.push({ kind: 'reopen' });
+      outbox.push({ kind: 'reopen', id: localEventId() });
     }
   }, [result, outbox]);
 
