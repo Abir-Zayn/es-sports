@@ -265,3 +265,36 @@ Changes needed.
 1. Run the SQL test on the remote project now, against the applied version, if you haven't already.
 2. After Job 5: run `npx supabase migration list`, then `npx supabase db push`, then rerun `supabase/tests/create_friendly_match.sql`.
 3. After Job 7 approves: open the PR, do the device check from round 1, merge, publish an OTA update, then run Job 4 (docs).
+
+---
+
+## Round 3: findings from the Job 7 re-review
+
+| # | Finding | Fix (commits `5fd4dcd`, `7c838a5`) |
+| --- | --- | --- |
+| R4 | A phone paused between uploading images and saving can resume after the sweep checked for the match, so the new match points at deleted images. | `friendly_abandoned_ids` table plus `abandon_friendly_matches(ids)`, which takes the same advisory lock as `create_friendly_match`. A trigger on `matches` refuses abandoned ids (`EFA01`). The sweep deletes images only for ids the server confirms. The setup screen restarts with a new id on `EFA01`. |
+| R5 | The same 50 unsaved folders can fill every sweep run. | Unsaved folders are checked in random order. |
+
+**Status:** migration `20261031140000` applied on `es-sports`; `supabase/tests/friendly_abandoned_ids.sql` passed remotely; types regenerated; typecheck, lint and 431 tests pass.
+
+**Review rule from here:** one final review round. Blockers and majors get fixed; minors go to the roadmap's "Deferred or open" list instead of blocking the merge.
+
+### Job 8: final review
+
+**Model:** GPT 6.1 · **Depends on:** the branch pushed
+
+```text
+ROLE: Independent reviewer. Final round for step 3 of esSports.
+TARGET: git diff main...feat/atomic-friendly-create
+SPEC: docs/tasks/step-3-atomic-friendly-create.md (shared contract, Rounds 2 and 3).
+SCOPE: confirm R1-R5 are fixed, and look for regressions in:
+  supabase/migrations/20261031130000_*.sql, supabase/migrations/20261031140000_*.sql,
+  src/features/match/friendly/team-image-sweep.ts, src/features/scoring/data/friendly-create.ts,
+  src/features/match/friendly-setup-screen.tsx.
+Check especially: lock ordering between abandon and create (deadlocks), the trigger seeing every
+account's rows, RLS on friendly_abandoned_ids, and whether any path can delete images of a match
+that exists.
+OUTPUT: one line per finding: `path:line — severity (blocker/major/minor) — problem — fix`.
+Mark anything that is a residual risk rather than a defect as "accept". End with Approve or
+Changes needed. Minors alone do not block approval.
+```

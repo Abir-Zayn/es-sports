@@ -197,6 +197,24 @@ export type Database = {
           },
         ]
       }
+      friendly_abandoned_ids: {
+        Row: {
+          abandoned_at: string
+          match_id: string
+          user_id: string
+        }
+        Insert: {
+          abandoned_at?: string
+          match_id: string
+          user_id?: string
+        }
+        Update: {
+          abandoned_at?: string
+          match_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       match_players: {
         Row: {
           in_playing_xi: boolean
@@ -511,6 +529,7 @@ export type Database = {
       }
     }
     Functions: {
+      abandon_friendly_matches: { Args: { p_ids: string[] }; Returns: string[] }
       can_score_match: { Args: { p_match: string }; Returns: boolean }
       create_friendly_match: {
         Args: { p_match: Json; p_players: Json; p_scorer?: string }
