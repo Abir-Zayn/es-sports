@@ -27,25 +27,24 @@ export class MatchNotFoundError extends Error {
  * The match for the spectator screens. A match id (uuid) names a saved match: it opens that match or fails, so
  * an offline phone never shows another match's score in its place. Any other id is a fixture reference: the
  * saved match for it, else a friendly tossed on this phone but not yet started, else the sample preview.
+ * `shown` is what the screen already shows: once that is a saved match, a refresh holds to it in the same way.
  */
-export async function loadLiveMatch(matchId: string): Promise<LiveMatchViewData> {
-  if (isUuid(matchId)) {
-    const match = await findSpectatorMatch(matchId);
-    if (!match) throw new MatchNotFoundError();
-    const [players, rows] = await Promise.all([fetchPlayers(match.id), fetchEvents(match.id)]);
-    return buildLiveView(match, players, rows);
-  }
+export async function loadLiveMatch(matchId: string, shown?: LiveMatchViewData): Promise<LiveMatchViewData> {
+  if (isUuid(matchId) || shown?.source === 'stored') return loadStoredMatch(matchId);
   try {
-    const match = await findSpectatorMatch(matchId);
-    if (match) {
-      const [players, rows] = await Promise.all([fetchPlayers(match.id), fetchEvents(match.id)]);
-      return buildLiveView(match, players, rows);
-    }
+    return await loadStoredMatch(matchId);
   } catch {
-    // Offline, signed out, or a log the scorer rules reject: fall through to what this phone knows.
+    // Not saved yet, offline, signed out, or a log the scorer rules reject: fall through to what this phone knows.
   }
   const staged = stagedSetup(matchId);
   return staged ? stagedLiveView(staged.setup) : sampleLiveView();
+}
+
+async function loadStoredMatch(matchId: string): Promise<LiveMatchViewData> {
+  const match = await findSpectatorMatch(matchId);
+  if (!match) throw new MatchNotFoundError();
+  const [players, rows] = await Promise.all([fetchPlayers(match.id), fetchEvents(match.id)]);
+  return buildLiveView(match, players, rows);
 }
 
 /**
@@ -57,7 +56,7 @@ export function useLiveMatchData(matchId: string) {
   const client = useQueryClient();
   const query = useQuery({
     queryKey: liveMatchKey(matchId),
-    queryFn: () => loadLiveMatch(matchId),
+    queryFn: () => loadLiveMatch(matchId, client.getQueryData<LiveMatchViewData>(liveMatchKey(matchId))),
     enabled: matchId.length > 0,
     retry: (failures, error) => !(error instanceof MatchNotFoundError) && failures < 2,
     refetchInterval: (state) => (state.state.data?.header.status === 'live' && state.state.data.source === 'stored'

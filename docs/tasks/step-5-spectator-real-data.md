@@ -78,3 +78,15 @@ CHECK
 OUTPUT: `path:line — severity (blocker/major/minor) — problem — fix`; mark residual risks "accept";
 end with Approve or Changes needed. Minors alone do not block; they go to the roadmap's deferred list.
 ```
+
+## Review result and fixes
+
+The review was run by Codex against PR #11 as merged.
+
+| # | Finding | Fix |
+| --- | --- | --- |
+| S1 (major) | Supabase hands back an existing channel with the same topic, and `removeChannel` finishes later. A screen that unmounted and mounted again quickly could attach to the channel being removed and then receive nothing. | Each channel gets its own topic (`match:<id>:<n>`), so a remount opens a fresh channel. Test: a remount while removal is pending. |
+| S2 (major) | A saved match opened by fixture reference fell back to the staged or sample match when a refresh failed. The query reported success, so the real score was replaced without the stale note. | `loadLiveMatch` takes what the screen already shows. Once that is a saved match, a refresh holds to it: a failure is an error, so the old score stays with the stale note. Test added. |
+| S3 (minor) | The polling interval changes only at the next query update after the channel connects or drops. | Deferred (roadmap). |
+
+**Accepted:** the Realtime publication and the two-device behaviour stay unverified until the migration is applied and the device check is run. Polling covers both.

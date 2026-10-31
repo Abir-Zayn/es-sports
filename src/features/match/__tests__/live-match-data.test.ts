@@ -118,4 +118,12 @@ describe('loading a match to watch', () => {
     find.mockResolvedValue(null);
     await expect(loadLiveMatch(MATCH)).rejects.toBeInstanceOf(MatchNotFoundError);
   });
+
+  it('keeps a saved match opened by fixture reference when a refresh fails, instead of the sample', async () => {
+    const shown = buildLiveView(match, players, events);
+    find.mockRejectedValue(new Error('offline'));
+    await expect(loadLiveMatch('friendly-1', shown)).rejects.toThrow('offline');
+    find.mockResolvedValue(null);
+    await expect(loadLiveMatch('friendly-1', shown)).rejects.toBeInstanceOf(MatchNotFoundError);
+  });
 });
