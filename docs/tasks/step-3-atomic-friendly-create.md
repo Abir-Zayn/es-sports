@@ -172,3 +172,96 @@ Only edit those three files. Keep the existing tone: short, plain, no marketing 
 1. After Job 1: run `npx supabase migration list` and confirm the local and remote versions match. Then run `npx supabase db push`, and run `supabase/tests/create_friendly_match.sql` in the SQL editor. It must finish with no exception and leave nothing behind.
 2. After Job 2: open the PR. Then device check: create a friendly with images; turn Wi-Fi off at the toss, retry, then close; reopen and check that no half-made match is in "Your saved matches".
 3. After merging: publish an OTA update to `preview`.
+
+---
+
+## Round 2: fixes from the Job 3 review
+
+The review asked for changes; all three findings were checked against the code and confirmed.
+
+| # | Finding | Decision |
+| --- | --- | --- |
+| R1 | `discardUnsavedTeamImages` checks "match exists?" and then deletes. A save that timed out on the phone can still reach the server after the check, so the match ends up with deleted images. | **Remove the immediate discard.** Rely only on the daily sweep. A save can't still be in flight more than 24 hours after its images were uploaded (friendlies are not created through the outbox), so the age threshold closes the race without a server tombstone. Orphan images live up to about a day longer, which costs only storage. |
+| R2 | The sweep checks the first 50 folders every time. Saved matches fill that budget, so later orphans are never reached. | List every folder (page through the root listing). Drop the ids that have a saved match first, in batches. Only then list files and check age, for at most 50 unsaved candidates. |
+| R3 | The migration validates the payload, and runs the insert's constraints and RLS check, before looking for an existing match. A same-owner retry with changed or invalid fields fails instead of returning the id. | New migration: after validating the id, take the advisory lock and check for an existing match (owner, friendly, players present → return the id). Validate the remaining fields only for a new or partial match. |
+
+**R3 is a new migration file.** `20261031120000` is already applied remotely; never edit it.
+
+### Job 5: R3 migration fix
+
+**Model:** Claude Opus 5.5 · **Size:** M (SQL, concurrency) · **Depends on:** nothing
+
+```text
+ROLE: Senior Postgres/Supabase engineer on the esSports repo.
+BRANCH: feat/atomic-friendly-create
+READ FIRST: docs/tasks/step-3-atomic-friendly-create.md (shared contract + Round 2),
+  supabase/migrations/20261031120000_create_friendly_match.sql, supabase/tests/create_friendly_match.sql.
+
+TASK
+1. Add supabase/migrations/20261031130000_create_friendly_match_retry_first.sql with
+   `create or replace function public.create_friendly_match(...)`. Same signature, security
+   invoker, search_path, grants. Order:
+   sign-in check -> id is a uuid -> pg_advisory_xact_lock(id) -> look up the existing match.
+   If it exists:
+     - another owner or not a friendly: raise;
+     - players present: return the id;
+     - started: raise;
+     - otherwise continue as a partial match.
+   Only then validate fixture_ref, the match fields, the players and the scorer, and insert.
+   Do NOT edit 20261031120000_create_friendly_match.sql (already applied remotely).
+2. Extend supabase/tests/create_friendly_match.sql with: a same-owner retry whose payload has an
+   invalid tone/overs/players and a different scorer still returns the id and changes no rows.
+   Keep every existing case passing.
+
+RULES: no db push, no remote changes, no src/ edits, files at or under 200 lines.
+DONE WHEN: the SQL parses; memory.md section 11 report with PASS/FAIL/NOT RUN.
+```
+
+### Job 6: R1 and R2 app fixes
+
+**Model:** Claude Sonnet 5.5 · **Size:** M · **Depends on:** nothing (can run in parallel with Job 5; no shared files)
+
+```text
+ROLE: React Native / Expo engineer on the esSports repo.
+BRANCH: feat/atomic-friendly-create
+READ FIRST: docs/tasks/step-3-atomic-friendly-create.md (Round 2),
+  src/features/match/friendly/team-images.ts, team-image-sweep.ts, friendly-setup-screen.tsx,
+  and their tests.
+
+TASK
+1. R1: delete discardUnsavedTeamImages and the failedSave ref. closeToss only resets state and
+   the match id. Keep removeTeamImages only if the sweep uses it; otherwise delete it. Update
+   the doc comments to say that cleanup is the daily sweep, with the 24 h age as the safety margin.
+2. R2: in sweepOrphanTeamImages:
+   a) page through bucket.list(root) with limit/offset until a page is short;
+   b) keep uuid folder names; call existingMatchIds in chunks of 100 and drop the saved ids;
+   c) for at most 50 remaining candidates, list their files and keep only those whose files are
+      all older than 24 h;
+   d) remove those files in one call.
+3. Tests:
+   - closing the toss after a failed save deletes nothing;
+   - the sweep reaches an orphan placed after 60 saved folders;
+   - root listing pages are followed;
+   - young folders and folders of saved matches are kept.
+
+RULES: screens never call Supabase directly; files at or under 200 lines; no native packages;
+no supabase/ edits.
+DONE WHEN: pnpm typecheck, pnpm lint (0 warnings), pnpm test pass; memory.md section 11 report.
+```
+
+### Job 7: re-review
+
+**Model:** GPT 6.1 · **Depends on:** Jobs 5 and 6
+
+```text
+Re-review git diff main...feat/atomic-friendly-create against the shared contract and Round 2
+in docs/tasks/step-3-atomic-friendly-create.md. Confirm R1-R3 are fixed and nothing regressed.
+Same output format as Job 3: `path:line — severity — problem — fix`, ending with Approve or
+Changes needed.
+```
+
+### Your part (human), round 2
+
+1. Run the SQL test on the remote project now, against the applied version, if you haven't already.
+2. After Job 5: run `npx supabase migration list`, then `npx supabase db push`, then rerun `supabase/tests/create_friendly_match.sql`.
+3. After Job 7 approves: open the PR, do the device check from round 1, merge, publish an OTA update, then run Job 4 (docs).
