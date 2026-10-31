@@ -530,10 +530,31 @@ export type Database = {
     }
     Functions: {
       abandon_friendly_matches: { Args: { p_ids: string[] }; Returns: string[] }
+      append_ball_event: {
+        Args: { p_expected_tail: string; p_row: Json }
+        Returns: undefined
+      }
+      begin_scoring_write: { Args: { p_match: string }; Returns: undefined }
       can_score_match: { Args: { p_match: string }; Returns: boolean }
+      check_scoring_tail: {
+        Args: { p_expected_tail: string; p_match: string }
+        Returns: undefined
+      }
       create_friendly_match: {
         Args: { p_match: Json; p_players: Json; p_scorer?: string }
         Returns: string
+      }
+      reopen_match: {
+        Args: { p_expected_tail: string; p_match: string }
+        Returns: undefined
+      }
+      save_match_result: {
+        Args: { p_expected_tail: string; p_match: string; p_result: Json }
+        Returns: undefined
+      }
+      void_ball_events_from: {
+        Args: { p_event: string; p_expected_tail: string; p_match: string }
+        Returns: undefined
       }
       void_events_from: {
         Args: { p_event: string; p_match: string }
