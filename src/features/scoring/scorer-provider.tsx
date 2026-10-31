@@ -1,14 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useReducer, useState, type Dispatch, type ReactNode } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-import { Button } from '@/components/ui';
 import { useAuth } from '@/features/auth/auth-provider';
 import { useTheme } from '@/theme';
 
-import { ScorerFrame, ScorerNotice } from './components/scorer-ui';
+import { ScorerError } from './components/scorer-error';
 import { loadScorer, type LoadedScorer } from './data/load-scorer';
 import { OutboxConflictError } from './data/outbox';
-import { outboxes } from './data/outboxes';
 import { localEventId } from './local-id';
 import { scorerReducer, type ScorerAction, type ScorerSession } from './session-reducer';
 import { useCareerRollup } from './use-career-rollup';
@@ -46,38 +44,23 @@ export function ScorerProvider({ matchId, children }: { matchId: string; childre
   }, [matchId, userId, requestKey]);
 
   const retry = useCallback(() => setAttempt((value) => value + 1), []);
-  // Keeping the server's newer score means throwing away this phone's unsent changes, so ask first.
-  const discard = useCallback((conflict: OutboxConflictError) => Alert.alert(
-    'Discard unsent changes?',
-    `${conflict.pending} change${conflict.pending === 1 ? '' : 's'} on this phone will be deleted and the match will open `
-      + 'with the score saved online.',
-    [{ text: 'Cancel', style: 'cancel' }, { text: 'Discard', style: 'destructive', onPress: () => {
-      outboxes.discard(conflict.userId, conflict.matchId);
-      retry();
-    } }],
-  ), [retry]);
   const settled: Settled | null = !userId ? { phase: 'error', message: 'Sign in to score a match.' }
     : answer?.key === requestKey ? answer.settled : null;
   if (settled?.phase === 'ready') {
-    return <ScorerSessionProvider routeId={matchId} loaded={settled.loaded}>{children}</ScorerSessionProvider>;
+    return <ScorerSessionProvider routeId={matchId} loaded={settled.loaded} onReload={retry}>{children}</ScorerSessionProvider>;
   }
-  if (settled?.phase === 'error') {
-    const { conflict } = settled;
-    return <ScorerFrame>
-      <ScorerNotice>{settled.message}</ScorerNotice>
-      <Button label="Try again" onPress={retry} />
-      {conflict ? <Button label="Discard unsent changes" variant="secondary" onPress={() => discard(conflict)} /> : null}
-    </ScorerFrame>;
-  }
+  if (settled?.phase === 'error') return <ScorerError message={settled.message} conflict={settled.conflict} onRetry={retry} />;
   return <View style={[styles.loading, { backgroundColor: colors.background }]}>
     <ActivityIndicator accessibilityLabel="Opening match" color={colors.primary} />
   </View>;
 }
 
-function ScorerSessionProvider({ routeId, loaded, children }: { routeId: string; loaded: LoadedScorer; children: ReactNode }) {
+function ScorerSessionProvider({ routeId, loaded, onReload, children }: { routeId: string; loaded: LoadedScorer; onReload: () => void; children: ReactNode }) {
   const [session, dispatch] = useReducer(scorerReducer, loaded.session);
   const sync = useMatchSync({ session, userId: loaded.userId, matchId: loaded.matchId, fixtureRef: loaded.fixtureRef, saved: loaded.saved });
   useCareerRollup(session, loaded.matchId);
+  // Another device scored this match: block every scoring screen until the person chooses.
+  if (sync.conflict) return <ScorerError message={sync.conflict.message} conflict={sync.conflict} onRetry={onReload} />;
   return <ScorerContext value={{ ...session, dispatch, matchId: routeId, savedId: loaded.matchId, sync }}>{children}</ScorerContext>;
 }
 

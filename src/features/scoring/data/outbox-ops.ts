@@ -13,18 +13,19 @@ export type OutboxOp =
   | { kind: 'result'; result: ResultUpdate }
   | { kind: 'reopen' };
 
-export function sendOutboxOp(matchId: string, op: OutboxOp): Promise<void> {
+/** `expectedTail` is the last live event the phone believes the server holds; create and start ignore it. */
+export function sendOutboxOp(matchId: string, op: OutboxOp, expectedTail: string | null): Promise<void> {
   switch (op.kind) {
     case 'create':
       return createMatch(op.match, op.players, op.scorers);
     case 'start':
       return startSavedMatch(matchId, op.recordShots, op.startedAt);
     case 'event':
-      return applyOp(matchId, op.op);
+      return applyOp(matchId, op.op, expectedTail);
     case 'result':
-      return saveResult(matchId, op.result);
+      return saveResult(matchId, op.result, expectedTail);
     case 'reopen':
-      return reopenMatch(matchId);
+      return reopenMatch(matchId, expectedTail);
   }
 }
 

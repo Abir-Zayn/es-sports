@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 
 import type { PersistOp } from './event-rows';
 import { FRIENDLY_REF_PREFIX } from './match-rows';
+import { scoringError } from './scoring-errors';
 import type { BallEventRow, MatchInsert, MatchRow, PlayerRow, ResultUpdate } from './types';
 import { isUuid } from './uuid';
 
@@ -102,24 +103,27 @@ export async function startSavedMatch(matchId: string, recordShots: boolean, sta
   expectChange(data, 'start this match');
 }
 
-/** Applies one saved change. Inserts are keyed by event id, so a retry after a lost reply cannot duplicate a ball. */
-export async function applyOp(matchId: string, op: PersistOp): Promise<void> {
+// The generated types make every rpc argument a non-null string, but the functions accept a null tail.
+const tailArg = (tail: string | null): string => tail as string;
+
+/**
+ * Applies one saved change. Inserts are keyed by event id, so a retry after a lost reply cannot duplicate a ball.
+ * Inserts and undos name `expectedTail`, the last live event this phone believes the server holds (null for
+ * none). The server refuses them when another device has scored since, which becomes a `ScoringConflictError`.
+ * The server also turns empty optional player keys in older outboxes into null.
+ */
+export async function applyOp(matchId: string, op: PersistOp, expectedTail: string | null): Promise<void> {
   if (op.kind === 'insert') {
-    // Older outboxes can contain empty optional player keys, which violate roster foreign keys.
-    const row = { ...op.row,
-      ...(op.row.out_key === '' ? { out_key: null } : {}),
-      ...(op.row.next_batter_key === '' ? { next_batter_key: null } : {}),
-      ...(op.row.fielder_key === '' ? { fielder_key: null } : {}),
-    };
-    const { error } = await supabase.from('ball_events').upsert(row, { onConflict: 'id', ignoreDuplicates: true });
-    if (error) throw error;
+    const { error } = await supabase.rpc('append_ball_event', { p_row: op.row, p_expected_tail: tailArg(expectedTail) });
+    if (error) throw scoringError(error);
   } else if (op.kind === 'angle') {
     const { data, error } = await supabase.from('ball_events').update({ angle: op.angle }).eq('id', op.id).select('id');
     if (error) throw error;
     expectChange(data, 'save the shot direction');
   } else {
-    const { error } = await supabase.rpc('void_events_from', { p_match: matchId, p_event: op.fromId });
-    if (error) throw error;
+    const { error } = await supabase.rpc('void_ball_events_from',
+      { p_match: matchId, p_event: op.fromId, p_expected_tail: tailArg(expectedTail) });
+    if (error) throw scoringError(error);
   }
 }
 
@@ -128,20 +132,14 @@ function expectChange(rows: unknown[] | null, action: string): void {
   if (!rows || rows.length === 0) throw new Error(`You are not allowed to ${action} for this match.`);
 }
 
-export async function saveResult(matchId: string, result: ResultUpdate): Promise<void> {
-  const { data, error } = await supabase.from('matches').update(result).eq('id', matchId).select('id');
-  if (error) throw error;
-  expectChange(data, 'save the result');
+export async function saveResult(matchId: string, result: ResultUpdate, expectedTail: string | null): Promise<void> {
+  const { error } = await supabase.rpc('save_match_result',
+    { p_match: matchId, p_result: result, p_expected_tail: tailArg(expectedTail) });
+  if (error) throw scoringError(error);
 }
 
 /** Undoing the last ball of a finished match puts it back to live and clears the result. */
-export async function reopenMatch(matchId: string): Promise<void> {
-  const cleared = {
-    status: 'live' as const, completed_at: null, winner_side: null, result_type: null, result_margin: null,
-    result_summary: null, team_a_runs: null, team_a_wickets: null, team_a_balls: null,
-    team_b_runs: null, team_b_wickets: null, team_b_balls: null,
-  };
-  const { data, error } = await supabase.from('matches').update(cleared).eq('id', matchId).select('id');
-  if (error) throw error;
-  expectChange(data, 'reopen the match');
+export async function reopenMatch(matchId: string, expectedTail: string | null): Promise<void> {
+  const { error } = await supabase.rpc('reopen_match', { p_match: matchId, p_expected_tail: tailArg(expectedTail) });
+  if (error) throw scoringError(error);
 }
