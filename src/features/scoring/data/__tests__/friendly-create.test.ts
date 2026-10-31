@@ -1,4 +1,4 @@
-import { createFriendlyMatch } from '../friendly-create';
+import { abandonFriendlyMatches, createFriendlyMatch, FriendlySetupExpiredError } from '../friendly-create';
 import type { MatchInsert, PlayerRow } from '../types';
 
 const mockRpc = jest.fn();
@@ -30,4 +30,18 @@ it('refuses more than one scorer without calling the server', async () => {
 it('throws the server error', async () => {
   mockRpc.mockResolvedValue({ data: null, error: new Error('This match id belongs to another account') });
   await expect(createFriendlyMatch(match, players)).rejects.toThrow('another account');
+});
+
+it('turns the abandoned-id refusal into an expired setup', async () => {
+  mockRpc.mockResolvedValue({ data: null, error: { code: 'EFA01', message: 'This match setup expired.' } });
+  await expect(createFriendlyMatch(match, players)).rejects.toBeInstanceOf(FriendlySetupExpiredError);
+});
+
+it('abandons ids on the server and returns the ones it confirmed', async () => {
+  mockRpc.mockResolvedValue({ data: [MATCH_ID], error: null });
+  await expect(abandonFriendlyMatches([MATCH_ID, SCORER])).resolves.toEqual(new Set([MATCH_ID]));
+  expect(mockRpc).toHaveBeenCalledWith('abandon_friendly_matches', { p_ids: [MATCH_ID, SCORER] });
+  mockRpc.mockClear();
+  await expect(abandonFriendlyMatches([])).resolves.toEqual(new Set());
+  expect(mockRpc).not.toHaveBeenCalled();
 });

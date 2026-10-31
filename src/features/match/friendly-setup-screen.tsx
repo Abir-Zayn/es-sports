@@ -5,7 +5,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
-import { createFriendlyMatch } from '@/features/scoring/data/friendly-create';
+import { createFriendlyMatch, FriendlySetupExpiredError } from '@/features/scoring/data/friendly-create';
 import { buildMatchRows, FRIENDLY_REF_PREFIX } from '@/features/scoring/data/match-rows';
 import { localEventId } from '@/features/scoring/local-id';
 import { useMe } from '@/features/tournament/roster';
@@ -100,8 +100,14 @@ export function FriendlySetupScreen() {
         void shareText(`${me.name || 'Your teammate'} made you the scorer for ${teamLabel(tossed, 'teamA')} vs ${teamLabel(tossed, 'teamB')} on esSports: ${appLink(`scorer/${matchId.current}`)}`);
       }
       router.replace({ pathname: scorer ? '/match/[id]' : '/scorer/[id]', params: { id: matchId.current } });
-    } catch {
-      if (mounted.current) setSaveError('Could not save this match or its images. Check your connection and image size, then try again.');
+    } catch (error) {
+      // The old id can never be saved now; the next tap uploads the images again under a new one.
+      const expired = error instanceof FriendlySetupExpiredError;
+      if (expired) matchId.current = localEventId();
+      if (mounted.current) {
+        setSaveError(expired ? 'This setup was paused too long to save. Tap start again.'
+          : 'Could not save this match or its images. Check your connection and image size, then try again.');
+      }
     } finally {
       saveLock.current = false;
       if (mounted.current) setSaving(false);

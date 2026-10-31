@@ -9,7 +9,8 @@ export const teamImageFolder = (userId: string, matchId: string) => `${userId}/f
 /**
  * Use the account's existing avatar folder and stable paths so retries do not create extra copies. Images of a
  * save that never succeeded are removed only by the daily sweep (`team-image-sweep.ts`), once they are a day
- * old: a save whose reply was lost can still reach the server, so an earlier delete could strip a real match.
+ * old and the server has abandoned the id: a save whose reply was lost can still reach the server, so deleting
+ * from the phone alone could strip a real match.
  */
 export async function uploadTeamImage(userId: string, matchId: string, side: 'a' | 'b', uri: string, mimeType?: string): Promise<string> {
   const type = mimeType ?? 'image/jpeg';

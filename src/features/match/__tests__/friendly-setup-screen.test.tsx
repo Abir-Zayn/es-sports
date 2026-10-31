@@ -12,7 +12,10 @@ import { ThemeProvider } from '@/theme';
 import { FriendlySetupScreen } from '../friendly-setup-screen';
 
 const mockReplace = jest.fn();
-jest.mock('@/features/scoring/data/friendly-create', () => ({ createFriendlyMatch: jest.fn().mockResolvedValue('match-id') }));
+jest.mock('@/features/scoring/data/friendly-create', () => ({
+  createFriendlyMatch: jest.fn().mockResolvedValue('match-id'),
+  FriendlySetupExpiredError: class FriendlySetupExpiredError extends Error {},
+}));
 jest.mock('../friendly/team-image-sweep', () => ({ sweepOrphanTeamImagesDaily: jest.fn().mockResolvedValue(undefined) }));
 jest.mock('../friendly/search-players', () => ({ searchPlayers: jest.fn().mockResolvedValue([]) }));
 jest.mock('../components/saved-friendlies', () => ({ SavedFriendlies: () => null }));

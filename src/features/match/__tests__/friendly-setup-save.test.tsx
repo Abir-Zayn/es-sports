@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 
-import { createFriendlyMatch } from '@/features/scoring/data/friendly-create';
+import { createFriendlyMatch, FriendlySetupExpiredError } from '@/features/scoring/data/friendly-create';
 import { ThemeProvider } from '@/theme';
 
 import { FriendlySetupScreen } from '../friendly-setup-screen';
@@ -10,7 +10,10 @@ import { sweepOrphanTeamImagesDaily } from '../friendly/team-image-sweep';
 
 const ME = '11111111-1111-4111-8111-111111111111';
 const mockReplace = jest.fn();
-jest.mock('@/features/scoring/data/friendly-create', () => ({ createFriendlyMatch: jest.fn() }));
+jest.mock('@/features/scoring/data/friendly-create', () => ({
+  createFriendlyMatch: jest.fn(),
+  FriendlySetupExpiredError: class FriendlySetupExpiredError extends Error {},
+}));
 jest.mock('../friendly/team-image-sweep', () => ({ sweepOrphanTeamImagesDaily: jest.fn().mockResolvedValue(undefined) }));
 jest.mock('../friendly/team-images', () => ({
   uploadTeamImage: jest.fn().mockResolvedValue('https://example.com/team.png'),
@@ -119,6 +122,25 @@ describe('saving a friendly', () => {
     // The lost save may still land on the server, so its images are left for the day-old sweep.
     expect(sweepOrphanTeamImagesDaily).toHaveBeenCalledTimes(1);
     await press('Proceed to Toss');
+    await press('Start scoring');
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledTimes(1));
+    expect(savedIds()[1]).not.toBe(savedIds()[0]);
+  });
+});
+
+describe('an expired setup', () => {
+  beforeEach(() => {
+    jest.mocked(createFriendlyMatch).mockReset().mockResolvedValue('match-id');
+    mockReplace.mockReset();
+  });
+
+  it('says so and saves again under a new id', async () => {
+    jest.mocked(createFriendlyMatch).mockRejectedValueOnce(new FriendlySetupExpiredError());
+    await show();
+    await fillForm();
+    await press('Proceed to Toss');
+    await press('Start scoring');
+    await screen.findByText('This setup was paused too long to save. Tap start again.');
     await press('Start scoring');
     await waitFor(() => expect(mockReplace).toHaveBeenCalledTimes(1));
     expect(savedIds()[1]).not.toBe(savedIds()[0]);

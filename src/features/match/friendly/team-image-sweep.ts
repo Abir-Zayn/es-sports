@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
-import { existingMatchIds } from '@/features/scoring/data/friendly-create';
+import { abandonFriendlyMatches, existingMatchIds } from '@/features/scoring/data/friendly-create';
 import { isUuid } from '@/features/scoring/data/uuid';
 import { supabase } from '@/lib/supabase';
 
@@ -48,17 +48,28 @@ async function unsavedIds(ids: string[]): Promise<string[]> {
   return unsaved;
 }
 
+/** A copy of `items` in random order, so each run's budget falls on different folders. */
+function shuffled<T>(items: readonly T[]): T[] {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
 /**
- * Removes team images of friendlies that were never saved: a folder under `<user>/friendly/` is removed only
- * when the server confirms no match has its id and all its files are older than a day. The age is the safety
- * margin: a save whose reply was lost can still land, but not a day after its images were uploaded. Saved
- * matches are dropped first, so they never use up the per-run folder budget.
+ * Removes team images of friendlies that were never saved. A folder under `<user>/friendly/` qualifies when no
+ * match has its id and all its files are older than a day. Its id is then abandoned on the server, which never
+ * lets it become a match afterwards, and only the ids the server confirms are deleted, so a late save from a
+ * paused phone cannot end up pointing at deleted images. Saved matches are dropped first and the rest are
+ * checked in random order, so neither saved nor young folders keep later orphans out of the per-run budget.
  */
 export async function sweepOrphanTeamImages(userId: string, now = Date.now()): Promise<void> {
   const root = `${userId}/friendly`;
   const bucket = supabase.storage.from('avatars');
-  const candidates = (await unsavedIds(await matchFolders(root))).slice(0, MAX_FOLDERS);
-  const paths: string[] = [];
+  const candidates = shuffled(await unsavedIds(await matchFolders(root))).slice(0, MAX_FOLDERS);
+  const stale = new Map<string, string[]>();
   for (const matchId of candidates) {
     const files = await bucket.list(`${root}/${matchId}`, { limit: PAGE });
     if (files.error) throw files.error;
@@ -67,8 +78,11 @@ export async function sweepOrphanTeamImages(userId: string, now = Date.now()): P
       const at = Date.parse(entry.updated_at ?? entry.created_at ?? '');
       return Number.isFinite(at) && now - at > DAY_MS;
     });
-    if (old) paths.push(...rows.map((entry) => `${root}/${matchId}/${entry.name}`));
+    if (old) stale.set(matchId, rows.map((entry) => `${root}/${matchId}/${entry.name}`));
   }
+  if (stale.size === 0) return;
+  const abandoned = await abandonFriendlyMatches([...stale.keys()]);
+  const paths = [...stale].filter(([matchId]) => abandoned.has(matchId)).flatMap(([, files]) => files);
   if (paths.length === 0) return;
   const removed = await bucket.remove(paths);
   if (removed.error) throw removed.error;

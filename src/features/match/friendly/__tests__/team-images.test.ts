@@ -1,6 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 
-import { existingMatchIds } from '@/features/scoring/data/friendly-create';
+import { abandonFriendlyMatches, existingMatchIds } from '@/features/scoring/data/friendly-create';
 
 import { sweepOrphanTeamImages, sweepOrphanTeamImagesDaily } from '../team-image-sweep';
 
@@ -30,7 +30,7 @@ const mockRemove = jest.fn((_paths: string[]) => Promise.resolve({ data: [], err
 jest.mock('@/lib/supabase', () => ({
   supabase: { storage: { from: () => ({ list: mockList, remove: mockRemove }) } },
 }));
-jest.mock('@/features/scoring/data/friendly-create', () => ({ existingMatchIds: jest.fn() }));
+jest.mock('@/features/scoring/data/friendly-create', () => ({ existingMatchIds: jest.fn(), abandonFriendlyMatches: jest.fn() }));
 jest.mock('expo-secure-store', () => ({ getItemAsync: jest.fn(), setItemAsync: jest.fn() }));
 
 /** The server knows these ids as saved matches. */
@@ -41,6 +41,7 @@ beforeEach(() => {
   mockList.mockClear();
   mockRemove.mockClear();
   jest.mocked(existingMatchIds).mockReset().mockResolvedValue(new Set());
+  jest.mocked(abandonFriendlyMatches).mockReset().mockImplementation(async (ids) => new Set(ids));
   jest.mocked(SecureStore.getItemAsync).mockReset().mockResolvedValue(null);
   jest.mocked(SecureStore.setItemAsync).mockReset().mockResolvedValue(undefined);
   tree = {
@@ -95,5 +96,24 @@ describe('sweeping orphaned team images', () => {
     await expect(sweepOrphanTeamImagesDaily(USER, NOW)).resolves.toBeUndefined();
     expect(SecureStore.setItemAsync).toHaveBeenCalledWith(`friendly-image-sweep-v1.${USER}`, String(NOW));
     expect(mockRemove).not.toHaveBeenCalled();
+  });
+});
+
+describe('coordinating the sweep with late saves', () => {
+  it('deletes only the folders the server abandoned', async () => {
+    savedOnServer(new Set([SAVED_MATCH]));
+    jest.mocked(abandonFriendlyMatches).mockResolvedValue(new Set());
+    await sweepOrphanTeamImages(USER, NOW);
+    expect(abandonFriendlyMatches).toHaveBeenCalledWith([OLD_MATCH]);
+    expect(mockRemove).not.toHaveBeenCalled();
+  });
+
+  it('reaches an old orphan behind more young unsaved folders than one run checks', async () => {
+    const young = Array.from({ length: 60 }, (_, i) => savedId(i));
+    tree[ROOT] = [...young.map(folder), folder(OLD_MATCH)];
+    for (const id of young) tree[`${ROOT}/${id}`] = [file('a', 60 * 1000)];
+    // Random order: an orphan outside the first 50 in one run is checked in a later one.
+    for (let run = 0; run < 30 && mockRemove.mock.calls.length === 0; run++) await sweepOrphanTeamImages(USER, NOW);
+    expect(mockRemove).toHaveBeenCalledWith([`${ROOT}/${OLD_MATCH}/a`, `${ROOT}/${OLD_MATCH}/b`]);
   });
 });
