@@ -1,15 +1,13 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator } from 'react-native';
 
 import { ChoiceTabs, type ChoiceTab } from '@/components/match/choice-tabs';
 import { InitialsAvatar, Text } from '@/components/ui';
-import { useTheme } from '@/theme';
 
 import { BattingCard } from './components/batting-card';
 import { BowlingCard } from './components/bowling-card';
+import { MatchLoadState, StaleMatchNote } from './components/match-load-state';
 import { MatchScreenFrame } from './components/match-screen-frame';
-import { matchHeader } from './sample-match';
 import { FallOfWicketsSection } from './sections/fall-of-wickets-section';
 import { PartnershipsSection } from './sections/partnerships-section';
 import type { Innings } from './types';
@@ -18,13 +16,14 @@ import { useLiveMatchData } from './use-live-match-data';
 /** Full scorecard of the real match: pick an innings to see its batting, fall of wickets, bowling and partnerships. */
 export function MatchScorecardScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const matchId = id ?? matchHeader.id;
-  const { colors } = useTheme();
-  const view = useLiveMatchData(matchId).data;
+  const matchId = id ?? '';
+  const live = useLiveMatchData(matchId);
+  const view = live.data;
   return (
     <MatchScreenFrame matchId={matchId} tab="scorecard" title={view?.header.title} subtitle={view?.header.subtitle}>
+      <StaleMatchNote query={live} />
       {!view ? (
-        <ActivityIndicator accessibilityLabel="Loading scorecard" color={colors.link} />
+        <MatchLoadState query={live} label="Loading scorecard" />
       ) : view.innings.length === 0 ? (
         <Text muted accessibilityLiveRegion="polite">The scorecard fills in once the first ball is bowled.</Text>
       ) : (

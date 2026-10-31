@@ -3,7 +3,6 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
-import { matchHeader } from '../sample-match';
 import type { MatchTabId } from '../types';
 import { useMatchRoutes } from '../use-match-routes';
 import { MatchCompactHeader } from './match-compact-header';
@@ -12,14 +11,14 @@ import { MatchTabs } from './match-tabs';
 type Props = {
   matchId: string;
   tab: MatchTabId;
-  /** The match's own title lines; the sample header is used when they are not given. */
+  /** The match's own title lines, blank until the match has loaded. */
   title?: string;
   subtitle?: string;
   children: ReactNode;
 };
 
 /** Shared shell of the match's Scorecard, Overs, Wagon and Info screens: compact header, tabs, then content. */
-export function MatchScreenFrame({ matchId, tab, title = matchHeader.title, subtitle = matchHeader.subtitle, children }: Props) {
+export function MatchScreenFrame({ matchId, tab, title = '', subtitle = '', children }: Props) {
   const styles = useThemedStyles(createStyles);
   const { goBack } = useMatchRoutes(matchId);
   return (

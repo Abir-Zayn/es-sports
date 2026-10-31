@@ -1,28 +1,28 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { AppTabs, Text } from '@/components/ui';
-import { useTheme } from '@/theme';
 
+import { MatchLoadState, StaleMatchNote } from './components/match-load-state';
 import { MatchScreenFrame } from './components/match-screen-frame';
 import { OverCard } from './components/over-card';
 import { RunsPerOverChart } from './components/runs-per-over-chart';
-import { matchHeader } from './sample-match';
 import type { OversData } from './types';
 import { useLiveMatchData } from './use-live-match-data';
 
 /** Ball-by-ball for the real match: a runs-per-over chart, then every over with its balls, newest first. */
 export function MatchOversScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const matchId = id ?? matchHeader.id;
-  const { colors } = useTheme();
-  const view = useLiveMatchData(matchId).data;
+  const matchId = id ?? '';
+  const live = useLiveMatchData(matchId);
+  const view = live.data;
   const played = view?.overs.filter((o) => o.overs.length > 0) ?? [];
   return (
     <MatchScreenFrame matchId={matchId} tab="overs" title={view?.header.title} subtitle={view?.header.subtitle}>
+      <StaleMatchNote query={live} />
       {!view ? (
-        <ActivityIndicator accessibilityLabel="Loading overs" color={colors.link} />
+        <MatchLoadState query={live} label="Loading overs" />
       ) : played.length === 0 ? (
         <Text muted accessibilityLiveRegion="polite">No overs bowled yet.</Text>
       ) : (
