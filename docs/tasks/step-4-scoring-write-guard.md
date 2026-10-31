@@ -195,3 +195,17 @@ match-repository.ts, src/features/scoring/components/scorer-error.tsx.
 This is the last round: blockers and majors only; mark residual risks "accept"; minors go to the
 roadmap's deferred list. Output: `path:line — severity — problem — fix`, then Approve or Changes needed.
 ```
+
+### Job 3b result and fixes
+
+The re-check (run by Codex) confirmed that R1 and R2 are fixed for head-tracked writes, and that R3 and R4 are addressed. It found three majors:
+
+| # | Finding | Fix |
+| --- | --- | --- |
+| J1 | The committed database types still have the round 1 arguments, so typecheck fails. | Owner: apply `20261101010000`, then regenerate `database.types.ts` from Git Bash. No code change. |
+| J2 | Recovery failed for a match created offline whose `create` never reached the server: `fetchScoreHead` used `.single()` on a missing row, so the `create` was never sent. | `fetchScoreHead` uses `.maybeSingle()`: a missing match has no head. Tests: `score-head.test.ts`, `outbox-resume.test.ts`. |
+| J3 | A record from an older version resumes from live event ids, which cannot show a result or reopen by another device, so an old pending result could overwrite newer state. | Such a record resumes only when the server head is null or a live event, which is what the migration's backfill and every append leave. Otherwise it is a conflict. Test: `outbox-resume.test.ts`. |
+
+**Accepted:** an old build that voids an event directly after the migration leaves the head on a voided event. An older record on another phone then reports a conflict instead of resuming. That errs on the safe side, and step 4b removes direct writes.
+
+This was the last review round. No further review is needed for J2 and J3.
