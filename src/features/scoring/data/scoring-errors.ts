@@ -1,17 +1,13 @@
-/** The server's last live event is not the one this phone expected, so another device scored this match (ESC01). */
+/** The match's score head is not the one this phone expected, so another device wrote to it first (ESC01). */
 export class ScoringConflictError extends Error {
   constructor() {
     super('This match was changed on another device');
   }
 }
 
-/** A failed send that repeating cannot fix. The queue stops on it at once instead of retrying. */
-export class FinalSendError extends Error {
-  readonly final = true;
-}
-
 const CONFLICT_CODE = 'ESC01';
-// Event id stored under another match, void target not in this match, malformed row, not allowed to score.
+// Event id stored under another match, void target not in this match, malformed row or missing operation id,
+// not allowed to score. Repeating cannot fix any of them.
 const FINAL_CODES = new Set(['23505', 'P0002', '22023', '22P02', '42501']);
 
 export function errorCode(error: unknown): string | null {

@@ -13,6 +13,8 @@ export type OutboxRecord = {
   fixtureRef: string;
   /** Live event ids on the server before the first op in `ops`, in order. */
   base: readonly string[];
+  /** The server's score head before the first op in `ops`. Missing in records from before it was tracked. */
+  head?: string | null;
   ops: readonly OutboxOp[];
 };
 
@@ -28,18 +30,18 @@ const row = z.looseObject({});
 const persistOp = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('insert'), row: z.looseObject({ id: z.string() }) }),
   z.object({ kind: z.literal('angle'), id: z.string(), angle: z.number() }),
-  z.object({ kind: z.literal('void'), fromId: z.string() }),
+  z.object({ kind: z.literal('void'), fromId: z.string(), id: z.string().optional() }),
 ]);
 const outboxOp = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('create'), match: z.looseObject({ id: z.string() }), players: z.array(row), scorers: z.array(z.string()) }),
   z.object({ kind: z.literal('start'), recordShots: z.boolean(), startedAt: z.string() }),
   z.object({ kind: z.literal('event'), op: persistOp }),
-  z.object({ kind: z.literal('result'), result: row }),
-  z.object({ kind: z.literal('reopen') }),
+  z.object({ kind: z.literal('result'), result: row, id: z.string().optional() }),
+  z.object({ kind: z.literal('reopen'), id: z.string().optional() }),
 ]);
 const recordSchema = z.object({
   version: z.literal(1), userId: z.string(), matchId: z.string(), fixtureRef: z.string(),
-  base: z.array(z.string()), ops: z.array(outboxOp),
+  base: z.array(z.string()), head: z.string().nullable().optional(), ops: z.array(outboxOp),
 });
 
 const parse = (text: string): OutboxRecord | null => {

@@ -8,7 +8,7 @@ import { isUuid } from './uuid';
 
 const MATCH_COLUMNS = 'id, tournament_id, fixture_ref, created_by, title, team_a_name, team_a_short, team_a_tone, team_a_image_url, '
   + 'team_b_name, team_b_short, team_b_tone, team_b_image_url, overs_limit, status, toss_winner_side, toss_decision, record_shots, '
-  + 'started_at, completed_at, result_type';
+  + 'started_at, completed_at, result_type, score_head';
 const PLAYER_COLUMNS = 'match_id, key, side, name, role, in_playing_xi, sort_order, profile_id';
 const EVENT_COLUMNS = 'id, match_id, seq, innings, kind, striker_key, non_striker_key, bowler_key, delivery_kind, '
   + 'runs, total_runs, is_legal, dismissal, out_key, next_batter_key, fielder_key, angle, voided_at';
@@ -103,18 +103,18 @@ export async function startSavedMatch(matchId: string, recordShots: boolean, sta
   expectChange(data, 'start this match');
 }
 
-// The generated types make every rpc argument a non-null string, but the functions accept a null tail.
-const tailArg = (tail: string | null): string => tail as string;
+// The generated types make every rpc argument a non-null string, but the functions accept a null head.
+const headArg = (head: string | null): string => head as string;
 
 /**
  * Applies one saved change. Inserts are keyed by event id, so a retry after a lost reply cannot duplicate a ball.
- * Inserts and undos name `expectedTail`, the last live event this phone believes the server holds (null for
- * none). The server refuses them when another device has scored since, which becomes a `ScoringConflictError`.
- * The server also turns empty optional player keys in older outboxes into null.
+ * Inserts and undos name `expectedHead`, the last write this phone believes the match accepted (null for none),
+ * and undos their own operation id (`voidId`). The server refuses a write when another device wrote since,
+ * which becomes a `ScoringConflictError`. It also turns empty optional player keys in older outboxes into null.
  */
-export async function applyOp(matchId: string, op: PersistOp, expectedTail: string | null): Promise<void> {
+export async function applyOp(matchId: string, op: PersistOp, voidId: string | null, expectedHead: string | null): Promise<void> {
   if (op.kind === 'insert') {
-    const { error } = await supabase.rpc('append_ball_event', { p_row: op.row, p_expected_tail: tailArg(expectedTail) });
+    const { error } = await supabase.rpc('append_ball_event', { p_row: op.row, p_expected_head: headArg(expectedHead) });
     if (error) throw scoringError(error);
   } else if (op.kind === 'angle') {
     const { data, error } = await supabase.from('ball_events').update({ angle: op.angle }).eq('id', op.id).select('id');
@@ -122,7 +122,7 @@ export async function applyOp(matchId: string, op: PersistOp, expectedTail: stri
     expectChange(data, 'save the shot direction');
   } else {
     const { error } = await supabase.rpc('void_ball_events_from',
-      { p_match: matchId, p_event: op.fromId, p_expected_tail: tailArg(expectedTail) });
+      { p_match: matchId, p_event: op.fromId, p_op: headArg(voidId), p_expected_head: headArg(expectedHead) });
     if (error) throw scoringError(error);
   }
 }
@@ -132,14 +132,21 @@ function expectChange(rows: unknown[] | null, action: string): void {
   if (!rows || rows.length === 0) throw new Error(`You are not allowed to ${action} for this match.`);
 }
 
-export async function saveResult(matchId: string, result: ResultUpdate, expectedTail: string | null): Promise<void> {
+export async function saveResult(matchId: string, result: ResultUpdate, opId: string, expectedHead: string | null): Promise<void> {
   const { error } = await supabase.rpc('save_match_result',
-    { p_match: matchId, p_result: result, p_expected_tail: tailArg(expectedTail) });
+    { p_match: matchId, p_result: result, p_op: opId, p_expected_head: headArg(expectedHead) });
   if (error) throw scoringError(error);
 }
 
 /** Undoing the last ball of a finished match puts it back to live and clears the result. */
-export async function reopenMatch(matchId: string, expectedTail: string | null): Promise<void> {
-  const { error } = await supabase.rpc('reopen_match', { p_match: matchId, p_expected_tail: tailArg(expectedTail) });
+export async function reopenMatch(matchId: string, opId: string, expectedHead: string | null): Promise<void> {
+  const { error } = await supabase.rpc('reopen_match', { p_match: matchId, p_op: opId, p_expected_head: headArg(expectedHead) });
   if (error) throw scoringError(error);
+}
+
+/** The id of the last guarded write the match accepted, or null for none. */
+export async function fetchScoreHead(matchId: string): Promise<string | null> {
+  const { data, error } = await supabase.from('matches').select('score_head').eq('id', matchId).single<{ score_head: string | null }>();
+  if (error) throw error;
+  return data.score_head;
 }

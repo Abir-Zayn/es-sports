@@ -6,7 +6,7 @@ import { useTheme } from '@/theme';
 
 import { ScorerError } from './components/scorer-error';
 import { loadScorer, type LoadedScorer } from './data/load-scorer';
-import { OutboxConflictError } from './data/outbox';
+import { OutboxStoppedError } from './data/outbox';
 import { localEventId } from './local-id';
 import { scorerReducer, type ScorerAction, type ScorerSession } from './session-reducer';
 import { useCareerRollup } from './use-career-rollup';
@@ -18,7 +18,7 @@ export { localEventId };
 type ScorerContextValue = ScorerSession & { dispatch: Dispatch<ScorerAction>; matchId: string; savedId: string; sync: SyncInfo };
 const ScorerContext = createContext<ScorerContextValue | null>(null);
 
-type Settled = { phase: 'error'; message: string; conflict?: OutboxConflictError } | { phase: 'ready'; loaded: LoadedScorer };
+type Settled = { phase: 'error'; message: string; stopped?: OutboxStoppedError } | { phase: 'ready'; loaded: LoadedScorer };
 
 /** Opens the stored match for this route (or a fresh one), then hands it to the scoring session. */
 export function ScorerProvider({ matchId, children }: { matchId: string; children: ReactNode }) {
@@ -36,8 +36,8 @@ export function ScorerProvider({ matchId, children }: { matchId: string; childre
       (loaded) => { if (current) setAnswer({ key: requestKey, settled: { phase: 'ready', loaded } }); },
       (error: unknown) => {
         const message = error instanceof Error ? error.message : 'Could not open the match.';
-        const conflict = error instanceof OutboxConflictError ? error : undefined;
-        if (current) setAnswer({ key: requestKey, settled: { phase: 'error', message, conflict } });
+        const stopped = error instanceof OutboxStoppedError ? error : undefined;
+        if (current) setAnswer({ key: requestKey, settled: { phase: 'error', message, stopped } });
       },
     );
     return () => { current = false; };
@@ -49,7 +49,7 @@ export function ScorerProvider({ matchId, children }: { matchId: string; childre
   if (settled?.phase === 'ready') {
     return <ScorerSessionProvider routeId={matchId} loaded={settled.loaded} onReload={retry}>{children}</ScorerSessionProvider>;
   }
-  if (settled?.phase === 'error') return <ScorerError message={settled.message} conflict={settled.conflict} onRetry={retry} />;
+  if (settled?.phase === 'error') return <ScorerError message={settled.message} stopped={settled.stopped} onRetry={retry} />;
   return <View style={[styles.loading, { backgroundColor: colors.background }]}>
     <ActivityIndicator accessibilityLabel="Opening match" color={colors.primary} />
   </View>;
@@ -59,8 +59,9 @@ function ScorerSessionProvider({ routeId, loaded, onReload, children }: { routeI
   const [session, dispatch] = useReducer(scorerReducer, loaded.session);
   const sync = useMatchSync({ session, userId: loaded.userId, matchId: loaded.matchId, fixtureRef: loaded.fixtureRef, saved: loaded.saved });
   useCareerRollup(session, loaded.matchId);
-  // Another device scored this match: block every scoring screen until the person chooses.
-  if (sync.conflict) return <ScorerError message={sync.conflict.message} conflict={sync.conflict} onRetry={onReload} />;
+  // Another device wrote first, or the server refused a change for good: block every scoring screen until the
+  // person chooses.
+  if (sync.stopped) return <ScorerError message={sync.stopped.message} stopped={sync.stopped} onRetry={onReload} />;
   return <ScorerContext value={{ ...session, dispatch, matchId: routeId, savedId: loaded.matchId, sync }}>{children}</ScorerContext>;
 }
 

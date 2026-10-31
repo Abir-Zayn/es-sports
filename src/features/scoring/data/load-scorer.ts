@@ -47,7 +47,7 @@ export async function loadScorer(routeId: string, userId: string): Promise<Loade
     const b = players.filter((player) => player.side === 'b' && player.in_playing_xi).length;
     if (a < 4 || a !== b) throw new Error('This match setup is incomplete. Create the match again.');
   }
-  outbox.rebase(events.map((event) => event.id));
+  outbox.rebase(events.map((event) => event.id), match.score_head ?? null);
   const session = replayEvents({ ...newSession(), setup: setupFromRows(match, players) }, events);
   const stored = match.status === 'completed' && session.score ? resultKey(computeResult(session.score)) : null;
   return {

@@ -1,4 +1,4 @@
-import { fetchEvents, signedInUserId } from './match-repository';
+import { fetchEvents, fetchScoreHead, signedInUserId } from './match-repository';
 import { sendOutboxOp } from './outbox-ops';
 import { defaultOutboxStore } from './outbox-store';
 import { Outbox, type OutboxDeps } from './outbox';
@@ -16,7 +16,7 @@ export function createOutboxRegistry(deps: OutboxDeps) {
     const existing = open.get(key(userId, matchId));
     if (existing) return existing;
     const stored = deps.store.read(userId, matchId);
-    const box = new Outbox(stored ?? { version: 1, userId, matchId, fixtureRef, base: [], ops: [] }, deps);
+    const box = new Outbox(stored ?? { version: 1, userId, matchId, fixtureRef, base: [], head: null, ops: [] }, deps);
     open.set(key(userId, matchId), box);
     return box;
   }
@@ -59,4 +59,5 @@ export const outboxes = createOutboxRegistry({
   send: sendOutboxOp,
   currentUserId: signedInUserId,
   fetchLiveIds: async (matchId) => (await fetchEvents(matchId)).map((row) => row.id),
+  fetchHead: fetchScoreHead,
 });
