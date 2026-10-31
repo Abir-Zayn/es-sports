@@ -7,6 +7,11 @@ const SETTLE_MS = 400;
 
 type Watch = { channel: RealtimeChannel; listeners: Set<() => void>; timer: ReturnType<typeof setTimeout> | null; subscribed: boolean };
 const watches = new Map<string, Watch>();
+/**
+ * Supabase hands back an existing channel with the same topic, and removing one finishes later. Each channel
+ * gets its own topic, so a screen that mounts again while the last channel is still closing gets a new one.
+ */
+let opened = 0;
 
 function notify(watch: Watch): void {
   if (watch.timer) return;
@@ -24,7 +29,8 @@ function notify(watch: Watch): void {
 export function watchMatch(matchId: string, onChange: () => void): () => void {
   let watch = watches.get(matchId);
   if (!watch) {
-    const channel = supabase.channel(`match:${matchId}`);
+    opened += 1;
+    const channel = supabase.channel(`match:${matchId}:${opened}`);
     const created: Watch = { channel, listeners: new Set(), timer: null, subscribed: false };
     channel
       .on('postgres_changes', { event: '*', schema: 'public', table: 'ball_events', filter: `match_id=eq.${matchId}` }, () => notify(created))

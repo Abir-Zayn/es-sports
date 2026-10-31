@@ -61,6 +61,7 @@ There are **no tables yet** for tournaments, teams, team members, invitations, s
 - Show plain wording for common server error codes (`23503`, `42501`) in the unsent notice instead of the raw Postgres message. Before the Play Store release.
 - CodeRabbit's follow-up review on PR #7 was rate-limited, so the last docs and test commit was not reviewed.
 - The graphify SQL extractor dependency is missing, so `database.types.ts` is only partly in the graph.
+- Spectator polling: when the Realtime channel connects or drops, the interval (60 s / 15 s) changes only at the next query update. Make the connection status observable. (Step 5 review, minor.)
 - Old merged branches `feat/tournament-squad-lifecycle` (local and remote), `feat/notifications-center` and `feat/player-career-profile` (remote) can be deleted.
 
 ## Model routing

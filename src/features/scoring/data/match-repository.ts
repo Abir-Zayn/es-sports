@@ -144,9 +144,13 @@ export async function reopenMatch(matchId: string, opId: string, expectedHead: s
   if (error) throw scoringError(error);
 }
 
-/** The id of the last guarded write the match accepted, or null for none. */
+/**
+ * The id of the last guarded write the match accepted, or null for none. A match created offline is not on the
+ * server until its `create` is sent, so a missing match has no head rather than being an error.
+ */
 export async function fetchScoreHead(matchId: string): Promise<string | null> {
-  const { data, error } = await supabase.from('matches').select('score_head').eq('id', matchId).single<{ score_head: string | null }>();
+  const { data, error } = await supabase.from('matches').select('score_head').eq('id', matchId)
+    .maybeSingle<{ score_head: string | null }>();
   if (error) throw error;
-  return data.score_head;
+  return data?.score_head ?? null;
 }

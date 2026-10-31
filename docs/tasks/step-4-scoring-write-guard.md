@@ -187,10 +187,25 @@ Only those three files. Short, plain wording.
 
 ```text
 Re-check round 2 of step 4 (docs/tasks/step-4-scoring-write-guard.md, "Round 2"). Target:
-git diff origin/main...feat/scoring-write-guard. Confirm R1-R4 are fixed and nothing regressed, in:
+git diff origin/main...origin/fix/scoring-score-head (PR #10). PR #9 merged round 1 only, so
+this diff is all of round 2. Confirm R1-R4 are fixed and nothing regressed, in:
 supabase/migrations/20261101010000_score_head.sql, supabase/tests/scoring_write_guard.sql,
 src/features/scoring/data/outbox.ts, outbox-ops.ts, outbox-errors.ts, sync-queue.ts,
 match-repository.ts, src/features/scoring/components/scorer-error.tsx.
 This is the last round: blockers and majors only; mark residual risks "accept"; minors go to the
 roadmap's deferred list. Output: `path:line — severity — problem — fix`, then Approve or Changes needed.
 ```
+
+### Job 3b result and fixes
+
+The re-check (run by Codex) confirmed that R1 and R2 are fixed for head-tracked writes, and that R3 and R4 are addressed. It found three majors:
+
+| # | Finding | Fix |
+| --- | --- | --- |
+| J1 | The committed database types still have the round 1 arguments, so typecheck fails. | Owner: apply `20261101010000`, then regenerate `database.types.ts` from Git Bash. No code change. |
+| J2 | Recovery failed for a match created offline whose `create` never reached the server: `fetchScoreHead` used `.single()` on a missing row, so the `create` was never sent. | `fetchScoreHead` uses `.maybeSingle()`: a missing match has no head. Tests: `score-head.test.ts`, `outbox-resume.test.ts`. |
+| J3 | A record from an older version resumes from live event ids, which cannot show a result or reopen by another device, so an old pending result could overwrite newer state. | Such a record resumes only when the server head is null or a live event, which is what the migration's backfill and every append leave. Otherwise it is a conflict. Test: `outbox-resume.test.ts`. |
+
+**Accepted:** an old build that voids an event directly after the migration leaves the head on a voided event. An older record on another phone then reports a conflict instead of resuming. That errs on the safe side, and step 4b removes direct writes.
+
+This was the last review round. No further review is needed for J2 and J3.

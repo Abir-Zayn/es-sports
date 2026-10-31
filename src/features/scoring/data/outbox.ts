@@ -103,7 +103,10 @@ export class Outbox {
     const { base, head, ops } = this.record;
     const [liveIds, serverHead] = await Promise.all([this.deps.fetchLiveIds(this.matchId), this.deps.fetchHead(this.matchId)]);
     // A record from before the head was tracked has no `head`; its position is found from the live events.
-    const from = head === undefined ? resumeIndex(base, ops, liveIds) : headResumeIndex(head, ops, serverHead);
+    // Those cannot show a result, reopen or undo by a newer version, which leaves a head that is not a live event.
+    const from = head === undefined
+      ? (serverHead === null || liveIds.includes(serverHead) ? resumeIndex(base, ops, liveIds) : null)
+      : headResumeIndex(head, ops, serverHead);
     if (from === null) throw new OutboxConflictError(this.userId, this.matchId, this.pending);
     // Changes before `from` reached the server before the app closed, so they are dropped, not repeated.
     const sent = ops.slice(0, from);
