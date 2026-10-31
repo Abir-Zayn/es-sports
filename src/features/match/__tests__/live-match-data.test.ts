@@ -8,9 +8,11 @@ import { ballKind, spokenBall } from '../components/live-ball-pill';
 import { buildLiveView, stagedLiveView } from '../live/build-live-view';
 import { chaseLine, nickname, padOver } from '../live/live-view';
 import { ballLabel, oversOf } from '../live/over-rows';
-import { loadLiveMatch } from '../use-live-match-data';
+import { loadLiveMatch, MatchNotFoundError } from '../use-live-match-data';
 
+jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('@/features/scoring/data/match-repository', () => ({
+  isUuid: (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id),
   findSpectatorMatch: jest.fn(),
   fetchPlayers: jest.fn(),
   fetchEvents: jest.fn(),
@@ -108,5 +110,12 @@ describe('loading a match to watch', () => {
     expect((await loadLiveMatch('m12')).source).toBe('sample');
     find.mockResolvedValue(null);
     expect((await loadLiveMatch('unknown')).summary).toBe('Strikers need 27 runs from 21 balls');
+  });
+
+  it('never shows the sample in place of a saved match id: it fails, so the screen can say so', async () => {
+    find.mockRejectedValue(new Error('offline'));
+    await expect(loadLiveMatch(MATCH)).rejects.toThrow('offline');
+    find.mockResolvedValue(null);
+    await expect(loadLiveMatch(MATCH)).rejects.toBeInstanceOf(MatchNotFoundError);
   });
 });

@@ -1,19 +1,18 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { ChoiceTabs, type ChoiceTab } from '@/components/match/choice-tabs';
 import { AppTabs, Text } from '@/components/ui';
 import { quadrantSplit } from '@/lib/pitch-quadrant';
-import { useTheme } from '@/theme';
 
+import { MatchLoadState, StaleMatchNote } from './components/match-load-state';
 import { MatchScreenFrame } from './components/match-screen-frame';
 import { QuadrantSplitCards } from './components/quadrant-split-cards';
 import { SideSplitCards } from './components/side-split-cards';
 import { WagonLegend } from './components/wagon-legend';
 import { WagonWheel } from './components/wagon-wheel';
 import { sideSplit, type ShotFilter } from './components/wagon-geometry';
-import { matchHeader } from './sample-match';
 import type { WagonBatter } from './types';
 import { useLiveMatchData } from './use-live-match-data';
 
@@ -27,14 +26,14 @@ const filterTabs: { id: ShotFilter; label: string }[] = [
 /** Where each batter hit the ball, from the match's recorded shots: wagon wheel, off/leg split and the four pitch zones. */
 export function MatchWagonScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const matchId = id ?? matchHeader.id;
-  const { colors } = useTheme();
+  const matchId = id ?? '';
   const live = useLiveMatchData(matchId);
   const view = live.data;
   return (
     <MatchScreenFrame matchId={matchId} tab="wagon" title={view?.header.title} subtitle={view?.header.subtitle}>
+      <StaleMatchNote query={live} />
       {!view ? (
-        <ActivityIndicator accessibilityLabel="Loading shots" color={colors.link} />
+        <MatchLoadState query={live} label="Loading shots" />
       ) : view.wagonBatters.length === 0 ? (
         <Text muted accessibilityLiveRegion="polite">
           No shot directions recorded yet. They appear here as the scorer taps where each scoring shot went.

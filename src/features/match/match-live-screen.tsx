@@ -1,6 +1,6 @@
 import ChevronRight from 'lucide-react-native/icons/chevron-right';
 import { useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
 import { comingSoon } from '@/lib/coming-soon';
@@ -8,27 +8,27 @@ import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme
 
 import { LiveBattersCard, LiveBowlerCard } from './components/live-scoring-tables';
 import { LiveHero } from './components/live-hero';
+import { MatchLoadState, StaleMatchNote } from './components/match-load-state';
+import { MatchScreenFrame } from './components/match-screen-frame';
 import { MatchTabs } from './components/match-tabs';
 import { StreamLinkCard } from './components/stream-link-card';
 import { ThisOverCard } from './components/this-over-card';
 import type { LiveMatchViewData } from './live/live-view';
-import { matchHeader } from './sample-match';
 import { useLiveMatchData } from './use-live-match-data';
 import { useMatchRoutes } from './use-match-routes';
 
 /** The match as it happens: scores and chase or result, batters, bowler and the over being bowled. */
 export function MatchLiveScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const matchId = id ?? matchHeader.id;
+  const matchId = id ?? '';
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const { goBack } = useMatchRoutes(matchId);
   const live = useLiveMatchData(matchId);
 
   if (!live.data) {
-    return <View style={[styles.screen, styles.loading]}>
-      <ActivityIndicator accessibilityLabel="Loading match" color={colors.link} />
-    </View>;
+    // The frame keeps the back button and tabs, so a match that failed to load is never a dead end.
+    return <MatchScreenFrame matchId={matchId} tab="live"><MatchLoadState query={live} label="Loading match" /></MatchScreenFrame>;
   }
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}
@@ -37,6 +37,7 @@ export function MatchLiveScreen() {
       <View style={styles.tabs}>
         <MatchTabs matchId={matchId} selected="live" />
       </View>
+      <View style={styles.stale}><StaleMatchNote query={live} /></View>
       <LiveBody view={live.data} matchId={matchId} />
     </ScrollView>
   );
@@ -82,7 +83,7 @@ function LiveBody({ view, matchId }: { view: LiveMatchViewData; matchId: string 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.background },
-    loading: { alignItems: 'center', justifyContent: 'center' },
+    stale: { paddingHorizontal: sizes.gutter },
     content: { paddingBottom: spacing.xxl + spacing.xl },
     tabs: { paddingTop: 14 },
     body: { paddingHorizontal: sizes.gutter, paddingTop: 20, gap: 18 },
