@@ -1,4 +1,4 @@
--- Verification for public.create_friendly_match (migration 20261031120000).
+-- Verification for public.create_friendly_match (migrations 20261031120000 and 20261031130000).
 --
 -- Run as an administrator (SQL editor, or psql as postgres) after the migration is applied. Everything runs
 -- inside one transaction that is rolled back; the last block proves nothing was left behind. Any failed
@@ -62,6 +62,25 @@ begin
       raise exception 'FAIL a/b: wrong row counts after call %', i;
     end if;
   end loop;
+end $$;
+
+-- j) A retry by the creator for a complete match returns the id without looking at the payload: invalid tone,
+-- overs and players and a different scorer are ignored, and no row changes.
+do $$
+declare
+  m uuid := 'f3b00000-0000-4000-8000-000000000001';
+  bad jsonb := current_setting('t.match')::jsonb || jsonb_build_object('id', m, 'team_a_tone', 'purple',
+    'overs_limit', 999, 'fixture_ref', 'tournament-rpc-test');
+  r uuid;
+begin
+  r := public.create_friendly_match(bad, '[{"key":"x"}]'::jsonb, 'f3a00000-0000-4000-8000-000000000004');
+  if r is distinct from m
+    or (select team_a_tone from public.matches where id = m) <> 'blue'
+    or (select count(*) from public.match_players where match_id = m) <> 3
+    or (select array_agg(user_id) from public.match_scorers where match_id = m)
+      <> array['f3a00000-0000-4000-8000-000000000002'::uuid] then
+    raise exception 'FAIL j: the retry was rejected or changed the match';
+  end if;
 end $$;
 
 -- c) d) e) Rejected calls write nothing. c2 fails after the match insert (duplicate player key), so it also
