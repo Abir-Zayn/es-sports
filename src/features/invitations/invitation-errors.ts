@@ -41,3 +41,4 @@ export function toInvitationError(error: unknown): InvitationError {
 /** A plain message for any error an invitation action threw, `InvitationError` or not. */
 export const invitationErrorText = (error: unknown): string =>
   error instanceof InvitationError ? error.message : invitationMessage(error);
+
