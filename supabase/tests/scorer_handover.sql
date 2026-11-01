@@ -6,15 +6,14 @@
 --
 -- Two-session check by hand (not automatable in one session):
 --   Setup: friendly match M with scorer A and a pending handover H to user B; current score_head is S.
---   Session A: begin; set local role authenticated;
---     select set_config('request.jwt.claims', '{"sub":"<A id>","role":"authenticated"}', true);
---     select public.append_ball_event('<event json for M, id E1>', '<S>');  -- leave uncommitted (holds lock)
---   Session B: begin; set local role authenticated;
---     select set_config('request.jwt.claims', '{"sub":"<B id>","role":"authenticated"}', true);
---     select public.accept_scorer_handover('<H>');  -- waits on score_match:<M> advisory lock
---   Commit Session A, then commit Session B: both succeed in order.
---   Session A (new tx, same claims): select public.append_ball_event('<event json for M, id E2>', '<E1>');
---     -> fails with SQLSTATE 42501 because B is now the sole scorer.
+--   Each session: begin; set local role authenticated; select set_config('request.jwt.claims',
+--     '{"sub":"<user id>","role":"authenticated"}', true);   (A's id for A, B's id for B)
+--   Check 1 (the post-lock re-check): B runs accept_scorer_handover('<H>') and leaves it uncommitted (holds the lock).
+--     A runs append_ball_event('<event json for M, id E1>', '<S>') and waits. Commit B: A's call fails with
+--     SQLSTATE 42501, and no ball E1 exists. Roll A back.
+--   Check 2 (the reverse order): re-offer a new handover H2 (A to B). A runs append_ball_event(E2) and stays
+--     open; B runs accept_scorer_handover('<H2>') and waits. Commit A, then B: both succeed in order.
+--     A, in a new transaction, appends E3: fails with 42501 because B is now the sole scorer.
 
 begin;
 insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
@@ -47,7 +46,7 @@ begin
 end;
 $$;
 create function public.sht_fail(p_ok boolean, p_label text) returns void language plpgsql as $$
-begin if not p_ok then raise exception 'FAIL %', p_label; end if; end;
+begin if p_ok is not true then raise exception 'FAIL %', p_label; end if; end;
 $$;
 create function public.sht_offer(p_as int, p_m int, p_to int, p_code text, p_label text) returns uuid language plpgsql as $$
 declare v_id uuid; v_code text;
@@ -149,9 +148,10 @@ begin
   perform public.sht_act(1, 'cancel_scorer_handover', v_can2, null, 'c creator cancel');
   perform public.sht_act(2, 'accept_scorer_handover', v_can2, 'ESH01', 'c accept cancelled 2');
   perform public.sht_age_balls(1, interval '16 minutes');
-  v_can3 := public.sht_offer(1, 1, 2, null, 'c creator-initiated offer for from_user cancel');
+  perform public.sht_offer(1, 1, 2, '42501', 'e creator cannot offer a third party');
+  v_can3 := public.sht_offer(1, 1, 1, null, 'c creator-initiated offer for from_user cancel');
   perform public.sht_act(3, 'cancel_scorer_handover', v_can3, null, 'c from_user cancel');
-  perform public.sht_act(2, 'accept_scorer_handover', v_can3, 'ESH01', 'c accept cancelled 3');
+  perform public.sht_act(1, 'accept_scorer_handover', v_can3, 'ESH01', 'c accept cancelled 3');
   v_exp := public.sht_offer(3, 1, 2, null, 'c offer for expiry');
   perform public.sht_expire(v_exp);
   perform public.sht_act(2, 'accept_scorer_handover', v_exp, 'ESH01', 'c accept expired');

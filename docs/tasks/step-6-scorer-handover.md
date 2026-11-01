@@ -184,6 +184,19 @@ Do not change code or invent results. Keep every line short.
 - **Real signatures:** after step 4 round 2 the write functions take `p_expected_head` (and `p_op`), not a tail. The SQL test uses the real signatures.
 - **Open:** `supabase/tests/scorer_handover.sql` is NOT RUN (no Docker or psql here). It must pass in the Supabase SQL editor after `db push`, plus the manual two-session check, before merge.
 
+## Review notes (GPT 6.1 Terra, round 1)
+
+| Finding | Verdict |
+| --- | --- |
+| Creator offers to a third party while the scorer is idle (`:82`) | **Fixed.** A creator who is not the scorer may only offer to themselves (`42501` otherwise). Test added. |
+| `now()` is the transaction start, so an accept that waited on the lock can pass an expired offer (`:111`) | **Fixed.** Expiry and idle checks use `clock_timestamp()`. Rated minor: the wait is seconds, the window 15 minutes. |
+| `sht_fail` passes on NULL (test `:49`) | **Fixed.** It fails unless `p_ok is true`. |
+| Two-session check misses the old scorer's write waiting behind an accept (test `:7`) | **Fixed in the header.** Check 1 is the post-lock re-check, check 2 the reverse order. Still NOT RUN. |
+| Creator-insert policy on `match_scorers` can assign a scorer without acceptance when no row exists (`:73`) | **Accept, tracked.** It is the original assignment path (the creator gives scoring away; they lose it at once) and `create_friendly_match` relies on it. Closing it belongs with step 4b (revoke direct writes). Rated minor, not major. |
+| Legacy direct scoring writes bypass the lock (`:40`) | **Accept.** Step 4b. |
+
+The migration changed after it was applied: re-run it (`create or replace`, idempotent) and the test before merge.
+
 ## Review brief (GPT 6.1 Terra, migration and SQL test only)
 
 ```text
