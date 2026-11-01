@@ -38,6 +38,16 @@ jest.mock('@/features/profile/profile-provider', () => ({
   }),
 }));
 
+const mockCareer = {
+  status: 'ready' as 'loading' | 'ready' | 'error',
+  batting: { matches: 7, innings: 6, runs: 312, highest: '78*', average: '52.0', strikeRate: '118.2', fifties: 2, hundreds: 0 },
+  bowling: { matches: 7, overs: '12.3', wickets: 9, best: '3/14', economy: '6.1', average: '17.0', threeW: 1, fiveW: 0 },
+  recent: [{ id: 'm1', date: '22 Oct', opponent: 'vs Titans', bat: '45 (30)', won: true }],
+  teams: [], memberTeams: [], reload: jest.fn(),
+  allTeams: [{ short: 'STR', name: 'Strikers', tone: 'blue' }, { short: 'TIT', name: 'Titans', tone: 'yellow' }, { short: 'LIO', name: 'Lions', tone: 'neutral' }],
+};
+jest.mock('../career/use-career', () => ({ useCareer: () => mockCareer }));
+
 const linked = jest.mocked(loadLinkedAccounts);
 const withTheme = async (ui: ReactElement) => render(<ThemeProvider>{ui}</ThemeProvider>);
 
@@ -84,6 +94,23 @@ describe('profile screens render without errors', () => {
     await withTheme(<ProfileScreen />);
     expect(screen.getByText(sampleProfile.profile.fullName)).toBeTruthy();
     expect(screen.getByText('Personal Info')).toBeTruthy();
+  });
+
+  it('Profile tab shows the real matches, runs, wickets and teams', async () => {
+    mockCareer.status = 'ready';
+    await withTheme(<ProfileScreen />);
+    expect(screen.getAllByLabelText('Matches 7').length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText('Runs 312').length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText('Wickets 9').length).toBeGreaterThan(0);
+    expect(screen.getByLabelText('Teams 3')).toBeTruthy();
+    expect(screen.getByText('Bat 45 (30)')).toBeTruthy();
+  });
+
+  it('Profile tab says when the match figures could not load', async () => {
+    mockCareer.status = 'error';
+    await withTheme(<ProfileScreen />);
+    expect(screen.getByText('Couldn’t load your match figures.')).toBeTruthy();
+    mockCareer.status = 'ready';
   });
 
   it('Edit profile', async () => {

@@ -3,9 +3,16 @@ import { StyleSheet, View } from 'react-native';
 import { AppBadge, Button, Text } from '@/components/ui';
 import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import type { Invitation } from './types';
+import { isOpen, type Invitation, type InvitationStatus } from './types';
 
-type Props = { invitation: Invitation; busy: boolean; onAccept: () => void; onDecline: () => void; onManageSquad: () => void };
+type Props = {
+  invitation: Invitation;
+  busy: boolean;
+  onAccept: () => void;
+  onDecline: () => void;
+  onCancel?: () => void;
+  onManageSquad: () => void;
+};
 
 function headline({ kind, teamName, tournamentName }: Invitation): string {
   return kind === 'team-owner' ? `Own ${teamName ?? 'a team'} in ${tournamentName}` : `Moderate ${tournamentName}`;
@@ -16,37 +23,73 @@ const roleText: Record<Invitation['kind'], string> = {
   'tournament-moderator': 'As moderator you help add teams and invite team owners.',
 };
 
-/** One invite: what it is, who sent it, and Accept or Decline until it is answered. */
-export function InvitationCard({ invitation, busy, onAccept, onDecline, onManageSquad }: Props) {
+const statusLabels: Record<Exclude<InvitationStatus, 'pending'>, string> = {
+  accepted: 'Accepted',
+  declined: 'Declined',
+  cancelled: 'Cancelled',
+  expired: 'Expired',
+};
+
+/** One invite: what it is, who sent it, and Accept, Decline, or Cancel while it is open. */
+export function InvitationCard({ invitation, busy, onAccept, onDecline, onCancel, onManageSquad }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
-  const answered = invitation.status !== 'pending';
+  const open = isOpen(invitation);
+  const effectiveStatus: Exclude<InvitationStatus, 'pending'> =
+    invitation.status === 'pending' ? 'expired' : invitation.status;
+  const isSent = invitation.direction === 'sent';
+  const personLine = isSent
+    ? `To ${invitation.toName ?? 'Invited user'} · ${invitation.sentLabel}`
+    : `From ${invitation.fromName} · ${invitation.sentLabel}`;
+
   return (
     <View style={styles.row}>
       <View style={styles.top}>
         <Text style={styles.title}>{headline(invitation)}</Text>
-        {answered ? (
+        {!open ? (
           <AppBadge
-            label={invitation.status === 'accepted' ? 'Accepted' : 'Declined'}
-            backgroundColor={invitation.status === 'accepted' ? colors.primarySoft : colors.surfaceRaised}
-            color={invitation.status === 'accepted' ? colors.link : colors.textMuted}
+            label={statusLabels[effectiveStatus]}
+            backgroundColor={effectiveStatus === 'accepted' ? colors.primarySoft : colors.surfaceRaised}
+            color={effectiveStatus === 'accepted' ? colors.link : colors.textMuted}
           />
         ) : null}
       </View>
-      <Text style={styles.meta}>
-        From {invitation.fromName} · {invitation.sentLabel}
-      </Text>
+      <Text style={styles.meta}>{personLine}</Text>
       <Text variant="caption" muted>
         {roleText[invitation.kind]}
       </Text>
-      {invitation.kind === 'team-owner' && invitation.status === 'accepted' ? (
+      {invitation.kind === 'team-owner' && invitation.status === 'accepted' && !isSent ? (
         <View style={styles.actions}>
-          <Button label="Manage squad" size="compact" accessibilityLabel={`Manage ${invitation.teamName ?? 'team'} squad`} onPress={onManageSquad} />
+          <Button
+            label="Manage squad"
+            size="compact"
+            accessibilityLabel={`Manage ${invitation.teamName ?? 'team'} squad`}
+            onPress={onManageSquad}
+          />
         </View>
       ) : null}
-      {answered ? null : (
+      {!open ? null : isSent ? (
+        onCancel ? (
+          <View style={styles.actions}>
+            <Button
+              label="Cancel"
+              variant="secondary"
+              size="compact"
+              disabled={busy}
+              accessibilityLabel={`Cancel: ${headline(invitation)}`}
+              onPress={onCancel}
+            />
+          </View>
+        ) : null
+      ) : (
         <View style={styles.actions}>
-          <Button label="Accept" size="compact" disabled={busy} accessibilityLabel={`Accept: ${headline(invitation)}`} onPress={onAccept} />
+          <Button
+            label="Accept"
+            size="compact"
+            disabled={busy}
+            accessibilityLabel={`Accept: ${headline(invitation)}`}
+            onPress={onAccept}
+          />
           <Button
             label="Decline"
             variant="secondary"

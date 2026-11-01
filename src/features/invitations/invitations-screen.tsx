@@ -5,14 +5,25 @@ import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
-import { rosterErrorText, rosterKey, useMe } from '@/features/tournament/roster';
+import { useAuth } from '@/features/auth/auth-provider';
 import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { InvitationCard } from './invitation-card';
-import { answerInvitation, fetchInvitations } from './invitations-repository';
+import { invitationErrorText, toInvitationError } from './invitation-errors';
+import { acceptInvitation, cancelInvitation, declineInvitation, fetchInvitations } from './invitations-repository';
 import type { Invitation } from './types';
 
 export const invitationsKey = ['invitations'] as const;
+
+function useSignedInUserId(): string | undefined {
+  try {
+    return useAuth().session?.user.id;
+  } catch {
+    return undefined;
+  }
+}
+
+type InviteAction = { id: string; kind: 'accepted' | 'declined' | 'cancelled' };
 
 /** Invites to moderate a tournament or own a team, newest first, each answered here. */
 export function InvitationsScreen() {
@@ -21,18 +32,34 @@ export function InvitationsScreen() {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const queryClient = useQueryClient();
-  const invitations = useQuery({ queryKey: invitationsKey, queryFn: fetchInvitations });
-  const me = useMe();
+  const userId = useSignedInUserId();
+  const invitations = useQuery({
+    queryKey: invitationsKey,
+    queryFn: () => fetchInvitations(userId),
+  });
+
   const answer = useMutation({
-    mutationFn: (a: { invitation: Invitation; answer: 'accepted' | 'declined' }) => answerInvitation(a.invitation.id, a.answer, me),
-    onSuccess: (list, a) => {
-      queryClient.setQueryData(invitationsKey, list);
-      void queryClient.invalidateQueries({ queryKey: rosterKey(a.invitation.tournamentId) });
+    mutationFn: async ({ id, kind }: InviteAction) => {
+      if (kind === 'accepted') await acceptInvitation(id);
+      else if (kind === 'declined') await declineInvitation(id);
+      else await cancelInvitation(id);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: invitationsKey });
+      void queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+    onError: (err: unknown) => {
+      if (toInvitationError(err).closed) {
+        void queryClient.invalidateQueries({ queryKey: invitationsKey });
+        void queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      }
     },
   });
+
   function manageSquad({ tournamentId, teamId }: Invitation) {
     if (teamId) router.push({ pathname: '/tournament/squad', params: { tournamentId, teamId } });
   }
+
   const list = invitations.data ?? [];
 
   return (
@@ -60,7 +87,7 @@ export function InvitationsScreen() {
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}>
           {answer.isError ? (
             <Text accessibilityRole="alert" style={styles.error}>
-              {rosterErrorText(answer.error)}
+              {invitationErrorText(answer.error)}
             </Text>
           ) : null}
           {list.length === 0 ? (
@@ -73,8 +100,9 @@ export function InvitationsScreen() {
                 <InvitationCard
                   invitation={invitation}
                   busy={answer.isPending}
-                  onAccept={() => answer.mutate({ invitation, answer: 'accepted' })}
-                  onDecline={() => answer.mutate({ invitation, answer: 'declined' })}
+                  onAccept={() => answer.mutate({ id: invitation.id, kind: 'accepted' })}
+                  onDecline={() => answer.mutate({ id: invitation.id, kind: 'declined' })}
+                  onCancel={() => answer.mutate({ id: invitation.id, kind: 'cancelled' })}
                   onManageSquad={() => manageSquad(invitation)}
                 />
               </View>

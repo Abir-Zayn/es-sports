@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import Bell from 'lucide-react-native/icons/bell';
 import Settings from 'lucide-react-native/icons/settings';
 import { useRef, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BOTTOM_NAV_CLEARANCE } from '@/components/navigation/bottom-nav';
@@ -14,6 +14,7 @@ import { useOpenTeam } from '@/features/team/use-team-routes';
 import { comingSoon } from '@/lib/coming-soon';
 import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
+import { useCareer } from './career/use-career';
 import { useProfile } from './profile-provider';
 import { CareerStats } from './sections/career-stats';
 import { PersonalInfo } from './sections/personal-info';
@@ -30,7 +31,8 @@ export function ProfileScreen() {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const { session } = useAuth();
-  const { profile, batting, bowling, teams, recent, status, reload } = useProfile();
+  const { profile, status, reload } = useProfile();
+  const career = useCareer(session?.user.id);
   const [loggingOut, setLoggingOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inFlight = useRef(false);
@@ -60,17 +62,29 @@ export function ProfileScreen() {
           <Button label="Try again" variant="secondary" size="compact" onPress={reload} />
         </View>
       ) : null}
-      <StatStrip batting={batting} bowling={bowling} teams={teams} />
+      {career.status === 'loading' ? <ActivityIndicator accessibilityLabel="Loading your career" color={colors.textMuted} /> : null}
+      {career.status === 'error' ? (
+        <View style={styles.loadError}>
+          <Text variant="caption" style={styles.error} accessibilityLiveRegion="polite">
+            Couldn’t load your match figures.
+          </Text>
+          <Button label="Try again" variant="secondary" size="compact" onPress={career.reload} />
+        </View>
+      ) : null}
+      <StatStrip batting={career.batting} bowling={career.bowling} teams={career.allTeams} />
       <PlayingStyle profile={profile} />
       <PersonalInfo profile={profile} email={session?.user.email} onEdit={() => router.push('/profile/edit')} />
-      <CareerStats batting={batting} bowling={bowling} onFindTeam={() => router.push('/search')} />
+      <CareerStats batting={career.batting} bowling={career.bowling} onFindTeam={() => router.push('/search')} />
       <ContractedTeams
-        teams={teams}
+        teams={career.memberTeams.map((team) => ({ short: team.shortName, name: team.name, tone: team.tone, avatarUri: team.logoUrl ?? undefined }))}
         onManage={() => comingSoon('Team management')}
-        onTeamPress={(team) => openTeam(team.short)}
+        onTeamPress={(team) => {
+          const real = career.memberTeams.find((item) => item.name === team.name && item.shortName === team.short);
+          if (real) openTeam(real.id);
+        }}
         onJoin={() => router.push('/search')}
       />
-      <RecentPerformances performances={recent} />
+      <RecentPerformances performances={career.recent} />
       <View style={styles.links}>
         <SettingsGroup>
           <SettingsRow

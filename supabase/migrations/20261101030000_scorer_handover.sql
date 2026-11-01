@@ -65,7 +65,7 @@ begin
   if v_uid is null or p_match is null then raise exception 'Sign in to hand over scoring' using errcode = '42501'; end if;
   perform pg_advisory_xact_lock(hashtextextended('score_match:' || p_match::text, 0));
   update public.scorer_handover set status = 'expired', resolved_at = now()
-  where match_id = p_match and status = 'pending' and expires_at <= now();
+  where match_id = p_match and status = 'pending' and expires_at <= clock_timestamp();
   select * into v_match from public.matches where id = p_match;
   if not found or coalesce(v_match.fixture_ref, '') not like 'friendly-%' then
     raise exception 'You are not allowed to hand over scoring for this match' using errcode = '42501';
@@ -79,8 +79,12 @@ begin
   if p_to is null or p_to is not distinct from v_scorer or not exists (select 1 from public.profiles p where p.id = p_to) then
     raise exception 'Choose another signed-in player to score this match' using errcode = '42501';
   end if;
+  -- A creator who is not the scorer may only take scoring for themselves, and only from an idle scorer.
+  if v_uid is distinct from v_scorer and p_to is distinct from v_uid then
+    raise exception 'Only the creator can take over from another scorer' using errcode = '42501';
+  end if;
   if v_uid is distinct from v_scorer and exists (
-    select 1 from public.ball_events e where e.match_id = p_match and e.created_at > now() - interval '15 minutes'
+    select 1 from public.ball_events e where e.match_id = p_match and e.created_at > clock_timestamp() - interval '15 minutes'
   ) then
     raise exception 'The scorer was active a moment ago' using errcode = 'ESH04';
   end if;
@@ -109,7 +113,7 @@ begin
   if not found then raise exception 'You are not allowed to accept this scoring request' using errcode = '42501'; end if;
   perform pg_advisory_xact_lock(hashtextextended('score_match:' || v_offer.match_id::text, 0));
   update public.scorer_handover set status = 'expired', resolved_at = now()
-  where match_id = v_offer.match_id and status = 'pending' and expires_at <= now();
+  where match_id = v_offer.match_id and status = 'pending' and expires_at <= clock_timestamp();
   select * into v_offer from public.scorer_handover where id = p_id;
   if v_offer.to_user is distinct from v_uid then
     raise exception 'You are not allowed to accept this scoring request' using errcode = '42501';
@@ -128,7 +132,7 @@ begin
     raise exception 'The scorer changed' using errcode = 'ESH03';
   end if;
   if v_offer.initiated_by is distinct from v_offer.from_user and exists (
-    select 1 from public.ball_events e where e.match_id = v_offer.match_id and e.created_at > now() - interval '15 minutes'
+    select 1 from public.ball_events e where e.match_id = v_offer.match_id and e.created_at > clock_timestamp() - interval '15 minutes'
   ) then
     raise exception 'The scorer was active a moment ago' using errcode = 'ESH04';
   end if;
@@ -149,7 +153,7 @@ begin
   if not found then raise exception 'You are not allowed to decline this scoring request' using errcode = '42501'; end if;
   perform pg_advisory_xact_lock(hashtextextended('score_match:' || v_offer.match_id::text, 0));
   update public.scorer_handover set status = 'expired', resolved_at = now()
-  where match_id = v_offer.match_id and status = 'pending' and expires_at <= now();
+  where match_id = v_offer.match_id and status = 'pending' and expires_at <= clock_timestamp();
   select * into v_offer from public.scorer_handover where id = p_id;
   if v_offer.to_user is distinct from v_uid then
     raise exception 'You are not allowed to decline this scoring request' using errcode = '42501';
@@ -172,7 +176,7 @@ begin
   if not found then raise exception 'You are not allowed to cancel this scoring request' using errcode = '42501'; end if;
   perform pg_advisory_xact_lock(hashtextextended('score_match:' || v_offer.match_id::text, 0));
   update public.scorer_handover set status = 'expired', resolved_at = now()
-  where match_id = v_offer.match_id and status = 'pending' and expires_at <= now();
+  where match_id = v_offer.match_id and status = 'pending' and expires_at <= clock_timestamp();
   select * into v_offer from public.scorer_handover where id = p_id;
   select m.created_by into v_creator from public.matches m where m.id = v_offer.match_id;
   if v_uid is distinct from v_offer.initiated_by and v_uid is distinct from v_offer.from_user and v_uid is distinct from v_creator then

@@ -14,6 +14,7 @@ import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from 
 
 import { competitionFormats } from './draft';
 import { draftQueryKey, loadDraft } from './draft-storage';
+import { MyTournamentsSection } from './my-tournaments-section';
 
 export function TournamentDraftsScreen() {
   const router = useRouter();
@@ -53,6 +54,7 @@ export function TournamentDraftsScreen() {
       <Button label="Create tournament" leading={<Plus size={20} color={colors.primaryText} />} onPress={openSetup} />
       <Text variant="caption" muted style={styles.center}>Start with a private draft. Teams and fixtures come later.</Text>
     </View>}
+    <MyTournamentsSection userId={userId} />
   </ScrollView>;
 }
 
