@@ -92,6 +92,9 @@ export function toAppNotification(
     };
   }
 
+  const matchId = asString(data.match_id);
+  const scorerAssignment = kind === 'system' && asString(data.type) === 'scorer_assigned' && matchId ? { matchId } : undefined;
+
   return {
     id: row.id,
     kind,
@@ -99,7 +102,7 @@ export function toAppNotification(
     message: row.message,
     sentLabel: formatSentLabel(row.created_at, now),
     isRead: row.read_at !== null,
-    meta: invite ? { invite } : {},
+    meta: { ...(invite ? { invite } : {}), ...(scorerAssignment ? { scorerAssignment } : {}) },
   };
 }
 

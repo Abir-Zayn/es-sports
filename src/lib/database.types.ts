@@ -980,6 +980,7 @@ export type Database = {
       }
       decline_invitation: { Args: { p_id: string }; Returns: undefined }
       decline_scorer_handover: { Args: { p_id: string }; Returns: undefined }
+      delete_friendly_match: { Args: { p_match: string }; Returns: undefined }
       insert_team: {
         Args: {
           p_area?: string

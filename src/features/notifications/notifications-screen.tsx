@@ -39,7 +39,9 @@ export function NotificationsScreen() {
 
   function openItem(item: AppNotification) {
     markRead(item.id);
-    setSelectedId(item.id);
+    const assigned = item.meta?.scorerAssignment;
+    if (assigned) router.push({ pathname: '/scorer/[id]', params: { id: assigned.matchId } });
+    else setSelectedId(item.id);
   }
 
   function renderItem({ item }: { item: AppNotification }) {

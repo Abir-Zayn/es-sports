@@ -1,4 +1,5 @@
 import { createContext, use, useCallback, useEffect, useEffectEvent, useMemo, useState, type ReactNode } from 'react';
+import { AppState } from 'react-native';
 
 import { useAuth } from '@/features/auth/auth-provider';
 import type { ProviderProfile } from '@/features/auth/provider-profile';
@@ -97,6 +98,18 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       cancelled = true;
     };
   }, [userId, attempt]);
+
+  // Back from the background the photo or name may have changed on another device: refresh quietly, with no spinner.
+  useEffect(() => {
+    if (!userId) return;
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') return;
+      load().then((profile) => {
+        if (profile) setResult({ userId, stored: profile });
+      }).catch(() => {});
+    });
+    return () => subscription.remove();
+  }, [userId]);
 
   const reload = useCallback(() => {
     setResult(null);

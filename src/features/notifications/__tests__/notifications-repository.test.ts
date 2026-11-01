@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 
 import { watchNotifications } from '../notifications-channel';
-import { fetchNotifications, markNotificationsRead } from '../notifications-repository';
+import { fetchNotifications, markNotificationsRead, toAppNotification } from '../notifications-repository';
 import type { NotificationRow } from '../types';
 
 const mockRemoveChannel = jest.fn();
@@ -142,3 +142,20 @@ describe('watchNotifications channel', () => {
   });
 });
 
+
+describe('scorer assignment notices', () => {
+  const row = (data: Record<string, unknown>) => ({
+    id: 'n1', user_id: 'u', kind: 'system', title: 'You are the scorer', message: 'Asha chose you to score A vs B.',
+    data, read_at: null, created_at: '2026-11-02T10:00:00Z',
+  });
+
+  it('carries the match id so opening the notice can open the scorer', () => {
+    const item = toAppNotification(row({ type: 'scorer_assigned', match_id: 'm1' }) as never, {}, Date.parse('2026-11-02T10:05:00Z'));
+    expect(item.kind).toBe('system');
+    expect(item.meta.scorerAssignment).toEqual({ matchId: 'm1' });
+  });
+
+  it('is a plain notice when there is no match id', () => {
+    expect(toAppNotification(row({ type: 'scorer_assigned' }) as never).meta.scorerAssignment).toBeUndefined();
+  });
+});

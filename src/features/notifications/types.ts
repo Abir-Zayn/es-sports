@@ -36,6 +36,9 @@ export type MatchUpdateMeta = {
   status: 'toss' | 'live' | 'completed';
 };
 
+/** A friendly whose scoring was handed to this account: opening the notice opens the scorer. */
+export type ScorerAssignmentMeta = { matchId: string };
+
 export type AppNotification = {
   id: string;
   kind: NotificationKind;
@@ -47,5 +50,6 @@ export type AppNotification = {
     squadAlert?: SquadAlertMeta;
     invite?: InviteMeta;
     matchUpdate?: MatchUpdateMeta;
+    scorerAssignment?: ScorerAssignmentMeta;
   };
 };

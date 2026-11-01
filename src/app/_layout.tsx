@@ -2,12 +2,13 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { AnimatedSplash } from '@/components/splash/animated-splash';
 import { AuthProvider, useAuth } from '@/features/auth/auth-provider';
 import { ProfileProvider } from '@/features/profile/profile-provider';
 import { useOutboxRecovery } from '@/features/scoring/use-outbox-recovery';
+import { watchAppFocus } from '@/lib/app-focus';
 import { queryClient } from '@/lib/query-client';
 import { ThemeProvider, useTheme } from '@/theme';
 
@@ -18,6 +19,7 @@ function AppShell() {
   const { colors, scheme } = useTheme();
   const [splashDone, setSplashDone] = useState(false);
   useOutboxRecovery(session?.user.id);
+  useEffect(() => watchAppFocus(), []);
 
   // The animated splash starts on the same frame as the native one, so the native one can go.
   const hideNativeSplash = useCallback(() => SplashScreen.hide(), []);
