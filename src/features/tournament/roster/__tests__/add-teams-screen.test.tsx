@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/theme';
 import { AddTeamsScreen } from '../add-teams-screen';
 import { resetRosters } from '../roster-repository';
 
+jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),

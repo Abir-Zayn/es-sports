@@ -12,8 +12,10 @@ import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from 
 
 import { emptyDraft, validateDraft, type DraftErrors, type TournamentDraft } from './draft';
 import { draftQueryKey, loadDraft, saveDraft } from './draft-storage';
+import { tournamentErrorText } from '../data/tournament-errors';
 import { setupParams } from '../roster/setup';
 import { TournamentFields } from './tournament-fields';
+import { usePublishTournament } from './use-publish-tournament';
 
 export function CreateTournamentScreen() {
   const { session } = useAuth();
@@ -46,7 +48,8 @@ function TournamentForm({ userId, initial }: { userId: string; initial: Tourname
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const mutation = useMutation({ mutationFn: (value: TournamentDraft) => saveDraft(userId, value) });
   const dirty = (Object.keys(initial) as (keyof TournamentDraft)[]).some((key) => initial[key] !== draft[key]);
-  const busy = mutation.isPending || pickingCover;
+  const publisher = usePublishTournament(userId);
+  const busy = mutation.isPending || publisher.isPending || pickingCover;
   function leave() {
     if (router.canGoBack()) router.back();
     else router.replace('/tournaments');
@@ -64,6 +67,7 @@ function TournamentForm({ userId, initial }: { userId: string; initial: Tourname
     setDraft((current) => ({ ...current, [key]: value }));
     setErrors((current) => ({ ...current, [key]: undefined }));
     mutation.reset();
+    publisher.reset();
   }
   async function save(validate = true) {
     if (saving.current || pickingCover) return;
@@ -80,6 +84,19 @@ function TournamentForm({ userId, initial }: { userId: string; initial: Tourname
       queryClient.setQueryData(draftQueryKey(userId), stored);
       router.replace({ pathname: '/tournaments', params: { saved: '1' } });
     } catch { /* Mutation errors render below while entered values remain intact. */ }
+    finally { saving.current = false; }
+  }
+  async function publish() {
+    if (saving.current || pickingCover) return;
+    Keyboard.dismiss();
+    const nextErrors = validateDraft(draft);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) { scroll.current?.scrollTo({ y: 0, animated: false }); return; }
+    saving.current = true;
+    try {
+      const id = await publisher.mutateAsync(draft);
+      if (mounted.current) router.replace({ pathname: '/tournament/[id]', params: { id } });
+    } catch { /* The error renders below while entered values remain intact. */ }
     finally { saving.current = false; }
   }
   return <KeyboardAvoidingView style={[styles.screen, { paddingTop: insets.top }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -100,6 +117,9 @@ function TournamentForm({ userId, initial }: { userId: string; initial: Tourname
       </View>
       {Object.values(errors).some(Boolean) ? <Text accessibilityRole="alert" style={styles.error}>Check the highlighted fields to save your tournament.</Text> : null}
       {mutation.isError ? <Text accessibilityRole="alert" style={styles.error}>Could not save your draft. Your entries are still here. Please try again.</Text> : null}
+      {publisher.isError ? <Text accessibilityRole="alert" style={styles.error}>{tournamentErrorText(publisher.error)}</Text> : null}
+      <Button label="Publish tournament" loading={publisher.isPending} disabled={busy} onPress={() => { void publish(); }} />
+      <Text variant="caption" muted>Publishing saves the tournament on the server. Cover and profile photos stay on this device and are not published yet.</Text>
     </ScrollView>
     <Modal visible={leaving} transparent animationType="none" onRequestClose={() => setLeaving(false)}>
       <View style={styles.modal}>

@@ -3,7 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/features/auth/auth-provider';
 import { useProfile } from '@/features/profile/profile-provider';
 
-import { fetchRoster, RosterError } from './roster-repository';
+import * as localRepo from './roster-repository';
+import { RosterError } from './roster-repository';
+import type { RosterRepo } from './roster-source';
 import type { Roster, RosterSetup, UserSummary } from './types';
 
 export const rosterKey = (tournamentId: string) => ['tournament-roster', tournamentId] as const;
@@ -15,11 +17,14 @@ export function useMe(): UserSummary {
   return { id: session?.user.id ?? '', name: profile.fullName, area: null, avatarUrl: profile.avatarUri ?? null };
 }
 
-/** The roster. Pass `setup` only from tournament setup, where the first load creates it. */
-export function useRoster(tournamentId: string, me: UserSummary, setup?: RosterSetup) {
+/**
+ * The roster. Pass `setup` only from tournament setup, where the first load creates it. `repo` is the in-memory
+ * one unless the screen passes the server's for a published tournament.
+ */
+export function useRoster(tournamentId: string, me: UserSummary, setup?: RosterSetup, repo: RosterRepo = localRepo) {
   return useQuery({
     queryKey: rosterKey(tournamentId),
-    queryFn: () => fetchRoster(tournamentId, me, setup),
+    queryFn: () => repo.fetchRoster(tournamentId, me, setup),
     enabled: Boolean(me.id && tournamentId),
   });
 }

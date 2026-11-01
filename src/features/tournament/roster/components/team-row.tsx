@@ -18,19 +18,22 @@ type Props = {
   onDisband: () => void;
 };
 
+const fromServer = (team: RosterTeam) => team.ownedByMe !== undefined;
+
 function ownerLine(team: RosterTeam): string {
-  if (!team.owner) return 'No team owner yet';
+  if (!team.owner) return team.ownedByMe ? 'You own this team' : 'No team owner yet';
   return team.owner.status === 'pending' ? `Owner invite sent to ${team.owner.user.name}` : `Owner: ${team.owner.user.name}`;
 }
 
-const ownerBadge = (team: RosterTeam) => (!team.owner ? 'Vacant' : team.owner.status === 'pending' ? 'Invite pending' : 'Accepted');
+const ownerBadge = (team: RosterTeam) => (!team.owner ? (team.ownedByMe ? 'Yours' : 'Vacant') : team.owner.status === 'pending' ? 'Invite pending' : 'Accepted');
 
 /** One team: its short-name badge, name, owner status, squad size, and what the viewer may do with it. */
 export function TeamRow({ team, maxSquad, caps, busy, onInviteOwner, onCancelInvite, onShareInvite, onViewSquad, onDisband }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
-  const canInvite = caps.manageTeams && !team.owner;
+  const canInvite = caps.manageTeams && !team.owner && team.ownedByMe !== false;
   const pending = caps.manageTeams && team.owner?.status === 'pending';
+  const squad = !fromServer(team);
   const accepted = team.owner?.status === 'accepted';
   return (
     <View style={styles.row}>
@@ -44,19 +47,21 @@ export function TeamRow({ team, maxSquad, caps, busy, onInviteOwner, onCancelInv
             <AppBadge label={ownerBadge(team)} backgroundColor={accepted ? colors.primarySoft : colors.surfaceRaised} color={accepted ? colors.link : colors.textMuted} />
           </View>
           <Text style={[styles.owner, accepted && styles.ownerSet]} numberOfLines={1}>
-            {ownerLine(team)} · {team.players.length}/{maxSquad} players
+            {squad ? `${ownerLine(team)} · ${team.players.length}/${maxSquad} players` : ownerLine(team)}
           </Text>
         </View>
       </View>
       <View style={styles.actions}>
-        <Button label="Squad" variant="secondary" size="compact" accessibilityLabel={`View ${team.name} squad`} onPress={onViewSquad} />
+        {squad ? (
+          <Button label="Squad" variant="secondary" size="compact" accessibilityLabel={`View ${team.name} squad`} onPress={onViewSquad} />
+        ) : null}
         {canInvite ? (
           <Button label="Invite owner" size="compact" disabled={busy} accessibilityLabel={`Invite owner for ${team.name}`} onPress={onInviteOwner} />
         ) : null}
         {pending ? (
           <Button label="Share invite" variant="secondary" size="compact" accessibilityLabel={`Share owner invite for ${team.name}`} onPress={onShareInvite} />
         ) : null}
-        {pending ? (
+        {pending && caps.settleInvites !== false ? (
           <Button label="Cancel invite" variant="secondary" size="compact" disabled={busy} accessibilityLabel={`Cancel owner invite for ${team.name}`} onPress={onCancelInvite} />
         ) : null}
         {caps.disbandTeams ? (

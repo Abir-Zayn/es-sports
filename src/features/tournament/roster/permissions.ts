@@ -16,7 +16,14 @@ export type Capabilities = {
   manageSchedule: boolean;
   manageRegistration: boolean;
   seeSquadAlerts: boolean;
+  /** False when invites cannot be cancelled and staff cannot be removed (server tournaments, for now). */
+  settleInvites?: boolean;
 };
+
+/** What the server can do today: invite and add teams, but no cancelling, disbanding, schedule or registration changes. */
+export const serverCapabilities = (caps: Capabilities): Capabilities => ({
+  ...caps, disbandTeams: false, manageSchedule: false, manageRegistration: false, settleInvites: false,
+});
 
 export function capabilitiesOf(role: TournamentRole | null): Capabilities {
   return {

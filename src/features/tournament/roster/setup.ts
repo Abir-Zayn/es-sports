@@ -4,10 +4,10 @@ import type { RosterSetup } from './types';
 
 /** Route params the setup screen hands to the teams screen. Every value is a string. */
 export type SetupParams = {
-  teams?: string; name?: string; side?: string; minSquad?: string; maxSquad?: string; opens?: string; deadline?: string; starts?: string;
+  tournamentId?: string; teams?: string; name?: string; side?: string; minSquad?: string; maxSquad?: string; opens?: string; deadline?: string; starts?: string;
 };
 
-export function setupParams(draft: TournamentDraft): Required<SetupParams> {
+export function setupParams(draft: TournamentDraft): Required<Omit<SetupParams, 'tournamentId'>> {
   return {
     teams: String(draft.teams),
     name: draft.name,
