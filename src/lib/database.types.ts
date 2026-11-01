@@ -302,6 +302,7 @@ export type Database = {
           result_summary: string | null
           result_type: string | null
           scheduled_at: string | null
+          score_head: string | null
           started_at: string | null
           status: string
           team_a_balls: number | null
@@ -337,6 +338,7 @@ export type Database = {
           result_summary?: string | null
           result_type?: string | null
           scheduled_at?: string | null
+          score_head?: string | null
           started_at?: string | null
           status?: string
           team_a_balls?: number | null
@@ -372,6 +374,7 @@ export type Database = {
           result_summary?: string | null
           result_type?: string | null
           scheduled_at?: string | null
+          score_head?: string | null
           started_at?: string | null
           status?: string
           team_a_balls?: number | null
@@ -465,6 +468,50 @@ export type Database = {
         }
         Relationships: []
       }
+      scorer_handover: {
+        Row: {
+          created_at: string
+          expires_at: string
+          from_user: string
+          id: string
+          initiated_by: string
+          match_id: string
+          resolved_at: string | null
+          status: string
+          to_user: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          from_user: string
+          id?: string
+          initiated_by: string
+          match_id: string
+          resolved_at?: string | null
+          status?: string
+          to_user: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          from_user?: string
+          id?: string
+          initiated_by?: string
+          match_id?: string
+          resolved_at?: string | null
+          status?: string
+          to_user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scorer_handover_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       player_career_stats: {
@@ -530,30 +577,47 @@ export type Database = {
     }
     Functions: {
       abandon_friendly_matches: { Args: { p_ids: string[] }; Returns: string[] }
+      accept_scorer_handover: { Args: { p_id: string }; Returns: undefined }
       append_ball_event: {
-        Args: { p_expected_tail: string; p_row: Json }
+        Args: { p_expected_head: string; p_row: Json }
         Returns: undefined
       }
       begin_scoring_write: { Args: { p_match: string }; Returns: undefined }
       can_score_match: { Args: { p_match: string }; Returns: boolean }
-      check_scoring_tail: {
-        Args: { p_expected_tail: string; p_match: string }
-        Returns: undefined
+      cancel_scorer_handover: { Args: { p_id: string }; Returns: undefined }
+      claim_score_head: {
+        Args: { p_expected_head: string; p_match: string; p_op: string }
+        Returns: boolean
       }
       create_friendly_match: {
         Args: { p_match: Json; p_players: Json; p_scorer?: string }
         Returns: string
       }
+      decline_scorer_handover: { Args: { p_id: string }; Returns: undefined }
+      offer_scorer_handover: {
+        Args: { p_match: string; p_to: string }
+        Returns: string
+      }
       reopen_match: {
-        Args: { p_expected_tail: string; p_match: string }
+        Args: { p_expected_head: string; p_match: string; p_op: string }
         Returns: undefined
       }
       save_match_result: {
-        Args: { p_expected_tail: string; p_match: string; p_result: Json }
+        Args: {
+          p_expected_head: string
+          p_match: string
+          p_op: string
+          p_result: Json
+        }
         Returns: undefined
       }
       void_ball_events_from: {
-        Args: { p_event: string; p_expected_tail: string; p_match: string }
+        Args: {
+          p_event: string
+          p_expected_head: string
+          p_match: string
+          p_op: string
+        }
         Returns: undefined
       }
       void_events_from: {

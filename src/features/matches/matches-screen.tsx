@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BOTTOM_NAV_CLEARANCE } from '@/components/navigation/bottom-nav';
 import { Button, Text } from '@/components/ui';
+import { IncomingHandoverBanner } from '@/features/scoring/handover/components/incoming-handover-banner';
 import { buildSchedule, emptyScheduleText } from '@/features/tournament/schedule';
 import { ScheduleGroupSection } from '@/features/tournament/sections/schedule-group-section';
 import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
@@ -30,6 +31,7 @@ export function MatchesScreen() {
         </Text>
         <Text muted>Upcoming fixtures</Text>
       </View>
+      <IncomingHandoverBanner />
       {isPending ? (
         <ActivityIndicator accessibilityLabel="Loading matches" color={colors.textMuted} style={styles.status} />
       ) : isError ? (

@@ -26,10 +26,15 @@ export class OutboxConflictError extends OutboxStoppedError {
 
 /** The server refused a change for good (not allowed, or invalid), so it and the ones after it cannot be sent. */
 export class OutboxRejectedError extends OutboxStoppedError {
-  constructor(userId: string, matchId: string, pending: number, reason: string) {
+  /** The server's error code, e.g. `42501` when this account is no longer allowed to score the match. */
+  constructor(userId: string, matchId: string, pending: number, reason: string, readonly code: string | null = null) {
     super(userId, matchId, pending, `${plural(pending)} on this phone cannot be sent. ${reason}`);
   }
 }
+
+/** Scoring was taken from this account (a scorer handover): the server refuses its writes as not allowed. */
+export const isNotAllowed = (stopped: OutboxStoppedError | undefined): stopped is OutboxRejectedError =>
+  stopped instanceof OutboxRejectedError && stopped.code === '42501';
 
 export function operationName(op: OutboxOp): string {
   if (op.kind === 'event') {

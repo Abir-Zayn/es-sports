@@ -11,6 +11,7 @@ import { MatchInfoScreen } from '../match-info-screen';
 import { MatchOversScreen } from '../match-overs-screen';
 import { MatchScorecardScreen } from '../match-scorecard-screen';
 
+jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
   useLocalSearchParams: () => ({ id: 'hpl-2026-hss-agt' }),
