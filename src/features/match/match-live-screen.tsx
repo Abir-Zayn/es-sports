@@ -1,4 +1,5 @@
 import ChevronRight from 'lucide-react-native/icons/chevron-right';
+import Info from 'lucide-react-native/icons/info';
 import { useLocalSearchParams } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -34,9 +35,7 @@ export function MatchLiveScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={live.isRefetching} onRefresh={() => void live.refetch()} tintColor={colors.textMuted} />}>
       <LiveHero view={live.data} onBack={goBack} onShare={() => comingSoon('Sharing')} />
-      <View style={styles.tabs}>
-        <MatchTabs matchId={matchId} selected="live" />
-      </View>
+      <MatchTabs matchId={matchId} selected="live" />
       <View style={styles.stale}><StaleMatchNote query={live} /></View>
       <LiveBody view={live.data} matchId={matchId} />
     </ScrollView>
@@ -57,15 +56,19 @@ function LiveBody({ view, matchId }: { view: LiveMatchViewData; matchId: string 
       {view.stream ? (
         <StreamLinkCard label={view.stream.label} source={view.stream.source} onPress={() => comingSoon('Live stream')} />
       ) : null}
+      {view.header.status === 'scheduled' ? null : <ThisOverCard current={current} previous={earlier.slice(0, 2)} />}
       {view.crease ? (
-        <>
+        <View style={styles.section}>
+          <View style={styles.sectionHead}>
+            <Text accessibilityRole="header" style={styles.sectionTitle}>At the crease</Text>
+            <Info size={15} color={colors.textMuted} strokeWidth={2} />
+          </View>
           <LiveBattersCard batters={view.crease.batters} partnership={view.crease.partnership} />
           {view.crease.bowler ? <LiveBowlerCard bowler={view.crease.bowler} /> : null}
-        </>
+        </View>
       ) : (
         <Text muted style={styles.note}>The crease and the over appear here once the first ball is bowled.</Text>
       )}
-      {view.header.status === 'scheduled' ? null : <ThisOverCard current={current} previous={earlier.slice(0, 2)} />}
       {view.recentOvers.length > 0 ? (
         <Pressable
           accessibilityRole="button"
@@ -85,18 +88,21 @@ const createStyles = (colors: Palette) =>
     screen: { flex: 1, backgroundColor: colors.background },
     stale: { paddingHorizontal: sizes.gutter },
     content: { paddingBottom: spacing.xxl + spacing.xl },
-    tabs: { paddingTop: 14 },
-    body: { paddingHorizontal: sizes.gutter, paddingTop: 20, gap: 18 },
+    body: { paddingHorizontal: sizes.gutter, paddingTop: 20, gap: 22 },
+    section: { gap: 10 },
+    sectionHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    sectionTitle: { fontSize: 17, lineHeight: 22, fontWeight: '700', color: colors.text },
     note: { fontSize: 13, lineHeight: 18 },
     allOvers: {
-      height: 48,
+      height: 46,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
       gap: 8,
-      borderRadius: 16,
+      borderRadius: 12,
+      backgroundColor: colors.surface,
       borderWidth: 1,
-      borderColor: colors.outline,
+      borderColor: colors.border,
     },
     pressed: { opacity: 0.7 },
     allOversText: { fontSize: 14, lineHeight: 19, fontWeight: '600' },
