@@ -39,20 +39,6 @@ const catalogue: SearchGroup[] = [
     ],
   },
   {
-    id: 'players',
-    title: 'Players',
-    rows: [
-      { id: 'Rafi Hasan', short: 'RH', name: 'Rafi Hasan', meta: 'Chattogram Strikers', badge: 'Batter', role: 'batter', tone: 'neutral', shape: 'circle' },
-      { id: 'Nayeem Islam', short: 'NI', name: 'Nayeem Islam', meta: 'Chattogram Strikers', badge: 'Bowler', role: 'bowler', tone: 'neutral', shape: 'circle' },
-      { id: '11111111-1111-4111-8111-000000000001', short: 'TA', name: 'Tanvir Ahmed', meta: 'Halishahar, Chattogram', badge: 'All-rounder', role: 'all-rounder', tone: 'neutral', shape: 'circle' },
-      { id: '11111111-1111-4111-8111-000000000002', short: 'LR', name: 'Liton Roy', meta: 'Agrabad, Chattogram', badge: 'Batter', role: 'batter', tone: 'neutral', shape: 'circle' },
-      { id: '11111111-1111-4111-8111-000000000003', short: 'RI', name: 'Rashedul Islam', meta: 'Pahartali, Chattogram', badge: 'Bowler', role: 'bowler', tone: 'neutral', shape: 'circle' },
-      { id: '11111111-1111-4111-8111-000000000004', short: 'AH', name: 'Arif Hossain', meta: 'Chawkbazar, Chattogram', badge: 'Keeper', role: 'keeper', tone: 'neutral', shape: 'circle' },
-      { id: '11111111-1111-4111-8111-000000000005', short: 'SC', name: 'Shakib Chowdhury', meta: 'GEC, Chattogram', badge: 'All-rounder', role: 'all-rounder', tone: 'neutral', shape: 'circle' },
-      { id: '11111111-1111-4111-8111-000000000006', short: 'MH', name: 'Mahmudul Hasan', meta: 'Nasirabad, Chattogram', badge: 'Batter', role: 'batter', tone: 'neutral', shape: 'circle' },
-    ],
-  },
-  {
     id: 'tournaments',
     title: 'Tournaments',
     rows: [

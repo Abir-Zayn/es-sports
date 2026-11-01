@@ -53,7 +53,7 @@ export function ProfileScreen() {
       style={styles.screen}
       contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.lg, paddingBottom: BOTTOM_NAV_CLEARANCE + insets.bottom }]}
     >
-      <ProfileHeader profile={profile} onSettings={() => router.push('/settings')} onEdit={() => router.push('/profile/edit')} />
+      <ProfileHeader profile={profile} userId={session?.user.id} onSettings={() => router.push('/settings')} onEdit={() => router.push('/profile/edit')} />
       {status === 'error' ? (
         <View style={styles.loadError}>
           <Text variant="caption" style={styles.error} accessibilityLiveRegion="polite">

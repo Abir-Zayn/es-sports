@@ -6,16 +6,19 @@ import { initialsOf } from '@/lib/initials';
 import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { PlayerProfile } from '@/types/profile';
 
+import { CopyIdButton } from '../components/copy-id-button';
 import { roleLabels } from '../labels';
 
 type Props = {
   profile: PlayerProfile;
+  /** The account's id, copied by the button beside the name. Hidden until the session is known. */
+  userId?: string;
   onSettings: () => void;
   onEdit: () => void;
 };
 
 /** Title bar with a settings button, then the player's avatar, name and an edit button. */
-export function ProfileHeader({ profile, onSettings, onEdit }: Props) {
+export function ProfileHeader({ profile, userId, onSettings, onEdit }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const place = [profile.area, profile.district].filter(Boolean).join(', ');
@@ -45,7 +48,10 @@ export function ProfileHeader({ profile, onSettings, onEdit }: Props) {
           accessibilityLabel={`${profile.fullName} profile picture`}
         />
         <View style={styles.names}>
-          <Text style={styles.name}>{profile.fullName}</Text>
+          <View style={styles.nameRow}>
+            <Text style={styles.name}>{profile.fullName}</Text>
+            {userId ? <CopyIdButton userId={userId} /> : null}
+          </View>
           <Text muted>{meta}</Text>
         </View>
         <Button label="Edit profile" variant="secondary" size="compact" onPress={onEdit} />
@@ -60,5 +66,6 @@ const createStyles = (colors: Palette) =>
     bar: { paddingHorizontal: sizes.gutter, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     identity: { alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter },
     names: { alignItems: 'center', gap: 2 },
-    name: { fontSize: 24, lineHeight: 30, fontWeight: '700', textAlign: 'center', color: colors.text },
+    nameRow: { maxWidth: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm },
+    name: { flexShrink: 1, fontSize: 24, lineHeight: 30, fontWeight: '700', textAlign: 'center', color: colors.text },
   });
