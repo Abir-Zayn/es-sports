@@ -1,14 +1,17 @@
+import ChevronDown from 'lucide-react-native/icons/chevron-down';
 import ChevronLeft from 'lucide-react-native/icons/chevron-left';
 import Share2 from 'lucide-react-native/icons/share-2';
-import { StyleSheet, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AppBadge, AppIconTile, InitialsAvatar, Text } from '@/components/ui';
-import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { InitialsAvatar, Text } from '@/components/ui';
+import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import type { LiveMatchViewData } from '../live/live-view';
 import type { LiveSide } from '../types';
+
+const AMBER_PILL = '#E08214';
+const ON_AMBER = '#0A0E0D';
 
 type Props = {
   view: Pick<LiveMatchViewData, 'header' | 'sides' | 'summary' | 'currentRunRate' | 'requiredRunRate'>;
@@ -16,78 +19,103 @@ type Props = {
   onShare: () => void;
 };
 
-/** Top of the live screen: back and share, both teams with scores, and the chase, result or what comes next. */
+const compactScore = (score: string) => (score.toLowerCase() === 'yet to bat' ? '—' : score);
+
+/** Top of the live screen: clean top bar, central scoreboard between team crests, and key innings rows. */
 export function LiveHero({ view, onBack, onShare }: Props) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = useThemedStyles(createStyles);
   const [first, second] = view.sides;
   const status = view.header.status;
-  const badge = status === 'live' ? { label: 'LIVE', background: colors.live, color: colors.onLive }
-    : status === 'completed' ? { label: 'RESULT', background: colors.primarySoft, color: colors.link }
-    : { label: 'UPCOMING', background: colors.surfaceRaised, color: colors.textMuted };
-  return (
-    <View style={[styles.hero, { paddingTop: insets.top + spacing.sm }]}>
-      <Svg width="100%" height={300} viewBox="0 0 390 300" preserveAspectRatio="xMidYMin slice" style={styles.art}>
-        <Path d="M-20 260 C110 230 250 150 420 90 L420 120 C270 180 130 256 -20 284 Z" fill={colors.primary} opacity={0.08} />
-      </Svg>
+  const statusLabel = status === 'live' ? 'LIVE' : status === 'completed' ? 'RESULT' : 'UPCOMING';
 
+  return (
+    <View style={[styles.hero, { paddingTop: insets.top + spacing.xs }]}>
       <View style={styles.topRow}>
-        <AppIconTile
-          icon={ChevronLeft}
-          size={44}
-          borderRadius={radius.pill}
-          backgroundColor={colors.surface}
-          borderColor={colors.border}
-          borderWidth={1}
+        <Pressable
+          accessibilityRole="button"
           accessibilityLabel="Back"
           onPress={onBack}
-        />
+          style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
+        >
+          <ChevronLeft size={22} color={colors.text} strokeWidth={2.2} />
+        </Pressable>
         <Text accessibilityRole="header" style={styles.label} numberOfLines={1}>
           {view.header.label}
         </Text>
-        <AppIconTile
-          icon={Share2}
-          size={44}
-          borderRadius={radius.pill}
-          backgroundColor={colors.surface}
-          borderColor={colors.border}
-          borderWidth={1}
-          iconSize={18}
+        <Pressable
+          accessibilityRole="button"
           accessibilityLabel="Share match"
           onPress={onShare}
-        />
+          style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
+        >
+          <Share2 size={18} color={colors.textMuted} strokeWidth={2} />
+        </Pressable>
       </View>
 
-      <View style={styles.teams}>
-        <TeamColumn side={first} />
-        <View style={styles.middle}>
-          <AppBadge dot={status === 'live'} label={badge.label} backgroundColor={badge.background} color={badge.color} />
-          <Text style={styles.vs}>VS</Text>
-        </View>
-        <TeamColumn side={second} />
-      </View>
+      <View style={styles.scoreboard}>
+        <TeamCrest side={first} />
 
-      <View style={styles.chase}>
-        <Text style={styles.target} accessibilityLiveRegion="polite">{view.summary}</Text>
-        {status === 'scheduled' ? null : (
-          <View style={styles.rates}>
-            <Text muted style={styles.rate}>
-              CRR <Text style={styles.rateValue}>{view.currentRunRate}</Text>
-            </Text>
-            {view.requiredRunRate !== null ? (
+        <View style={styles.centerCol}>
+          {status === 'scheduled' ? null : (
+            <View style={styles.rates}>
               <Text muted style={styles.rate}>
-                RRR <Text style={styles.rateValue}>{view.requiredRunRate}</Text>
+                CRR <Text style={styles.rateValue}>{view.currentRunRate}</Text>
               </Text>
-            ) : null}
+              {view.requiredRunRate !== null ? (
+                <Text muted style={styles.rate}>
+                  · RRR <Text style={styles.rateValue}>{view.requiredRunRate}</Text>
+                </Text>
+              ) : null}
+            </View>
+          )}
+          <View style={styles.scoreLine}>
+            <Text style={[styles.scoreNum, !first.batting && status === 'live' && styles.scoreDim]}>
+              {compactScore(first.score)}
+            </Text>
+            <Text style={styles.scoreDash}>–</Text>
+            <Text style={[styles.scoreNum, !second.batting && status === 'live' && styles.scoreDim]}>
+              {compactScore(second.score)}
+            </Text>
+          </View>
+          <View style={styles.statusRow}>
+            {status === 'live' ? <View style={styles.liveDot} /> : null}
+            <Text style={[styles.statusText, status === 'live' && styles.statusLive]}>{statusLabel}</Text>
+          </View>
+        </View>
+
+        <TeamCrest side={second} />
+      </View>
+
+      <View style={styles.highlights}>
+        <Text style={styles.summary} accessibilityLiveRegion="polite">
+          {view.summary}
+        </Text>
+        {status === 'scheduled' ? null : (
+          <View style={styles.eventRows}>
+            {[first, second].map((side, idx) => (
+              <View key={side.team.short} style={styles.eventRow}>
+                <Text muted style={styles.eventName} numberOfLines={1}>
+                  {side.team.short} · {idx === 0 ? '1st inn' : '2nd inn'}
+                </Text>
+                <View style={[styles.eventIcon, side.batting ? styles.eventIconActive : styles.eventIconIdle]} />
+                <View style={styles.amberPill}>
+                  <Text style={styles.amberText}>{side.overs}</Text>
+                </View>
+              </View>
+            ))}
           </View>
         )}
+        <View style={styles.chevronRow}>
+          <ChevronDown size={16} color={colors.textMuted} strokeWidth={2.2} />
+        </View>
       </View>
     </View>
   );
 }
 
-function TeamColumn({ side }: { side: LiveSide }) {
+function TeamCrest({ side }: { side: LiveSide }) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const { team, batting } = side;
@@ -101,16 +129,12 @@ function TeamColumn({ side }: { side: LiveSide }) {
         label={team.short}
         tone={team.tone}
         imageUri={team.avatarUri}
-        size={56}
-        borderColor={batting ? colors.primary : undefined}
-        borderWidth={batting ? 2 : 0}
+        size={52}
+        borderColor={batting ? colors.accent : colors.border}
+        borderWidth={batting ? 2 : 1}
       />
-      <Text style={[styles.teamName, !batting && styles.dim]} numberOfLines={2}>
+      <Text style={styles.teamName} numberOfLines={2}>
         {team.name}
-      </Text>
-      <Text style={[batting ? styles.scoreBig : styles.scoreSmall, !batting && styles.dim]}>{side.score}</Text>
-      <Text muted style={styles.overs}>
-        {side.overs}
       </Text>
     </View>
   );
@@ -118,40 +142,35 @@ function TeamColumn({ side }: { side: LiveSide }) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    hero: {
-      paddingHorizontal: sizes.gutter,
-      paddingBottom: 22,
-      backgroundColor: colors.surface,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-      overflow: 'hidden',
-    },
-    art: { position: 'absolute', top: 0, left: 0 },
-    topRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-    label: { flex: 1, textAlign: 'center', fontSize: 12, lineHeight: 16, fontWeight: '600', letterSpacing: 1, color: colors.textMuted },
-    teams: { marginTop: 20, flexDirection: 'row', alignItems: 'center' },
-    column: { flex: 1, minWidth: 0, alignItems: 'center', gap: 8 },
-    middle: { width: 70, alignItems: 'center', gap: 8 },
-    vs: { fontSize: 20, lineHeight: 24, fontWeight: '800', fontStyle: 'italic', color: colors.outline },
-    teamName: { fontSize: 13, lineHeight: 17, fontWeight: '600', textAlign: 'center' },
-    dim: { color: colors.textMuted },
-    scoreBig: { fontSize: 36, lineHeight: 38, fontWeight: '800', fontVariant: ['tabular-nums'] },
-    scoreSmall: { fontSize: 26, lineHeight: 30, fontWeight: '800', fontVariant: ['tabular-nums'] },
-    overs: { fontSize: 12, lineHeight: 16 },
-    chase: {
-      marginTop: 18,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-      paddingVertical: 12,
-      paddingHorizontal: 14,
-      borderRadius: 16,
-      backgroundColor: colors.primarySoft,
-      borderWidth: 1,
-      borderColor: colors.primaryDeep,
-    },
-    target: { flex: 1, fontSize: 14, lineHeight: 19, fontWeight: '700', color: colors.link },
-    rates: { gap: 2 },
-    rate: { fontSize: 12, lineHeight: 16 },
-    rateValue: { fontSize: 12, lineHeight: 16, fontWeight: '700', color: colors.text },
+    hero: { paddingHorizontal: sizes.gutter, paddingBottom: 10, backgroundColor: colors.background },
+    topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 48 },
+    iconBtn: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center', marginHorizontal: -10 },
+    pressed: { opacity: 0.7 },
+    label: { flex: 1, textAlign: 'center', fontSize: 14, lineHeight: 19, fontWeight: '600', color: colors.text, paddingHorizontal: 8 },
+    scoreboard: { marginTop: 18, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
+    column: { width: 96, alignItems: 'center', gap: 10 },
+    teamName: { fontSize: 14, lineHeight: 18, fontWeight: '700', textAlign: 'center', color: colors.text },
+    centerCol: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 2, gap: 4 },
+    rates: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    rate: { fontSize: 11, lineHeight: 15, fontVariant: ['tabular-nums'] },
+    rateValue: { fontSize: 11, lineHeight: 15, fontWeight: '700', color: colors.text, fontVariant: ['tabular-nums'] },
+    scoreLine: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    scoreNum: { fontSize: 28, lineHeight: 34, fontWeight: '800', color: colors.text, fontVariant: ['tabular-nums'] },
+    scoreDim: { color: colors.textMuted },
+    scoreDash: { fontSize: 24, lineHeight: 30, fontWeight: '700', color: colors.textMuted },
+    statusRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
+    liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.live },
+    statusText: { fontSize: 12, lineHeight: 16, fontWeight: '600', letterSpacing: 0.8, color: colors.textMuted },
+    statusLive: { color: colors.live, fontWeight: '700' },
+    highlights: { marginTop: 18, alignItems: 'center', gap: 10 },
+    summary: { fontSize: 13, lineHeight: 18, fontWeight: '600', color: colors.textMuted, textAlign: 'center' },
+    eventRows: { width: '100%', gap: 8, marginTop: 2 },
+    eventRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+    eventName: { width: 130, textAlign: 'right', fontSize: 13, lineHeight: 18, fontWeight: '500' },
+    eventIcon: { width: 10, height: 10, borderRadius: 5 },
+    eventIconActive: { backgroundColor: colors.accent },
+    eventIconIdle: { backgroundColor: colors.outline },
+    amberPill: { minWidth: 52, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 5, backgroundColor: AMBER_PILL, alignItems: 'center' },
+    amberText: { fontSize: 11, lineHeight: 15, fontWeight: '800', color: ON_AMBER, fontVariant: ['tabular-nums'] },
+    chevronRow: { paddingTop: 2, alignItems: 'center' },
   });

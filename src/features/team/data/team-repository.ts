@@ -1,3 +1,4 @@
+import { traceApi } from '@/lib/api-log';
 import { supabase } from '@/lib/supabase';
 import type { AvatarTone } from '@/theme';
 
@@ -28,24 +29,24 @@ const toRole = (value: string): TeamRole => (roles.includes(value) ? (value as T
 
 /** Creates a team owned by the caller. Safe to repeat with the same `id`: the server returns the team it already made. */
 export async function createTeam(id: string, input: NewTeamInput): Promise<string> {
-  const { data, error } = await supabase.rpc('create_team', {
+  const { data, error } = await traceApi('team.create', { id, name: input.name.trim() }, () => supabase.rpc('create_team', {
     p_id: id, p_name: input.name.trim(), p_short_name: input.shortName, p_tone: input.tone, p_area: input.area.trim() || undefined,
-  });
+  }));
   if (error || !data) throw toTeamError(error);
   return data;
 }
 
 /** The team, or null when it does not exist. */
 export async function fetchTeam(id: string): Promise<TeamRecord | null> {
-  const { data, error } = await supabase.from('teams').select(TEAM_COLUMNS).eq('id', id).maybeSingle();
+  const { data, error } = await traceApi('team.fetch', { id }, () => supabase.from('teams').select(TEAM_COLUMNS).eq('id', id).maybeSingle());
   if (error) throw toTeamError(error);
   return data ? toTeam(data) : null;
 }
 
 /** Owner first, then admins, players and staff. */
 export async function fetchTeamMembers(teamId: string): Promise<TeamMemberRecord[]> {
-  const { data, error } = await supabase.from('team_members').select('profile_id, role, is_captain, profiles(full_name, avatar_url)')
-    .eq('team_id', teamId);
+  const { data, error } = await traceApi('team.members', { teamId }, () => supabase.from('team_members')
+    .select('profile_id, role, is_captain, profiles(full_name, avatar_url)').eq('team_id', teamId));
   if (error) throw toTeamError(error);
   const rank = (role: TeamRole) => roles.indexOf(role);
   return (data ?? [])
@@ -58,7 +59,7 @@ export async function fetchTeamMembers(teamId: string): Promise<TeamMemberRecord
 
 /** Teams the account belongs to, with its role in each. */
 export async function fetchMyTeams(userId: string): Promise<MyTeam[]> {
-  const { data, error } = await supabase.from('team_members').select(`role, teams(${TEAM_COLUMNS})`).eq('profile_id', userId);
+  const { data, error } = await traceApi('team.mine', { userId }, () => supabase.from('team_members').select(`role, teams(${TEAM_COLUMNS})`).eq('profile_id', userId));
   if (error) throw toTeamError(error);
   return (data ?? []).flatMap((row) => (row.teams ? [{ ...toTeam(row.teams), myRole: toRole(row.role) }] : []))
     .sort((a, b) => a.name.localeCompare(b.name));
