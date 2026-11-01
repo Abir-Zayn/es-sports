@@ -1,3 +1,4 @@
 import { TeamMatchesScreen } from '@/features/team/team-matches-screen';
+import { withRealTeam } from '@/features/team/real/with-real-team';
 
-export default TeamMatchesScreen;
+export default withRealTeam(TeamMatchesScreen, 'matches');

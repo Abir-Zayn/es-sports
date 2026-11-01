@@ -10,6 +10,7 @@ import { emptyDraft, formatDate, localDateKey } from '../draft';
 import { loadDraft, saveDraft } from '../draft-storage';
 import { TournamentDraftsScreen } from '../tournament-drafts-screen';
 
+jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockBack = jest.fn();

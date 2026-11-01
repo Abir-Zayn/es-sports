@@ -5,23 +5,28 @@ import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
+import { searchPlayers } from '@/features/match/friendly/search-players';
+import { isUuid } from '@/features/scoring/data/uuid';
 import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
+import { AddOwnTeamSheet } from './components/add-own-team-sheet';
 import { ConfirmSheet } from './components/confirm-sheet';
 import { CreateTeamSheet } from './components/create-team-sheet';
 import { RegistrationSection } from './components/registration-section';
 import { SquadAlertsSection } from './components/squad-alerts-section';
+import { ScheduleSection } from './components/schedule-section';
 import { StaffSection } from './components/staff-section';
 import { TeamsSection } from './components/teams-section';
 import { UserSearchSheet } from './components/user-search-sheet';
-import { capabilitiesOf, roleIn } from './permissions';
+import { capabilitiesOf, roleIn, serverCapabilities } from './permissions';
+import { repoFor } from './roster-source';
 import { parseSetup, type SetupParams } from './setup';
 import { ownerInviteMessage, shareText } from './share-invite';
 import type { RosterTeam } from './types';
 import { rosterErrorText, useMe, useRoster } from './use-roster';
 import { useRosterActions } from './use-roster-actions';
 
-type OpenSheet = { kind: 'moderator' } | { kind: 'create-team' } | { kind: 'team-owner'; team: RosterTeam } | { kind: 'disband'; team: RosterTeam } | { kind: 'lock' } | null;
+type OpenSheet = { kind: 'moderator' } | { kind: 'create-team' } | { kind: 'add-own' } | { kind: 'team-owner'; team: RosterTeam } | { kind: 'disband'; team: RosterTeam } | { kind: 'lock' } | null;
 
 /** Staff, teams and registration of the tournament being set up. What each person may change depends on their role. */
 export function AddTeamsScreen() {
@@ -31,10 +36,11 @@ export function AddTeamsScreen() {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const me = useMe();
-  // One tournament is set up per account until publishing gives it a real id.
-  const tournamentId = `draft:${me.id}`;
-  const roster = useRoster(tournamentId, me, parseSetup(params));
-  const actions = useRosterActions(tournamentId, me.id);
+  // A published tournament is named by its id. Before that, one is set up per account.
+  const tournamentId = params.tournamentId && isUuid(params.tournamentId) ? params.tournamentId : `draft:${me.id}`;
+  const repo = repoFor(tournamentId);
+  const roster = useRoster(tournamentId, me, parseSetup(params), repo);
+  const actions = useRosterActions(tournamentId, me.id, repo);
   const [sheet, setSheet] = useState<OpenSheet>(null);
   const { busy, inviteModerator, inviteOwner, createTeam, disband, lock } = actions;
 
@@ -48,7 +54,8 @@ export function AddTeamsScreen() {
 
   const data = roster.data;
   const role = data ? roleIn(data, me.id) : null;
-  const caps = capabilitiesOf(role);
+  const caps = data?.server ? serverCapabilities(capabilitiesOf(role)) : capabilitiesOf(role);
+  const subtitle = data?.tournamentName ?? params.name;
   // Each search leaves out people who already hold that role; a moderator may still own a team.
   const staffIds = data ? data.staff.map((m) => m.user.id) : [];
   const ownerIds = data ? data.teams.flatMap((t) => (t.owner ? [t.owner.user.id] : [])) : [];
@@ -63,11 +70,7 @@ export function AddTeamsScreen() {
           <Text accessibilityRole="header" style={styles.title}>
             Teams & staff
           </Text>
-          {params.name ? (
-            <Text muted numberOfLines={1} style={styles.subtitle}>
-              {params.name}
-            </Text>
-          ) : null}
+          {subtitle ? <Text muted numberOfLines={1} style={styles.subtitle}>{subtitle}</Text> : null}
         </View>
       </View>
       {roster.isPending ? (
@@ -113,22 +116,9 @@ export function AddTeamsScreen() {
             onShareInvite={shareInvite}
             onViewSquad={viewSquad}
             onDisband={(team) => open({ kind: 'disband', team })}
+            onAddOwn={data.server ? () => open({ kind: 'add-own' }) : undefined}
           />
-          {/* Next step once the teams are in: the owner draws the schedule; the rest of the staff can view it. */}
-          <View style={styles.next}>
-            <Text accessibilityRole="header" style={styles.nextTitle}>
-              Schedule
-            </Text>
-            <Text variant="caption" muted>
-              {caps.manageSchedule ? 'Draw the matches across the tournament days, adjust them, then publish.' : 'See the matches the owner has drawn.'}
-            </Text>
-            <Button
-              label={caps.manageSchedule ? 'Create schedule' : 'View schedule'}
-              variant="secondary"
-              disabled={busy || data.teams.length < 2}
-              onPress={() => router.push('/tournament/schedule')}
-            />
-          </View>
+          {data.server ? null : <ScheduleSection caps={caps} busy={busy} teamCount={data.teams.length} onOpen={() => router.push('/tournament/schedule')} />}
         </ScrollView>
       )}
 
@@ -141,12 +131,21 @@ export function AddTeamsScreen() {
             : 'A moderator helps you add teams and invite team owners.'
         }
         excludeIds={sheet?.kind === 'team-owner' ? ownerIds : staffIds}
+        search={data?.server ? searchPlayers : undefined}
         inviting={inviteModerator.isPending || inviteOwner.isPending}
         error={inviteModerator.isError || inviteOwner.isError ? rosterErrorText(inviteModerator.error ?? inviteOwner.error) : null}
         onInvite={(user) => {
           if (sheet?.kind === 'team-owner') inviteOwner.mutate({ teamId: sheet.team.id, user }, { onSuccess: close });
           else inviteModerator.mutate(user, { onSuccess: close });
         }}
+        onClose={close}
+      />
+      <AddOwnTeamSheet
+        visible={sheet?.kind === 'add-own'}
+        tournamentId={tournamentId}
+        userId={me.id}
+        takenIds={data?.teams.map((t) => t.id) ?? []}
+        onCreateTeam={() => { close(); router.push('/team/create'); }}
         onClose={close}
       />
       <CreateTeamSheet
@@ -195,6 +194,4 @@ const createStyles = (colors: Palette) =>
     status: { paddingVertical: spacing.xxl },
     failed: { alignItems: 'center', gap: spacing.md, padding: spacing.xl },
     error: { color: colors.dangerSoftText },
-    next: { gap: spacing.sm },
-    nextTitle: { fontSize: 16, lineHeight: 22, fontWeight: '700' },
   });

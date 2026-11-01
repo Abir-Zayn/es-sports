@@ -44,7 +44,7 @@ export function StaffSection({ roster, meId, caps, busy, onInvite, onRemove }: P
               detail={member.user.id === meId ? 'You' : member.user.area}
               badge={isOwner ? { label: 'Owner', tone: 'primary' } : { label: pending ? 'Invited' : 'Moderator', tone: pending ? 'muted' : 'primary' }}
               trailing={
-                caps.manageStaff && !isOwner ? (
+                caps.manageStaff && caps.settleInvites !== false && !isOwner ? (
                   <View>
                     <Button
                       label={pending ? 'Cancel' : 'Remove'}

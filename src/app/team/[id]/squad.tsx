@@ -1,3 +1,4 @@
 import { TeamSquadScreen } from '@/features/team/team-squad-screen';
+import { withRealTeam } from '@/features/team/real/with-real-team';
 
-export default TeamSquadScreen;
+export default withRealTeam(TeamSquadScreen, 'squad');

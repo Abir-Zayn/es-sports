@@ -7,6 +7,7 @@ import { resetRosters } from '../../roster/roster-repository';
 import { ClaimScreen } from '../claim-screen';
 
 let mockToken = 'claim-hsf-p2';
+jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
   useLocalSearchParams: () => ({ token: mockToken }),

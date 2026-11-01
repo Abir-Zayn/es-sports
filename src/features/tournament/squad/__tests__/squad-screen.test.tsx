@@ -10,6 +10,7 @@ import { addGuestPlayer } from '../../roster/squad-repository';
 import { SquadScreen } from '../squad-screen';
 
 let mockParams = { tournamentId: 'hsf-2026', teamId: 'hsf-bb' };
+jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
   useLocalSearchParams: () => mockParams,

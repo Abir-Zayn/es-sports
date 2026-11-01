@@ -1,9 +1,10 @@
-import * as repo from './roster-repository';
+import * as localRepo from './roster-repository';
+import type { RosterRepo } from './roster-source';
 import type { NewTeam, UserSummary } from './types';
 import { useRosterAction } from './use-roster';
 
 /** Every change the teams screen can make, run as `actorId`, with one busy flag and one reset across them. */
-export function useRosterActions(tournamentId: string, actorId: string) {
+export function useRosterActions(tournamentId: string, actorId: string, repo: RosterRepo = localRepo) {
   const inviteModerator = useRosterAction(tournamentId, (user: UserSummary) => repo.inviteModerator(tournamentId, actorId, user));
   const removeModerator = useRosterAction(tournamentId, (userId: string) => repo.removeModerator(tournamentId, actorId, userId));
   const createTeam = useRosterAction(tournamentId, (team: NewTeam) => repo.createTeam(tournamentId, actorId, team));

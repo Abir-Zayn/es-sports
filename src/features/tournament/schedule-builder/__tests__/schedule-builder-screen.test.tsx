@@ -11,6 +11,7 @@ import { parseSetup } from '../../roster/setup';
 import { resetSchedules } from '../schedule-repository';
 import { ScheduleBuilderScreen } from '../schedule-builder-screen';
 
+jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
 }));

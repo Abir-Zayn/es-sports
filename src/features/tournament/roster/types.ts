@@ -33,7 +33,14 @@ export type TournamentPlayer = {
   addedDuringTournament: boolean;
 };
 
-export type RosterTeam = { id: string; name: string; short: string; owner: TeamOwnerSlot | null; players: TournamentPlayer[] };
+/**
+ * One team. A team read from the server also has `ownedByMe`: the viewer owns it now, so `owner` stays empty until an
+ * owner request is pending. Squads are chosen per match, so a server team lists no players here.
+ */
+export type RosterTeam = {
+  id: string; name: string; short: string; owner: TeamOwnerSlot | null; players: TournamentPlayer[];
+  ownedByMe?: boolean;
+};
 
 /** When team owners may add players. The organiser can move the deadline or close and re-open early. */
 export type RegistrationWindow = {
@@ -73,6 +80,8 @@ export type Roster = {
   teams: RosterTeam[];
   /** Newest first. */
   audit: RosterAuditEvent[];
+  /** Read from the server. Registration windows, locking, schedules and disbanding are not stored there yet. */
+  server?: true;
 };
 
 /** What tournament setup decides about the roster. Registration dates seed the window only once. */
