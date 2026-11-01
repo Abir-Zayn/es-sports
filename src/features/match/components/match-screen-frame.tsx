@@ -36,6 +36,6 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.background },
     content: { paddingBottom: spacing.xxl + spacing.xl },
-    tabs: { marginTop: 14 },
-    body: { paddingHorizontal: sizes.gutter, paddingTop: 18, gap: 22 },
+    tabs: { marginTop: 2 },
+    body: { paddingHorizontal: sizes.gutter, paddingTop: 20, gap: 22 },
   });

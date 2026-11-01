@@ -1,53 +1,150 @@
-import Trophy from 'lucide-react-native/icons/trophy';
 import { StyleSheet, View } from 'react-native';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { InitialsAvatar, Text } from '@/components/ui';
-import { useTheme, useThemedStyles, type Palette } from '@/theme';
+import { sizes, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { TeamInfo } from '@/types/cricket';
+
+const AMBER_PILL = '#E08214';
+const ON_AMBER = '#0A0E0D';
 
 export type ResultTeamLine = { team: TeamInfo; score: string; overs: string; won: boolean };
 export type ResultHighlight = { title: string; name: string; figure: string };
 
 type Props = { headline: string; teams: ResultTeamLine[]; highlights: ResultHighlight[] };
 
-/** The finished match at a glance: who won and by how much, both totals, and the standout players. */
+const shortTag = (title: string) =>
+  title.includes('MVP') || title.includes('PLAYER') ? 'MVP' : title.includes('BAT') ? 'BAT' : 'BOWL';
+
+/** The finished match at a glance in DAZN hero style: responsive rounded gradient header, central scoreboard, and highlight rows. */
 export function MatchResultSummaryCard({ headline, teams, highlights }: Props) {
   const s = useThemedStyles(styles);
   const { colors } = useTheme();
-  return <View style={s.card}>
-    <View style={s.banner} accessibilityRole="header" accessibilityLiveRegion="polite">
-      <Trophy size={28} color={colors.primaryText} />
-      <Text style={s.headline}>{headline}</Text>
+  const [first, second] = teams;
+
+  return (
+    <View style={s.hero}>
+      <Svg
+        width="100%"
+        height="100%"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+      >
+        <Defs>
+          <LinearGradient id="matchSummaryHeroGrad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+            <Stop offset="0%" stopColor={colors.primarySoft} stopOpacity="1" />
+            <Stop offset="55%" stopColor={colors.surfaceRaised} stopOpacity="0.95" />
+            <Stop offset="100%" stopColor={colors.background} stopOpacity="0.95" />
+          </LinearGradient>
+        </Defs>
+        <Rect x="0" y="0" width="100" height="100" fill="url(#matchSummaryHeroGrad)" />
+      </Svg>
+
+      <View style={s.inner}>
+        {first && second ? (
+          <View style={s.scoreboard}>
+            <View style={s.teamCol} accessible accessibilityLabel={`${first.team.name}, ${first.score}, ${first.overs} overs`}>
+              <InitialsAvatar
+                label={first.team.short}
+                tone={first.team.tone}
+                imageUri={first.team.avatarUri}
+                size={52}
+                borderColor={first.won ? colors.accent : colors.border}
+                borderWidth={first.won ? 2 : 1}
+              />
+              <Text style={[s.teamName, first.won && s.winner]} numberOfLines={2}>
+                {first.team.name}
+              </Text>
+            </View>
+
+            <View style={s.centerCol}>
+              <Text muted style={s.oversLine}>
+                {first.overs} ov · {second.overs} ov
+              </Text>
+              <View style={s.scoreRow}>
+                <Text style={[s.scoreBig, !first.won && second.won && s.scoreDim]}>{first.score}</Text>
+                <Text style={s.scoreDash}>–</Text>
+                <Text style={[s.scoreBig, !second.won && first.won && s.scoreDim]}>{second.score}</Text>
+              </View>
+              <Text muted style={s.statusTag}>FT</Text>
+            </View>
+
+            <View style={s.teamCol} accessible accessibilityLabel={`${second.team.name}, ${second.score}, ${second.overs} overs`}>
+              <InitialsAvatar
+                label={second.team.short}
+                tone={second.team.tone}
+                imageUri={second.team.avatarUri}
+                size={52}
+                borderColor={second.won ? colors.accent : colors.border}
+                borderWidth={second.won ? 2 : 1}
+              />
+              <Text style={[s.teamName, second.won && s.winner]} numberOfLines={2}>
+                {second.team.name}
+              </Text>
+            </View>
+          </View>
+        ) : null}
+
+        <View style={s.summaryBlock} accessibilityRole="header" accessibilityLiveRegion="polite">
+          <Text style={s.headline}>{headline}</Text>
+        </View>
+
+        {highlights.length > 0 ? (
+          <View style={s.highlights}>
+            {highlights.map((h) => (
+              <View
+                key={h.title}
+                style={s.highlightRow}
+                accessible
+                accessibilityLabel={`${h.title}: ${h.name}, ${h.figure}`}
+              >
+                <Text style={s.playerName} numberOfLines={1}>
+                  {h.name}
+                </Text>
+                <Text muted style={s.roleText}>{shortTag(h.title)}</Text>
+                <View style={s.amberPill}>
+                  <Text style={s.amberFigure}>{h.figure}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        ) : null}
+      </View>
     </View>
-    <View style={s.body}>
-      {teams.map((line) => <View key={line.team.short} style={s.team}>
-        <InitialsAvatar label={line.team.short} tone={line.team.tone} imageUri={line.team.avatarUri} size={36} />
-        <Text style={[s.teamName, line.won && s.winner]} numberOfLines={1}>{line.team.name}</Text>
-        <Text style={s.score}>{line.score} <Text muted style={s.overs}>({line.overs})</Text></Text>
-      </View>)}
-      {highlights.length > 0 ? <View style={s.highlights}>
-        {highlights.map((h) => <View key={h.title} style={s.highlight} accessible accessibilityLabel={`${h.title}: ${h.name}, ${h.figure}`}>
-          <Text muted style={s.title}>{h.title}</Text>
-          <Text style={s.name} numberOfLines={1}>{h.name}</Text>
-          <Text style={s.figure}>{h.figure}</Text>
-        </View>)}
-      </View> : null}
-    </View>
-  </View>;
+  );
 }
-const styles = (c: Palette) => StyleSheet.create({
-  card: { borderRadius: 24, borderWidth: 1, borderColor: c.border, backgroundColor: c.surface, overflow: 'hidden' },
-  banner: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, backgroundColor: c.primary },
-  headline: { flex: 1, color: c.primaryText, fontSize: 18, lineHeight: 24, fontWeight: '800' },
-  body: { padding: 14, gap: 12 },
-  team: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  teamName: { flex: 1, fontSize: 15, lineHeight: 20, fontWeight: '600' },
-  winner: { fontWeight: '800', color: c.link },
-  score: { fontSize: 18, lineHeight: 24, fontWeight: '800', fontVariant: ['tabular-nums'] },
-  overs: { fontSize: 12, lineHeight: 16, fontWeight: '500' },
-  highlights: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  highlight: { flexBasis: '30%', flexGrow: 1, padding: 10, gap: 2, borderRadius: 14, backgroundColor: c.surfaceRaised },
-  title: { fontSize: 11, lineHeight: 15, letterSpacing: 0.4 },
-  name: { fontSize: 13, lineHeight: 18, fontWeight: '700' },
-  figure: { fontSize: 13, lineHeight: 18, fontWeight: '600', color: c.link },
-});
+
+const styles = (c: Palette) =>
+  StyleSheet.create({
+    hero: {
+      width: '100%',
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    inner: {
+      paddingVertical: 14,
+      paddingHorizontal: sizes.gutter,
+      gap: 14,
+    },
+    scoreboard: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
+    teamCol: { width: 96, alignItems: 'center', gap: 10 },
+    teamName: { fontSize: 14, lineHeight: 18, fontWeight: '700', textAlign: 'center', color: c.text },
+    winner: { color: c.text, fontWeight: '800' },
+    centerCol: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 2, gap: 4 },
+    oversLine: { fontSize: 12, lineHeight: 16, fontVariant: ['tabular-nums'] },
+    scoreRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    scoreBig: { fontSize: 28, lineHeight: 34, fontWeight: '800', color: c.text, fontVariant: ['tabular-nums'] },
+    scoreDim: { color: c.textMuted },
+    scoreDash: { fontSize: 24, lineHeight: 30, fontWeight: '700', color: c.textMuted },
+    statusTag: { fontSize: 12, lineHeight: 16, fontWeight: '600', letterSpacing: 0.8 },
+    summaryBlock: { alignItems: 'center' },
+    headline: { fontSize: 14, lineHeight: 19, fontWeight: '700', color: c.textMuted, textAlign: 'center' },
+    highlights: { gap: 8, paddingTop: 2 },
+    highlightRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+    playerName: { width: 132, textAlign: 'right', fontSize: 13, lineHeight: 18, fontWeight: '500', color: c.textMuted },
+    roleText: { fontSize: 11, lineHeight: 14, fontWeight: '700', letterSpacing: 0.5 },
+    amberPill: { minWidth: 64, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 5, backgroundColor: AMBER_PILL, alignItems: 'center' },
+    amberFigure: { fontSize: 11, lineHeight: 15, fontWeight: '800', color: ON_AMBER, fontVariant: ['tabular-nums'] },
+  });
