@@ -1,6 +1,7 @@
 // The roster of a real tournament, read from and written to the server. Same function shapes as the in-memory
 // repository, so the screen and hooks do not care which one runs. Only what the server stores is supported:
 // staff, teams, and owner and moderator requests. The rest refuses with a plain message.
+import { InvitationError, sendModeratorInvite, sendTeamOwnerInvite } from '@/features/invitations';
 import { localEventId } from '@/features/scoring/local-id';
 import { supabase } from '@/lib/supabase';
 
@@ -9,7 +10,6 @@ import {
 } from '../data/tournament-repository';
 import { tournamentErrorText } from '../data/tournament-errors';
 import { addTournamentTeam, createTournamentTeam } from '../data/tournament-writes';
-import { InvitationError, sendModeratorInvite, sendTeamOwnerInvite } from './invitations-bridge';
 import { RosterError } from './roster-store';
 import type { NewTeam, Roster, RosterTeam, StaffMember, TeamOwnerSlot, UserSummary } from './types';
 
@@ -57,7 +57,11 @@ export async function fetchRoster(tournamentId: string, me: UserSummary): Promis
 
 export function toRosterError(error: unknown): RosterError {
   if (error instanceof RosterError) return error;
-  return new RosterError(error instanceof InvitationError ? error.message : tournamentErrorText(error));
+  // Sending: EI003 means the sender is not the team's owner (the invitation text speaks to the recipient).
+  if (error instanceof InvitationError) {
+    return new RosterError(error.code === 'EI003' ? 'You do not own this team, so you cannot invite an owner.' : error.message);
+  }
+  return new RosterError(tournamentErrorText(error));
 }
 
 async function change(tournamentId: string, actorId: string, run: () => Promise<unknown>): Promise<Roster> {

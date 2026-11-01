@@ -98,7 +98,7 @@ describe('changes to a published tournament', () => {
   });
 
   it.each([
-    ['EI002', /already has an invite/], ['EI003', /no longer own this team/], ['42501', /not allowed/],
+    ['EI002', /already pending/], ['EI003', /do not own this team/], ['42501', /not allowed/],
   ])('says why a request was refused (%s)', async (code, message) => {
     fake.rpcResult = { data: null, error: { code, message: 'raw db text' } };
     const failure = await server.inviteTeamOwner(T, 'me', 'c', me).catch((error: unknown) => error);
