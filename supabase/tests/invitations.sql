@@ -66,8 +66,8 @@ begin
     'registrationOpens', '', 'registrationDeadline', '', 'overs', '', 'organizerName', 'Org', 'organizerPhone', '',
     'organizerEmail', '', 'entryFee', '', 'prizeDetails', '', 'rulesSummary', ''
   ));
-  perform public.create_tournament_team(v_tour, v_team1, 'Owner Lions', 'OLI', 'orange');
-  perform public.create_tournament_team(v_tour, v_team3, 'Owner Royals', 'ORY', 'green');
+  perform public.create_tournament_team(v_tour, v_team1, 'Owner Lions', 'OLI', 'blue');
+  perform public.create_tournament_team(v_tour, v_team3, 'Owner Royals', 'ORY', 'yellow');
 
   -- 2. Send moderator invite by owner, duplicate pending EI002, accept adds staff + notifications, moderator cannot invite moderator
   v_inv := public.send_tournament_moderator_invite(v_tour, pg_temp.inv_uid(2));
