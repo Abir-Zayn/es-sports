@@ -104,7 +104,7 @@ Each step ends with migrations plus rolled-back SQL checks, `pnpm typecheck`, `p
 
 ### Phase D: teams
 
-11. **Teams backend.** Tables `teams`, `team_members` (role: owner, captain, player, staff), team logo in storage, RLS by membership.
+11. **Teams backend.** Tables `teams`, `team_members` (role: owner, captain, player, staff), team logo in storage, RLS by membership. In progress: migration and SQL verification on `feat/teams-backend`, not applied. Brief: `docs/tasks/step-11-teams-backend.md`.
 12. **Team screens on real data.** Overview, squad, members, matches; create team; edit Playing XI; substitutes.
 13. **Team invitations.** `team_invitations` table, invite by search or share link, accept/decline, wired to `/invitations` and `/claim/[token]`.
 
