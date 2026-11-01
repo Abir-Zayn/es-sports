@@ -45,3 +45,11 @@ The three passing scenarios were tested only on this device. The required low-en
 ## 2026-10-31: row 7 retest after issue #6 fix
 
 **PASS on PLR110, Android 16:** the original four queued changes synced after installing preview OTA update group `0ed3ba83-001e-413e-99ca-95f52914eeb4`. The server recorded the final first-innings wicket with a null next-batter key, the chase start, and the winning four in order; the match result was saved as QA_Device_B winning by three wickets. Opening the match on the phone showed the same result and the **Saved** indicator. No queued changes were discarded. A second device remains untested.
+
+## 2026-11-01: step 6 scorer handover
+
+| # | Scenario | Result | Notes |
+| --- | --- | --- | --- |
+| 13 | Hand over mid-over with no lost or duplicate ball (two phones) | NOT RUN | Awaits two-phone test run. |
+| 14 | Decline and expiry | NOT RUN | Awaits device test run. |
+| 15 | Creator takeover after 15 minutes idle | NOT RUN | Awaits device test run. |

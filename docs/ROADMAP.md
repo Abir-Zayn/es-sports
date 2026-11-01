@@ -42,27 +42,25 @@ There are **no tables yet** for tournaments, teams, team members, invitations, s
 - PR #5 (friendly scorer + outbox into `main`) is merged; all five local and remote migration versions now agree.
 - PR #7 (fix for issue #6) is merged as `b68e7ec` and published as an OTA update on `preview`. Issue #6 is closed.
 
-## Current status (end of 2026-10-31)
+## Current status (2026-11-01 at 7989ede)
 
-**Where we are:** Phase A, step 2 (device testing) is partly done. Step 1 is done. `main` = `origin/main` at `b68e7ec`, working tree clean.
+**Where we are:** Steps 1–5 merged (PRs #5–#12). Step 6 (scorer handover) is in progress. `main` is at `7989ede`.
 
-**Done today**
-- Merged PR #5; repaired the migration history (5 versions agree locally and remotely).
-- Device run on PLR110 (Android 16), recorded in `docs/device-test-log.md`: rows 4, 5 and 6 pass; row 7 failed, then passed after the fix.
-- Fixed issue #6: when the last wicket ended an innings, the app sent an empty next-batter id, which Postgres rejected (`23503`). The wicket screen now works out the all-out wicket from the team size. Empty optional player ids are sent as `null`, including in changes saved before the fix. The unsent notice now names the blocked change and the server error. The original phone queue synced with nothing discarded.
-- Checks on `b68e7ec`: typecheck, lint and 413 tests in 71 suites pass.
+**Current state**
+- Steps 1–5 merged into `main` across PRs #5–#12.
+- Step 6 in progress; spec in [step-6-scorer-handover.md](tasks/step-6-scorer-handover.md).
+- Migrations through `20261101030000` (including `scorer_handover`) are applied remotely; local and remote histories match.
+- Device testing: rows 4–7 verified on PLR110; rows 8–15 pending.
 
-**Start tomorrow with**
-1. Finish step 2: rows 8 (account switch) and 9 (two phones) on the phone plus an emulator, marked `emulator` in the log. Then confirm the image uploads and the 2 MB limit (row 10), guest player search (row 11) and that the phone is running the OTA update (row 12).
-2. Then step 3: atomic friendly creation (migration + RPC). The migration history is repaired, so nothing blocks it.
+**Next steps**
+1. Finish step 6: review of the UI, GPT 6.1 Terra review of the migration, then merge.
+2. Run the manual two-session lock check described in `supabase/tests/scorer_handover.sql`.
+3. Complete device testing (rows 8, 9, 13–15 on two phones).
 
 **Deferred or open**
-- Low-end phone performance check: skipped until a cheap device (or a cloud device lab) is available. Must be done before the Play Store release.
-- Show plain wording for common server error codes (`23503`, `42501`) in the unsent notice instead of the raw Postgres message. Before the Play Store release.
-- CodeRabbit's follow-up review on PR #7 was rate-limited, so the last docs and test commit was not reviewed.
-- The graphify SQL extractor dependency is missing, so `database.types.ts` is only partly in the graph.
-- Spectator polling: when the Realtime channel connects or drops, the interval (60 s / 15 s) changes only at the next query update. Make the connection status observable. (Step 5 review, minor.)
-- Old merged branches `feat/tournament-squad-lifecycle` (local and remote), `feat/notifications-center` and `feat/player-career-profile` (remote) can be deleted.
+- Two-phone device tests (rows 8, 9, 13–15) and low-end phone check.
+- Plain wording for server errors (`23503`, `42501`) in unsent notice.
+- Spectator polling connection status observability (step 5 review, minor).
 
 ## Model routing
 
@@ -95,7 +93,7 @@ Each step ends with migrations plus rolled-back SQL checks, `pnpm typecheck`, `p
 3. **Atomic friendly creation.** RPC `create_friendly_match(match, players, scorer)`, idempotent, with orphan image cleanup. (NEXT_WORK item 3)
 4. **Server-side write ordering guard.** `expected_tail` check on ball writes, void, result and reopen; conflicts surface as `OutboxConflictError`. (NEXT_WORK item 4)
 5. **Spectator screens on real data.** Replace `sample-match` / `sample-info` in the five match tabs with queries on `matches` + `ball_events`, plus one Realtime channel per open match.
-6. **Scorer handover.** `scorer_handover` table and accept RPC. Product decisions first. (NEXT_WORK item 5)
+6. **Scorer handover.** In progress. Spec and decisions in [step-6-scorer-handover.md](tasks/step-6-scorer-handover.md). (NEXT_WORK item 5)
 7. **Open and score a match offline.** Local snapshot per match; decide JSON files (OTA) or `expo-sqlite` (new APK). (NEXT_WORK item 6)
 
 ### Phase C: players and discovery
@@ -135,7 +133,7 @@ Each step ends with migrations plus rolled-back SQL checks, `pnpm typecheck`, `p
 
 | Decision | Needed before step |
 | --- | --- |
-| Who can start a scorer handover, and the timeout | 6 |
+| Who can start a scorer handover, and the timeout | Decided ([spec](tasks/step-6-scorer-handover.md)) |
 | Offline storage: JSON files (OTA) or `expo-sqlite` (new APK) | 7 |
 | Can a player belong to several teams in one tournament? | 15 |
 | Points rules (tie, no result, NRR) and knockout formats | 18 |

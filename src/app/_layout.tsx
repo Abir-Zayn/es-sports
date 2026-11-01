@@ -44,6 +44,7 @@ function AppShell() {
             <Stack.Screen name="profile/edit" />
             <Stack.Screen name="player/[id]" />
             <Stack.Screen name="scorer/[id]" />
+            <Stack.Screen name="handover/[id]" />
             <Stack.Screen name="match/friendly/setup" />
             <Stack.Screen name="match/[id]/index" />
             <Stack.Screen name="match/[id]/info" />

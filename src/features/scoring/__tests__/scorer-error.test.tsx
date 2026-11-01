@@ -14,6 +14,7 @@ jest.mock('react-native-safe-area-context', () => {
 jest.mock('expo-router', () => ({ useRouter: () => ({ back: jest.fn(), canGoBack: () => true, replace: jest.fn() }) }));
 jest.mock('../data/outboxes', () => ({ outboxes: { discard: jest.fn() } }));
 jest.mock('../data/match-repository', () => ({}));
+jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 
 const show = (node: React.ReactElement) => render(<ThemeProvider>{node}</ThemeProvider>);
 

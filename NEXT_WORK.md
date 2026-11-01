@@ -109,10 +109,7 @@ The ordered plan for the whole product is in `docs/ROADMAP.md`. Items 1–6 here
 
 **Why:** a friendly's scorer can't be changed. If that person leaves or loses their phone, an admin has to fix it by hand.
 
-**Product decisions needed before building**
-- Who can start a handover: the current scorer only, or also the creator?
-- If the current scorer is unreachable, can the creator take over after a timeout, and how long?
-- What happens to the old scorer's unsent changes? Item 4 makes them conflict safely rather than overwrite.
+**Product decisions:** decided in [docs/tasks/step-6-scorer-handover.md](docs/tasks/step-6-scorer-handover.md).
 
 **Scope**
 - Add a `scorer_handover` record (`match_id`, `from_user`, `to_user`, `status: pending | accepted | cancelled | expired`, `expires_at`).

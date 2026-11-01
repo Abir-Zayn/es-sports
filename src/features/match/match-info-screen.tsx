@@ -1,6 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { Button, Text } from '@/components/ui';
+import { isUuid } from '@/features/scoring/data/match-repository';
+import { TakeoverAction } from '@/features/scoring/handover/components/takeover-action';
 
 import { MatchDetailsList } from './components/match-details-list';
 import { MatchLoadState, StaleMatchNote } from './components/match-load-state';
@@ -29,6 +31,7 @@ export function MatchInfoScreen() {
       {info.tossNote ? <TossBanner team={info.tossNote.team} decision={info.tossNote.decision} /> : (
         <Text muted>The toss has not happened yet.</Text>
       )}
+      {view.source === 'stored' && isUuid(matchId) ? <TakeoverAction matchId={matchId} /> : null}
       <MatchDetailsList details={info.details} />
       {info.streams.length > 0 ? <WatchLiveSection streams={info.streams} /> : null}
       <SquadsSection squads={info.squads} />

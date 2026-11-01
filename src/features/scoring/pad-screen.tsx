@@ -14,12 +14,13 @@ import { ScoringKeypad } from './components/scoring-keypad';
 import { SyncBadge } from './components/sync-badge';
 import { computeResult } from './data/match-result';
 import { applyDelivery } from './engine/score-delivery';
+import { HandoverSection } from './handover/components/handover-section';
 import { localEventId, useScorer } from './scorer-provider';
 import type { DeliveryInput } from './types';
 import { useScorerRoutes } from './use-scorer-routes';
 
 export function ScorerPadScreen() {
-  const { score, setup, dispatch, history, pendingShot, sync } = useScorer();
+  const { score, setup, dispatch, history, pendingShot, sync, savedId } = useScorer();
   const routes = useScorerRoutes();
   const s = useThemedStyles(styles);
   const [extra, setExtra] = useState<ExtraKind | null>(null);
@@ -66,6 +67,8 @@ export function ScorerPadScreen() {
     <ScorerHeader title="Scoring" subtitle={`${setup.title} · ${score.innings === 1 ? '1st' : '2nd'} innings`} onBack={leave}
       trailing={<AppIconTile icon={Radio} accessibilityLabel="Open stream overlay" onPress={() => routes.push('overlay')} />} />
     <SyncBadge sync={sync} />
+    {setup.preset && sync.mode === 'synced'
+      ? <HandoverSection matchId={savedId} ready={!unsaved} onLeave={routes.leave} /> : null}
     {sync.status === 'error' && sync.error ? <ScorerNotice>{sync.error}</ScorerNotice> : null}
     <ScoreSummary score={score} />
     <CreaseSummary score={score} disabled={disabled} onSwap={() => dispatch({ type: 'swap', id: localEventId() })} />

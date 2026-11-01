@@ -1,7 +1,7 @@
 import { OutboxConflictError, OutboxRejectedError, OutboxStoppedError, errorMessage, operationName, plural } from './outbox-errors';
 import { applyToHead, applyToIds, headResumeIndex, resumeIndex, withOpId, type OutboxOp } from './outbox-ops';
 import type { OutboxRecord, OutboxStore } from './outbox-store';
-import { isFinalCode, ScoringConflictError } from './scoring-errors';
+import { errorCode, isFinalCode, ScoringConflictError } from './scoring-errors';
 import { SyncQueue, type SyncQueueOptions, type SyncSnapshot } from './sync-queue';
 import { localEventId } from '../local-id';
 
@@ -131,7 +131,7 @@ export class Outbox {
       }
       const message = `${operationName(op)}: ${errorMessage(error)}`;
       if (isFinalCode(error)) {
-        this.stopped = new OutboxRejectedError(this.userId, this.matchId, this.pending, message);
+        this.stopped = new OutboxRejectedError(this.userId, this.matchId, this.pending, message, errorCode(error));
         throw this.stopped;
       }
       throw new Error(message);

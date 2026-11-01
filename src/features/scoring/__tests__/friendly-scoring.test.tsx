@@ -11,6 +11,7 @@ import { ScorerProvider, useScorer } from '../scorer-provider';
 import type { ScorerAction } from '../session-reducer';
 import type { MatchSetup } from '../types';
 
+jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('expo-secure-store', () => ({
   getItemAsync: jest.fn().mockResolvedValue(null),
   setItemAsync: jest.fn().mockResolvedValue(undefined),

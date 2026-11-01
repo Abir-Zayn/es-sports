@@ -9,6 +9,7 @@ import * as repository from '../match-repository';
 import { buildMatchRows } from '../match-rows';
 import { initialSetup } from '../../sample-data';
 
+jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('expo-secure-store', () => ({
   getItemAsync: jest.fn().mockResolvedValue(null),
   setItemAsync: jest.fn().mockResolvedValue(undefined),
