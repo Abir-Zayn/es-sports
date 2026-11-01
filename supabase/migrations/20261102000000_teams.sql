@@ -175,6 +175,10 @@ declare
   v_caller text := public.begin_team_change(p_team);
   v_target text := public.team_member_role(p_team, p_profile);
 begin
+  -- A non-member has a NULL role; without this check the permission test below evaluates to NULL and passes.
+  if v_caller is null then
+    raise exception 'You are not a member of this team' using errcode = '42501';
+  end if;
   if v_target = 'owner' then
     raise exception 'The owner cannot leave or be removed; transfer ownership first' using errcode = '22023';
   end if;
