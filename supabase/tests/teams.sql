@@ -99,7 +99,7 @@ begin
   end;
   if code is distinct from '22023'
     or (select array_agg(profile_id) from public.team_members where team_id = t and is_captain)
-      <> array['f4a00000-0000-4000-8000-000000000003'::uuid] then
+      is distinct from array['f4a00000-0000-4000-8000-000000000003'::uuid] then
     raise exception 'FAIL g: captain rules (staff gave %)', code;
   end if;
   perform set_config('request.jwt.claims', format(as_user, 1), true);
@@ -112,7 +112,7 @@ end $$;
 
 -- h) Removing and leaving: an admin removes staff but not the owner; a player cannot remove an admin but can leave.
 do $$
-declare t uuid := current_setting('t.team')::uuid; code text;
+declare t uuid := current_setting('t.team')::uuid; code text; i int;
   as_user text := '{"sub":"f4a00000-0000-4000-8000-00000000000%s","role":"authenticated"}';
 begin
   perform set_config('request.jwt.claims', format(as_user, 3), true);
@@ -121,6 +121,18 @@ begin
   exception when others then code := sqlstate;
   end;
   if code is distinct from '22023' then raise exception 'FAIL h: removing the owner gave %', code; end if;
+  -- A signed-in non-member (user 5) must not remove anyone: staff, admin or owner (the NULL caller bypass).
+  perform set_config('request.jwt.claims', format(as_user, 5), true);
+  for i in 1..3 loop
+    code := null;
+    begin
+      perform public.remove_team_member(t, (array['f4a00000-0000-4000-8000-000000000004', 'f4a00000-0000-4000-8000-000000000003',
+        'f4a00000-0000-4000-8000-000000000001'])[i]::uuid);
+    exception when others then code := sqlstate;
+    end;
+    if code is distinct from '42501' then raise exception 'FAIL h: a non-member removed target % (%)', i, code; end if;
+  end loop;
+  perform set_config('request.jwt.claims', format(as_user, 3), true);
   perform public.remove_team_member(t, 'f4a00000-0000-4000-8000-000000000004');
   perform set_config('request.jwt.claims', format(as_user, 2), true);
   code := null;
@@ -131,7 +143,7 @@ begin
   if code is distinct from '42501' then raise exception 'FAIL h: a player removed an admin (%)', code; end if;
   perform public.remove_team_member(t, 'f4a00000-0000-4000-8000-000000000002');
   if (select array_agg(profile_id order by profile_id) from public.team_members where team_id = t)
-    <> array['f4a00000-0000-4000-8000-000000000001', 'f4a00000-0000-4000-8000-000000000003']::uuid[] then
+    is distinct from array['f4a00000-0000-4000-8000-000000000001', 'f4a00000-0000-4000-8000-000000000003']::uuid[] then
     raise exception 'FAIL h: wrong members left';
   end if;
 end $$;
@@ -151,7 +163,7 @@ begin
   if code is distinct from '42501' then raise exception 'FAIL i: an admin took ownership (%)', code; end if;
   perform set_config('request.jwt.claims', format(as_user, 1), true);
   perform public.transfer_team_ownership(t, 'f4a00000-0000-4000-8000-000000000003');
-  if (select string_agg(role, ',' order by profile_id) from public.team_members where team_id = t) <> 'admin,owner' then
+  if (select string_agg(role, ',' order by profile_id) from public.team_members where team_id = t) is distinct from 'admin,owner' then
     raise exception 'FAIL i: roles after transfer';
   end if;
   update public.teams set name = 'Strikers' where id = t;
