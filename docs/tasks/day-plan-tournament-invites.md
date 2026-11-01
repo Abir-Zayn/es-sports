@@ -2,6 +2,43 @@
 
 Roadmap steps 11 (teams), 13 (invitations), 14 and 15-lite (tournaments, teams in a tournament) and 20-lite (notifications), cut down to one working slice. Integration branch: `feat/tournament-core`.
 
+## For every agent: read this first
+
+This file is the shared brief. Give the **whole file** to each agent and tell it only one thing: "You are **Job N**."
+
+1. Read "Goal", "Decisions" and "Contract" (all binding), then **only your own Job section**. Ignore the other jobs.
+2. Touch only the paths your job owns (the table below). If you need a change in someone else's paths, stop and say so in your report; do not edit them.
+3. Do not run migrations against the remote project, do not push, do not merge. Commit only your own paths with `git add <those paths>` (never `git add -A` or `git add .`).
+4. Follow `AGENTS.md` and `memory.md`: files at most 200 lines (hard 270), zero fabrication, report `PASS | FAIL | NOT RUN`, and end with the section 11 report.
+5. If the contract is unclear or wrong, say so in the report with the line you would change. Do not silently invent a different name, column or error code: other agents are coding against the same names.
+
+| Job | Model | Owns (may edit) | Must not touch |
+| --- | --- | --- | --- |
+| 1 | Opus 5.5 | `supabase/migrations/20261102010000_tournaments.sql`, `supabase/tests/tournaments.sql` | everything else |
+| 2 | Argon 4 | `supabase/migrations/20261102020000_invitations_notifications.sql`, `supabase/tests/invitations.sql` | everything else |
+| 3 | GPT 6.1 Terra | nothing (review only) | everything |
+| 4 | Sonnet 5.5 | `src/features/team/**`, `src/features/tournament/**`, `src/app/team/**`, `src/app/tournament/**` | `supabase/`, `invitations/`, `notifications/` |
+| 5 | Argon 4 or Sonnet 5.5 | `src/features/invitations/**`, `src/features/notifications/**`, `src/app/invitations.tsx`, `src/app/notifications.tsx` | `supabase/`, `team/`, `tournament/` |
+| 6 | Gemini Flash 3.8 | `docs/**`, `NEXT_WORK.md` | all code |
+
+**Working in parallel without clashes.** Several agents in one checkout share one git index and overwrite each other's files. Give each running job its own worktree, cut from `feat/tournament-core`:
+
+```bash
+git worktree add ../esSports-job1 -b job/tournaments feat/tournament-core
+```
+
+Use `job/invites` for Job 2, `job/app-tournament` for Job 4, `job/app-invites` for Job 5. The owner merges each job branch into `feat/tournament-core` as it finishes (jobs own different paths, so the merges are conflict-free; `database.types.ts` is regenerated once, after the migrations).
+
+## Status
+
+| Item | State |
+| --- | --- |
+| Step 6 (scorer handover) | **Done and committed** on `feat/scorer-handover-ui` (`efa69f5`, `4140cf2`). Migration applied and both SQL tests pass. Open: the two-session lock check and the device rows 13 to 15. |
+| `feat/tournament-core` | **Created.** `feat/teams-backend` is merged in (`37733fd`). |
+| Job 3 (GPT review of the teams migration) | **Not started.** Brief: "Job 3" below. Teams migration is not applied. |
+| Jobs 1, 2, 6 | Ready to start now. |
+| Jobs 4, 5 | Wait for the migrations to be applied and `database.types.ts` regenerated. Job 5's first task (the exports) can start at once. |
+
 ## Goal
 
 Without sample data, on a phone:
@@ -29,7 +66,7 @@ Out of scope today: push notifications, squads and rosters, fixtures, scoring fo
 
 | Time | Owner | What |
 | --- | --- | --- |
-| T+0:00 to 0:20 | You | Commit step 6 (3 commits). Create `feat/tournament-core` from `feat/scorer-handover` and merge `feat/teams-backend` into it. Start the GPT review of the teams migration. Start Job 1 and Job 2 at once. |
+| T+0:00 to 0:20 | You | ~~Commit step 6. Create `feat/tournament-core`, merge `feat/teams-backend`.~~ **Done.** Next: start the GPT review of the teams migration, and start Job 1 and Job 2 at once (each in its own worktree). |
 | T+0:20 to 1:40 | Opus, Argon, GPT, Flash | Job 1, Job 2, Job 3 (teams review), Job 6 run at the same time. |
 | T+1:40 to 2:10 | Claude, you | I review both SQL diffs. You apply the migrations in order (teams, tournaments, invitations), run each SQL test, regenerate the types from Git Bash, commit. |
 | T+2:10 to 4:00 | Sonnet, Argon | Job 4 and Job 5 run at the same time, in separate folders. |
@@ -136,7 +173,7 @@ OUTPUT: the memory.md section 11 report. Say what you could not run.
 
 **Model:** GPT 6.1 Terra · **Size:** review · **Depends on:** nothing
 
-Use the review brief inside `docs/tasks/step-11-teams-backend.md` ("Job 3") as it is. Findings that are blockers go to Job 1's owner (Opus) before T+1:40.
+Use the review brief inside `docs/tasks/step-11-teams-backend.md` ("Job 3") and add two checks: (6) the SQL test must fail when behaviour is wrong (watch NULL conditions, the step 6 test passed on NULL), and (7) `transfer_team_ownership` must be safe to call from another security-definer function (Job 2's accept), with one owner always existing. Findings that are blockers go to Job 1's owner (Opus) before T+1:40.
 
 ## Job 4: tournament and team screens on real data
 
@@ -210,6 +247,6 @@ Do not change code. Do not invent results.
 
 ## Owner's steps
 
-1. Commit step 6 first. Create `feat/tournament-core` from it and merge `feat/teams-backend`.
+1. ~~Commit step 6; create `feat/tournament-core`; merge `feat/teams-backend`.~~ Done.
 2. Apply migrations in order with the same method used for step 6 (`db query -f` plus `migration repair`, or `db push --include-all`), run each SQL test, then regenerate `src/lib/database.types.ts` from Git Bash.
 3. Phone test with two accounts at the end.
