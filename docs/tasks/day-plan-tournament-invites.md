@@ -96,8 +96,8 @@ Select: any signed-in user reads all three tables.
 | Function | Rule |
 | --- | --- |
 | `create_tournament(p jsonb) returns uuid` | Idempotent on `p.id` (same owner: return it; another owner: `23505`). Validates like `draft.ts` (`validateDraft`). Inserts the owner row. |
-| `create_tournament_team(p_tournament uuid, p_team uuid, p_name text, p_short_name text, p_tone text)` | Caller is staff. Creates the team (caller is owner) and the link in one transaction. Idempotent on `p_team`. `ET01` when full. |
-| `add_tournament_team(p_tournament uuid, p_team uuid)` | Caller is staff and owner or admin of the team. Repeat returns OK. `ET01` when full. |
+| `create_tournament_team(p_tournament uuid, p_team uuid, p_name text, p_short_name text, p_tone text)` | Caller is staff. Creates the team (caller is owner) and the link in one transaction. Idempotent on `p_team`. `ET001` when full. |
+| `add_tournament_team(p_tournament uuid, p_team uuid)` | Caller is staff and owner or admin of the team. Repeat returns OK. `ET001` when full. |
 
 ### Invitations and notifications (Job 2)
 
@@ -109,13 +109,13 @@ Select: any signed-in user reads all three tables.
 | Function | Rule |
 | --- | --- |
 | `send_tournament_moderator_invite(p_tournament, p_to) returns uuid` | Caller is the tournament owner. Recipient has a profile and is not already staff. Writes the invite and a `invite` notification to the recipient. |
-| `send_team_owner_invite(p_tournament, p_team, p_to) returns uuid` | Caller is staff and the team's current owner; the team is in the tournament. Same notification. `EI03` when the caller is not the team owner. |
-| `accept_invitation(p_id)` | Recipient only. Lazy expiry. moderator: insert the staff row. team_owner: lock the team row (`for update`, as `begin_team_change` does), re-check the sender is still the owner (`EI03`, else), insert the recipient into `team_members` as `admin` if they are not a member yet (no add-member function exists; this is the only way in, D7), then do the swap **inline**: set the old owner to `admin` first (the one-owner partial index), then the recipient to `owner`. **Do not call `transfer_team_ownership`**: it requires the caller (`auth.uid()`, here the recipient) to be the current owner and the target to be a member, so it would raise `42501` or `P0002`. Writes an `invite_response` notification to the sender, marks the recipient's invite notification read. Repeat on `accepted` returns OK. |
+| `send_team_owner_invite(p_tournament, p_team, p_to) returns uuid` | Caller is staff and the team's current owner; the team is in the tournament. Same notification. `EI003` when the caller is not the team owner. |
+| `accept_invitation(p_id)` | Recipient only. Lazy expiry. moderator: insert the staff row. team_owner: lock the team row (`for update`, as `begin_team_change` does), re-check the sender is still the owner (`EI003`, else), insert the recipient into `team_members` as `admin` if they are not a member yet (no add-member function exists; this is the only way in, D7), then do the swap **inline**: set the old owner to `admin` first (the one-owner partial index), then the recipient to `owner`. **Do not call `transfer_team_ownership`**: it requires the caller (`auth.uid()`, here the recipient) to be the current owner and the target to be a member, so it would raise `42501` or `P0002`. Writes an `invite_response` notification to the sender, marks the recipient's invite notification read. Repeat on `accepted` returns OK. |
 | `decline_invitation(p_id)` | Recipient only. Same notifications. Repeat on `declined` returns OK. |
 | `cancel_invitation(p_id)` | *Should.* Sender only. |
 | `mark_notifications_read(p_ids uuid[])` | Own rows only; null marks all. |
 
-Error codes: `42501` not allowed, `22023` invalid, `ET01` tournament full, `EI01` invitation not open, `EI02` already pending, `EI03` the sender no longer owns the team. As in step 6, a raise rolls back that call's earlier updates: the client treats `pending` as open only when `expires_at > now()`.
+Error codes (a SQLSTATE must be exactly five characters, so the four-character draft codes ET01 and EI01 to EI03 were invalid): `42501` not allowed, `22023` invalid, `ET001` tournament full, `EI001` invitation not open, `EI002` already pending, `EI003` the sender no longer owns the team. As in step 6, a raise rolls back that call's earlier updates: the client treats `pending` as open only when `expires_at > now()`.
 
 ### Client exports (Job 5 writes them first, in the first 15 minutes, so Job 4 can import them)
 
@@ -139,7 +139,7 @@ TASK
 2. supabase/tests/tournaments.sql: rolled-back script, `raise exception 'FAIL ...'`, final select. Cover:
    create and repeat; a reused id from another account; invalid fields; direct writes refused; a non-staff
    caller refused on both team functions; create_tournament_team atomic (team, owner member, link) and
-   idempotent; add_tournament_team by a team admin and refused for a plain player; ET01 at the seat limit;
+   idempotent; add_tournament_team by a team admin and refused for a plain player; ET001 at the seat limit;
    exactly one owner row.
 DO NOT apply anything to the remote project. DO NOT edit app code or database.types.ts.
 OUTPUT: the memory.md section 11 report. Say what you could not run.
@@ -161,8 +161,8 @@ TASK
 2. supabase/tests/invitations.sql: rolled-back script. It creates its fixtures through the Job 1 functions.
    Cover: send by owner and by moderator (moderator invite refused for a moderator); the notification row
    for the recipient; accept moderator adds staff; accept team_owner moves ownership and the old owner
-   becomes admin; the sender no longer owns the team at accept: EI03; decline; expiry; a second pending
-   invite: EI02; a stranger cannot accept, read or cancel (42501 / no rows); repeat accept returns OK;
+   becomes admin; the sender no longer owns the team at accept: EI003; decline; expiry; a second pending
+   invite: EI002; a stranger cannot accept, read or cancel (42501 / no rows); repeat accept returns OK;
    the response notification to the sender; mark_notifications_read touches only own rows; direct writes
    refused.
 DO NOT apply anything to the remote project. DO NOT edit app code or database.types.ts.
@@ -213,7 +213,7 @@ TASK
 1. FIRST (15 minutes): src/features/invitations/index.ts with the four exports from "Client exports" and
    InvitationError. Push it so Job 4 can import it.
 2. Invitations repository on the server (replace the in-memory stand-in and the roster-store link), list
-   screen, accept and decline with plain error messages for EI01, EI02, EI03, 42501.
+   screen, accept and decline with plain error messages for EI001, EI002, EI003, 42501.
 3. Notifications: replace notifications-store and sample-notifications with a query on `notifications` plus
    one Realtime channel for the signed-in user (reuse the step 5 channel pattern). Invite notifications
    show Accept and Decline in the list and in the detail; `invite_response` shows the answer. Opening a row
