@@ -42,8 +42,8 @@ export function Button({ label, variant = 'primary', size = 'regular', loading =
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     base: {
-      height: sizes.control,
-      borderRadius: radius.pill,
+      minHeight: sizes.control,
+      borderRadius: radius.control,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
@@ -52,7 +52,7 @@ const createStyles = (colors: Palette) =>
     },
     compact: { height: 40, paddingHorizontal: sizes.gutter },
     primary: { backgroundColor: colors.primary },
-    secondary: { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border },
+    secondary: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
     ghost: { backgroundColor: 'transparent' },
     pressed: { opacity: 0.8 },
     disabled: { opacity: 0.45 },
