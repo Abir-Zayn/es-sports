@@ -62,7 +62,7 @@ export function toDbPatch(patch: Partial<StoredProfile>): { profile: Partial<Pro
   return { profile, private: priv };
 }
 
-type UserRef = { id: string; user_metadata?: Record<string, unknown> };
+type UserRef = { id: string; email?: string; user_metadata?: Record<string, unknown> };
 
 /**
  * Loads the signed-in user's profile. If there is no row yet (an account made before the profiles migration, or a
@@ -78,7 +78,9 @@ export async function fetchProfile(user: UserRef): Promise<StoredProfile> {
   if (profile.data) return toStoredProfile(profile.data, priv.data);
 
   const fromProvider = providerProfileFromMetadata(user.user_metadata);
-  const created = { id: user.id, full_name: fromProvider.fullName ?? null, avatar_url: fromProvider.avatarUrl ?? null };
+  // Same fallback as the signup trigger: with no provider name, the email's first part, so search can find the player.
+  const emailName = user.email?.split('@')[0]?.trim().slice(0, 40) || null;
+  const created = { id: user.id, full_name: fromProvider.fullName ?? emailName, avatar_url: fromProvider.avatarUrl ?? null };
   const { error } = await supabase.from('profiles').upsert(created, { onConflict: 'id', ignoreDuplicates: true });
   if (error) throw error;
   return toStoredProfile(
