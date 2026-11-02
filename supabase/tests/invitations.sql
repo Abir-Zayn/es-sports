@@ -68,6 +68,7 @@ begin
   ));
   perform public.create_tournament_team(v_tour, v_team1, 'Owner Lions', 'OLI', 'blue');
   perform public.create_tournament_team(v_tour, v_team3, 'Owner Royals', 'ORY', 'yellow');
+  perform pg_temp.inv_assert(not exists (select 1 from public.team_members where team_id in (v_team1, v_team3) and role = 'owner'), 'new tournament teams await their first owner');
 
   -- 2. Send moderator invite by owner, duplicate pending EI002, accept adds staff + notifications, moderator cannot invite moderator
   v_inv := public.send_tournament_moderator_invite(v_tour, pg_temp.inv_uid(2));
@@ -111,32 +112,33 @@ begin
   perform public.accept_invitation(v_inv);
   perform pg_temp.inv_assert(exists (
     select 1 from public.team_members where team_id = v_team1 and profile_id = pg_temp.inv_uid(3) and role = 'owner'
-  ) and exists (
-    select 1 from public.team_members where team_id = v_team1 and profile_id = pg_temp.inv_uid(1) and role = 'admin'
-  ), 'team1 ownership moved to user 3 and user 1 demoted to admin');
+  ) and not exists (
+    select 1 from public.team_members where team_id = v_team1 and profile_id = pg_temp.inv_uid(1)
+  ), 'user 3 becomes first owner without adding the organiser');
 
   perform pg_temp.inv_as(2);
   perform public.create_tournament_team(v_tour, v_team2, 'Mod Tigers', 'MTG', 'blue');
-  -- Moderator does not own team3 -> EI003
-  perform pg_temp.inv_err(format('select public.send_team_owner_invite(%L, %L, %L)', v_tour, v_team3, pg_temp.inv_uid(3)), 'EI003', 'non-owner send_team_owner_invite EI003');
+  perform pg_temp.inv_err(format('select public.send_team_owner_invite(%L, %L, %L)', v_tour, v_team1, pg_temp.inv_uid(3)), 'EI003', 'cannot invite an owner for an owned team');
   v_inv2 := public.send_team_owner_invite(v_tour, v_team2, pg_temp.inv_uid(4));
   perform pg_temp.inv_as(4);
   perform public.accept_invitation(v_inv2);
   perform pg_temp.inv_assert(exists (
     select 1 from public.team_members where team_id = v_team2 and profile_id = pg_temp.inv_uid(4) and role = 'owner'
-  ) and exists (
-    select 1 from public.team_members where team_id = v_team2 and profile_id = pg_temp.inv_uid(2) and role = 'admin'
-  ), 'team2 ownership moved to user 4 and user 2 demoted to admin');
+  ) and not exists (
+    select 1 from public.team_members where team_id = v_team2 and profile_id = pg_temp.inv_uid(2)
+  ), 'user 4 becomes first owner without adding the moderator');
 
-  -- 4. Sender no longer owns team at accept -> EI003
+  -- 4. A declined invitation leaves the team ownerless and a new person can be invited.
   perform pg_temp.inv_as(1);
   v_inv := public.send_team_owner_invite(v_tour, v_team3, pg_temp.inv_uid(3));
-  set local role postgres;
-  insert into public.team_members (team_id, profile_id, role) values (v_team3, pg_temp.inv_uid(5), 'player');
-  perform pg_temp.inv_as(1);
-  perform public.transfer_team_ownership(v_team3, pg_temp.inv_uid(5));
   perform pg_temp.inv_as(3);
-  perform pg_temp.inv_err(format('select public.accept_invitation(%L)', v_inv), 'EI003', 'accept when sender lost ownership EI003');
+  perform public.decline_invitation(v_inv);
+  perform pg_temp.inv_assert(not exists (select 1 from public.team_members where team_id = v_team3 and role = 'owner'), 'decline leaves team ownerless');
+  perform pg_temp.inv_as(1);
+  v_inv2 := public.send_team_owner_invite(v_tour, v_team3, pg_temp.inv_uid(5));
+  perform pg_temp.inv_as(5);
+  perform public.accept_invitation(v_inv2);
+  perform pg_temp.inv_assert(exists (select 1 from public.team_members where team_id = v_team3 and profile_id = pg_temp.inv_uid(5) and role = 'owner'), 'replacement invite accepted');
 
   -- 5. Decline, cancel, and expiry (EI001) + lazy expiry on re-send
   perform pg_temp.inv_as(1);

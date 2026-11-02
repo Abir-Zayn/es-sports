@@ -140,8 +140,7 @@ begin
   end loop;
   if (select name || '/' || short_name || '/' || tone from public.teams where id = format(team, 1)::uuid)
       is distinct from 'Agrabad Tigers/AGT/yellow'
-    or (select string_agg(profile_id || ':' || role, ',') from public.team_members where team_id = format(team, 1)::uuid)
-      is distinct from 'f5a00000-0000-4000-8000-000000000001:owner'
+    or exists (select 1 from public.team_members where team_id = format(team, 1)::uuid and role = 'owner')
     or (select count(*) from public.tournament_teams
       where tournament_id = t and team_id = format(team, 1)::uuid
         and added_by = 'f5a00000-0000-4000-8000-000000000001') <> 1 then
@@ -161,8 +160,8 @@ begin
   perform public.add_tournament_team(t, format(team, 3)::uuid);
   perform public.create_tournament_team(t, format(team, 2)::uuid, 'Bayezid Blasters', 'BB', 'neutral');
   if (select count(*) from public.tournament_teams where tournament_id = t) <> 3
-    or public.team_role(format(team, 2)::uuid) is distinct from 'owner' then
-    raise exception 'FAIL g: expected teams A, X and B in the tournament, B owned by the moderator';
+    or exists (select 1 from public.team_members where team_id = format(team, 2)::uuid and role = 'owner') then
+    raise exception 'FAIL g: expected teams A, X and B in the tournament, B awaiting its first owner';
   end if;
 end $$;
 

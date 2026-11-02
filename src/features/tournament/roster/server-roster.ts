@@ -1,7 +1,7 @@
 // The roster of a real tournament, read from and written to the server. Same function shapes as the in-memory
 // repository, so the screen and hooks do not care which one runs. Only what the server stores is supported:
 // staff, teams, and owner and moderator requests. The rest refuses with a plain message.
-import { InvitationError, sendModeratorInvite, sendTeamOwnerInvite } from '@/features/invitations';
+import { cancelInvitation, InvitationError, sendModeratorInvite, sendTeamOwnerInvite } from '@/features/invitations';
 import { traceApi } from '@/lib/api-log';
 import { localEventId } from '@/features/scoring/local-id';
 import { supabase } from '@/lib/supabase';
@@ -14,21 +14,22 @@ import { addTournamentTeam, createTournamentTeam } from '../data/tournament-writ
 import { RosterError } from './roster-store';
 import type { NewTeam, Roster, RosterTeam, StaffMember, TeamOwnerSlot, UserSummary } from './types';
 
-type PendingInvite = { kind: string; teamId: string | null; person: PersonRecord };
+type PendingInvite = { id: string; kind: string; teamId: string | null; person: PersonRecord; status: string; fromUser: string };
 
 const toUser = (person: PersonRecord): UserSummary => ({ id: person.id, name: person.name, area: person.area, avatarUrl: person.avatarUrl });
 
 /** Requests this account has sent that nobody has answered yet. The server lists only your own and those sent to you. */
 async function pendingInvites(tournamentId: string, meId: string): Promise<PendingInvite[]> {
-  const { data, error } = await traceApi('roster.pendingInvites', { tournamentId }, () => supabase.from('invitations').select('kind, team_id, to_user, profiles:profiles!invitations_to_user_fkey(full_name, area, avatar_url)')
-    .eq('tournament_id', tournamentId).eq('from_user', meId).eq('status', 'pending').gt('expires_at', new Date().toISOString()));
+  const { data, error } = await traceApi('roster.pendingInvites', { tournamentId }, () => supabase.from('invitations').select('id, kind, team_id, to_user, from_user, status, expires_at, profiles:profiles!invitations_to_user_fkey(full_name, area, avatar_url)')
+    .eq('tournament_id', tournamentId).in('status', ['pending', 'declined']).order('status', { ascending: false }).order('created_at', { ascending: false }).limit(100));
   if (error) throw error;
-  return (data ?? []).map((row) => ({ kind: row.kind, teamId: row.team_id, person: toPerson(row.to_user, row.profiles) }));
+  return (data ?? []).filter((row) => (row.status === 'declined' || Date.parse(row.expires_at) > Date.now()) && (row.kind === 'team_owner' || row.from_user === meId))
+    .map((row) => ({ id: row.id, kind: row.kind, teamId: row.team_id, person: toPerson(row.to_user, row.profiles), status: row.status, fromUser: row.from_user }));
 }
 
 function staffOf(staff: StaffRecord[], pending: PendingInvite[]): StaffMember[] {
   const accepted = staff.map((member): StaffMember => ({ user: toUser(member.user), role: member.role, status: 'accepted' }));
-  const invited = pending.filter((invite) => invite.kind === 'tournament_moderator')
+  const invited = pending.filter((invite) => invite.kind === 'tournament_moderator' && invite.status === 'pending')
     .map((invite): StaffMember => ({ user: toUser(invite.person), role: 'moderator', status: 'pending' }));
   return [...accepted, ...invited];
 }
@@ -41,8 +42,9 @@ export async function fetchRoster(tournamentId: string, me: UserSummary): Promis
     ]);
     if (!tournament) throw new RosterError('This tournament could not be found.');
     const teams = entered.map(({ team, owner }): RosterTeam => {
-      const invite = pending.find((item) => item.kind === 'team_owner' && item.teamId === team.id);
-      const slot: TeamOwnerSlot | null = invite ? { user: toUser(invite.person), status: 'pending' } : owner && owner.id !== me.id ? { user: toUser(owner), status: 'accepted' } : null;
+      const requests = pending.filter((item) => item.kind === 'team_owner' && item.teamId === team.id);
+      const invite = requests.find((item) => item.status === 'pending') ?? requests.find((item) => item.status === 'declined');
+      const slot: TeamOwnerSlot | null = owner ? { user: toUser(owner), status: 'accepted' } : invite ? { user: toUser(invite.person), status: invite.status === 'pending' ? 'pending' : 'declined', invitationId: invite.id } : null;
       return { id: team.id, name: team.name, short: team.shortName, owner: slot, players: [], ownedByMe: owner?.id === me.id };
     });
     return {
@@ -60,7 +62,7 @@ export function toRosterError(error: unknown): RosterError {
   if (error instanceof RosterError) return error;
   // Sending: EI003 means the sender is not the team's owner (the invitation text speaks to the recipient).
   if (error instanceof InvitationError) {
-    return new RosterError(error.code === 'EI003' ? 'You do not own this team, so you cannot invite an owner.' : error.message);
+    return new RosterError(error.code === 'EI003' ? 'This team already has an owner or can no longer accept this invitation.' : error.message);
   }
   return new RosterError(tournamentErrorText(error));
 }
@@ -92,7 +94,13 @@ const unavailable = async (): Promise<Roster> => {
   throw new RosterError('This is not available for published tournaments yet.');
 };
 export const removeModerator = unavailable;
-export const cancelTeamOwnerInvite = unavailable;
+export const cancelTeamOwnerInvite = (tournamentId: string, actorId: string, teamId: string) =>
+  change(tournamentId, actorId, async () => {
+    const invites = await pendingInvites(tournamentId, actorId);
+    const invite = invites.find((item) => item.kind === 'team_owner' && item.teamId === teamId && item.status === 'pending');
+    if (!invite) throw new RosterError('This invitation is no longer pending.');
+    await cancelInvitation(invite.id);
+  });
 export const disbandTeam = unavailable;
 export const setRegistrationDeadline = unavailable;
 export const closeRegistration = unavailable;

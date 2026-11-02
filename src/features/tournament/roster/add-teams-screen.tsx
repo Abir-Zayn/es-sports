@@ -59,7 +59,7 @@ export function AddTeamsScreen() {
   // A moderator search leaves out current staff. An owner search leaves out only yourself and that team's own owner or
   // waiting invitee: someone who owns or played for another team can still own this one.
   const staffIds = data ? data.staff.map((m) => m.user.id) : [];
-  const ownerIds = sheet?.kind === 'team-owner' ? [me.id, ...(sheet.team.owner ? [sheet.team.owner.user.id] : [])] : [];
+  const ownerIds = sheet?.kind === 'team-owner' ? [me.id] : [];
   const shareInvite = (team: RosterTeam) =>
     void shareText(ownerInviteMessage({ fromName: me.name, teamName: team.name, tournamentName: data?.tournamentName ?? '' }));
 
@@ -83,9 +83,9 @@ export function AddTeamsScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}>
-          {actions.inlineError ? (
+          {actions.inlineError || (sheet === null && inviteOwner.error) ? (
             <Text accessibilityRole="alert" style={styles.error}>
-              {rosterErrorText(actions.inlineError)}
+              {rosterErrorText(actions.inlineError ?? inviteOwner.error)}
             </Text>
           ) : null}
           <RegistrationSection
@@ -113,6 +113,7 @@ export function AddTeamsScreen() {
             busy={busy}
             onCreate={() => open({ kind: 'create-team' })}
             onInviteOwner={(team) => open({ kind: 'team-owner', team })}
+            onReinviteOwner={(team) => { if (team.owner?.status === 'declined') inviteOwner.mutate({ teamId: team.id, user: team.owner.user }); }}
             onCancelInvite={(team) => actions.cancelOwner.mutate(team.id)}
             onShareInvite={shareInvite}
             onViewSquad={viewSquad}
