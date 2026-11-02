@@ -63,7 +63,7 @@ describe('teams and staff of a published tournament', () => {
     expect(screen.getByRole('button', { name: 'Add my team' })).toBeTruthy();
     expect(screen.queryByText('Schedule')).toBeNull();
     expect(screen.getByRole('button', { name: 'Disband Alpha' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /squad/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'View Alpha squad' })).toBeTruthy();
     expect(screen.getByRole('button', { name: /Cancel owner invite/ })).toBeTruthy();
     expect(screen.queryByText('Lock rosters')).toBeNull();
   });
