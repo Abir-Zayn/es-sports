@@ -35,8 +35,8 @@ export type RawMatchRow = {
   created_at: string;
 };
 
-const formatOvers = (balls?: number | null, limit?: number | null) => {
-  if (balls != null && balls > 0) {
+export const formatOvers = (balls?: number | null, limit?: number | null) => {
+  if (balls != null && balls >= 0) {
     const overNum = Math.floor(balls / 6);
     const rem = balls % 6;
     return rem > 0 ? `${overNum}.${rem}` : `${overNum}`;

@@ -6,6 +6,10 @@ import { Button, Text } from '@/components/ui';
 import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { competitionFormats, type TournamentDraft } from '../create/draft';
+import { isUuid } from '@/features/scoring/data/uuid';
+
+import { StartMatchSheet } from '../fixture-match/start-match-sheet';
+import { canStartFixture } from '../fixture-match/start-fixture';
 import { ConfirmSheet } from '../roster/components/confirm-sheet';
 import { AddMatchSheet } from './components/add-match-sheet';
 import { EditMatchSheet } from './components/edit-match-sheet';
@@ -15,7 +19,7 @@ import type { ScheduledMatch, ScheduleTeam } from './types';
 import { useScheduleBuilder } from './use-schedule-builder';
 
 /** What the builder needs from the tournament: a draft's setup or a published tournament's. */
-export type ScheduleSetup = Pick<TournamentDraft, 'competition' | 'matchFormat' | 'venue' | 'startDate' | 'endDate'>;
+export type ScheduleSetup = Pick<TournamentDraft, 'competition' | 'matchFormat' | 'venue' | 'startDate' | 'endDate' | 'playersPerSide'>;
 
 type Props = {
   tournamentId: string;
@@ -23,6 +27,7 @@ type Props = {
   days: string[];
   teams: ScheduleTeam[];
   isOwner: boolean;
+  isStaff?: boolean;
   bottomInset: number;
 };
 
@@ -32,10 +37,11 @@ const shortDate = (date: string) => format(parseISO(date), 'd MMM');
  * The owner picks auto draw or manual, builds the matches, then publishes. Once published, tapping a match moves or
  * cancels it at once (the owner panel). Anyone else on the staff sees the schedule read-only.
  */
-export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, bottomInset }: Props) {
+export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isStaff = false, bottomInset }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const builder = useScheduleBuilder({ tournamentId, teams, competition: setup.competition, matchFormat: setup.matchFormat, days, isOwner });
+  const [starting, setStarting] = useState<ScheduledMatch | null>(null);
   const [editing, setEditing] = useState<ScheduledMatch | null>(null);
   const [adding, setAdding] = useState(false);
   const [confirmRedraw, setConfirmRedraw] = useState(false);
@@ -84,7 +90,7 @@ export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, bot
               {matches.length} matches over {playingDays.length} days.{isOwner ? ' Tap a match to change it.' : ''}
             </Text>
             {playingDays.map((date) => (
-              <ScheduleDay key={date} date={date} venue={setup.venue} matches={matches.filter((m) => m.date === date)} onEdit={isOwner ? setEditing : undefined} />
+              <ScheduleDay key={date} date={date} venue={setup.venue} matches={matches.filter((m) => m.date === date)} onEdit={isOwner || (isStaff && live && isUuid(tournamentId)) ? setEditing : undefined} />
             ))}
           </>
         )}
@@ -104,12 +110,15 @@ export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, bot
       </ScrollView>
       <EditMatchSheet
         match={editing}
+        readOnly={!isOwner}
         days={days}
         onSave={(date, startMin) => (editing ? builder.move(editing.id, date, startMin) : Promise.resolve(null))}
         onRemove={!live && builder.mode === 'manual' && editing ? () => builder.remove(editing.id) : undefined}
-        onCancelMatch={live && editing ? (reason) => builder.cancelMatch(editing.id, reason) : undefined}
+        onStart={live && editing && isUuid(tournamentId) && canStartFixture(editing, isStaff || isOwner) ? () => { setStarting(editing); setEditing(null); } : undefined}
+        onCancelMatch={live && editing && isOwner ? (reason) => builder.cancelMatch(editing.id, reason) : undefined}
         onClose={() => setEditing(null)}
       />
+      {starting ? <StartMatchSheet key={starting.id} tournamentId={tournamentId} match={starting} playersPerSide={setup.playersPerSide} onClose={() => setStarting(null)} /> : null}
       <AddMatchSheet visible={adding} teams={teams} days={days} firstStartMin={builder.settings.firstStartMin} onAdd={builder.add} onClose={() => setAdding(false)} />
       <ConfirmSheet
         visible={confirmRedraw}

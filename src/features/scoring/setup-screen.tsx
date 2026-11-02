@@ -14,7 +14,8 @@ import type { MatchSetup } from './types';
 import { useScorerRoutes } from './use-scorer-routes';
 
 export function ScorerSetupScreen() {
-  const { setup, score, dispatch } = useScorer();
+  const { setup, score, dispatch, fixtureRef } = useScorer();
+  const tournament = fixtureRef?.startsWith('tournament-') ?? false;
   const routes = useScorerRoutes();
   const s = useThemedStyles(styles);
   const teams = setup.teams;
@@ -53,13 +54,13 @@ export function ScorerSetupScreen() {
           selected={setup.decision} onSelect={(decision) => configure({ ...setup, decision })} />
         <Text style={s.batting}>{teams[batting].team.name} will bat first</Text>
       </ScorerSection>
-      <PlayingXiEditor setup={normalized} onChange={configure} />
+      {tournament ? null : <PlayingXiEditor setup={normalized} onChange={configure} />}
     </>}
     <OpeningPlayers setup={normalized} batting={batting} onChange={configure} />
     <SwitchRow title="Record shot direction" detail="One extra tap per scoring shot, for the wagon wheel" value={setup.recordShots}
       onChange={(recordShots) => configure({ ...normalized, recordShots })} />
     <ScorerNotice>{chase ? 'The result is saved when the chase ends.' : 'Balls are saved to your account as you score. You can resume an unfinished match from here.'}</ScorerNotice>
-    {!chase && !setup.preset ? <Button label="Try the reference match" variant="ghost" onPress={() => {
+    {!chase && !setup.preset && !tournament ? <Button label="Try the reference match" variant="ghost" onPress={() => {
       dispatch({ type: 'demo', id: localEventId() }); routes.replace('pad');
     }} /> : null}
   </ScorerFrame>;

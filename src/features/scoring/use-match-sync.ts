@@ -4,6 +4,7 @@ import { auditToOp } from './data/event-rows';
 import type { SavedMark } from './data/load-scorer';
 import { resultKey } from './data/load-scorer';
 import { computeResult } from './data/match-result';
+import { sideOf } from './data/sides';
 import { buildMatchRows } from './data/match-rows';
 import type { OutboxSnapshot } from './data/outbox';
 import { outboxes } from './data/outboxes';
@@ -43,7 +44,8 @@ export function useMatchSync({ session, userId, matchId, fixtureRef, saved }: Ar
         outbox.push({ kind: 'create', match: rows.match, players: rows.players, scorers: rows.scorers });
       } else if (event.type === 'start' && startPending.current) {
         startPending.current = false;
-        outbox.push({ kind: 'start', recordShots: session.setup.recordShots, startedAt: new Date().toISOString() });
+        outbox.push({ kind: 'start', recordShots: session.setup.recordShots, startedAt: new Date().toISOString(),
+          tossWinner: sideOf[session.setup.tossWinner], tossDecision: session.setup.decision });
       }
       const op = auditToOp(matchId, event);
       if (op) outbox.push({ kind: 'event', op });

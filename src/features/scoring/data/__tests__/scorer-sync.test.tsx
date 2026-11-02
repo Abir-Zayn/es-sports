@@ -61,10 +61,12 @@ describe('saving a scoring session', () => {
     const calls: string[] = [];
     repo.startSavedMatch.mockImplementationOnce(async () => { calls.push('start match'); });
     repo.applyOp.mockImplementationOnce(async () => { calls.push('innings'); });
-    const { send, saved } = await openScorer();
+    const { hook, send, saved } = await openScorer();
+    await send({ type: 'setup', value: { ...hook.result.current.setup, tossWinner: 'CS', decision: 'bowl' } });
     await send({ type: 'start', id: 'start-saved' });
     await saved();
     expect(calls).toEqual(['start match', 'innings']);
+    expect(repo.startSavedMatch).toHaveBeenCalledWith('55555555-5555-4555-8555-555555555555', true, expect.any(String), 'b', 'bowl');
     expect(repo.createMatch).not.toHaveBeenCalled();
   });
 

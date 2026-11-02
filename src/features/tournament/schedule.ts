@@ -19,7 +19,7 @@ export const emptyScheduleText: Record<ScheduleFilter, string> = {
   all: 'No matches are scheduled yet.',
   live: 'No match is live right now.',
   upcoming: 'No upcoming matches.',
-  result: 'No results yet.',
+  result: 'No results yet. Finished matches appear here.',
 };
 
 const GROUPS: { state: FixtureState; title: string }[] = [
@@ -41,6 +41,7 @@ export function buildSchedule(fixtures: Fixture[], filter: ScheduleFilter): Sche
   return GROUPS.filter(({ state }) => filter === 'all' || filter === state)
     .map(({ state, title }) => {
       const own = fixtures.filter((fixture) => fixture.state === state);
+      if (state === 'result') own.sort((a, b) => (b.completedAt ?? b.date).localeCompare(a.completedAt ?? a.date));
       const firstYear = own.length > 0 ? format(parseISO(own[0].date), 'yyyy') : '';
       const slices = new Map<string, ScheduleSlice>();
       for (const fixture of own) {

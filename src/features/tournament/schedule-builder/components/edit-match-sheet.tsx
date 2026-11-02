@@ -18,6 +18,8 @@ type Props = {
   onRemove?: () => void;
   /** Calls off a published match; resolves to why it could not, or null. */
   onCancelMatch?: (reason: string) => Promise<string | null>;
+  onStart?: () => void;
+  readOnly?: boolean;
   onClose: () => void;
 };
 
@@ -34,7 +36,7 @@ export function EditMatchSheet(props: Props) {
   );
 }
 
-function EditMatchBody({ match, days, onSave, onRemove, onCancelMatch, onClose }: Props & { match: ScheduledMatch }) {
+function EditMatchBody({ match, days, onSave, onRemove, onCancelMatch, onStart, readOnly, onClose }: Props & { match: ScheduledMatch }) {
   const { colors } = useTheme();
   const [date, setDate] = useState(match.date);
   const [startMin, setStartMin] = useState(match.startMin);
@@ -77,10 +79,11 @@ function EditMatchBody({ match, days, onSave, onRemove, onCancelMatch, onClose }
   return (
     <>
       <Text muted>{summary}</Text>
-      <WhenChips days={days} date={date} startMin={startMin}
-        onDate={(next) => { setDate(next); setError(null); }} onStart={(next) => { setStartMin(next); setError(null); }} />
+      {readOnly ? null : <WhenChips days={days} date={date} startMin={startMin}
+        onDate={(next) => { setDate(next); setError(null); }} onStart={(next) => { setStartMin(next); setError(null); }} />}
       {error ? <Text accessibilityRole="alert" style={{ color: colors.dangerSoftText }}>{error}</Text> : null}
-      <Button label="Save" loading={busy} onPress={() => void run(() => onSave(date, startMin))} />
+      {onStart ? <Button label="Start match" variant="secondary" disabled={busy} onPress={onStart} /> : null}
+      {readOnly ? null : <Button label="Save" loading={busy} onPress={() => void run(() => onSave(date, startMin))} />}
       {onCancelMatch ? <Button label="Cancel this match" variant="ghost" disabled={busy} onPress={() => { setError(null); setReason(''); }} /> : null}
       {onRemove ? <Button label="Remove match" variant="ghost" disabled={busy} onPress={() => { onRemove(); onClose(); }} /> : null}
     </>

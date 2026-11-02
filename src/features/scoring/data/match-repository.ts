@@ -95,9 +95,10 @@ export async function createMatch(match: MatchInsert, players: PlayerRow[], scor
 }
 
 /** Start a previously saved setup. RLS still checks the creator or assigned scorer. */
-export async function startSavedMatch(matchId: string, recordShots: boolean, startedAt: string): Promise<void> {
+export async function startSavedMatch(matchId: string, recordShots: boolean, startedAt: string, tossWinner?: 'a' | 'b', tossDecision?: 'bat' | 'bowl'): Promise<void> {
   const { data, error } = await supabase.from('matches')
-    .update({ status: 'live', started_at: startedAt, record_shots: recordShots })
+    .update({ status: 'live', started_at: startedAt, record_shots: recordShots,
+      ...(tossWinner && tossDecision ? { toss_winner_side: tossWinner, toss_decision: tossDecision } : {}) })
     .eq('id', matchId).in('status', ['scheduled', 'live']).select('id');
   if (error) throw error;
   expectChange(data, 'start this match');

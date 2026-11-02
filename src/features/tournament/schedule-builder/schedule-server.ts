@@ -4,7 +4,7 @@ import { traceApi } from '@/lib/api-log';
 import { supabase } from '@/lib/supabase';
 
 import { toTournamentError } from '../data/tournament-errors';
-import type { Schedule, ScheduledMatch, ScheduleMode, SideRef, SlotSettings, StageName } from './types';
+import type { Schedule, ScheduledMatch, ScheduleMode, SideRef, SlotSettings, StageName, LinkedMatch } from './types';
 
 const stages: readonly StageName[] = ['League', 'Round of 16', 'Quarter-final', 'Semi-final', 'Final'];
 /** 16 teams in a league with knockouts is 123 matches; the server allows 200. */
@@ -15,7 +15,7 @@ type TeamRow = { id: string; name: string; short_name: string } | null;
 type FixtureRow = {
   id: string; number: number; stage: string; round: number; home_label: string | null; away_label: string | null;
   match_date: string; start_min: number; status: string; cancel_reason: string | null; match_id: string | null;
-  home: TeamRow; away: TeamRow;
+  home: TeamRow; away: TeamRow; match: LinkedMatch | null;
 };
 
 function side(team: TeamRow, label: string | null): SideRef {
@@ -28,7 +28,7 @@ export function toScheduledMatch(row: FixtureRow): ScheduledMatch {
   return {
     id: row.id, number: row.number, stage: stages.find((s) => s === row.stage) ?? 'League', round: row.round,
     home: side(row.home, row.home_label), away: side(row.away, row.away_label), date: row.match_date, startMin: row.start_min,
-    cancelled: row.status === 'cancelled' ? { reason: row.cancel_reason ?? '' } : undefined, started: row.match_id !== null,
+    cancelled: row.status === 'cancelled' ? { reason: row.cancel_reason ?? '' } : undefined, started: row.match_id !== null, match: row.match ?? undefined,
   };
 }
 
@@ -38,7 +38,7 @@ export async function fetchServerSchedule(tournamentId: string): Promise<Schedul
     traceApi('schedule.settings', { tournamentId }, () => supabase.from('tournaments')
       .select('schedule_mode, slots_per_day, first_start_min, schedule_published_at').eq('id', tournamentId).maybeSingle()),
     traceApi('schedule.fixtures', { tournamentId }, () => supabase.from('tournament_fixtures')
-      .select('id, number, stage, round, home_label, away_label, match_date, start_min, status, cancel_reason, match_id, home:teams!tournament_fixtures_home_team_id_fkey(id, name, short_name), away:teams!tournament_fixtures_away_team_id_fkey(id, name, short_name)')
+      .select('id, number, stage, round, home_label, away_label, match_date, start_min, status, cancel_reason, match_id, home:teams!tournament_fixtures_home_team_id_fkey(id, name, short_name), away:teams!tournament_fixtures_away_team_id_fkey(id, name, short_name), match:matches!tournament_fixtures_match_id_fkey(id, status, team_a_runs, team_a_wickets, team_a_balls, team_b_runs, team_b_wickets, team_b_balls, overs_limit, winner_side, result_summary, completed_at)')
       .eq('tournament_id', tournamentId).order('match_date').order('start_min').limit(FIXTURE_LIMIT)),
   ]);
   if (settings.error) throw toTournamentError(settings.error);

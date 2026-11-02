@@ -15,6 +15,7 @@ export function tournamentMessage(error: unknown): string {
     case 'ET002': return 'This player already plays for another team in this tournament. A player can play for one team per tournament.';
     case 'ET004': return 'This match has started, so it can no longer be moved, cancelled or redrawn.';
     case 'ET005': return 'This team has scheduled matches. Cancel them or redraw the schedule first.';
+    case 'ET007': return 'Both teams must be known before starting this match.';
     case 'ET006': return 'That does not fit the schedule: two matches would be on the ground at once, a team would play twice that day, or the match falls outside the tournament days.';
     case '42501': return 'You are not allowed to do that in this tournament.';
     case '22023': return 'Check the details: the dates, team count, squad sizes and team name must fit the rules.';
