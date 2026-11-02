@@ -15,7 +15,7 @@ import { useMatchSync, type SyncInfo } from './use-match-sync';
 export { localEventId };
 
 /** `matchId` is the route id; `savedId` is the id the match is stored under. */
-type ScorerContextValue = ScorerSession & { dispatch: Dispatch<ScorerAction>; matchId: string; savedId: string; sync: SyncInfo };
+type ScorerContextValue = ScorerSession & { dispatch: Dispatch<ScorerAction>; matchId: string; savedId: string; fixtureRef: string; sync: SyncInfo };
 const ScorerContext = createContext<ScorerContextValue | null>(null);
 
 type Settled = { phase: 'error'; message: string; stopped?: OutboxStoppedError } | { phase: 'ready'; loaded: LoadedScorer };
@@ -62,7 +62,7 @@ function ScorerSessionProvider({ routeId, loaded, onReload, children }: { routeI
   // Another device wrote first, or the server refused a change for good: block every scoring screen until the
   // person chooses.
   if (sync.stopped) return <ScorerError message={sync.stopped.message} stopped={sync.stopped} onRetry={onReload} />;
-  return <ScorerContext value={{ ...session, dispatch, matchId: routeId, savedId: loaded.matchId, sync }}>{children}</ScorerContext>;
+  return <ScorerContext value={{ ...session, dispatch, matchId: routeId, savedId: loaded.matchId, fixtureRef: loaded.fixtureRef, sync }}>{children}</ScorerContext>;
 }
 
 export function useScorer() {

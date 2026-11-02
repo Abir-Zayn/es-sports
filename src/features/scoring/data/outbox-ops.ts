@@ -9,7 +9,7 @@ import type { MatchInsert, PlayerRow, ResultUpdate } from './types';
  */
 export type OutboxOp =
   | { kind: 'create'; match: MatchInsert; players: PlayerRow[]; scorers: string[] }
-  | { kind: 'start'; recordShots: boolean; startedAt: string }
+  | { kind: 'start'; recordShots: boolean; startedAt: string; tossWinner?: 'a' | 'b'; tossDecision?: 'bat' | 'bowl' }
   | { kind: 'event'; op: PersistOp }
   | { kind: 'result'; result: ResultUpdate; id?: string }
   | { kind: 'reopen'; id?: string };
@@ -42,7 +42,7 @@ export function sendOutboxOp(matchId: string, op: OutboxOp, expectedHead: string
     case 'create':
       return createMatch(op.match, op.players, op.scorers);
     case 'start':
-      return startSavedMatch(matchId, op.recordShots, op.startedAt);
+      return startSavedMatch(matchId, op.recordShots, op.startedAt, op.tossWinner, op.tossDecision);
     case 'event':
       return applyOp(matchId, op.op, op.op.kind === 'void' ? required(op) : null, expectedHead);
     case 'result':

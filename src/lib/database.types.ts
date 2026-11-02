@@ -466,7 +466,15 @@ export type Database = {
           updated_at?: string
           winner_side?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "matches_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -713,88 +721,6 @@ export type Database = {
           },
         ]
       }
-      tournament_staff: {
-        Row: {
-          added_at: string
-          role: string
-          tournament_id: string
-          user_id: string
-        }
-        Insert: {
-          added_at?: string
-          role: string
-          tournament_id: string
-          user_id: string
-        }
-        Update: {
-          added_at?: string
-          role?: string
-          tournament_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tournament_staff_tournament_id_fkey"
-            columns: ["tournament_id"]
-            isOneToOne: false
-            referencedRelation: "tournaments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tournament_staff_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tournament_squads: {
-        Row: {
-          added_at: string
-          added_by: string | null
-          profile_id: string
-          team_id: string
-          tournament_id: string
-        }
-        Insert: {
-          added_at?: string
-          added_by?: string | null
-          profile_id: string
-          team_id: string
-          tournament_id: string
-        }
-        Update: {
-          added_at?: string
-          added_by?: string | null
-          profile_id?: string
-          team_id?: string
-          tournament_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tournament_squads_added_by_fkey"
-            columns: ["added_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tournament_squads_team_id_profile_id_fkey"
-            columns: ["team_id", "profile_id"]
-            isOneToOne: false
-            referencedRelation: "team_members"
-            referencedColumns: ["team_id", "profile_id"]
-          },
-          {
-            foreignKeyName: "tournament_squads_tournament_id_team_id_fkey"
-            columns: ["tournament_id", "team_id"]
-            isOneToOne: false
-            referencedRelation: "tournament_teams"
-            referencedColumns: ["tournament_id", "team_id"]
-          },
-        ]
-      }
       tournament_fixtures: {
         Row: {
           away_label: string | null
@@ -884,6 +810,88 @@ export type Database = {
           },
         ]
       }
+      tournament_squads: {
+        Row: {
+          added_at: string
+          added_by: string | null
+          profile_id: string
+          team_id: string
+          tournament_id: string
+        }
+        Insert: {
+          added_at?: string
+          added_by?: string | null
+          profile_id: string
+          team_id: string
+          tournament_id: string
+        }
+        Update: {
+          added_at?: string
+          added_by?: string | null
+          profile_id?: string
+          team_id?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_squads_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_squads_team_id_profile_id_fkey"
+            columns: ["team_id", "profile_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["team_id", "profile_id"]
+          },
+          {
+            foreignKeyName: "tournament_squads_tournament_id_team_id_fkey"
+            columns: ["tournament_id", "team_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_teams"
+            referencedColumns: ["tournament_id", "team_id"]
+          },
+        ]
+      }
+      tournament_staff: {
+        Row: {
+          added_at: string
+          role: string
+          tournament_id: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          role: string
+          tournament_id: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          role?: string
+          tournament_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_staff_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_staff_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_teams: {
         Row: {
           added_at: string
@@ -961,6 +969,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           end_date: string
+          first_start_min?: number | null
           id: string
           match_format: string
           max_squad: number
@@ -971,7 +980,10 @@ export type Database = {
           profile_url?: string | null
           registration_deadline?: string | null
           registration_opens?: string | null
+          schedule_mode?: string | null
+          schedule_published_at?: string | null
           side_format: string
+          slots_per_day?: number | null
           start_date: string
           teams_planned: number
           venue: string
@@ -983,6 +995,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           end_date?: string
+          first_start_min?: number | null
           id?: string
           match_format?: string
           max_squad?: number
@@ -993,7 +1006,10 @@ export type Database = {
           profile_url?: string | null
           registration_deadline?: string | null
           registration_opens?: string | null
+          schedule_mode?: string | null
+          schedule_published_at?: string | null
           side_format?: string
+          slots_per_day?: number | null
           start_date?: string
           teams_planned?: number
           venue?: string
@@ -1091,19 +1107,11 @@ export type Database = {
       }
       can_score_match: { Args: { p_match: string }; Returns: boolean }
       cancel_invitation: { Args: { p_id: string }; Returns: undefined }
+      cancel_scorer_handover: { Args: { p_id: string }; Returns: undefined }
       cancel_tournament_fixture: {
         Args: { p_fixture: string; p_reason: string }
         Returns: undefined
       }
-      publish_tournament_schedule: {
-        Args: { p: Json; p_tournament: string }
-        Returns: undefined
-      }
-      reschedule_tournament_fixture: {
-        Args: { p_date: string; p_fixture: string; p_start_min: number }
-        Returns: undefined
-      }
-      cancel_scorer_handover: { Args: { p_id: string }; Returns: undefined }
       claim_score_head: {
         Args: { p_expected_head: string; p_match: string; p_op: string }
         Returns: boolean
@@ -1173,8 +1181,16 @@ export type Database = {
         Args: { p_match: string; p_to: string }
         Returns: string
       }
+      publish_tournament_schedule: {
+        Args: { p: Json; p_tournament: string }
+        Returns: undefined
+      }
       raise_tournament_team_clash: {
         Args: { p_profile: string; p_role: string; p_team: string }
+        Returns: undefined
+      }
+      refresh_tournament_match_totals: {
+        Args: { p_match: string }
         Returns: undefined
       }
       remove_team_member: {
@@ -1195,6 +1211,10 @@ export type Database = {
       }
       require_tournament_owner: {
         Args: { p_tournament: string }
+        Returns: undefined
+      }
+      reschedule_tournament_fixture: {
+        Args: { p_date: string; p_fixture: string; p_start_min: number }
         Returns: undefined
       }
       save_match_result: {
@@ -1226,13 +1246,22 @@ export type Database = {
         Args: { p_availability: string; p_profile: string; p_team: string }
         Returns: undefined
       }
+      set_team_member_role: {
+        Args: { p_profile: string; p_role: string; p_team: string }
+        Returns: undefined
+      }
       set_tournament_squad: {
         Args: { p_players: string[]; p_team: string; p_tournament: string }
         Returns: undefined
       }
-      set_team_member_role: {
-        Args: { p_profile: string; p_role: string; p_team: string }
-        Returns: undefined
+      start_tournament_fixture: {
+        Args: {
+          p_away_xi: string[]
+          p_fixture: string
+          p_home_xi: string[]
+          p_scorer: string
+        }
+        Returns: string
       }
       team_member_role: {
         Args: { p_profile: string; p_team: string }

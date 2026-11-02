@@ -30,7 +30,7 @@ function useSetup(tournamentId: string, meId: string): { setup: ScheduleSetup | 
   const setup: ScheduleSetup | null = t ? {
     competition: competitionFormats.find((f) => f.value === t.competition)?.value ?? 'league',
     matchFormat: matchFormats.find((f) => f === t.matchFormat) ?? 'T20',
-    venue: t.venue, startDate: t.startDate, endDate: t.endDate,
+    playersPerSide: t.playersPerSide, venue: t.venue, startDate: t.startDate, endDate: t.endDate,
   } : null;
   return { setup, name: t?.name ?? '', pending: record.isPending, failed: record.isError, retry: () => void record.refetch() };
 }
@@ -74,6 +74,7 @@ export function ScheduleBuilderScreen() {
         days={tournamentDays(setup.setup.startDate, setup.setup.endDate)}
         teams={roster.data.teams.map(({ id, name, short }) => ({ id, name, short }))}
         isOwner={capabilitiesOf(roleIn(roster.data, me.id)).manageSchedule}
+        isStaff={roleIn(roster.data, me.id) !== null}
         bottomInset={insets.bottom}
       />
     );

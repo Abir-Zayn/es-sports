@@ -34,7 +34,7 @@ const persistOp = z.discriminatedUnion('kind', [
 ]);
 const outboxOp = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('create'), match: z.looseObject({ id: z.string() }), players: z.array(row), scorers: z.array(z.string()) }),
-  z.object({ kind: z.literal('start'), recordShots: z.boolean(), startedAt: z.string() }),
+  z.object({ kind: z.literal('start'), recordShots: z.boolean(), startedAt: z.string(), tossWinner: z.enum(['a', 'b']).optional(), tossDecision: z.enum(['bat', 'bowl']).optional() }),
   z.object({ kind: z.literal('event'), op: persistOp }),
   z.object({ kind: z.literal('result'), result: row, id: z.string().optional() }),
   z.object({ kind: z.literal('reopen'), id: z.string().optional() }),

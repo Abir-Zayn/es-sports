@@ -17,10 +17,11 @@ type Props = {
   openable?: boolean;
   /** A badge for one fixture only, e.g. "Cancelled"; overrides the group badge. */
   badgeFor?: (fixture: Fixture) => string | null;
+  matchIdFor?: (fixture: Fixture) => string | undefined;
 };
 
 /** Live now, Upcoming or Results: month headings over flat bars (a live match has no month heading). */
-export function ScheduleGroupSection({ group, showTitle, showBadge = false, badgeLabel, openable = true, badgeFor }: Props) {
+export function ScheduleGroupSection({ group, showTitle, showBadge = false, badgeLabel, openable = true, badgeFor, matchIdFor }: Props) {
   const openMatch = useOpenMatch();
   const styles = useThemedStyles(createStyles);
   return (
@@ -39,7 +40,7 @@ export function ScheduleGroupSection({ group, showTitle, showBadge = false, badg
               fixture={fixture}
               showBadge={showBadge || Boolean(badgeFor?.(fixture))}
               badgeLabel={badgeFor?.(fixture) ?? badgeLabel}
-              onPress={openable ? () => openMatch(fixture.id, fixture.state) : undefined}
+              onPress={openable && (!matchIdFor || matchIdFor(fixture)) ? () => openMatch(matchIdFor?.(fixture) ?? fixture.id, fixture.state) : undefined}
             />
           ))}
         </View>

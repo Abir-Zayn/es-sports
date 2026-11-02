@@ -17,6 +17,12 @@ export type Pairing = {
   away: SideRef;
 };
 
+export type LinkedMatch = {
+  id: string; status: string; team_a_runs: number | null; team_a_wickets: number | null; team_a_balls: number | null;
+  team_b_runs: number | null; team_b_wickets: number | null; team_b_balls: number | null; overs_limit: number;
+  winner_side: string | null; result_summary: string | null; completed_at: string | null;
+};
+
 export type ScheduledMatch = Pairing & {
   id: string;
   /** "YYYY-MM-DD". */
@@ -27,6 +33,7 @@ export type ScheduledMatch = Pairing & {
   cancelled?: { reason: string };
   /** Scoring has begun, so the match can no longer move or be cancelled. */
   started?: boolean;
+  match?: LinkedMatch;
 };
 
 export type Competition = TournamentDraft['competition'];

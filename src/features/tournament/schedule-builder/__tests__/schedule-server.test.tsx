@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { ThemeProvider } from '@/theme';
 
@@ -10,7 +10,8 @@ import { schedulePayload } from '../schedule-server';
 import type { ScheduledMatch } from '../types';
 
 jest.mock('@/lib/supabase', () => ({ supabase: jest.requireActual('../../__fixtures__/supabase-fake').fake }));
-jest.mock('@/features/match/use-match-routes', () => ({ useOpenMatch: () => jest.fn() }));
+const mockOpenMatch = jest.fn();
+jest.mock('@/features/match/use-match-routes', () => ({ useOpenMatch: () => mockOpenMatch }));
 
 const T = 'f5c00000-0000-4000-8000-000000000001';
 const alpha = { id: 'a', name: 'Alpha', short_name: 'ALP' };
@@ -32,7 +33,7 @@ function seed(published = true) {
   };
 }
 
-beforeEach(() => { fake.reset(); seed(); });
+beforeEach(() => { fake.reset(); mockOpenMatch.mockClear(); seed(); });
 
 describe('the schedule of a published tournament', () => {
   it('maps fixtures, placeholders and cancellations', async () => {
@@ -97,6 +98,19 @@ describe('the matches tab of a published tournament', () => {
     expect(screen.getByRole('button', { name: /Cancelled: Rain/ })).toBeTruthy();
     expect(screen.getByText('Cancelled')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Change schedule' })).toBeNull();
+  });
+
+  it('opens the linked match using its match id and leaves an unstarted fixture closed', async () => {
+    fake.results.tournament_fixtures.data = [row('f1', 1, { match_id: 'match-id', match: {
+      id: 'match-id', status: 'completed', team_a_runs: 50, team_a_wickets: 1, team_a_balls: 36,
+      team_b_runs: 40, team_b_wickets: 3, team_b_balls: 36, overs_limit: 20,
+      winner_side: 'a', result_summary: 'Alpha won by 10 runs', completed_at: '2999-11-10T12:00:00Z',
+    } }), row('f2', 2)];
+    await show(false);
+    await fireEvent.press(await screen.findByRole('button', { name: /Alpha won by 10 runs/ }));
+    expect(mockOpenMatch).toHaveBeenCalledWith('match-id', 'result');
+    await fireEvent.press(screen.getByRole('button', { name: /^Match 2,/ }));
+    expect(mockOpenMatch).toHaveBeenCalledTimes(1);
   });
 
   it('tells the owner to create a schedule when none is published', async () => {

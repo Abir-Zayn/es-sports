@@ -103,6 +103,8 @@ export type FixtureSide = {
 export type Fixture = {
   id: string;
   state: FixtureState;
+  /** Completion instant for ordering results played on the same day. */
+  completedAt?: string;
   /** Which match it is, e.g. "Match 13" or "Semi-final 1". */
   title: string;
   /** The calendar date, "YYYY-MM-DD". Upcoming matches are grouped by its month and show its day and weekday. */
