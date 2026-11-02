@@ -16,7 +16,14 @@ type IconComponent = ComponentType<{ size?: number; color?: string; strokeWidth?
 /** Space a screen should leave at its bottom so content clears the floating bar. */
 export const BOTTOM_NAV_CLEARANCE = 104;
 const NAV_HEIGHT = 68;
-const CREATE_SIZE = 60;
+export const CREATE_SIZE = 60;
+/** How far the raised + is pulled up out of its slot. */
+const CREATE_LIFT = 30;
+/**
+ * Distance from the bar's bottom edge to the centre of the raised + button. The row centres the slot, whose height is
+ * the button minus the lift, and the button then rises by the lift. The radial menu draws its close button here.
+ */
+export const CREATE_CENTRE_FROM_BAR_BOTTOM = NAV_HEIGHT - ((NAV_HEIGHT - (CREATE_SIZE - CREATE_LIFT)) / 2 - CREATE_LIFT + CREATE_SIZE / 2);
 
 type TabButtonProps = TabTriggerSlotProps & { label: string; icon: IconComponent };
 
@@ -77,7 +84,7 @@ const createStyles = (colors: Palette) =>
     tab: { flex: 1, alignItems: 'center', justifyContent: 'center', height: NAV_HEIGHT },
     createSlot: { flex: 1, alignItems: 'center' },
     create: {
-      marginTop: -30,
+      marginTop: -CREATE_LIFT,
       width: CREATE_SIZE,
       height: CREATE_SIZE,
       borderRadius: CREATE_SIZE / 2,

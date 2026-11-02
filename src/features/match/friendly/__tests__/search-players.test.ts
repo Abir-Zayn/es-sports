@@ -1,7 +1,7 @@
 import { searchPlayers } from '../search-players';
 
 const mockRequest = {
-  select: jest.fn(), ilike: jest.fn(), order: jest.fn(), limit: jest.fn(),
+  select: jest.fn(), ilike: jest.fn(), eq: jest.fn(), order: jest.fn(), limit: jest.fn(),
   not: jest.fn(), abortSignal: jest.fn(),
   then: (resolve: (value: unknown) => void) => Promise.resolve({
     data: [{ id: 'c40a0000-0000-4000-8000-000000000001', full_name: 'Arman Rahman', area: 'Agrabad', avatar_url: null }], error: null,
@@ -32,4 +32,13 @@ it('requires two characters and treats wildcard characters literally', async () 
   expect(mockRequest.select).not.toHaveBeenCalled();
   await searchPlayers('a_%', []);
   expect(mockRequest.ilike).toHaveBeenCalledWith('full_name', '%a\\_\\%%');
+});
+
+it('finds exactly one account when the text is a pasted user id', async () => {
+  const id = 'C40A0000-0000-4000-8000-000000000001';
+  mockRequest.eq = jest.fn().mockReturnValue(mockRequest);
+  const players = await searchPlayers(`  ${id}  `, []);
+  expect(mockRequest.eq).toHaveBeenCalledWith('id', id.toLowerCase());
+  expect(mockRequest.ilike).not.toHaveBeenCalled();
+  expect(players).toHaveLength(1);
 });

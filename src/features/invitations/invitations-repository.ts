@@ -1,3 +1,4 @@
+import { traceApi } from '@/lib/api-log';
 import { supabase } from '@/lib/supabase';
 
 import { toInvitationError } from './invitation-errors';
@@ -20,6 +21,7 @@ export function formatSentLabel(createdAt: string, now = Date.now()): string {
 }
 
 function toKind(dbKind: string): InvitationKind {
+  if (dbKind === 'team_player') return 'team-player';
   return dbKind === 'team_owner' ? 'team-owner' : 'tournament-moderator';
 }
 
@@ -48,7 +50,7 @@ export function toInvitation(row: InvitationRow, lookups: InvitationLookups): In
     id: row.id,
     kind: toKind(row.kind),
     tournamentId: row.tournament_id,
-    tournamentName: lookups.tournaments[row.tournament_id] ?? 'Tournament',
+    tournamentName: row.tournament_id ? (lookups.tournaments[row.tournament_id] ?? 'Tournament') : '',
     teamId: row.team_id,
     teamName: row.team_id ? (lookups.teams[row.team_id] ?? 'Team') : null,
     fromUserId: row.from_user,
@@ -65,11 +67,25 @@ export function toInvitation(row: InvitationRow, lookups: InvitationLookups): In
 /** Sends a team-owner invitation and returns its id. Throws `InvitationError` on failure. */
 export async function sendTeamOwnerInvite(tournamentId: string, teamId: string, toUserId: string): Promise<string> {
   try {
-    const { data, error } = await supabase.rpc('send_team_owner_invite', {
+    const { data, error } = await traceApi('invite.sendTeamOwner', { tournamentId, teamId, toUserId }, () => supabase.rpc('send_team_owner_invite', {
       p_tournament: tournamentId,
       p_team: teamId,
       p_to: toUserId,
-    });
+    }));
+    if (error || !data) throw toInvitationError(error);
+    return data;
+  } catch (error: unknown) {
+    throw toInvitationError(error);
+  }
+}
+
+/** Invites a person to play for a team (caller is its owner or an admin) and returns the id. Throws `InvitationError`. */
+export async function sendTeamPlayerInvite(teamId: string, toUserId: string): Promise<string> {
+  try {
+    const { data, error } = await traceApi('invite.sendTeamPlayer', { teamId, toUserId }, () => supabase.rpc('send_team_player_invite', {
+      p_team: teamId,
+      p_to: toUserId,
+    }));
     if (error || !data) throw toInvitationError(error);
     return data;
   } catch (error: unknown) {
@@ -80,10 +96,10 @@ export async function sendTeamOwnerInvite(tournamentId: string, teamId: string, 
 /** Sends a tournament-moderator invitation and returns its id. Throws `InvitationError` on failure. */
 export async function sendModeratorInvite(tournamentId: string, toUserId: string): Promise<string> {
   try {
-    const { data, error } = await supabase.rpc('send_tournament_moderator_invite', {
+    const { data, error } = await traceApi('invite.sendModerator', { tournamentId, toUserId }, () => supabase.rpc('send_tournament_moderator_invite', {
       p_tournament: tournamentId,
       p_to: toUserId,
-    });
+    }));
     if (error || !data) throw toInvitationError(error);
     return data;
   } catch (error: unknown) {
@@ -94,7 +110,7 @@ export async function sendModeratorInvite(tournamentId: string, toUserId: string
 /** Accepts a pending invitation. Throws `InvitationError` (`closed: true` on EI001/EI003) on failure. */
 export async function acceptInvitation(id: string): Promise<void> {
   try {
-    const { error } = await supabase.rpc('accept_invitation', { p_id: id });
+    const { error } = await traceApi('invite.accept', { id }, () => supabase.rpc('accept_invitation', { p_id: id }));
     if (error) throw toInvitationError(error);
   } catch (error: unknown) {
     throw toInvitationError(error);
@@ -104,7 +120,7 @@ export async function acceptInvitation(id: string): Promise<void> {
 /** Declines a pending invitation. Throws `InvitationError` (`closed: true` on EI001/EI003) on failure. */
 export async function declineInvitation(id: string): Promise<void> {
   try {
-    const { error } = await supabase.rpc('decline_invitation', { p_id: id });
+    const { error } = await traceApi('invite.decline', { id }, () => supabase.rpc('decline_invitation', { p_id: id }));
     if (error) throw toInvitationError(error);
   } catch (error: unknown) {
     throw toInvitationError(error);
@@ -114,7 +130,7 @@ export async function declineInvitation(id: string): Promise<void> {
 /** Cancels a pending invitation sent by the caller. Throws `InvitationError` on failure. */
 export async function cancelInvitation(id: string): Promise<void> {
   try {
-    const { error } = await supabase.rpc('cancel_invitation', { p_id: id });
+    const { error } = await traceApi('invite.cancel', { id }, () => supabase.rpc('cancel_invitation', { p_id: id }));
     if (error) throw toInvitationError(error);
   } catch (error: unknown) {
     throw toInvitationError(error);
@@ -123,21 +139,23 @@ export async function cancelInvitation(id: string): Promise<void> {
 
 /** Loads visible invitations from Supabase with their tournament, team and profile names. */
 export async function fetchInvitations(userId?: string, now = Date.now()): Promise<Invitation[]> {
-  const { data, error } = await supabase
+  const { data, error } = await traceApi('invite.list', { userId }, () => supabase
     .from('invitations')
     .select('id, kind, tournament_id, team_id, from_user, to_user, status, expires_at, created_at, resolved_at')
     .order('created_at', { ascending: false })
-    .limit(LIST_LIMIT);
+    .limit(LIST_LIMIT));
   if (error) throw toInvitationError(error);
   const rows = data ?? [];
   if (rows.length === 0) return [];
 
-  const tournamentIds = [...new Set(rows.map((r) => r.tournament_id))];
+  const tournamentIds = [...new Set(rows.flatMap((r) => (r.tournament_id ? [r.tournament_id] : [])))];
   const teamIds = [...new Set(rows.flatMap((r) => (r.team_id ? [r.team_id] : [])))];
   const profileIds = [...new Set(rows.flatMap((r) => [r.from_user, r.to_user]))];
 
   const [tournamentsRes, teamsRes, profilesRes] = await Promise.all([
-    supabase.from('tournaments').select('id, name').in('id', tournamentIds),
+    tournamentIds.length > 0
+      ? supabase.from('tournaments').select('id, name').in('id', tournamentIds)
+      : Promise.resolve({ data: [] as { id: string; name: string }[], error: null }),
     teamIds.length > 0
       ? supabase.from('teams').select('id, name').in('id', teamIds)
       : Promise.resolve({ data: [] as { id: string; name: string }[], error: null }),

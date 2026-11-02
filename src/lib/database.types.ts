@@ -226,7 +226,7 @@ export type Database = {
           status: string
           team_id: string | null
           to_user: string
-          tournament_id: string
+          tournament_id: string | null
         }
         Insert: {
           created_at?: string
@@ -238,7 +238,7 @@ export type Database = {
           status?: string
           team_id?: string | null
           to_user: string
-          tournament_id: string
+          tournament_id?: string | null
         }
         Update: {
           created_at?: string
@@ -250,7 +250,7 @@ export type Database = {
           status?: string
           team_id?: string | null
           to_user?: string
-          tournament_id?: string
+          tournament_id?: string | null
         }
         Relationships: [
           {
@@ -1006,6 +1006,10 @@ export type Database = {
         Args: { p_match: string; p_to: string }
         Returns: string
       }
+      raise_tournament_team_clash: {
+        Args: { p_profile: string; p_role: string; p_team: string }
+        Returns: undefined
+      }
       remove_team_member: {
         Args: { p_profile: string; p_team: string }
         Returns: undefined
@@ -1027,6 +1031,10 @@ export type Database = {
         Args: { p_team: string; p_to: string; p_tournament: string }
         Returns: string
       }
+      send_team_player_invite: {
+        Args: { p_team: string; p_to: string }
+        Returns: string
+      }
       send_tournament_moderator_invite: {
         Args: { p_to: string; p_tournament: string }
         Returns: string
@@ -1044,6 +1052,10 @@ export type Database = {
         Returns: string
       }
       team_role: { Args: { p_team: string }; Returns: string }
+      tournament_team_clash: {
+        Args: { p_profile: string; p_role: string; p_team: string }
+        Returns: string
+      }
       transfer_team_ownership: {
         Args: { p_profile: string; p_team: string }
         Returns: undefined

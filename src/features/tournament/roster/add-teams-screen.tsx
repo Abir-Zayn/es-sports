@@ -56,9 +56,10 @@ export function AddTeamsScreen() {
   const role = data ? roleIn(data, me.id) : null;
   const caps = data?.server ? serverCapabilities(capabilitiesOf(role)) : capabilitiesOf(role);
   const subtitle = data?.tournamentName ?? params.name;
-  // Each search leaves out people who already hold that role; a moderator may still own a team.
+  // A moderator search leaves out current staff. An owner search leaves out only yourself and that team's own owner or
+  // waiting invitee: someone who owns or played for another team can still own this one.
   const staffIds = data ? data.staff.map((m) => m.user.id) : [];
-  const ownerIds = data ? data.teams.flatMap((t) => (t.owner ? [t.owner.user.id] : [])) : [];
+  const ownerIds = sheet?.kind === 'team-owner' ? [me.id, ...(sheet.team.owner ? [sheet.team.owner.user.id] : [])] : [];
   const shareInvite = (team: RosterTeam) =>
     void shareText(ownerInviteMessage({ fromName: me.name, teamName: team.name, tournamentName: data?.tournamentName ?? '' }));
 

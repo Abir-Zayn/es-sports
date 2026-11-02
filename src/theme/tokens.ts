@@ -27,41 +27,41 @@ export type Palette = {
 };
 
 const dark: Palette = {
-  background: '#0A0E0D',
-  surface: '#141A18',
-  surfaceRaised: '#1C2421',
-  border: '#222B28',
-  outline: '#3A4642',
-  text: '#F2F5F3',
-  textMuted: '#9AA6A1',
-  primary: '#19BFFF',
-  primaryText: '#04121A',
-  primarySoft: '#0A2433',
-  primaryDeep: '#0B6E99',
-  link: '#19BFFF',
+  background: '#1A1E2E',
+  surface: '#20263A',
+  surfaceRaised: '#262F45',
+  border: '#2E3650',
+  outline: '#64748B',
+  text: '#F8FAFC',
+  textMuted: '#A8B6CA',
+  primary: '#2563EB',
+  primaryText: '#FFFFFF',
+  primarySoft: '#1E355A',
+  primaryDeep: '#1D4ED8',
+  link: '#93C5FD',
   live: '#FF4D4D',
   onLive: '#FFFFFF',
-  accent: '#FFC83D',
-  accentSoft: '#3A2F12',
+  accent: '#EAB308',
+  accentSoft: '#403619',
   danger: '#EF4444',
   dangerSoft: '#3A1A1A',
   dangerSoftText: '#FF8A8A',
-  overlay: 'rgba(10, 14, 13, 0.85)',
+  overlay: 'rgba(26, 30, 46, 0.85)',
 };
 
 const light: Palette = {
-  background: '#F2F5F4',
-  surface: '#E7EDEA',
-  surfaceRaised: '#DAE3DF',
-  border: '#BFCBC5',
-  outline: '#9FB0A8',
-  text: '#0B1410',
-  textMuted: '#4F6258',
-  primary: '#19BFFF',
-  primaryText: '#04121A',
-  primarySoft: '#D5ECF8',
-  primaryDeep: '#0B6E99',
-  link: '#0A72A8',
+  background: '#F1F5F9',
+  surface: '#FFFFFF',
+  surfaceRaised: '#E5ECF6',
+  border: '#CBD5E1',
+  outline: '#94A3B8',
+  text: '#172033',
+  textMuted: '#475569',
+  primary: '#2563EB',
+  primaryText: '#FFFFFF',
+  primarySoft: '#DBEAFE',
+  primaryDeep: '#1D4ED8',
+  link: '#1D4ED8',
   live: '#E5243B',
   onLive: '#FFFFFF',
   accent: '#8A5A00',
@@ -69,7 +69,7 @@ const light: Palette = {
   danger: '#C62828',
   dangerSoft: '#F6D5D5',
   dangerSoftText: '#9B1C1C',
-  overlay: 'rgba(242, 245, 244, 0.85)',
+  overlay: 'rgba(241, 245, 249, 0.85)',
 };
 
 export const palettes = { dark, light } as const;
@@ -78,13 +78,12 @@ export const palettes = { dark, light } as const;
 export type AvatarTone = 'blue' | 'yellow' | 'neutral';
 
 export type ColorScheme = keyof typeof palettes;
-export type ThemePreference = ColorScheme | 'system';
 
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
 
-export const sizes = { control: 52, field: 58, icon: 22, hitSlop: 12, gutter: 20, sectionGap: 30 } as const;
+export const sizes = { control: 48, field: 58, icon: 22, hitSlop: 12, gutter: 16, sectionGap: 24 } as const;
 
-export const radius = { sm: 6, md: 12, lg: 20, pill: 999 } as const;
+export const radius = { sm: 8, md: 12, control: 16, lg: 20, pill: 999 } as const;
 
 export const typography = {
   title: { fontSize: 28, fontWeight: '700', lineHeight: 34 },

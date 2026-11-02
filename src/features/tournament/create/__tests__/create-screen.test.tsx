@@ -41,7 +41,7 @@ describe('create tournament form', () => {
     jest.clearAllMocks(); load.mockResolvedValue(null); save.mockImplementation(async (_id, draft) => draft);
     pick.mockResolvedValue({ canceled: true, assets: null });
   });
-  it('shows all requested fields together, with Add teams opening the teams screen', async () => {
+  it('shows all requested fields together, with Add teams checking the setup first', async () => {
     await show();
     expect(await screen.findByRole('button', { name: 'Add tournament cover' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Add tournament profile photo' })).toBeTruthy();
@@ -50,11 +50,10 @@ describe('create tournament form', () => {
     for (const name of ['Start date, Choose a date', 'End date, Choose a date', 'Match format, T20', 'Knockout type, League + knockout', 'Number of teams, 8 teams']) {
       expect(screen.getByRole('button', { name })).toBeTruthy();
     }
+    // Add teams publishes first, so an incomplete setup stops at the form instead of opening the teams screen.
     await fireEvent.press(screen.getByRole('button', { name: 'Add teams and staff' }));
-    expect(mockPush).toHaveBeenLastCalledWith({
-      pathname: '/tournament/add-teams',
-      params: { teams: '8', name: '', side: '11', minSquad: '14', maxSquad: '16', opens: '', deadline: '', starts: '' },
-    });
+    expect(screen.getByText('Enter a tournament name of at least 3 characters.')).toBeTruthy();
+    expect(mockPush).not.toHaveBeenCalled();
     expect(screen.queryByText('Continue to format')).toBeNull();
   });
   it('validates and saves the form with the selected format', async () => {

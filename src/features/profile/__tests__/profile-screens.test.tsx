@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
 
 import { loadLinkedAccounts } from '@/features/auth/linked-accounts';
@@ -73,8 +73,7 @@ describe('profile screens render without errors', () => {
     expect(screen.queryByText('Connected Accounts')).toBeNull();
     expect(screen.queryByText('Preferences')).toBeNull();
     expect(screen.queryByText('Appearance')).toBeNull();
-    expect(screen.getByLabelText('Appearance')).toBeTruthy();
-    expect(screen.getByText('System')).toBeTruthy();
+    expect(screen.getByText('Appearance follows your device settings.')).toBeTruthy();
   });
 
   it('Settings, with Google not linked, offers Link and no import button', async () => {
@@ -104,6 +103,16 @@ describe('profile screens render without errors', () => {
     expect(screen.getAllByLabelText('Wickets 9').length).toBeGreaterThan(0);
     expect(screen.getByLabelText('Teams 3')).toBeTruthy();
     expect(screen.getByText('Bat 45 (30)')).toBeTruthy();
+  });
+
+  it('switches career figures with the batting and bowling icon tabs', async () => {
+    await withTheme(<ProfileScreen />);
+    expect(screen.getByRole('tab', { name: 'Batting' }).props.accessibilityState.selected).toBe(true);
+    await fireEvent.press(screen.getByRole('tab', { name: 'Bowling' }));
+    expect(screen.getByRole('tab', { name: 'Bowling' }).props.accessibilityState.selected).toBe(true);
+    expect(screen.getByLabelText('Best 3/14')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('tab', { name: 'Batting' }));
+    expect(screen.getByLabelText('Highest 78*')).toBeTruthy();
   });
 
   it('Profile tab says when the match figures could not load', async () => {

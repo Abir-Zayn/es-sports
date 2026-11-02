@@ -1,3 +1,4 @@
+import { traceApi } from '@/lib/api-log';
 import { supabase } from '@/lib/supabase';
 import type { AvatarTone } from '@/theme';
 
@@ -28,7 +29,7 @@ export function draftToPayload(id: string, draft: TournamentDraft) {
 
 /** Publishes the draft under `id`. Safe to repeat with the same id: the server returns the tournament it already made. */
 export async function createTournament(id: string, draft: TournamentDraft): Promise<string> {
-  const { data, error } = await supabase.rpc('create_tournament', { p: draftToPayload(id, draft) });
+  const { data, error } = await traceApi('tournament.create', { id, name: draft.name.trim() }, () => supabase.rpc('create_tournament', { p: draftToPayload(id, draft) }));
   if (error || !data) throw toTournamentError(error);
   return data;
 }
@@ -37,14 +38,14 @@ export type NewTournamentTeam = { id: string; name: string; shortName: string; t
 
 /** Creates a team (the caller owns it) and enters it in the tournament, together. Safe to repeat with the same team id. */
 export async function createTournamentTeam(tournamentId: string, team: NewTournamentTeam): Promise<void> {
-  const { error } = await supabase.rpc('create_tournament_team', {
+  const { error } = await traceApi('tournament.createTeam', { tournamentId, teamId: team.id, name: team.name.trim() }, () => supabase.rpc('create_tournament_team', {
     p_tournament: tournamentId, p_team: team.id, p_name: team.name.trim(), p_short_name: team.shortName, p_tone: team.tone,
-  });
+  }));
   if (error) throw toTournamentError(error);
 }
 
 /** Enters a team the caller owns or administers. A repeat is fine. */
 export async function addTournamentTeam(tournamentId: string, teamId: string): Promise<void> {
-  const { error } = await supabase.rpc('add_tournament_team', { p_tournament: tournamentId, p_team: teamId });
+  const { error } = await traceApi('tournament.addTeam', { tournamentId, teamId }, () => supabase.rpc('add_tournament_team', { p_tournament: tournamentId, p_team: teamId }));
   if (error) throw toTournamentError(error);
 }

@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import Bell from 'lucide-react-native/icons/bell';
 import Settings from 'lucide-react-native/icons/settings';
+import Users from 'lucide-react-native/icons/users';
 import { useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -53,7 +54,7 @@ export function ProfileScreen() {
       style={styles.screen}
       contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.lg, paddingBottom: BOTTOM_NAV_CLEARANCE + insets.bottom }]}
     >
-      <ProfileHeader profile={profile} onSettings={() => router.push('/settings')} onEdit={() => router.push('/profile/edit')} />
+      <ProfileHeader profile={profile} userId={session?.user.id} onSettings={() => router.push('/settings')} onEdit={() => router.push('/profile/edit')} />
       {status === 'error' ? (
         <View style={styles.loadError}>
           <Text variant="caption" style={styles.error} accessibilityLiveRegion="polite">
@@ -72,12 +73,10 @@ export function ProfileScreen() {
         </View>
       ) : null}
       <StatStrip batting={career.batting} bowling={career.bowling} teams={career.allTeams} />
-      <PlayingStyle profile={profile} />
-      <PersonalInfo profile={profile} email={session?.user.email} onEdit={() => router.push('/profile/edit')} />
       <CareerStats batting={career.batting} bowling={career.bowling} onFindTeam={() => router.push('/search')} />
       <ContractedTeams
         teams={career.memberTeams.map((team) => ({ short: team.shortName, name: team.name, tone: team.tone, avatarUri: team.logoUrl ?? undefined }))}
-        onManage={() => comingSoon('Team management')}
+        onManage={() => router.push('/team/manage')}
         onTeamPress={(team) => {
           const real = career.memberTeams.find((item) => item.name === team.name && item.shortName === team.short);
           if (real) openTeam(real.id);
@@ -85,8 +84,15 @@ export function ProfileScreen() {
         onJoin={() => router.push('/search')}
       />
       <RecentPerformances performances={career.recent} />
+      <PlayingStyle profile={profile} />
+      <PersonalInfo profile={profile} email={session?.user.email} onEdit={() => router.push('/profile/edit')} />
       <View style={styles.links}>
         <SettingsGroup>
+          <SettingsRow
+            label="Team management"
+            leading={<Users size={sizes.icon} color={colors.textMuted} />}
+            onPress={() => router.push('/team/manage')}
+          />
           <SettingsRow
             label="Settings"
             leading={<Settings size={sizes.icon} color={colors.textMuted} />}

@@ -12,6 +12,7 @@ export function errorCode(error: unknown): string | null {
 export function tournamentMessage(error: unknown): string {
   switch (errorCode(error)) {
     case 'ET001': return 'This tournament already has all its teams.';
+    case 'ET002': return 'This player already plays for another team in this tournament. A player can play for one team per tournament.';
     case '42501': return 'You are not allowed to do that in this tournament.';
     case '22023': return 'Check the details: the dates, team count, squad sizes and team name must fit the rules.';
     case '23505': return 'This id is already used. Go back and try again.';

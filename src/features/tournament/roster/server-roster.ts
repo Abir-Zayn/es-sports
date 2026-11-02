@@ -2,6 +2,7 @@
 // repository, so the screen and hooks do not care which one runs. Only what the server stores is supported:
 // staff, teams, and owner and moderator requests. The rest refuses with a plain message.
 import { InvitationError, sendModeratorInvite, sendTeamOwnerInvite } from '@/features/invitations';
+import { traceApi } from '@/lib/api-log';
 import { localEventId } from '@/features/scoring/local-id';
 import { supabase } from '@/lib/supabase';
 
@@ -19,8 +20,8 @@ const toUser = (person: PersonRecord): UserSummary => ({ id: person.id, name: pe
 
 /** Requests this account has sent that nobody has answered yet. The server lists only your own and those sent to you. */
 async function pendingInvites(tournamentId: string, meId: string): Promise<PendingInvite[]> {
-  const { data, error } = await supabase.from('invitations').select('kind, team_id, to_user, profiles:profiles!invitations_to_user_fkey(full_name, area, avatar_url)')
-    .eq('tournament_id', tournamentId).eq('from_user', meId).eq('status', 'pending').gt('expires_at', new Date().toISOString());
+  const { data, error } = await traceApi('roster.pendingInvites', { tournamentId }, () => supabase.from('invitations').select('kind, team_id, to_user, profiles:profiles!invitations_to_user_fkey(full_name, area, avatar_url)')
+    .eq('tournament_id', tournamentId).eq('from_user', meId).eq('status', 'pending').gt('expires_at', new Date().toISOString()));
   if (error) throw error;
   return (data ?? []).map((row) => ({ kind: row.kind, teamId: row.team_id, person: toPerson(row.to_user, row.profiles) }));
 }

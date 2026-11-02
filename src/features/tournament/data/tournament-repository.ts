@@ -1,4 +1,5 @@
 import { toTeam, type TeamRecord } from '@/features/team';
+import { traceApi } from '@/lib/api-log';
 import { supabase } from '@/lib/supabase';
 
 import { toTournamentError } from './tournament-errors';
@@ -44,14 +45,14 @@ export const toPerson = (id: string, profile: ProfileRow): PersonRecord => ({
 
 /** The tournament, or null when it does not exist. */
 export async function fetchTournament(id: string): Promise<TournamentRecord | null> {
-  const { data, error } = await supabase.from('tournaments').select(TOURNAMENT_COLUMNS).eq('id', id).maybeSingle();
+  const { data, error } = await traceApi('tournament.fetch', { id }, () => supabase.from('tournaments').select(TOURNAMENT_COLUMNS).eq('id', id).maybeSingle());
   if (error) throw toTournamentError(error);
   return data ? toTournament(data) : null;
 }
 
 /** Tournaments the account runs (as owner or moderator), newest first. */
 export async function fetchMyTournaments(userId: string): Promise<MyTournament[]> {
-  const { data, error } = await supabase.from('tournament_staff').select(`role, tournaments(${TOURNAMENT_COLUMNS})`).eq('user_id', userId);
+  const { data, error } = await traceApi('tournament.mine', { userId }, () => supabase.from('tournament_staff').select(`role, tournaments(${TOURNAMENT_COLUMNS})`).eq('user_id', userId));
   if (error) throw toTournamentError(error);
   return (data ?? [])
     .flatMap((row) => (row.tournaments ? [{ ...toTournament(row.tournaments), myRole: row.role === 'owner' ? ('owner' as const) : ('moderator' as const) }] : []))
@@ -59,21 +60,21 @@ export async function fetchMyTournaments(userId: string): Promise<MyTournament[]
 }
 
 export async function fetchTournamentStaff(id: string): Promise<StaffRecord[]> {
-  const { data, error } = await supabase.from('tournament_staff').select('role, user_id, added_at, profiles(full_name, area, avatar_url)')
-    .eq('tournament_id', id).order('added_at');
+  const { data, error } = await traceApi('tournament.staff', { id }, () => supabase.from('tournament_staff').select('role, user_id, added_at, profiles(full_name, area, avatar_url)')
+    .eq('tournament_id', id).order('added_at'));
   if (error) throw toTournamentError(error);
   return (data ?? []).map((row) => ({ user: toPerson(row.user_id, row.profiles), role: row.role === 'owner' ? 'owner' : 'moderator' }));
 }
 
 /** The teams entered, in the order they joined, each with its current owner. */
 export async function fetchTournamentTeams(id: string): Promise<EnteredTeam[]> {
-  const { data, error } = await supabase.from('tournament_teams').select(`team_id, added_at, teams(${TEAM_COLUMNS})`)
-    .eq('tournament_id', id).order('added_at');
+  const { data, error } = await traceApi('tournament.teams', { id }, () => supabase.from('tournament_teams').select(`team_id, added_at, teams(${TEAM_COLUMNS})`)
+    .eq('tournament_id', id).order('added_at'));
   if (error) throw toTournamentError(error);
   const teams = (data ?? []).flatMap((row) => (row.teams ? [toTeam(row.teams)] : []));
   if (teams.length === 0) return [];
-  const owners = await supabase.from('team_members').select('team_id, profile_id, profiles(full_name, area, avatar_url)')
-    .eq('role', 'owner').in('team_id', teams.map((team) => team.id));
+  const owners = await traceApi('tournament.teamOwners', { teams: teams.length }, () => supabase.from('team_members').select('team_id, profile_id, profiles(full_name, area, avatar_url)')
+    .eq('role', 'owner').in('team_id', teams.map((team) => team.id)));
   if (owners.error) throw toTournamentError(owners.error);
   const ownerOf = new Map((owners.data ?? []).map((row) => [row.team_id, toPerson(row.profile_id, row.profiles)]));
   return teams.map((team) => ({ team, owner: ownerOf.get(team.id) ?? null }));

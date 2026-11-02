@@ -34,7 +34,7 @@ export function StatStrip({ batting, bowling, teams }: Props) {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     wrap: { paddingHorizontal: sizes.gutter },
-    strip: { flexDirection: 'row', borderRadius: 20, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+    strip: { flexDirection: 'row', borderTopWidth: 1, borderBottomWidth: 1, borderColor: colors.border },
     cell: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: 14 },
     divider: { borderRightWidth: 1, borderRightColor: colors.border },
     value: { fontSize: 22, lineHeight: 28, fontWeight: '800', fontVariant: ['tabular-nums'] },

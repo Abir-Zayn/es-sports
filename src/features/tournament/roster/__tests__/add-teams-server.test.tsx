@@ -79,6 +79,25 @@ describe('teams and staff of a published tournament', () => {
     expect(screen.getByText('You own this team')).toBeTruthy();
   });
 
+  it('finds someone who already owns or plays for another team when picking an owner', async () => {
+    const rafi = '11111111-1111-4111-8111-111111111111';
+    fake.results.team_members = {
+      data: [
+        { team_id: 'a', profile_id: 'me', profiles: profile('Organiser') },
+        { team_id: 'b', profile_id: rafi, profiles: profile('Rafi') },
+        { team_id: 'c', profile_id: 'me', profiles: profile('Organiser') },
+      ],
+      error: null,
+    };
+    await show();
+    await fireEvent.press(screen.getByRole('button', { name: 'Invite owner for Alpha' }));
+    fake.results.profiles = { data: [{ id: rafi, full_name: 'Rafi Khan', area: null, avatar_url: null }], error: null };
+    await fireEvent.changeText(screen.getByLabelText('Search players by name'), 'Rafi');
+    expect(await screen.findByRole('button', { name: 'Invite Rafi Khan' })).toBeTruthy();
+    // Rafi owns Bravo, yet the search must not leave him out.
+    expect(JSON.stringify(fake.calls('profiles', 'not'))).not.toContain(rafi);
+  });
+
   it('opens the list of my own teams, which says when there is none to add, and can start a new team', async () => {
     await show();
     await fireEvent.press(screen.getByRole('button', { name: 'Add my team' }));

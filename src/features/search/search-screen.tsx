@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import ChevronLeft from 'lucide-react-native/icons/chevron-left';
 import { useState } from 'react';
-import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, AppTabs, SearchField, Text } from '@/components/ui';
@@ -10,7 +10,8 @@ import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from 
 import { RecentSearches } from './components/recent-searches';
 import { ResultRow } from './components/result-row';
 import { clearSearches, saveSearch, useRecentSearches } from './recent-history';
-import { searchAll, searchTabs, type SearchGroupId, type SearchRow, type SearchTab } from './sample-data';
+import { searchAll, searchTabs, type SearchGroup, type SearchGroupId, type SearchRow, type SearchTab } from './sample-data';
+import { usePlayerResults } from './use-player-results';
 
 export function SearchScreen() {
   const router = useRouter();
@@ -22,7 +23,11 @@ export function SearchScreen() {
   const recentSearches = useRecentSearches();
 
   const hasQuery = query.trim().length > 0;
-  const groups = searchAll(query, tab);
+  // Teams and tournaments are still sample data; players are real accounts, found by name or by a pasted user id.
+  const sample = searchAll(query, tab);
+  const players = usePlayerResults(query, tab === 'all' || tab === 'players');
+  const playerGroups: SearchGroup[] = players.rows.length > 0 ? [{ id: 'players', title: 'Players', rows: players.rows }] : [];
+  const groups = [...sample.filter((g) => g.id === 'teams'), ...playerGroups, ...sample.filter((g) => g.id === 'tournaments')];
 
   function openResult(row: SearchRow, group: SearchGroupId) {
     saveSearch(query);
@@ -57,7 +62,7 @@ export function SearchScreen() {
             value={query}
             onChangeText={setQuery}
             onSubmit={() => saveSearch(query)}
-            placeholder="Tournaments, teams, players"
+            placeholder="Tournaments, teams, players or user ID"
             accessibilityLabel="Search tournaments, teams, players"
             autoFocus
           />
@@ -67,10 +72,13 @@ export function SearchScreen() {
 
         {!hasQuery ? <RecentSearches searches={recentSearches} onPick={(value) => { setQuery(value); saveSearch(value); }} onClear={clearSearches} /> : null}
 
-        {hasQuery && groups.length === 0 ? (
+        {hasQuery && players.waiting ? <ActivityIndicator accessibilityLabel="Searching players" color={colors.link} /> : null}
+        {players.failed ? <Text muted accessibilityLiveRegion="polite">Player search failed. Check your connection and try again.</Text> : null}
+
+        {hasQuery && groups.length === 0 && !players.waiting && !players.failed ? (
           <View style={styles.empty}>
             <Text variant="heading">No results</Text>
-            <Text muted>Nothing matches “{query.trim()}”. Check the spelling or try another tab.</Text>
+            <Text muted>Nothing matches “{query.trim()}”. Check the spelling, paste a full user ID, or try another tab.</Text>
           </View>
         ) : null}
 
