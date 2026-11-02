@@ -1,7 +1,7 @@
 import type { Tables } from '@/lib/database.types';
 
-/** What accepting gives: a seat on a tournament's staff, or ownership of one of its teams. */
-export type InvitationKind = 'tournament-moderator' | 'team-owner';
+/** What accepting gives: a seat on a tournament's staff, ownership of one of its teams, or a place in a team's squad. */
+export type InvitationKind = 'tournament-moderator' | 'team-owner' | 'team-player';
 
 export type InvitationStatus = 'pending' | 'accepted' | 'declined' | 'cancelled' | 'expired';
 
@@ -11,9 +11,10 @@ export type InvitationRow = Tables<'invitations'>;
 export type Invitation = {
   id: string;
   kind: InvitationKind;
-  tournamentId: string;
+  /** Null for a team-player invite, which belongs to a team rather than a tournament. */
+  tournamentId: string | null;
   tournamentName: string;
-  /** The team, for a team owner invite. */
+  /** The team, for a team owner or team player invite. */
   teamId: string | null;
   teamName: string | null;
   fromUserId?: string;

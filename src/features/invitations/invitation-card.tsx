@@ -15,10 +15,12 @@ type Props = {
 };
 
 function headline({ kind, teamName, tournamentName }: Invitation): string {
+  if (kind === 'team-player') return `Play for ${teamName ?? 'a team'}`;
   return kind === 'team-owner' ? `Own ${teamName ?? 'a team'} in ${tournamentName}` : `Moderate ${tournamentName}`;
 }
 
 const roleText: Record<Invitation['kind'], string> = {
+  'team-player': 'As a player you join the team squad. Within one tournament you can play for one team only.',
   'team-owner': 'As team owner you invite the players and pick one team moderator.',
   'tournament-moderator': 'As moderator you help add teams and invite team owners.',
 };

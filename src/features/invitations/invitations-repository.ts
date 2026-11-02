@@ -21,6 +21,7 @@ export function formatSentLabel(createdAt: string, now = Date.now()): string {
 }
 
 function toKind(dbKind: string): InvitationKind {
+  if (dbKind === 'team_player') return 'team-player';
   return dbKind === 'team_owner' ? 'team-owner' : 'tournament-moderator';
 }
 
@@ -49,7 +50,7 @@ export function toInvitation(row: InvitationRow, lookups: InvitationLookups): In
     id: row.id,
     kind: toKind(row.kind),
     tournamentId: row.tournament_id,
-    tournamentName: lookups.tournaments[row.tournament_id] ?? 'Tournament',
+    tournamentName: row.tournament_id ? (lookups.tournaments[row.tournament_id] ?? 'Tournament') : '',
     teamId: row.team_id,
     teamName: row.team_id ? (lookups.teams[row.team_id] ?? 'Team') : null,
     fromUserId: row.from_user,
@@ -68,6 +69,20 @@ export async function sendTeamOwnerInvite(tournamentId: string, teamId: string, 
   try {
     const { data, error } = await traceApi('invite.sendTeamOwner', { tournamentId, teamId, toUserId }, () => supabase.rpc('send_team_owner_invite', {
       p_tournament: tournamentId,
+      p_team: teamId,
+      p_to: toUserId,
+    }));
+    if (error || !data) throw toInvitationError(error);
+    return data;
+  } catch (error: unknown) {
+    throw toInvitationError(error);
+  }
+}
+
+/** Invites a person to play for a team (caller is its owner or an admin) and returns the id. Throws `InvitationError`. */
+export async function sendTeamPlayerInvite(teamId: string, toUserId: string): Promise<string> {
+  try {
+    const { data, error } = await traceApi('invite.sendTeamPlayer', { teamId, toUserId }, () => supabase.rpc('send_team_player_invite', {
       p_team: teamId,
       p_to: toUserId,
     }));
@@ -133,12 +148,14 @@ export async function fetchInvitations(userId?: string, now = Date.now()): Promi
   const rows = data ?? [];
   if (rows.length === 0) return [];
 
-  const tournamentIds = [...new Set(rows.map((r) => r.tournament_id))];
+  const tournamentIds = [...new Set(rows.flatMap((r) => (r.tournament_id ? [r.tournament_id] : [])))];
   const teamIds = [...new Set(rows.flatMap((r) => (r.team_id ? [r.team_id] : [])))];
   const profileIds = [...new Set(rows.flatMap((r) => [r.from_user, r.to_user]))];
 
   const [tournamentsRes, teamsRes, profilesRes] = await Promise.all([
-    supabase.from('tournaments').select('id, name').in('id', tournamentIds),
+    tournamentIds.length > 0
+      ? supabase.from('tournaments').select('id, name').in('id', tournamentIds)
+      : Promise.resolve({ data: [] as { id: string; name: string }[], error: null }),
     teamIds.length > 0
       ? supabase.from('teams').select('id, name').in('id', teamIds)
       : Promise.resolve({ data: [] as { id: string; name: string }[], error: null }),

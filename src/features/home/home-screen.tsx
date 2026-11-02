@@ -1,9 +1,8 @@
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BOTTOM_NAV_CLEARANCE } from '@/components/navigation/bottom-nav';
-import { FriendlyMatchCta } from '@/features/match/components/friendly-match-cta';
 import { useOpenMatch } from '@/features/match/use-match-routes';
 import { useNotifications } from '@/features/notifications';
 import { useProfile } from '@/features/profile/profile-provider';
@@ -49,7 +48,6 @@ export function HomeScreen() {
         onNotifications={() => router.push('/notifications')}
       />
       <LiveSection matches={liveMatches} onSeeAll={() => router.navigate('/matches')} onMatchPress={(match) => openMatch(match.id, 'live')} />
-      <View style={styles.gutter}><FriendlyMatchCta onPress={() => router.push('/match/friendly/setup')} /></View>
       <ContractedTeams
         teams={myTeams}
         onManage={() => openTeam('cs')}
@@ -66,5 +64,4 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.background },
     content: { gap: sizes.sectionGap },
-    gutter: { paddingHorizontal: sizes.gutter },
   });

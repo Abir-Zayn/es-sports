@@ -57,7 +57,7 @@ export function InvitationsScreen() {
   });
 
   function manageSquad({ tournamentId, teamId }: Invitation) {
-    if (teamId) router.push({ pathname: '/tournament/squad', params: { tournamentId, teamId } });
+    if (teamId && tournamentId) router.push({ pathname: '/tournament/squad', params: { tournamentId, teamId } });
   }
 
   const list = invitations.data ?? [];
