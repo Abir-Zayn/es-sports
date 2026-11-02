@@ -1,6 +1,6 @@
 // The roster of a real tournament, read from and written to the server. Same function shapes as the in-memory
 // repository, so the screen and hooks do not care which one runs. Only what the server stores is supported:
-// staff, teams, and owner and moderator requests. The rest refuses with a plain message.
+// staff, teams, owner and moderator requests, and removing staff or teams. The rest refuses with a plain message.
 import { cancelInvitation, InvitationError, sendModeratorInvite, sendTeamOwnerInvite } from '@/features/invitations';
 import { traceApi } from '@/lib/api-log';
 import { localEventId } from '@/features/scoring/local-id';
@@ -10,7 +10,7 @@ import {
   fetchTournament, fetchTournamentStaff, fetchTournamentTeams, toPerson, type PersonRecord, type StaffRecord,
 } from '../data/tournament-repository';
 import { tournamentErrorText } from '../data/tournament-errors';
-import { addTournamentTeam, createTournamentTeam } from '../data/tournament-writes';
+import { addTournamentTeam, createTournamentTeam, removeTournamentModerator, removeTournamentTeam } from '../data/tournament-writes';
 import { RosterError } from './roster-store';
 import type { NewTeam, Roster, RosterTeam, StaffMember, TeamOwnerSlot, UserSummary } from './types';
 
@@ -29,8 +29,15 @@ async function pendingInvites(tournamentId: string, meId: string): Promise<Pendi
 
 function staffOf(staff: StaffRecord[], pending: PendingInvite[]): StaffMember[] {
   const accepted = staff.map((member): StaffMember => ({ user: toUser(member.user), role: member.role, status: 'accepted' }));
-  const invited = pending.filter((invite) => invite.kind === 'tournament_moderator' && invite.status === 'pending')
-    .map((invite): StaffMember => ({ user: toUser(invite.person), role: 'moderator', status: 'pending' }));
+  // Pending requests sort before declined ones, so a person's first request here decides: waiting, or declined and
+  // ready to re-send. Staff and people already listed are skipped.
+  const seen = new Set(staff.map((member) => member.user.id));
+  const invited: StaffMember[] = [];
+  for (const invite of pending) {
+    if (invite.kind !== 'tournament_moderator' || seen.has(invite.person.id)) continue;
+    seen.add(invite.person.id);
+    invited.push({ user: toUser(invite.person), role: 'moderator', status: invite.status === 'pending' ? 'pending' : 'declined' });
+  }
   return [...accepted, ...invited];
 }
 
@@ -93,7 +100,9 @@ export const addOwnTeam = (tournamentId: string, actorId: string, teamId: string
 const unavailable = async (): Promise<Roster> => {
   throw new RosterError('This is not available for published tournaments yet.');
 };
-export const removeModerator = unavailable;
+/** Removes an accepted moderator or withdraws a waiting invite: the server does both in one call. */
+export const removeModerator = (tournamentId: string, actorId: string, userId: string) =>
+  change(tournamentId, actorId, () => removeTournamentModerator(tournamentId, userId));
 export const cancelTeamOwnerInvite = (tournamentId: string, actorId: string, teamId: string) =>
   change(tournamentId, actorId, async () => {
     const invites = await pendingInvites(tournamentId, actorId);
@@ -101,7 +110,9 @@ export const cancelTeamOwnerInvite = (tournamentId: string, actorId: string, tea
     if (!invite) throw new RosterError('This invitation is no longer pending.');
     await cancelInvitation(invite.id);
   });
-export const disbandTeam = unavailable;
+/** Takes the team out of the tournament. A team made here that never got an owner is deleted with it. */
+export const disbandTeam = (tournamentId: string, actorId: string, teamId: string) =>
+  change(tournamentId, actorId, () => removeTournamentTeam(tournamentId, teamId));
 export const setRegistrationDeadline = unavailable;
 export const closeRegistration = unavailable;
 export const reopenRegistration = unavailable;

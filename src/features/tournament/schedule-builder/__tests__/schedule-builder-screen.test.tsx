@@ -14,6 +14,7 @@ import { ScheduleBuilderScreen } from '../schedule-builder-screen';
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
+  useLocalSearchParams: () => ({}),
 }));
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
@@ -54,7 +55,7 @@ describe('schedule builder', () => {
     // Nothing to publish until the schedule is drawn.
     expect(screen.queryByRole('button', { name: 'Publish schedule' })).toBeNull();
     await fireEvent.press(screen.getByRole('button', { name: 'Draw schedule' }));
-    expect(await screen.findByText('6 matches over 3 days. Tap a match to move it.')).toBeTruthy();
+    expect(await screen.findByText('6 matches over 3 days. Tap a match to change it.')).toBeTruthy();
     expect(screen.getByText('Sunday, 1 Nov')).toBeTruthy();
     // Three matches at 9:00 AM, plus the "First match at" setting showing the same time.
     expect(screen.getAllByText('9:00 AM').length).toBe(4);
@@ -75,7 +76,7 @@ describe('schedule builder', () => {
     expect(await screen.findByText('Tuesday, 10 Nov')).toBeTruthy();
 
     await fireEvent.press(screen.getByRole('button', { name: 'Publish schedule' }));
-    expect(await screen.findByText('Published. Teams and followers can see it.')).toBeTruthy();
+    expect(await screen.findByText('Published. Moving or cancelling a match saves at once and tells both teams.')).toBeTruthy();
   });
 
   it('says why it cannot draw when the days are too few', async () => {
@@ -83,5 +84,36 @@ describe('schedule builder', () => {
     await show();
     await fireEvent.press(await screen.findByRole('button', { name: 'Draw schedule' }));
     expect(await screen.findByText('This needs 3 days, but the tournament runs 1. Play more matches a day or move the end date.')).toBeTruthy();
+  });
+
+  it('builds a schedule by hand, refusing a team playing twice in a day', async () => {
+    await show();
+    await fireEvent.press(await screen.findByRole('tab', { name: 'Manual' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Add match' }));
+    await fireEvent.press(screen.getAllByRole('radio', { name: 'Strikers' })[0]);
+    await fireEvent.press(screen.getAllByRole('radio', { name: 'Kings' })[1]);
+    await fireEvent.press(screen.getAllByRole('button', { name: 'Add match' }).at(-1)!);
+    expect(await screen.findByText('1 matches over 1 days. Tap a match to change it.')).toBeTruthy();
+    // Strikers again on the same day, two slots later: the ground is free but the team is not.
+    await fireEvent.press(screen.getByRole('button', { name: 'Add match' }));
+    await fireEvent.press(screen.getAllByRole('radio', { name: 'Strikers' })[0]);
+    await fireEvent.press(screen.getAllByRole('radio', { name: 'Riders' })[1]);
+    await fireEvent.press(screen.getByRole('radio', { name: 'Start at 3:00 PM' }));
+    await fireEvent.press(screen.getAllByRole('button', { name: 'Add match' }).at(-1)!);
+    expect(await screen.findByText('A team in this match already plays Match 1 that day.')).toBeTruthy();
+  });
+
+  it('after publishing, cancels one match with a reason straight away', async () => {
+    await show();
+    await fireEvent.press(await screen.findByRole('button', { name: 'Draw schedule' }));
+    await fireEvent.press(await screen.findByRole('button', { name: 'Publish schedule' }));
+    await screen.findByText(/Published\. Moving or cancelling/);
+    await fireEvent.press(screen.getByRole('button', { name: /^Match 2,/ }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Cancel this match' }));
+    expect(screen.getByRole('button', { name: 'Cancel match' })).toBeDisabled();
+    await fireEvent.changeText(screen.getByLabelText('Reason'), 'Ground flooded');
+    await fireEvent.press(screen.getByRole('button', { name: 'Cancel match' }));
+    expect(await screen.findByRole('button', { name: /Cancelled: Ground flooded/ })).toBeTruthy();
+    expect(screen.getByText('Cancelled')).toBeTruthy();
   });
 });

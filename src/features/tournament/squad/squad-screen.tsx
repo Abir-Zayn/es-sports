@@ -5,6 +5,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
+import { isUuid } from '@/features/scoring/data/uuid';
 import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { UserSearchSheet } from '../roster/components/user-search-sheet';
@@ -18,12 +19,19 @@ import { PlayerChangeFields } from './components/player-change-fields';
 import { RemovePlayerSheet } from './components/remove-player-sheet';
 import { SquadPlayerRow } from './components/squad-player-row';
 import { SquadSummary } from './components/squad-summary';
+import { ServerSquadScreen } from './server/server-squad-screen';
 import { useSquadActions } from './use-squad-actions';
 
 type OpenSheet = { kind: 'member' } | { kind: 'guest' } | { kind: 'remove'; player: TournamentPlayer } | null;
 
-/** One team's squad in a tournament. The team owner builds it; the tournament staff and everyone else look on. */
+/** A published (uuid) tournament keeps its squads on the server; the sample and drafts stay in memory. */
 export function SquadScreen() {
+  const { tournamentId = '', teamId = '' } = useLocalSearchParams<{ tournamentId?: string; teamId?: string }>();
+  return isUuid(tournamentId) ? <ServerSquadScreen tournamentId={tournamentId} teamId={teamId} /> : <LocalSquadScreen />;
+}
+
+/** One team's squad in a tournament. The team owner builds it; the tournament staff and everyone else look on. */
+function LocalSquadScreen() {
   const router = useRouter();
   const { tournamentId = '', teamId = '' } = useLocalSearchParams<{ tournamentId?: string; teamId?: string }>();
   const insets = useSafeAreaInsets();

@@ -8,12 +8,13 @@ import type { ScheduledMatch, SideRef } from './types';
 const teamInfo = (side: SideRef): TeamInfo =>
   side.kind === 'team' ? { short: side.team.short, name: side.team.name, tone: 'neutral' } : { short: 'TBD', name: side.label, tone: 'neutral' };
 
-/** A scheduled match as the shared match tile shows it: number and stage, date, time and venue. */
+/** A scheduled match as the shared match tile shows it: number and stage, date, time and venue (or why it is off). */
 export function toFixture(match: ScheduledMatch, venue: string): Fixture {
+  const title = match.stage === 'League' ? `Match ${match.number}` : `Match ${match.number}, ${match.stage}`;
   return {
     id: match.id,
     state: 'upcoming',
-    title: match.stage === 'League' ? `Match ${match.number}` : `Match ${match.number}, ${match.stage}`,
+    title: match.cancelled ? `${title} · Cancelled` : title,
     date: match.date,
     day: format(parseISO(match.date), 'EEE, d MMM'),
     time: timeLabel(match.startMin),
@@ -21,6 +22,6 @@ export function toFixture(match: ScheduledMatch, venue: string): Fixture {
       { team: teamInfo(match.home), score: '', emphasised: true },
       { team: teamInfo(match.away), score: '', emphasised: true },
     ],
-    note: venue,
+    note: match.cancelled ? `Cancelled: ${match.cancelled.reason}` : venue,
   };
 }

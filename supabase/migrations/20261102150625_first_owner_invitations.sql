@@ -118,3 +118,4 @@ begin
   if v_inv.status <> 'pending' or v_inv.expires_at <= now() then raise exception 'Invitation not open' using errcode = 'EI001'; end if;
   update public.invitations set status = 'cancelled', resolved_at = now() where id = p_id;
 end $$;
+

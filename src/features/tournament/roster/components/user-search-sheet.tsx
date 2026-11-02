@@ -27,6 +27,7 @@ type Props = {
   /** The button on each result. */
   actionLabel?: string;
   search?: (query: string, excludeIds: string[], signal?: AbortSignal) => Promise<UserSummary[]>;
+  suggest?: (excludeIds: string[], signal?: AbortSignal) => Promise<UserSummary[]>;
   /** Fields shown under the hint that apply to whoever is picked, e.g. their playing role. */
   children?: ReactNode;
 };
@@ -41,7 +42,7 @@ export function UserSearchSheet({ visible, title, onClose, ...body }: Props) {
   );
 }
 
-function SearchBody({ hint, excludeIds, inviting, error, onInvite, actionLabel = 'Invite', children, search: findUsers = searchUsers }: Omit<Props, 'visible' | 'title' | 'onClose'>) {
+function SearchBody({ hint, excludeIds, inviting, error, onInvite, actionLabel = 'Invite', children, suggest, search: findUsers = searchUsers }: Omit<Props, 'visible' | 'title' | 'onClose'>) {
   const { colors } = useTheme();
   const [text, setText] = useState('');
   const [query, setQuery] = useState('');
@@ -56,7 +57,15 @@ function SearchBody({ hint, excludeIds, inviting, error, onInvite, actionLabel =
     queryFn: ({ signal }) => findUsers(query, excludeIds, signal),
     enabled: query.length >= 2,
   });
-  const results = search.data ?? [];
+  const suggestions = useQuery({
+    queryKey: ['owner-suggestions', findUsers === searchUsers ? 'sample' : 'profiles', excludeIds],
+    queryFn: ({ signal }) => suggest!(excludeIds, signal),
+    enabled: Boolean(suggest) && text.trim().length === 0,
+    staleTime: 60_000,
+  });
+  const showingSuggestions = Boolean(suggest) && text.trim().length === 0;
+  const active = showingSuggestions ? suggestions : search;
+  const results = active.data ?? [];
 
   return (
     <>
@@ -64,7 +73,7 @@ function SearchBody({ hint, excludeIds, inviting, error, onInvite, actionLabel =
       {children}
       {/* SearchField grows along its parent's main axis; a row makes that its width, not its height. */}
       <View style={styles.searchRow}>
-        <SearchField value={text} onChangeText={setText} placeholder="Search players by name" accessibilityLabel="Search players by name" autoFocus />
+        <SearchField value={text} onChangeText={setText} placeholder="Search players by name" accessibilityLabel="Search players by name" autoFocus={!suggest} />
       </View>
       {error ? (
         <Text accessibilityRole="alert" style={{ color: colors.dangerSoftText }}>
@@ -77,17 +86,18 @@ function SearchBody({ hint, excludeIds, inviting, error, onInvite, actionLabel =
         keyboardDismissMode="on-drag"
         contentContainerStyle={styles.results}
       >
-        {query.length < 2 ? (
+        {showingSuggestions ? <Text muted>Suggested players</Text> : null}
+        {!showingSuggestions && (text.trim().length < 2 || query !== text.trim()) ? (
           <Text muted>Type at least two letters of their name.</Text>
-        ) : search.isPending ? (
+        ) : active.isPending ? (
           <ActivityIndicator color={colors.link} accessibilityLabel="Searching" style={styles.status} />
-        ) : search.isError ? (
+        ) : active.isError ? (
           <Text muted accessibilityLiveRegion="polite">
             Search failed. Check your connection and try again.
           </Text>
         ) : results.length === 0 ? (
           <Text muted accessibilityLiveRegion="polite">
-            No one found for “{query}”.
+            {showingSuggestions ? 'No suggestions available. Search for a player by name.' : `No one found for “${query}”.`}
           </Text>
         ) : (
           results.map((user) => (

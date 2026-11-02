@@ -4,7 +4,9 @@ import type { ReactNode } from 'react';
 
 import { ThemeProvider } from '@/theme';
 
-import { canManage, canRemove, fetchSentPlayerInvites, removeTeamMember } from '../data/team-management';
+import {
+  canManage, canRemove, canSetAvailability, fetchSentPlayerInvites, removeTeamMember, setMemberAvailability,
+} from '../data/team-management';
 import { fetchTeam, fetchTeamMembers } from '../data/team-repository';
 import { TeamManageScreen } from '../manage/team-manage-screen';
 
@@ -36,11 +38,12 @@ jest.mock('../data/team-management', () => ({
   ...jest.requireActual('../data/team-management'),
   fetchSentPlayerInvites: jest.fn(),
   removeTeamMember: jest.fn(),
+  setMemberAvailability: jest.fn(),
 }));
 
 const members = [
-  { profileId: 'me', name: 'Lonicav', avatarUrl: null, role: 'owner' as const, isCaptain: false },
-  { profileId: 'abir', name: 'Abir Khan', avatarUrl: null, role: 'player' as const, isCaptain: false },
+  { profileId: 'me', name: 'Lonicav', avatarUrl: null, role: 'owner' as const, isCaptain: false, availability: 'available' as const },
+  { profileId: 'abir', name: 'Abir Khan', avatarUrl: null, role: 'player' as const, isCaptain: false, availability: 'injured' as const },
 ];
 
 async function show() {
@@ -57,6 +60,13 @@ describe('team management permissions', () => {
     expect(canRemove('admin', 'player')).toBe(true);
     expect(canRemove('owner', 'owner')).toBe(false);
   });
+
+  it('lets managers set the status of anyone, a member their own, and nobody that of staff', () => {
+    expect(canSetAvailability('owner', 'player', false) && canSetAvailability('admin', 'owner', false)).toBe(true);
+    expect(canSetAvailability('player', 'player', true)).toBe(true);
+    expect(canSetAvailability('player', 'player', false) || canSetAvailability(null, 'player', true)).toBe(false);
+    expect(canSetAvailability('owner', 'staff', false)).toBe(false);
+  });
 });
 
 describe('team manage screen', () => {
@@ -66,6 +76,7 @@ describe('team manage screen', () => {
     jest.mocked(fetchTeamMembers).mockResolvedValue(members);
     jest.mocked(fetchSentPlayerInvites).mockResolvedValue([{ id: 'inv-1', profileId: 'monir', name: 'Monir Hasan', avatarUrl: null }]);
     jest.mocked(removeTeamMember).mockResolvedValue();
+    jest.mocked(setMemberAvailability).mockResolvedValue();
     mockSend.mockResolvedValue('inv-2');
   });
 
@@ -93,6 +104,21 @@ describe('team manage screen', () => {
     await fireEvent.changeText(screen.getByLabelText('Search players by name'), 'arafat');
     await fireEvent.press(await screen.findByRole('button', { name: 'Invite Arafat Hossain' }, { timeout: 2000 }));
     expect(await screen.findByText(/already plays for another team in this tournament/)).toBeTruthy();
+  });
+
+  it('shows an injured player and marks them available again', async () => {
+    await show();
+    expect(await screen.findByText('Injured')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Set status for Abir Khan' }));
+    await fireEvent.press(await screen.findByRole('button', { name: /^Available./ }));
+    await waitFor(() => expect(setMemberAvailability).toHaveBeenCalledWith('team-1', 'abir', 'available'));
+  });
+
+  it('lets a plain player set only their own status', async () => {
+    jest.mocked(fetchTeamMembers).mockResolvedValue([{ ...members[0], role: 'player' }, { ...members[1], role: 'owner' }]);
+    await show();
+    expect(await screen.findByRole('button', { name: 'Set status for Lonicav' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Set status for Abir Khan' })).toBeNull();
   });
 
   it('hides adding for a plain player', async () => {

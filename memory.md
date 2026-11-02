@@ -77,6 +77,8 @@
   - Paginate or incrementally fetch remote data.
   - Memoize (`useMemo`, `useCallback`, `React.memo`) only after identifying actual re-render churn.
   - Use transform- and opacity-first animations; respect system reduced-motion settings.
+- **No Blur / Glassmorphism:** Do not use `expo-blur`, `BlurView`, backdrop filters, or stacked translucent layers. They re-render every frame, are GPU-heavy, and lag or drain battery on low-end Android. Use solid colors or simple opacity.
+- **Heavy Frames:** Keep the JS thread free. Run gestures and animations on the UI thread (Reanimated). Give `FlatList` a `keyExtractor` and `getItemLayout` when row height is fixed. Target 60fps.
 - **Asset & Cache Hygiene:** Compress and dynamically size images; cache deliberately with bounded storage and eviction; prevent cache stampedes.
 - **Device Stress Testing:** Consider behavior on slow CPUs, constrained RAM (2GB–3GB), low-bandwidth/throttled networks, offline transitions, rapid multi-taps, app background/foreground switches, and cold starts. Do not make unmeasured performance claims.
 
@@ -86,7 +88,13 @@
 - **Explicit Ownership:** Every subscription, timer (`setTimeout`/`setInterval`), listener, observer, animation, WebSocket, and background worker must have a clear owner and guaranteed cleanup on unmount.
 - **Concurrency Guards:** Guard against stale closures, race conditions, out-of-order responses, state updates after component unmount, overlapping mutations, and dangling promises.
 - **Cancellation:** Prefer `AbortController` or framework-supported cancellation primitives. Ensure `finally` blocks restore transitional UI states (e.g., loading flags).
-- **Rate-Limiting Events:** Debounce high-frequency inputs (search, typing); throttle continuous scroll/layout events. Never debounce critical transactional or authentication mutations.
+- **Rate-Limiting Events:** Debounce high-frequency inputs (search, typing) by 300-500ms; throttle continuous scroll/layout events. Never debounce critical transactional or authentication mutations.
+- **No Duplicate API Calls:**
+  - Set the `isLoading`/`isPending` flag before the request starts and disable the trigger (button) while it runs, so double taps cannot fire twice.
+  - Pass an `AbortController` `signal` to `fetch` and abort in the `useEffect` cleanup, so stale responses cannot overwrite newer ones.
+  - `useEffect` must tolerate Strict Mode double-run. Never put unstable objects/functions in deps, and never set state that is also a dependency (refetch loops).
+  - Fetch through React Query (already installed), not raw `useEffect`: use precise query keys and a deliberate `staleTime` so identical calls are deduped and cached.
+- **Optimistic UI:** For low-risk, usually-successful actions (like, follow, toggle), use `useMutation`: `onMutate` (`cancelQueries`, save previous data, `setQueryData`), `onError` (roll back and show a toast), `onSettled` (invalidate only the affected key). Do not refetch unrelated queries. Never use optimistic UI for payments or actions that need server confirmation.
 - **Predictable States:** Model async data explicitly: `idle | loading | success | empty | error | offline`.
 
 ---
@@ -130,7 +138,7 @@ Every agent completing a task must summarize their work using this exact structu
 1. **Scope:** Files modified, added, or removed, and the technical rationale.
 2. **Architecture & File Size:** Confirm adherence to FSD boundaries, public API encapsulation, and verify handwritten files are `<= 200–270 lines`.
 3. **Verification Evidence:** Exact commands executed with explicit results (`PASS`, `FAIL`, or `NOT RUN` with reasons).
-4. **Safety & Cleanup:** State how component teardown, error boundaries, async cancellation, and race conditions were handled.
+4. **Safety & Cleanup:** State how component teardown, error boundaries, async cancellation, duplicate-call guards, and race conditions were handled. For data work, state indexes, pagination, returned fields, and error exposure (Sections 13-14).
 5. **Low-End Performance Impact:** State what was reasoned about or measured regarding memory, CPU, or render cost.
 6. **Unresolved Risks / Next Steps:** Any known limitations, skipped tests, or required manual device verification.
 
@@ -139,3 +147,29 @@ Every agent completing a task must summarize their work using this exact structu
 ## 12. Precedence & Conflict Resolution
 - Repository-specific legitimate requirements and framework correctness always take precedence over generic rules.
 - If a rule conflicts with runtime correctness, security, accessibility, or platform guidelines, prioritize correctness and safety, and explicitly document the exception in the final report.
+
+---
+
+## 13. Data, API & Backend Best Practices
+- **Return Only What Is Needed:** Allowlist fields (`select('id, name, avatar_url')` or a DTO). No `select('*')` and no raw DB rows in responses. Never return password hashes, tokens, OTPs, or other users' email/phone. A new column must be private by default. Treat user data as gold: collect the minimum, and check ownership on every request.
+- **Indexes & Joins:** Index every column used in `WHERE`/`JOIN`/`ORDER BY` and every foreign key (a migration that adds an FK adds its index). Verify with `EXPLAIN ANALYZE`. No speculative indexes, since each one slows writes.
+- **No N+1:** Fetch relations in one query (Supabase embedded select, SQL join, ORM eager load) and select only the needed columns. Eager-load large nested relations with limits or a separate query to avoid row multiplication.
+- **Pagination:** Never load an unbounded list. Always send a `limit` with a server-side max (for example 100). Use cursor/keyset pagination for feeds and infinite scroll (`FlatList onEndReached`). Use offset only for small tables that need page jumps.
+- **Parallel Calls:** Run independent calls together with `Promise.all` (or `Promise.allSettled` when partial results are fine). Keep dependent calls sequential. Cap concurrency, and never write the same row in parallel.
+- **Race Conditions:** Do check-and-write in one atomic statement (`UPDATE items SET stock = stock - 1 WHERE id = $1 AND stock > 0`, then check affected rows) or `SELECT ... FOR UPDATE` in a short transaction. In Supabase, use a Postgres function (RPC). Never read-modify-write from the client.
+- **Resource Limits & Rate Limiting:** Cap payload size, page size, query timeout, upload size, and connection pool use. Rate-limit per user/IP, with tighter limits on login, OTP, and password reset. On limit, return `429` with `Retry-After`, and the client must back off.
+- **File Uploads:** Never store uploads on the app server. Use third-party storage (Supabase Storage, S3, Cloudinary) with short-lived presigned URLs, a private bucket by default, and a CDN for serving. Validate real MIME (magic bytes), enforce a size limit and a type allowlist, and use random file names.
+
+---
+
+## 14. Error Handling & Observability
+- **Field Errors (UX vs Security):** Validation errors are specific and inline ("Password min 8 chars"). Auth errors are vague ("Invalid email or password"); signup and password reset must not reveal whether an account exists.
+- **Global 500 Handler:** The client gets only `{ message: "Something went wrong", requestId }`. Never return stack traces, SQL, file paths, or internal messages. The UI shows a friendly fallback with retry (Error Boundary).
+- **Logging:** Use structured logs with levels and a `requestId` on each line. Never log passwords, tokens, or PII.
+- **Error Tracking:** Use a tracker (Sentry or Bugsnag) with source maps, release tags, and breadcrumbs, and scrub PII and tokens before sending. Alert (Slack) only on new errors, spikes, or regressions. Adding a tracker is a new dependency, so get user approval first.
+
+---
+
+## 15. Production Architecture & Scale Testing
+- **Origin Protection:** Flow is Client → CDN/WAF → reverse proxy/load balancer → app → DB. Never expose the origin or DB publicly. Allow origin traffic only from the proxy/CDN. Put TLS, gzip, size limits, and rate limits at the proxy.
+- **Scale Simulation:** Before shipping a query-heavy feature, seed about 1M rows (`generate_series` or a batched Faker script), run `EXPLAIN ANALYZE`, load test with k6 (watch p95 latency and error rate), and read the slow query log (`log_min_duration_statement`). Repeat after each fix and compare numbers.

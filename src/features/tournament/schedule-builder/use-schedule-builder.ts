@@ -1,13 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
+import { tournamentErrorText } from '../data/tournament-errors';
 import { generatePairings, pairingProblem } from './generate';
-import { fetchSchedule, publishSchedule, ScheduleError } from './schedule-repository';
+import { cancelPublishedMatch, fetchSchedule, movePublishedMatch, publishSchedule, ScheduleError } from './schedule-repository';
 import { byKickoff, moveProblem, placeMatches } from './slots';
-import type { Competition, MatchFormat, ScheduledMatch, ScheduleTeam, SlotSettings } from './types';
+import type { Competition, MatchFormat, Schedule, ScheduledMatch, ScheduleMode, ScheduleTeam, SlotSettings, StageName } from './types';
 
 export const scheduleKey = (tournamentId: string) => ['tournament-schedule', tournamentId] as const;
 const DEFAULT_SETTINGS: SlotSettings = { perDay: 2, firstStartMin: 9 * 60 };
+const stageRound: Record<StageName, number> = { League: 0, 'Round of 16': 1, 'Quarter-final': 2, 'Semi-final': 3, Final: 4 };
 
 type Input = {
   tournamentId: string;
@@ -18,35 +20,63 @@ type Input = {
   isOwner: boolean;
 };
 
+/** A match the owner adds by hand. */
+export type NewMatch = { home: ScheduleTeam; away: ScheduleTeam; stage: StageName; date: string; startMin: number };
+
+const messageOf = (error: unknown) => (error instanceof ScheduleError ? error.message : tournamentErrorText(error));
+const playsIn = (m: ScheduledMatch, teamId: string) => [m.home, m.away].some((s) => s.kind === 'team' && s.team.id === teamId);
+
 /**
- * The schedule being drawn. It starts from the published one; drawing and moving matches change a local copy
- * until it is published, so nothing is visible to teams before the owner decides.
+ * The schedule being made. Before publishing, drawing, adding and moving change a local copy, so teams see nothing
+ * until the owner decides. Once published and unchanged, the owner moves or cancels single matches straight away
+ * (the owner panel), and the teams playing are told.
  */
 export function useScheduleBuilder({ tournamentId, teams, competition, matchFormat, days, isOwner }: Input) {
   const queryClient = useQueryClient();
   const saved = useQuery({ queryKey: scheduleKey(tournamentId), queryFn: () => fetchSchedule(tournamentId) });
+  const [editedMode, setEditedMode] = useState<ScheduleMode | null>(null);
   const [editedSettings, setEditedSettings] = useState<SlotSettings | null>(null);
   const [editedMatches, setEditedMatches] = useState<ScheduledMatch[] | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
 
+  const mode = editedMode ?? saved.data?.mode ?? 'auto';
   const settings = editedSettings ?? saved.data?.settings ?? DEFAULT_SETTINGS;
   const matches = [...(editedMatches ?? saved.data?.matches ?? [])].sort(byKickoff);
-  const dirty = editedMatches !== null || editedSettings !== null;
+  const dirty = editedMatches !== null || editedSettings !== null || editedMode !== null;
+  const live = Boolean(saved.data?.publishedAt) && !dirty;
+  const playing = matches.filter((m) => !m.cancelled);
   const teamIds = new Set(teams.map((t) => t.id));
-  // A team disbanded or added after drawing leaves the schedule out of date.
+  // A team removed or added after drawing leaves the schedule out of date. A hand-made schedule need not use every team.
   const outOfDate =
-    matches.length > 0 &&
-    (matches.some((m) => [m.home, m.away].some((s) => s.kind === 'team' && !teamIds.has(s.team.id))) ||
-      teams.some((t) => !matches.some((m) => [m.home, m.away].some((s) => s.kind === 'team' && s.team.id === t.id))));
+    playing.length > 0 &&
+    (playing.some((m) => [m.home, m.away].some((s) => s.kind === 'team' && !teamIds.has(s.team.id))) ||
+      (mode === 'auto' && teams.some((t) => !playing.some((m) => playsIn(m, t.id)))));
 
+  const store = (schedule: Schedule | null) => queryClient.setQueryData(scheduleKey(tournamentId), schedule);
+  const clearEdits = () => {
+    setEditedMatches(null);
+    setEditedSettings(null);
+    setEditedMode(null);
+    setProblem(null);
+  };
   const publish = useMutation({
-    mutationFn: () => publishSchedule(tournamentId, isOwner, settings, matches),
-    onSuccess: (schedule) => {
-      queryClient.setQueryData(scheduleKey(tournamentId), schedule);
-      setEditedMatches(null);
-      setEditedSettings(null);
-    },
+    mutationFn: () => publishSchedule(tournamentId, isOwner, mode, settings, matches),
+    onSuccess: (schedule) => { store(schedule); clearEdits(); },
   });
+  const cancel = useMutation({
+    mutationFn: (a: { id: string; reason: string }) => cancelPublishedMatch(tournamentId, a.id, a.reason),
+    onSuccess: store,
+  });
+
+  function edit(next: ScheduledMatch[]) {
+    setEditedMatches(next);
+    publish.reset();
+  }
+
+  function changeMode(next: ScheduleMode) {
+    setEditedMode(next);
+    setProblem(null);
+  }
 
   function changeSettings(next: Partial<SlotSettings>) {
     setEditedSettings({ ...settings, ...next });
@@ -59,24 +89,58 @@ export function useScheduleBuilder({ tournamentId, teams, competition, matchForm
     if (refused) return setProblem(refused);
     const placed = placeMatches(generatePairings(teams, competition), days, settings, matchFormat);
     setProblem(placed.problem);
-    if (!placed.problem) setEditedMatches(placed.matches);
-    publish.reset();
+    if (!placed.problem) edit(placed.matches);
   }
 
-  /** Moves one match, or returns why it cannot go there. */
-  function move(id: string, date: string, startMin: number): string | null {
-    const refused = moveProblem(matches, id, date, startMin, matchFormat);
+  /** Adds one match by hand, or returns why it cannot go there. */
+  function add(match: NewMatch): string | null {
+    if (match.home.id === match.away.id) return 'Pick two different teams.';
+    const number = matches.reduce((max, m) => Math.max(max, m.number), 0) + 1;
+    const added: ScheduledMatch = {
+      id: `new-${number}`, number, stage: match.stage, round: stageRound[match.stage], date: match.date, startMin: match.startMin,
+      home: { kind: 'team', team: match.home }, away: { kind: 'team', team: match.away },
+    };
+    const refused = moveProblem([...playing, added], added.id, match.date, match.startMin, matchFormat);
     if (refused) return refused;
-    setEditedMatches(matches.map((m) => (m.id === id ? { ...m, date, startMin } : m)));
-    publish.reset();
+    edit([...matches, added]);
     return null;
   }
 
-  const publishError = publish.isError
-    ? publish.error instanceof ScheduleError
-      ? publish.error.message
-      : 'Could not publish. Please try again.'
-    : null;
+  /** Takes a match out of a schedule that is not published yet, or not since changed. */
+  function remove(id: string) {
+    edit(matches.filter((m) => m.id !== id));
+  }
 
-  return { saved, settings, matches, dirty, outOfDate, problem, publish, publishError, changeSettings, draw, move };
+  /** Moves one match, or returns why it cannot go there. A published, unchanged schedule saves at once. */
+  async function move(id: string, date: string, startMin: number): Promise<string | null> {
+    const refused = moveProblem(playing, id, date, startMin, matchFormat);
+    if (refused) return refused;
+    if (!live) {
+      edit(matches.map((m) => (m.id === id ? { ...m, date, startMin } : m)));
+      return null;
+    }
+    try {
+      store(await movePublishedMatch(tournamentId, id, date, startMin));
+      return null;
+    } catch (error) {
+      return messageOf(error);
+    }
+  }
+
+  /** Calls off one published match, resolving to why it could not, or null. */
+  async function cancelMatch(id: string, reason: string): Promise<string | null> {
+    try {
+      await cancel.mutateAsync({ id, reason });
+      return null;
+    } catch (error) {
+      return messageOf(error);
+    }
+  }
+
+  const publishError = publish.isError ? messageOf(publish.error) : null;
+
+  return {
+    saved, mode, settings, matches, dirty, live, outOfDate, problem, publish, publishError,
+    changeMode, changeSettings, draw, add, remove, move, cancelMatch, discard: clearEdits,
+  };
 }

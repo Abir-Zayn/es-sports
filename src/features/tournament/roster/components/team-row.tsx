@@ -34,6 +34,7 @@ export function TeamRow({ team, maxSquad, caps, busy, onInviteOwner, onReinviteO
   const styles = useThemedStyles(createStyles);
   const canInvite = caps.manageTeams && (!team.owner || team.owner.status === 'declined');
   const pending = caps.manageTeams && team.owner?.status === 'pending';
+  // A server team's squad is read on its own screen, so only an in-memory team shows its size here.
   const squad = !fromServer(team);
   const accepted = team.owner?.status === 'accepted';
   return (
@@ -53,9 +54,7 @@ export function TeamRow({ team, maxSquad, caps, busy, onInviteOwner, onReinviteO
         </View>
       </View>
       <View style={styles.actions}>
-        {squad ? (
-          <Button label="Squad" variant="secondary" size="compact" accessibilityLabel={`View ${team.name} squad`} onPress={onViewSquad} />
-        ) : null}
+        <Button label="Squad" variant="secondary" size="compact" accessibilityLabel={`View ${team.name} squad`} onPress={onViewSquad} />
         {canInvite ? (
           <Button label={team.owner?.status === 'declined' ? 'Invite someone else' : 'Invite owner'} size="compact" disabled={busy} accessibilityLabel={`Invite owner for ${team.name}`} onPress={onInviteOwner} />
         ) : null}

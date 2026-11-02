@@ -5,7 +5,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
-import { searchPlayers } from '@/features/match/friendly/search-players';
+import { searchPlayers, suggestPlayers } from '@/features/match/friendly/search-players';
 import { isUuid } from '@/features/scoring/data/uuid';
 import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
@@ -20,6 +20,7 @@ import { TeamsSection } from './components/teams-section';
 import { UserSearchSheet } from './components/user-search-sheet';
 import { capabilitiesOf, roleIn, serverCapabilities } from './permissions';
 import { repoFor } from './roster-source';
+import { sampleUsers } from './sample-users';
 import { parseSetup, type SetupParams } from './setup';
 import { ownerInviteMessage, shareText } from './share-invite';
 import type { RosterTeam } from './types';
@@ -27,6 +28,8 @@ import { rosterErrorText, useMe, useRoster } from './use-roster';
 import { useRosterActions } from './use-roster-actions';
 
 type OpenSheet = { kind: 'moderator' } | { kind: 'create-team' } | { kind: 'add-own' } | { kind: 'team-owner'; team: RosterTeam } | { kind: 'disband'; team: RosterTeam } | { kind: 'lock' } | null;
+
+const suggestSamplePlayers = async (excludeIds: string[]) => sampleUsers.filter((user) => !excludeIds.includes(user.id)).slice(0, 20);
 
 /** Staff, teams and registration of the tournament being set up. What each person may change depends on their role. */
 export function AddTeamsScreen() {
@@ -58,7 +61,7 @@ export function AddTeamsScreen() {
   const subtitle = data?.tournamentName ?? params.name;
   // A moderator search leaves out current staff. An owner search leaves out only yourself and that team's own owner or
   // waiting invitee: someone who owns or played for another team can still own this one.
-  const staffIds = data ? data.staff.map((m) => m.user.id) : [];
+  const staffIds = data ? data.staff.filter((m) => m.status !== 'declined').map((m) => m.user.id) : [];
   const ownerIds = sheet?.kind === 'team-owner' ? [me.id] : [];
   const shareInvite = (team: RosterTeam) =>
     void shareText(ownerInviteMessage({ fromName: me.name, teamName: team.name, tournamentName: data?.tournamentName ?? '' }));
@@ -83,9 +86,9 @@ export function AddTeamsScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}>
-          {actions.inlineError || (sheet === null && inviteOwner.error) ? (
+          {actions.inlineError || (sheet === null && (inviteOwner.error || inviteModerator.error)) ? (
             <Text accessibilityRole="alert" style={styles.error}>
-              {rosterErrorText(actions.inlineError ?? inviteOwner.error)}
+              {rosterErrorText(actions.inlineError ?? inviteOwner.error ?? inviteModerator.error)}
             </Text>
           ) : null}
           <RegistrationSection
@@ -106,6 +109,7 @@ export function AddTeamsScreen() {
             busy={busy}
             onInvite={() => open({ kind: 'moderator' })}
             onRemove={(member) => actions.removeModerator.mutate(member.user.id)}
+            onReinvite={(member) => inviteModerator.mutate(member.user)}
           />
           <TeamsSection
             roster={data}
@@ -120,7 +124,8 @@ export function AddTeamsScreen() {
             onDisband={(team) => open({ kind: 'disband', team })}
             onAddOwn={data.server ? () => open({ kind: 'add-own' }) : undefined}
           />
-          {data.server ? null : <ScheduleSection caps={caps} busy={busy} teamCount={data.teams.length} onOpen={() => router.push('/tournament/schedule')} />}
+          <ScheduleSection caps={caps} busy={busy} teamCount={data.teams.length}
+            onOpen={() => router.push(data.server ? { pathname: '/tournament/schedule', params: { tournamentId } } : '/tournament/schedule')} />
         </ScrollView>
       )}
 
@@ -134,6 +139,7 @@ export function AddTeamsScreen() {
         }
         excludeIds={sheet?.kind === 'team-owner' ? ownerIds : staffIds}
         search={data?.server ? searchPlayers : undefined}
+        suggest={sheet?.kind === 'team-owner' ? (data?.server ? suggestPlayers : suggestSamplePlayers) : undefined}
         inviting={inviteModerator.isPending || inviteOwner.isPending}
         error={inviteModerator.isError || inviteOwner.isError ? rosterErrorText(inviteModerator.error ?? inviteOwner.error) : null}
         onInvite={(user) => {
@@ -161,9 +167,11 @@ export function AddTeamsScreen() {
         visible={sheet?.kind === 'disband'}
         title="Disband team?"
         message={
-          sheet?.kind === 'disband'
-            ? `${sheet.team.name} will be removed from the tournament, along with its owner and players. This cannot be undone.`
-            : ''
+          sheet?.kind !== 'disband'
+            ? ''
+            : data?.server
+              ? `${sheet.team.name} will leave the tournament and any owner request still waiting is cancelled. The team itself stays with its owner; a team made here with no owner yet is deleted.`
+              : `${sheet.team.name} will be removed from the tournament, along with its owner and players. This cannot be undone.`
         }
         confirmLabel="Disband team"
         busy={disband.isPending}

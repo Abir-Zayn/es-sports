@@ -15,12 +15,16 @@ import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from 
 
 import { teamErrorText } from '../data/team-errors';
 import {
-  canManage, fetchSentPlayerInvites, removeTeamMember, sentPlayerInvitesKey, teamMembersKey,
+  canManage, fetchSentPlayerInvites, removeTeamMember, sentPlayerInvitesKey, setMemberAvailability, teamMembersKey,
 } from '../data/team-management';
-import { fetchTeam, fetchTeamMembers, myTeamsKey, teamKey } from '../data/team-repository';
+import { fetchTeam, fetchTeamMembers, myTeamsKey, teamKey, type Availability, type TeamMemberRecord } from '../data/team-repository';
+import { AvailabilitySheet } from './availability-sheet';
 import { MemberList, PendingInviteList } from './team-member-lists';
 
-/** One team's members. Owners and admins invite players by name or user id, cancel open invites and remove members. */
+/**
+ * One team's members. Owners and admins invite players by name or user id, cancel open invites, remove members and
+ * mark them injured or resting. A member can set their own status.
+ */
 export function TeamManageScreen() {
   const router = useRouter();
   const { id = '' } = useLocalSearchParams<{ id: string }>();
@@ -30,6 +34,7 @@ export function TeamManageScreen() {
   const queryClient = useQueryClient();
   const meId = useAuth().session?.user.id ?? '';
   const [adding, setAdding] = useState(false);
+  const [statusFor, setStatusFor] = useState<TeamMemberRecord | null>(null);
 
   const team = useQuery({ queryKey: teamKey(id), queryFn: () => fetchTeam(id), enabled: Boolean(id) });
   const members = useQuery({ queryKey: teamMembersKey(id), queryFn: () => fetchTeamMembers(id), enabled: Boolean(id) });
@@ -47,7 +52,11 @@ export function TeamManageScreen() {
   const invite = useMutation({ mutationFn: (userId: string) => sendTeamPlayerInvite(id, userId), onSuccess: refresh });
   const remove = useMutation({ mutationFn: (profileId: string) => removeTeamMember(id, profileId), onSuccess: refresh });
   const cancel = useMutation({ mutationFn: (inviteId: string) => cancelInvitation(inviteId), onSuccess: refresh });
-  const busy = invite.isPending || remove.isPending || cancel.isPending;
+  const availability = useMutation({
+    mutationFn: (a: { profileId: string; value: Availability }) => setMemberAvailability(id, a.profileId, a.value),
+    onSuccess: () => { setStatusFor(null); refresh(); },
+  });
+  const busy = invite.isPending || remove.isPending || cancel.isPending || availability.isPending;
   const actionError = remove.error ? teamErrorText(remove.error) : cancel.error ? invitationErrorText(cancel.error) : null;
   // Members and people already invited are left out of the search; so are you.
   const excludeIds = [meId, ...(members.data ?? []).map((m) => m.profileId), ...(invites.data ?? []).map((i) => i.profileId)];
@@ -79,10 +88,18 @@ export function TeamManageScreen() {
           )}
           {actionError ? <Text accessibilityRole="alert" style={styles.error}>{actionError}</Text> : null}
           <Text style={styles.heading}>{`Members · ${members.data.length}`}</Text>
-          <MemberList members={members.data} myRole={myRole} meId={meId} busy={busy} onRemove={(m) => remove.mutate(m.profileId)} />
+          <MemberList members={members.data} myRole={myRole} meId={meId} busy={busy} onRemove={(m) => remove.mutate(m.profileId)}
+            onSetAvailability={(m) => { availability.reset(); setStatusFor(m); }} />
           {manager ? <PendingInviteList invites={invites.data ?? []} busy={busy} onCancel={(i) => cancel.mutate(i.id)} /> : null}
         </ScrollView>
       )}
+      <AvailabilitySheet
+        member={statusFor}
+        busy={availability.isPending}
+        error={availability.isError ? teamErrorText(availability.error) : null}
+        onChoose={(value) => statusFor && availability.mutate({ profileId: statusFor.profileId, value })}
+        onClose={() => setStatusFor(null)}
+      />
       <UserSearchSheet
         visible={adding}
         title={`Add to ${team.data?.name ?? 'team'}`}

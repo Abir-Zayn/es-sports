@@ -29,7 +29,8 @@ export function ScheduleDay({ date, matches, venue, onEdit }: Props) {
       </View>
       <View style={styles.list}>
         {matches.map((match) => (
-          <FixtureTile key={match.id} fixture={toFixture(match, venue)} onPress={onEdit ? () => onEdit(match) : undefined} />
+          <FixtureTile key={match.id} fixture={toFixture(match, venue)} showBadge={Boolean(match.cancelled)} badgeLabel="Cancelled"
+            onPress={onEdit ? () => onEdit(match) : undefined} />
         ))}
       </View>
     </View>

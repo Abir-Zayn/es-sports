@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
+import Play from 'lucide-react-native/icons/play';
 import Trash from 'lucide-react-native/icons/trash';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
 import { supabase } from '@/lib/supabase';
-import { radius, spacing, useTheme } from '@/theme';
+import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { DeleteFriendlyError, deleteFriendlyMatch } from '../friendly/delete-friendly';
 import { DeleteMatchSheet } from './delete-match-sheet';
@@ -32,6 +33,7 @@ export function SavedFriendlies({ userId }: { userId: string }) {
   const router = useRouter();
   const client = useQueryClient();
   const { colors } = useTheme();
+  const s = useThemedStyles(styles);
   const [target, setTarget] = useState<ResumeMatch | null>(null);
   const matches = useQuery({
     queryKey: savedFriendliesKey(userId),
@@ -64,19 +66,24 @@ export function SavedFriendlies({ userId }: { userId: string }) {
     setTarget(null);
     removal.reset();
   }
-  if (matches.isError) return <View style={{ gap: spacing.sm }}>
+  if (matches.isError) return <View style={s.group}>
     <Text muted>Could not load saved matches.</Text>
     <Button label="Retry saved matches" variant="secondary" onPress={() => void matches.refetch()} />
   </View>;
   if (!matches.data?.length) return null;
-  return <View style={{ gap: spacing.sm }}>
-    <Text accessibilityRole="header">Your saved matches</Text>
-    {matches.data.map((match) => <View key={match.id} style={styles.row}>
-      <View style={styles.open}>
-        <Button variant="secondary" label={`${match.team_a_name} vs ${match.team_b_name}`}
-          onPress={() => router.push({ pathname: '/scorer/[id]', params: { id: match.id } })} />
-      </View>
-      {canDeleteSaved(match, userId) ? <AppIconTile icon={Trash} size={44} borderRadius={radius.md}
+  return <View style={s.group}>
+    <Text accessibilityRole="header" muted style={s.label}>Your saved matches</Text>
+    {matches.data.map((match) => <View key={match.id} style={s.row}>
+      <Pressable accessibilityRole="button" accessibilityLabel={`${match.team_a_name} vs ${match.team_b_name}. Resume scoring`}
+        onPress={() => router.push({ pathname: '/scorer/[id]', params: { id: match.id } })}
+        style={({ pressed }) => [s.open, pressed && s.pressed]}>
+        <View style={s.play}><Play size={16} color={colors.link} fill={colors.link} /></View>
+        <View style={s.text}>
+          <Text style={s.title} numberOfLines={1}>{match.team_a_name} vs {match.team_b_name}</Text>
+          <Text muted style={s.caption}>Tap to resume scoring</Text>
+        </View>
+      </Pressable>
+      {canDeleteSaved(match, userId) ? <AppIconTile icon={Trash} size={44} borderRadius={radius.pill}
         iconColor={colors.danger}
         accessibilityLabel={`Delete ${match.team_a_name} vs ${match.team_b_name}`} onPress={() => setTarget(match)} /> : null}
     </View>)}
@@ -87,7 +94,17 @@ export function SavedFriendlies({ userId }: { userId: string }) {
   </View>;
 }
 
-const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  open: { flex: 1 },
+const styles = (c: Palette) => StyleSheet.create({
+  group: { gap: spacing.sm },
+  label: { fontSize: 12, lineHeight: 16, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase' },
+  row: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingRight: spacing.sm,
+    borderRadius: radius.lg, borderWidth: 1, borderColor: c.border, backgroundColor: c.surface,
+  },
+  open: { flex: 1, minHeight: 64, flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderRadius: radius.lg },
+  pressed: { opacity: 0.8 },
+  play: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: radius.pill, backgroundColor: c.primarySoft },
+  text: { flex: 1, minWidth: 0, gap: 2 },
+  title: { fontSize: 14, lineHeight: 19, fontWeight: '700' },
+  caption: { fontSize: 12, lineHeight: 16, fontWeight: '500' },
 });

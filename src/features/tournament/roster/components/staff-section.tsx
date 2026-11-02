@@ -14,10 +14,32 @@ type Props = {
   busy: boolean;
   onInvite: () => void;
   onRemove: (member: StaffMember) => void;
+  /** Sends a fresh request to someone who declined. */
+  onReinvite?: (member: StaffMember) => void;
 };
 
-/** The owner and up to two moderators. Only the owner invites or removes moderators. */
-export function StaffSection({ roster, meId, caps, busy, onInvite, onRemove }: Props) {
+function badgeOf(member: StaffMember): { label: string; tone: 'primary' | 'muted' } {
+  if (member.role === 'owner') return { label: 'Owner', tone: 'primary' };
+  if (member.status === 'pending') return { label: 'Invited', tone: 'muted' };
+  if (member.status === 'declined') return { label: 'Declined', tone: 'muted' };
+  return { label: 'Moderator', tone: 'primary' };
+}
+
+/** What the viewer may do with one staff row: the owner settles moderators, a moderator may step down. */
+function actionOf(member: StaffMember, meId: string, caps: Capabilities): { label: string; a11y: string; reinvite: boolean } | null {
+  const name = member.user.name;
+  if (member.role === 'owner' || caps.settleInvites === false) return null;
+  if (caps.manageStaff) {
+    if (member.status === 'declined') return { label: 'Re-invite', a11y: `Re-invite ${name}`, reinvite: true };
+    return member.status === 'pending'
+      ? { label: 'Cancel', a11y: `Cancel invite for ${name}`, reinvite: false }
+      : { label: 'Remove', a11y: `Remove ${name}`, reinvite: false };
+  }
+  return member.user.id === meId && member.status === 'accepted' ? { label: 'Leave', a11y: 'Step down as moderator', reinvite: false } : null;
+}
+
+/** The owner and up to two moderators. Only the owner invites or removes moderators; a moderator may leave. */
+export function StaffSection({ roster, meId, caps, busy, onInvite, onRemove, onReinvite }: Props) {
   const styles = useThemedStyles(createStyles);
   const count = moderatorCount(roster);
   return (
@@ -35,24 +57,24 @@ export function StaffSection({ roster, meId, caps, busy, onInvite, onRemove }: P
       </Text>
       <View>
         {roster.staff.map((member) => {
-          const isOwner = member.role === 'owner';
-          const pending = member.status === 'pending';
+          const action = actionOf(member, meId, caps);
+          const press = action?.reinvite ? onReinvite : onRemove;
           return (
             <PersonRow
               key={member.user.id}
               user={member.user}
               detail={member.user.id === meId ? 'You' : member.user.area}
-              badge={isOwner ? { label: 'Owner', tone: 'primary' } : { label: pending ? 'Invited' : 'Moderator', tone: pending ? 'muted' : 'primary' }}
+              badge={badgeOf(member)}
               trailing={
-                caps.manageStaff && caps.settleInvites !== false && !isOwner ? (
+                action && press ? (
                   <View>
                     <Button
-                      label={pending ? 'Cancel' : 'Remove'}
-                      variant="ghost"
+                      label={action.label}
+                      variant={action.reinvite ? 'secondary' : 'ghost'}
                       size="compact"
-                      disabled={busy}
-                      accessibilityLabel={`${pending ? 'Cancel invite for' : 'Remove'} ${member.user.name}`}
-                      onPress={() => onRemove(member)}
+                      disabled={busy || (action.reinvite && count >= MAX_MODERATORS)}
+                      accessibilityLabel={action.a11y}
+                      onPress={() => press(member)}
                     />
                   </View>
                 ) : null

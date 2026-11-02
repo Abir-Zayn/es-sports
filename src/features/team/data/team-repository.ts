@@ -9,7 +9,12 @@ export type TeamRole = 'owner' | 'admin' | 'player' | 'staff';
 export type TeamRecord = {
   id: string; name: string; shortName: string; tone: AvatarTone; logoUrl: string | null; area: string | null; district: string | null;
 };
-export type TeamMemberRecord = { profileId: string; name: string; avatarUrl: string | null; role: TeamRole; isCaptain: boolean };
+/** Whether a member can be picked to play. Injured or resting players stay in the team and in squads. */
+export type Availability = 'available' | 'injured' | 'resting';
+export const availabilities: readonly Availability[] = ['available', 'injured', 'resting'];
+export type TeamMemberRecord = {
+  profileId: string; name: string; avatarUrl: string | null; role: TeamRole; isCaptain: boolean; availability: Availability;
+};
 export type MyTeam = TeamRecord & { myRole: TeamRole };
 
 const TEAM_COLUMNS = 'id, name, short_name, tone, logo_url, area, district';
@@ -26,6 +31,8 @@ export function toTeam(row: TeamRow): TeamRecord {
 }
 
 const toRole = (value: string): TeamRole => (roles.includes(value) ? (value as TeamRole) : 'player');
+const toAvailability = (value: string | null | undefined): Availability =>
+  availabilities.find((item) => item === value) ?? 'available';
 
 /** Creates a team owned by the caller. Safe to repeat with the same `id`: the server returns the team it already made. */
 export async function createTeam(id: string, input: NewTeamInput): Promise<string> {
@@ -46,13 +53,13 @@ export async function fetchTeam(id: string): Promise<TeamRecord | null> {
 /** Owner first, then admins, players and staff. */
 export async function fetchTeamMembers(teamId: string): Promise<TeamMemberRecord[]> {
   const { data, error } = await traceApi('team.members', { teamId }, () => supabase.from('team_members')
-    .select('profile_id, role, is_captain, profiles(full_name, avatar_url)').eq('team_id', teamId));
+    .select('profile_id, role, is_captain, availability, profiles(full_name, avatar_url)').eq('team_id', teamId));
   if (error) throw toTeamError(error);
   const rank = (role: TeamRole) => roles.indexOf(role);
   return (data ?? [])
     .map((row) => ({
       profileId: row.profile_id, name: row.profiles?.full_name?.trim() || 'Player', avatarUrl: row.profiles?.avatar_url ?? null,
-      role: toRole(row.role), isCaptain: row.is_captain,
+      role: toRole(row.role), isCaptain: row.is_captain, availability: toAvailability(row.availability),
     }))
     .sort((a, b) => rank(a.role) - rank(b.role) || a.name.localeCompare(b.name));
 }

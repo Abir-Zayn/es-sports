@@ -16,13 +16,13 @@ export type Capabilities = {
   manageSchedule: boolean;
   manageRegistration: boolean;
   seeSquadAlerts: boolean;
-  /** False when invites cannot be cancelled and staff cannot be removed (server tournaments, for now). */
+  /** False when invites cannot be cancelled and staff cannot be removed. */
   settleInvites?: boolean;
 };
 
-/** What the server can do today: invite and add teams, but no cancelling, disbanding, schedule or registration changes. */
+/** What the server cannot do yet: registration windows and roster locking still live on the device. */
 export const serverCapabilities = (caps: Capabilities): Capabilities => ({
-  ...caps, disbandTeams: false, manageSchedule: false, manageRegistration: false,
+  ...caps, manageRegistration: false,
 });
 
 export function capabilitiesOf(role: TournamentRole | null): Capabilities {
@@ -42,14 +42,15 @@ export function roleIn(roster: Roster, userId: string): TournamentRole | null {
   return member?.role ?? null;
 }
 
+/** Moderators and pending invites; a declined invite holds no slot. */
 export function moderatorCount(roster: Roster): number {
-  return roster.staff.filter((m) => m.role === 'moderator').length;
+  return roster.staff.filter((m) => m.role === 'moderator' && m.status !== 'declined').length;
 }
 
 /** Why `userId` cannot be invited as a moderator, or null when they can. Pending invites hold a slot. */
 export function moderatorInviteProblem(roster: Roster, role: TournamentRole | null, userId: string): string | null {
   if (!capabilitiesOf(role).manageStaff) return 'Only the tournament owner can invite moderators.';
-  if (roster.staff.some((m) => m.user.id === userId)) return 'This person is already on the tournament staff.';
+  if (roster.staff.some((m) => m.user.id === userId && m.status !== 'declined')) return 'This person is already on the tournament staff.';
   if (moderatorCount(roster) >= MAX_MODERATORS) return `A tournament can have at most ${MAX_MODERATORS} moderators.`;
   return null;
 }
