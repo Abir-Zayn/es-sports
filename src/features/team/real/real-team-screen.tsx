@@ -8,6 +8,7 @@ import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme
 import { TeamCompactHeader } from '../components/team-compact-header';
 import { TeamTabs } from '../components/team-tabs';
 import { teamErrorText } from '../data/team-errors';
+import { teamMembersKey } from '../data/team-management';
 import { fetchTeam, fetchTeamMembers, teamKey, type TeamMemberRecord, type TeamRecord } from '../data/team-repository';
 import type { TeamTabId } from '../types';
 
@@ -21,7 +22,7 @@ export function RealTeamScreen({ id, tab }: Props) {
   const router = useRouter();
   const styles = useThemedStyles(createStyles);
   const team = useQuery({ queryKey: teamKey(id), queryFn: () => fetchTeam(id) });
-  const members = useQuery({ queryKey: [...teamKey(id), 'members'], queryFn: () => fetchTeamMembers(id), enabled: team.data != null });
+  const members = useQuery({ queryKey: teamMembersKey(id), queryFn: () => fetchTeamMembers(id), enabled: Boolean(id) });
   const record = team.data;
   let body;
   if (team.isPending) body = <ActivityIndicator color={colors.link} accessibilityLabel="Loading team" />;

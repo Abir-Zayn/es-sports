@@ -12,7 +12,7 @@ export type UserSummary = { id: string; name: string; area: string | null; avata
 export type StaffMember = { user: UserSummary; role: TournamentRole; status: InviteStatus };
 
 /** A team's owner, once invited. They later invite the players and one team moderator. */
-export type TeamOwnerSlot = { user: UserSummary; status: InviteStatus };
+export type TeamOwnerSlot = { user: UserSummary; status: InviteStatus | 'declined'; invitationId?: string };
 
 export const playerRoles = ['Batter', 'Bowler', 'All-rounder', 'Keeper'] as const;
 export type PlayerRole = (typeof playerRoles)[number];

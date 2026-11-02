@@ -40,13 +40,11 @@ function seed() {
   };
   fake.results.team_members = {
     data: [
-      { team_id: 'a', profile_id: 'me', profiles: profile('Organiser') },
       { team_id: 'b', profile_id: 'other', profiles: profile('Rafi') },
-      { team_id: 'c', profile_id: 'me', profiles: profile('Organiser') },
     ],
     error: null,
   };
-  fake.results.invitations = { data: [{ kind: 'team_owner', team_id: 'c', to_user: 'u7', profiles: profile('Nayeem') }], error: null };
+  fake.results.invitations = { data: [{ id: 'i1', kind: 'team_owner', team_id: 'c', to_user: 'u7', from_user: 'me', status: 'pending', expires_at: '2999-01-01', profiles: profile('Nayeem') }], error: null };
 }
 
 async function show() {
@@ -66,7 +64,7 @@ describe('teams and staff of a published tournament', () => {
     expect(screen.queryByText('Schedule')).toBeNull();
     expect(screen.queryByRole('button', { name: /Disband/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /squad/ })).toBeNull();
-    expect(screen.queryByRole('button', { name: /Cancel owner invite/ })).toBeNull();
+    expect(screen.getByRole('button', { name: /Cancel owner invite/ })).toBeTruthy();
     expect(screen.queryByText('Lock rosters')).toBeNull();
   });
 
@@ -76,16 +74,14 @@ describe('teams and staff of a published tournament', () => {
     expect(screen.queryByRole('button', { name: 'Invite owner for Bravo' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Invite owner for Charlie' })).toBeNull();
     expect(screen.getByText('Owner invite sent to Nayeem')).toBeTruthy();
-    expect(screen.getByText('You own this team')).toBeTruthy();
+    expect(screen.getByText('No team owner yet')).toBeTruthy();
   });
 
   it('finds someone who already owns or plays for another team when picking an owner', async () => {
     const rafi = '11111111-1111-4111-8111-111111111111';
     fake.results.team_members = {
       data: [
-        { team_id: 'a', profile_id: 'me', profiles: profile('Organiser') },
         { team_id: 'b', profile_id: rafi, profiles: profile('Rafi') },
-        { team_id: 'c', profile_id: 'me', profiles: profile('Organiser') },
       ],
       error: null,
     };
@@ -96,6 +92,15 @@ describe('teams and staff of a published tournament', () => {
     expect(await screen.findByRole('button', { name: 'Invite Rafi Khan' })).toBeTruthy();
     // Rafi owns Bravo, yet the search must not leave him out.
     expect(JSON.stringify(fake.calls('profiles', 'not'))).not.toContain(rafi);
+  });
+
+  it('shows a declined invitation and sends a new request to the same person', async () => {
+    fake.results.invitations = { data: [{ id: 'old', kind: 'team_owner', team_id: 'c', to_user: 'u7', from_user: 'me', status: 'declined', expires_at: '2999-01-01', profiles: profile('Nayeem') }], error: null };
+    await show();
+    expect(screen.getByText('Nayeem declined the invitation')).toBeTruthy();
+    expect(screen.getByText('Invite someone else')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Re-invite Nayeem' }));
+    await waitFor(() => expect(fake.rpc).toHaveBeenCalledWith('send_team_owner_invite', { p_tournament: T, p_team: 'c', p_to: 'u7' }));
   });
 
   it('opens the list of my own teams, which says when there is none to add, and can start a new team', async () => {
