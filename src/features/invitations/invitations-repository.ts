@@ -139,11 +139,12 @@ export async function cancelInvitation(id: string): Promise<void> {
 
 /** Loads visible invitations from Supabase with their tournament, team and profile names. */
 export async function fetchInvitations(userId?: string, now = Date.now()): Promise<Invitation[]> {
-  const { data, error } = await traceApi('invite.list', { userId }, () => supabase
-    .from('invitations')
-    .select('id, kind, tournament_id, team_id, from_user, to_user, status, expires_at, created_at, resolved_at')
-    .order('created_at', { ascending: false })
-    .limit(LIST_LIMIT));
+  const { data, error } = await traceApi('invite.list', { userId }, () => {
+    let query = supabase.from('invitations')
+      .select('id, kind, tournament_id, team_id, from_user, to_user, status, expires_at, created_at, resolved_at');
+    if (userId) query = query.or(`from_user.eq.${userId},to_user.eq.${userId}`);
+    return query.order('created_at', { ascending: false }).limit(LIST_LIMIT);
+  });
   if (error) throw toInvitationError(error);
   const rows = data ?? [];
   if (rows.length === 0) return [];

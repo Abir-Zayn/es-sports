@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import ChevronLeft from 'lucide-react-native/icons/chevron-left';
 import ChevronRight from 'lucide-react-native/icons/chevron-right';
@@ -11,7 +11,7 @@ import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from 
 
 import { teamErrorText } from '../data/team-errors';
 import { canManage } from '../data/team-management';
-import { fetchMyTeams, myTeamsKey, type MyTeam } from '../data/team-repository';
+import { fetchMyTeams, myTeamsKey, teamKey, type MyTeam } from '../data/team-repository';
 
 const roleLabel: Record<MyTeam['myRole'], string> = { owner: 'Owner', admin: 'Admin', player: 'Player', staff: 'Staff' };
 
@@ -22,6 +22,7 @@ export function TeamManagementScreen() {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const { session } = useAuth();
+  const queryClient = useQueryClient();
   const userId = session?.user.id ?? '';
   const teams = useQuery({ queryKey: myTeamsKey(userId), queryFn: () => fetchMyTeams(userId), enabled: Boolean(userId) });
   const list = teams.data ?? [];
@@ -47,7 +48,12 @@ export function TeamManagementScreen() {
         ) : (
           list.map((team) => (
             <Pressable key={team.id} accessibilityRole="button" accessibilityLabel={`Manage ${team.name}`}
-              onPress={() => router.push({ pathname: '/team/[id]/manage', params: { id: team.id } })}
+              onPress={() => {
+                if (!queryClient.getQueryData(teamKey(team.id))) {
+                  queryClient.setQueryData(teamKey(team.id), team, { updatedAt: teams.dataUpdatedAt });
+                }
+                router.push({ pathname: '/team/[id]/manage', params: { id: team.id } });
+              }}
               style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
               <InitialsAvatar label={team.shortName} imageUri={team.logoUrl} size={44} />
               <View style={styles.names}>

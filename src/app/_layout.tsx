@@ -53,10 +53,10 @@ function AppShell() {
             <Stack.Screen name="match/[id]/overs" />
             <Stack.Screen name="match/[id]/scorecard" />
             <Stack.Screen name="match/[id]/wagon" />
-            <Stack.Screen name="team/[id]/index" />
-            <Stack.Screen name="team/[id]/matches" />
-            <Stack.Screen name="team/[id]/members" />
-            <Stack.Screen name="team/[id]/squad" />
+            <Stack.Screen name="team/[id]/index" options={{ animation: 'none' }} />
+            <Stack.Screen name="team/[id]/matches" options={{ animation: 'none' }} />
+            <Stack.Screen name="team/[id]/members" options={{ animation: 'none' }} />
+            <Stack.Screen name="team/[id]/squad" options={{ animation: 'none' }} />
             <Stack.Screen name="team/[id]/manage" />
             <Stack.Screen name="team/manage" />
             <Stack.Screen name="tournament/create" />

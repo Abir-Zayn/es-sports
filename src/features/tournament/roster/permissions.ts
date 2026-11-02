@@ -22,7 +22,7 @@ export type Capabilities = {
 
 /** What the server can do today: invite and add teams, but no cancelling, disbanding, schedule or registration changes. */
 export const serverCapabilities = (caps: Capabilities): Capabilities => ({
-  ...caps, disbandTeams: false, manageSchedule: false, manageRegistration: false, settleInvites: false,
+  ...caps, disbandTeams: false, manageSchedule: false, manageRegistration: false,
 });
 
 export function capabilitiesOf(role: TournamentRole | null): Capabilities {
