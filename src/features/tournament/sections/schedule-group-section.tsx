@@ -7,10 +7,10 @@ import { useThemedStyles, type Palette } from '@/theme';
 
 import type { ScheduleGroup } from '../schedule';
 
-type Props = { group: ScheduleGroup; showTitle: boolean };
+type Props = { group: ScheduleGroup; showTitle: boolean; showBadge?: boolean; badgeLabel?: string };
 
 /** Live now, Upcoming or Results: month headings over flat bars (a live match has no month heading). */
-export function ScheduleGroupSection({ group, showTitle }: Props) {
+export function ScheduleGroupSection({ group, showTitle, showBadge = false, badgeLabel }: Props) {
   const openMatch = useOpenMatch();
   const styles = useThemedStyles(createStyles);
   return (
@@ -24,7 +24,13 @@ export function ScheduleGroupSection({ group, showTitle }: Props) {
         <View key={key} style={styles.slice}>
           {heading ? <Text style={styles.heading}>{heading}</Text> : null}
           {fixtures.map((fixture) => (
-            <FixtureTile key={fixture.id} fixture={fixture} onPress={() => openMatch(fixture.id, fixture.state)} />
+            <FixtureTile
+              key={fixture.id}
+              fixture={fixture}
+              showBadge={showBadge}
+              badgeLabel={badgeLabel}
+              onPress={() => openMatch(fixture.id, fixture.state)}
+            />
           ))}
         </View>
       ))}

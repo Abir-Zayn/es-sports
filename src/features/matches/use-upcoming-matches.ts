@@ -1,21 +1,15 @@
-import { useQuery } from '@tanstack/react-query';
-
 import type { Fixture } from '@/types/cricket';
 
-import { sampleUpcomingMatches } from './sample-upcoming';
+import { fetchMatches } from './matches-repository';
+import { useRealtimeMatches } from './use-realtime-matches';
 
 export const upcomingMatchesKey = ['matches', 'upcoming'] as const;
 
-/**
- * Every match still to play, soonest first. Reads the sample list for now; swapping in a Supabase query on
- * `matches` with `status = 'scheduled'` ordered by `scheduled_at` only changes this function.
- */
+/** Reads upcoming fixtures with Realtime subscription. Kept for backwards compatibility. */
 export async function fetchUpcomingMatches(): Promise<Fixture[]> {
-  return sampleUpcomingMatches
-    .filter((fixture) => fixture.state === 'upcoming')
-    .sort((a, b) => a.date.localeCompare(b.date));
+  return fetchMatches('scheduled');
 }
 
 export function useUpcomingMatches() {
-  return useQuery({ queryKey: upcomingMatchesKey, queryFn: fetchUpcomingMatches });
+  return useRealtimeMatches('upcoming');
 }

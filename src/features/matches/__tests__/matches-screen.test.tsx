@@ -53,6 +53,35 @@ describe('matches tab', () => {
     expect(mockPush).toHaveBeenLastCalledWith({ pathname: '/match/[id]/info', params: { id: 'f21' } });
   });
 
+  it('shows two filter badges: Upcoming and Completed, with no redundant status badge on tiles', async () => {
+    await show();
+    expect(screen.getByRole('tab', { name: 'Upcoming' })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'Completed' })).toBeTruthy();
+    expect(await screen.findByText('Patenga Riders')).toBeTruthy();
+    // Only the filter tab shows "Upcoming"
+    expect(screen.getAllByText('Upcoming')).toHaveLength(1);
+  });
+
+  it('switches to completed matches on pressing Completed badge, showing results and no redundant badge on tiles', async () => {
+    await show();
+    await fireEvent.press(screen.getByRole('tab', { name: 'Completed' }));
+    expect(await screen.findByText('Chattogram Strikers')).toBeTruthy();
+    expect(screen.getByText('Strikers won by 18 runs')).toBeTruthy();
+    // Only the filter tab shows "Completed"
+    expect(screen.getAllByText('Completed')).toHaveLength(1);
+    // Tapping a completed match opens its scorecard
+    await fireEvent.press(screen.getByRole('button', { name: /Chattogram Strikers 176\/6\(20\), Halishahar Hawks 158\/9\(20\)/ }));
+    expect(mockPush).toHaveBeenLastCalledWith({ pathname: '/match/[id]/scorecard', params: { id: 'm11' } });
+  });
+
+  it('switches back to upcoming matches when pressing Upcoming tab', async () => {
+    await show();
+    await fireEvent.press(screen.getByRole('tab', { name: 'Completed' }));
+    expect(await screen.findByText('Chattogram Strikers')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('tab', { name: 'Upcoming' }));
+    expect(await screen.findByText('Patenga Riders')).toBeTruthy();
+  });
+
   it('shows no banner when no scoring request is waiting', async () => {
     await show();
     await screen.findByText('Patenga Riders');

@@ -5,6 +5,18 @@ import type { UserSummary } from '@/features/tournament/roster';
 const LIMIT = 20;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/** A bounded initial list using the same public profile fields as player search. */
+export async function suggestPlayers(excludeIds: string[], signal?: AbortSignal): Promise<UserSummary[]> {
+  let request = supabase.from('profiles').select('id, full_name, area, avatar_url')
+    .not('full_name', 'is', null).order('full_name').order('id').limit(LIMIT);
+  const ids = excludeIds.filter((id) => UUID.test(id));
+  if (ids.length) request = request.not('id', 'in', `(${ids.join(',')})`);
+  if (signal) request = request.abortSignal(signal);
+  const { data, error } = await request;
+  if (error) throw error;
+  return (data ?? []).map((row) => ({ id: row.id, name: row.full_name?.trim() || 'Player', area: row.area, avatarUrl: row.avatar_url }));
+}
+
 /**
  * Search only public profiles, by name (SQL LIKE wildcards escaped) or by a pasted user id, which finds exactly that account.
  * People in `excludeIds` are left out before the result is limited.

@@ -26,16 +26,14 @@ function seed() {
   };
   fake.results.team_members = {
     data: [
-      { team_id: 'a', profile_id: 'me', profiles: profile('Organiser') },
       { team_id: 'b', profile_id: 'other', profiles: profile('Rafi') },
-      { team_id: 'c', profile_id: 'me', profiles: profile('Organiser') },
     ],
     error: null,
   };
   fake.results.invitations = {
     data: [
-      { kind: 'team_owner', team_id: 'c', to_user: 'u7', profiles: profile('Nayeem') },
-      { kind: 'tournament_moderator', team_id: null, to_user: 'u8', profiles: profile('Tanvir') },
+      { id: 'i1', kind: 'team_owner', team_id: 'c', to_user: 'u7', from_user: 'me', status: 'pending', expires_at: '2999-01-01', profiles: profile('Nayeem') },
+      { id: 'i2', kind: 'tournament_moderator', team_id: null, to_user: 'u8', from_user: 'me', status: 'pending', expires_at: '2999-01-01', profiles: profile('Tanvir') },
     ],
     error: null,
   };
@@ -59,17 +57,17 @@ describe('the roster of a published tournament', () => {
     expect(roster.staff.map((m) => `${m.user.name}:${m.role}:${m.status}`)).toEqual(['Organiser:owner:accepted', 'Tanvir:moderator:pending']);
     const [a, b, c] = roster.teams;
     // A team I own with no request waiting: no owner slot, and I may invite one.
-    expect(a).toMatchObject({ name: 'Alpha', ownedByMe: true, owner: null, players: [] });
+    expect(a).toMatchObject({ name: 'Alpha', ownedByMe: false, owner: null, players: [] });
     // Someone else owns it.
     expect(b).toMatchObject({ ownedByMe: false, owner: { user: { name: 'Rafi' }, status: 'accepted' } });
     // I still own it, but a request to Nayeem is waiting.
-    expect(c).toMatchObject({ ownedByMe: true, owner: { user: { name: 'Nayeem' }, status: 'pending' } });
+    expect(c).toMatchObject({ ownedByMe: false, owner: { user: { name: 'Nayeem' }, status: 'pending' } });
   });
 
   it('asks only for requests I sent that are still open', async () => {
     await server.fetchRoster(T, me);
-    expect(fake.calls('invitations', 'eq')).toEqual(expect.arrayContaining([['tournament_id', T], ['from_user', 'me'], ['status', 'pending']]));
-    expect(fake.calls('invitations', 'gt')[0][0]).toBe('expires_at');
+    expect(fake.calls('invitations', 'eq')).toEqual(expect.arrayContaining([['tournament_id', T]]));
+    expect(fake.calls('invitations', 'in')).toContainEqual(['status', ['pending', 'declined']]);
   });
 
   it('reports a missing tournament plainly', async () => {
@@ -98,7 +96,7 @@ describe('changes to a published tournament', () => {
   });
 
   it.each([
-    ['EI002', /already pending/], ['EI003', /do not own this team/], ['42501', /not allowed/],
+    ['EI002', /already pending/], ['EI003', /already has an owner/], ['42501', /not allowed/],
   ])('says why a request was refused (%s)', async (code, message) => {
     fake.rpcResult = { data: null, error: { code, message: 'raw db text' } };
     const failure = await server.inviteTeamOwner(T, 'me', 'c', me).catch((error: unknown) => error);
@@ -124,7 +122,7 @@ describe('changes to a published tournament', () => {
   });
 
   it('refuses the changes the server does not store yet', async () => {
-    for (const run of [server.removeModerator, server.disbandTeam, server.closeRegistration, server.lockRosters, server.cancelTeamOwnerInvite]) {
+    for (const run of [server.removeModerator, server.disbandTeam, server.closeRegistration, server.lockRosters]) {
       await expect(run()).rejects.toThrow('not available for published tournaments yet');
     }
     expect(fake.rpc).not.toHaveBeenCalled();

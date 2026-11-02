@@ -25,7 +25,7 @@ const at = (minutes: number) => new Date(NOW + minutes * 60_000).toISOString();
 
 function builder(result: { data: unknown; error: unknown }) {
   const chain: Record<string, unknown> = {};
-  for (const step of ['select', 'eq', 'neq', 'in', 'order', 'limit']) {
+  for (const step of ['select', 'eq', 'neq', 'in', 'or', 'order', 'limit']) {
     chain[step] = () => chain;
   }
   chain.then = (resolve: (value: unknown) => unknown, reject: (reason: unknown) => unknown) =>
@@ -64,8 +64,8 @@ describe('invitation rules and error mapping', () => {
 
   it.each([
     ['EI001', 'This invitation is no longer open.', true],
-    ['EI002', 'An invitation is already pending for this person.', false],
-    ['EI003', 'The sender no longer owns this team, so this invitation is no longer open.', true],
+    ['EI002', 'An invitation is already pending.', false],
+    ['EI003', 'This invitation can no longer be accepted.', true],
     ['42501', 'You are not allowed to do that.', false],
     ['22023', 'That person cannot be invited right now.', false],
   ] as const)('maps %s to a plain message and closed=%s', (code, expectedMessage, expectedClosed) => {
@@ -118,7 +118,7 @@ describe('invitation RPC calls', () => {
     await expect(acceptInvitation('inv-1')).rejects.toMatchObject({
       code: 'EI003',
       closed: true,
-      message: 'The sender no longer owns this team, so this invitation is no longer open.',
+      message: 'This invitation can no longer be accepted.',
     });
   });
 });

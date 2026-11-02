@@ -12,6 +12,7 @@ type Props = {
   caps: Capabilities;
   busy: boolean;
   onInviteOwner: () => void;
+  onReinviteOwner: () => void;
   onCancelInvite: () => void;
   onShareInvite: () => void;
   onViewSquad: () => void;
@@ -22,16 +23,16 @@ const fromServer = (team: RosterTeam) => team.ownedByMe !== undefined;
 
 function ownerLine(team: RosterTeam): string {
   if (!team.owner) return team.ownedByMe ? 'You own this team' : 'No team owner yet';
-  return team.owner.status === 'pending' ? `Owner invite sent to ${team.owner.user.name}` : `Owner: ${team.owner.user.name}`;
+  return team.owner.status === 'pending' ? `Owner invite sent to ${team.owner.user.name}` : team.owner.status === 'declined' ? `${team.owner.user.name} declined the invitation` : `Owner: ${team.owner.user.name}`;
 }
 
-const ownerBadge = (team: RosterTeam) => (!team.owner ? (team.ownedByMe ? 'Yours' : 'Vacant') : team.owner.status === 'pending' ? 'Invite pending' : 'Accepted');
+const ownerBadge = (team: RosterTeam) => (!team.owner ? (team.ownedByMe ? 'Yours' : 'Vacant') : team.owner.status === 'pending' ? 'Invite pending' : team.owner.status === 'declined' ? 'Declined' : 'Accepted');
 
 /** One team: its short-name badge, name, owner status, squad size, and what the viewer may do with it. */
-export function TeamRow({ team, maxSquad, caps, busy, onInviteOwner, onCancelInvite, onShareInvite, onViewSquad, onDisband }: Props) {
+export function TeamRow({ team, maxSquad, caps, busy, onInviteOwner, onReinviteOwner, onCancelInvite, onShareInvite, onViewSquad, onDisband }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
-  const canInvite = caps.manageTeams && !team.owner && team.ownedByMe !== false;
+  const canInvite = caps.manageTeams && (!team.owner || team.owner.status === 'declined');
   const pending = caps.manageTeams && team.owner?.status === 'pending';
   const squad = !fromServer(team);
   const accepted = team.owner?.status === 'accepted';
@@ -56,8 +57,9 @@ export function TeamRow({ team, maxSquad, caps, busy, onInviteOwner, onCancelInv
           <Button label="Squad" variant="secondary" size="compact" accessibilityLabel={`View ${team.name} squad`} onPress={onViewSquad} />
         ) : null}
         {canInvite ? (
-          <Button label="Invite owner" size="compact" disabled={busy} accessibilityLabel={`Invite owner for ${team.name}`} onPress={onInviteOwner} />
+          <Button label={team.owner?.status === 'declined' ? 'Invite someone else' : 'Invite owner'} size="compact" disabled={busy} accessibilityLabel={`Invite owner for ${team.name}`} onPress={onInviteOwner} />
         ) : null}
+        {canInvite && team.owner?.status === 'declined' ? <Button label="Re-invite" variant="secondary" size="compact" disabled={busy} accessibilityLabel={`Re-invite ${team.owner.user.name}`} onPress={onReinviteOwner} /> : null}
         {pending ? (
           <Button label="Share invite" variant="secondary" size="compact" accessibilityLabel={`Share owner invite for ${team.name}`} onPress={onShareInvite} />
         ) : null}

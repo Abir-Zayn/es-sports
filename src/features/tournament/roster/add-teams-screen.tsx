@@ -5,7 +5,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
-import { searchPlayers } from '@/features/match/friendly/search-players';
+import { searchPlayers, suggestPlayers } from '@/features/match/friendly/search-players';
 import { isUuid } from '@/features/scoring/data/uuid';
 import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
@@ -20,6 +20,7 @@ import { TeamsSection } from './components/teams-section';
 import { UserSearchSheet } from './components/user-search-sheet';
 import { capabilitiesOf, roleIn, serverCapabilities } from './permissions';
 import { repoFor } from './roster-source';
+import { sampleUsers } from './sample-users';
 import { parseSetup, type SetupParams } from './setup';
 import { ownerInviteMessage, shareText } from './share-invite';
 import type { RosterTeam } from './types';
@@ -27,6 +28,8 @@ import { rosterErrorText, useMe, useRoster } from './use-roster';
 import { useRosterActions } from './use-roster-actions';
 
 type OpenSheet = { kind: 'moderator' } | { kind: 'create-team' } | { kind: 'add-own' } | { kind: 'team-owner'; team: RosterTeam } | { kind: 'disband'; team: RosterTeam } | { kind: 'lock' } | null;
+
+const suggestSamplePlayers = async (excludeIds: string[]) => sampleUsers.filter((user) => !excludeIds.includes(user.id)).slice(0, 20);
 
 /** Staff, teams and registration of the tournament being set up. What each person may change depends on their role. */
 export function AddTeamsScreen() {
@@ -59,7 +62,7 @@ export function AddTeamsScreen() {
   // A moderator search leaves out current staff. An owner search leaves out only yourself and that team's own owner or
   // waiting invitee: someone who owns or played for another team can still own this one.
   const staffIds = data ? data.staff.map((m) => m.user.id) : [];
-  const ownerIds = sheet?.kind === 'team-owner' ? [me.id, ...(sheet.team.owner ? [sheet.team.owner.user.id] : [])] : [];
+  const ownerIds = sheet?.kind === 'team-owner' ? [me.id] : [];
   const shareInvite = (team: RosterTeam) =>
     void shareText(ownerInviteMessage({ fromName: me.name, teamName: team.name, tournamentName: data?.tournamentName ?? '' }));
 
@@ -83,9 +86,9 @@ export function AddTeamsScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}>
-          {actions.inlineError ? (
+          {actions.inlineError || (sheet === null && inviteOwner.error) ? (
             <Text accessibilityRole="alert" style={styles.error}>
-              {rosterErrorText(actions.inlineError)}
+              {rosterErrorText(actions.inlineError ?? inviteOwner.error)}
             </Text>
           ) : null}
           <RegistrationSection
@@ -113,6 +116,7 @@ export function AddTeamsScreen() {
             busy={busy}
             onCreate={() => open({ kind: 'create-team' })}
             onInviteOwner={(team) => open({ kind: 'team-owner', team })}
+            onReinviteOwner={(team) => { if (team.owner?.status === 'declined') inviteOwner.mutate({ teamId: team.id, user: team.owner.user }); }}
             onCancelInvite={(team) => actions.cancelOwner.mutate(team.id)}
             onShareInvite={shareInvite}
             onViewSquad={viewSquad}
@@ -133,6 +137,7 @@ export function AddTeamsScreen() {
         }
         excludeIds={sheet?.kind === 'team-owner' ? ownerIds : staffIds}
         search={data?.server ? searchPlayers : undefined}
+        suggest={sheet?.kind === 'team-owner' ? (data?.server ? suggestPlayers : suggestSamplePlayers) : undefined}
         inviting={inviteModerator.isPending || inviteOwner.isPending}
         error={inviteModerator.isError || inviteOwner.isError ? rosterErrorText(inviteModerator.error ?? inviteOwner.error) : null}
         onInvite={(user) => {

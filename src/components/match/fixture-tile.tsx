@@ -5,7 +5,7 @@ import { dateParts } from '@/lib/date-parts';
 import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { Fixture, FixtureSide } from '@/types/cricket';
 
-type Props = { fixture: Fixture; onPress?: () => void };
+type Props = { fixture: Fixture; onPress?: () => void; showBadge?: boolean; badgeLabel?: string };
 
 /** "176/6" and "20" become "176/6(20)". A side that has not batted shows nothing. */
 const scoreText = ({ score, overs }: FixtureSide) => (score ? `${score}${overs ? `(${overs})` : ''}` : '');
@@ -17,15 +17,35 @@ const scoreText = ({ score, overs }: FixtureSide) => (score ? `${score}${overs ?
  * badge beside the first team. The hairline under it starts after the circle and runs to the edge.
  * It has no card of its own, so stack several for a list.
  */
-export function FixtureTile({ fixture, onPress }: Props) {
-  const { colors } = useTheme();
+export function FixtureTile({ fixture, onPress, showBadge = false, badgeLabel }: Props) {
+  const { colors, scheme } = useTheme();
+  const isDark = scheme === 'dark';
   const styles = useThemedStyles(createStyles);
   const { day, weekday } = dateParts(fixture.date);
   const [one, two] = fixture.sides;
   const live = fixture.state === 'live';
   const played = fixture.state !== 'upcoming';
+  const isResult = fixture.state === 'result';
   const spoken = (side: FixtureSide) => `${side.team.name}${side.score ? ` ${scoreText(side)}` : ''}`;
   const when = live ? ', live' : fixture.time ? `, ${fixture.time}` : '';
+
+  const tileBadge = live ? (
+    <AppBadge dot label="LIVE" backgroundColor={colors.live} color={colors.onLive} />
+  ) : showBadge ? (
+    isResult ? (
+      <AppBadge
+        label={badgeLabel ?? 'Completed'}
+        backgroundColor={isDark ? 'rgba(34, 197, 94, 0.15)' : '#DCFCE7'}
+        color={isDark ? '#4ADE80' : '#15803D'}
+      />
+    ) : (
+      <AppBadge
+        label={badgeLabel ?? 'Upcoming'}
+        backgroundColor={colors.surfaceRaised}
+        color={colors.textMuted}
+      />
+    )
+  ) : null;
 
   return (
     <Pressable
@@ -48,7 +68,7 @@ export function FixtureTile({ fixture, onPress }: Props) {
                 <Text style={[styles.first, styles.shrink]} numberOfLines={1}>
                   {one.team.name}
                 </Text>
-                {live ? <AppBadge dot label="LIVE" backgroundColor={colors.live} color={colors.onLive} /> : null}
+                {tileBadge}
               </View>
               <Text style={styles.second} numberOfLines={1}>
                 {two.team.name}

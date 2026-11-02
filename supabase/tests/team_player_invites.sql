@@ -35,6 +35,8 @@ select public.create_tournament_team('f8c00000-0000-4000-8000-000000000001', 'f8
 select public.create_tournament_team('f8c00000-0000-4000-8000-000000000001', 'f8b00000-0000-4000-8000-00000000000b', 'Quebec XI', 'QXI', 'neutral');
 reset role;
 insert into public.team_members (team_id, profile_id, role) values
+  ('f8b00000-0000-4000-8000-00000000000a', 'f8a00000-0000-4000-8000-000000000001', 'owner'),
+  ('f8b00000-0000-4000-8000-00000000000b', 'f8a00000-0000-4000-8000-000000000001', 'owner'),
   ('f8b00000-0000-4000-8000-00000000000a', 'f8a00000-0000-4000-8000-000000000002', 'admin'),
   ('f8b00000-0000-4000-8000-00000000000b', 'f8a00000-0000-4000-8000-000000000005', 'player');
 set local role authenticated;

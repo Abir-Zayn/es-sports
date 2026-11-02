@@ -68,6 +68,8 @@ describe('add teams screen', () => {
     expect(screen.getByText('Vacant')).toBeTruthy();
 
     await fireEvent.press(screen.getByRole('button', { name: 'Invite owner for Chattogram Strikers' }));
+    expect(await screen.findByText('Suggested players')).toBeTruthy();
+    expect(await screen.findByRole('button', { name: 'Invite Nayeem Islam' })).toBeTruthy();
     await searchAndInvite('Nayeem Islam');
     expect(await screen.findByText('Owner invite sent to Nayeem Islam · 0/16 players')).toBeTruthy();
     expect(screen.getByText('Invite pending')).toBeTruthy();
