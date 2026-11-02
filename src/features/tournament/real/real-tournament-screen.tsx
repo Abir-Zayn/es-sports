@@ -15,6 +15,7 @@ import type { TournamentSectionId } from '../sample-data';
 import { useTournamentRoutes } from '../use-tournament-routes';
 import { RealTournamentMatches } from './real-tournament-matches';
 import { RealTournamentOverview } from './real-tournament-overview';
+import { RealTournamentTable } from './real-tournament-table';
 import { RealTournamentTeams } from './real-tournament-teams';
 
 type Props = { id: string; section: TournamentSectionId };
@@ -47,7 +48,8 @@ export function RealTournamentScreen({ id, section }: Props) {
   else if (section === 'overview') body = <RealTournamentOverview tournament={record} staff={staff.data ?? []} canManage={role !== null} onManage={manage} />;
   else if (section === 'teams') body = <RealTournamentTeams tournament={record} canManage={role !== null} onManage={manage} />;
   else if (section === 'matches') body = <RealTournamentMatches tournament={record} canSchedule={role === 'owner'} canStart={role !== null} onSchedule={schedule} />;
-  else body = <Text muted>The table, the knockout and stats appear once matches are played.</Text>;
+  else if (section === 'table') body = <RealTournamentTable tournament={record} />;
+  else body = <Text muted>The knockout and stats appear once matches are played.</Text>;
   const format = record ? `${competitionFormats.find((item) => item.value === record.competition)?.label ?? ''} · ${record.matchFormat}` : '';
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>

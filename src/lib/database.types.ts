@@ -1026,6 +1026,26 @@ export type Database = {
       }
     }
     Views: {
+      tournament_standings: {
+        Row: {
+          balls_against: number | null
+          balls_for: number | null
+          lost: number | null
+          name: string | null
+          nrr: number | null
+          played: number | null
+          points: number | null
+          runs_against: number | null
+          runs_for: number | null
+          short_name: string | null
+          team_id: string | null
+          tied: number | null
+          tone: string | null
+          tournament_id: string | null
+          won: number | null
+        }
+        Relationships: []
+      }
       player_career_stats: {
         Row: {
           balls_bowled: number | null
