@@ -1,7 +1,8 @@
+import Pencil from 'lucide-react-native/icons/pencil';
 import Settings from 'lucide-react-native/icons/settings';
 import { StyleSheet, View } from 'react-native';
 
-import { AppIconTile, Button, InitialsAvatar, Text } from '@/components/ui';
+import { AppIconTile, InitialsAvatar, Text } from '@/components/ui';
 import { initialsOf } from '@/lib/initials';
 import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { PlayerProfile } from '@/types/profile';
@@ -17,7 +18,7 @@ type Props = {
   onEdit: () => void;
 };
 
-/** Title bar with a settings button, then the player's avatar, name and an edit button. */
+/** Title bar with edit and settings actions, followed by the player's identity. */
 export function ProfileHeader({ profile, userId, onSettings, onEdit }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
@@ -29,22 +30,34 @@ export function ProfileHeader({ profile, userId, onSettings, onEdit }: Props) {
         <Text variant="title" accessibilityRole="header">
           Profile
         </Text>
-        <AppIconTile
-          icon={Settings}
-          size={44}
-          borderRadius={22}
-          backgroundColor={colors.surface}
-          borderColor={colors.border}
-          borderWidth={1}
-          accessibilityLabel="Settings"
-          onPress={onSettings}
-        />
+        <View style={styles.actions}>
+          <AppIconTile
+            icon={Pencil}
+            size={44}
+            borderRadius={22}
+            backgroundColor={colors.surface}
+            borderColor={colors.border}
+            borderWidth={1}
+            accessibilityLabel="Edit profile"
+            onPress={onEdit}
+          />
+          <AppIconTile
+            icon={Settings}
+            size={44}
+            borderRadius={22}
+            backgroundColor={colors.surface}
+            borderColor={colors.border}
+            borderWidth={1}
+            accessibilityLabel="Settings"
+            onPress={onSettings}
+          />
+        </View>
       </View>
       <View style={styles.identity}>
         <InitialsAvatar
           label={initialsOf(profile.fullName)}
           imageUri={profile.avatarUri}
-          size={96}
+          size={72}
           accessibilityLabel={`${profile.fullName} profile picture`}
         />
         <View style={styles.names}>
@@ -54,7 +67,6 @@ export function ProfileHeader({ profile, userId, onSettings, onEdit }: Props) {
           </View>
           <Text muted>{meta}</Text>
         </View>
-        <Button label="Edit profile" variant="secondary" size="compact" onPress={onEdit} />
       </View>
     </View>
   );
@@ -62,10 +74,11 @@ export function ProfileHeader({ profile, userId, onSettings, onEdit }: Props) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    wrap: { gap: spacing.xl },
+    wrap: { gap: spacing.lg },
     bar: { paddingHorizontal: sizes.gutter, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    identity: { alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter },
-    names: { alignItems: 'center', gap: 2 },
-    nameRow: { maxWidth: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm },
-    name: { flexShrink: 1, fontSize: 24, lineHeight: 30, fontWeight: '700', textAlign: 'center', color: colors.text },
+    actions: { flexDirection: 'row', gap: spacing.sm },
+    identity: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg, paddingHorizontal: sizes.gutter },
+    names: { flex: 1, gap: spacing.xs },
+    nameRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+    name: { flexShrink: 1, fontSize: 24, lineHeight: 30, fontWeight: '700', color: colors.text },
   });

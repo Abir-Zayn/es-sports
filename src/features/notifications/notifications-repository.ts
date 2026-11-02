@@ -11,7 +11,7 @@ type LinkedInvitation = {
   kind: string;
   status: string;
   expires_at: string;
-  tournament_id: string;
+  tournament_id: string | null;
   team_id: string | null;
 };
 
@@ -82,11 +82,12 @@ export function toAppNotification(
     const linked = invitationId ? invitationsById[invitationId] : undefined;
     const resolvedTeamId = linked ? linked.team_id : teamId;
     const invitationKind =
-      linked?.kind === 'team_owner' || resolvedTeamId ? 'team-owner' : 'tournament-moderator';
+      linked?.kind === 'team_player' || asString(data.invite_kind) === 'team_player' ? 'player-squad'
+        : linked?.kind === 'team_owner' || resolvedTeamId ? 'team-owner' : 'tournament-moderator';
     invite = {
       invitationId: invitationId ?? row.id,
       invitationKind,
-      tournamentId: linked?.tournament_id ?? tournamentId,
+      tournamentId: linked?.tournament_id ?? tournamentId ?? undefined,
       teamId: resolvedTeamId,
       status: toInviteStatus(rawStatus, linked, now),
     };

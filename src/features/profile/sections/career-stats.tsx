@@ -1,7 +1,8 @@
+import { Image } from 'expo-image';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Button, SegmentedControl, Section, SectionHeader, Text } from '@/components/ui';
+import { Button, Section, SectionHeader, Text } from '@/components/ui';
 import { sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 import type { BattingStats, BowlingStats } from '@/types/profile';
 
@@ -14,8 +15,8 @@ type Props = {
 };
 
 const modes = [
-  { id: 'bat' as const, label: 'Bat' },
-  { id: 'bowl' as const, label: 'Bowl' },
+  { id: 'bat' as const, label: 'Batting', icon: require('../../../../assets/images/career-bat.svg') },
+  { id: 'bowl' as const, label: 'Bowling', icon: require('../../../../assets/images/career-ball.svg') },
 ];
 
 function battingCells(s: BattingStats): [string, string | number][] {
@@ -64,7 +65,20 @@ export function CareerStats({ batting, bowling, onFindTeam }: Props) {
           </View>
         ) : (
           <>
-            <SegmentedControl options={modes} selected={mode} onSelect={setMode} accessibilityLabel="Career stats type" />
+            <View style={styles.modes} accessibilityRole="tablist" accessibilityLabel="Career stats type">
+              {modes.map((option) => (
+                <Pressable
+                  key={option.id}
+                  accessibilityRole="tab"
+                  accessibilityLabel={option.label}
+                  accessibilityState={{ selected: mode === option.id }}
+                  onPress={() => setMode(option.id)}
+                  style={[styles.mode, mode === option.id && styles.modeSelected]}
+                >
+                  <Image source={option.icon} style={styles.modeIcon} contentFit="contain" accessibilityElementsHidden />
+                </Pressable>
+              ))}
+            </View>
             <View style={styles.grid}>
               {cells.map(([label, value]) => (
                 <View key={label} accessible accessibilityLabel={`${label} ${value}`} style={styles.cell}>
@@ -85,6 +99,10 @@ export function CareerStats({ batting, bowling, onFindTeam }: Props) {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     body: { paddingHorizontal: sizes.gutter, gap: spacing.md },
+    modes: { flexDirection: 'row', gap: spacing.sm },
+    mode: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+    modeSelected: { backgroundColor: colors.primary },
+    modeIcon: { width: 28, height: 28 },
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
     cell: {
       // Two per row: half the width minus half the gap.

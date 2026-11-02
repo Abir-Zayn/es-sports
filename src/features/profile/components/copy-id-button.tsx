@@ -29,6 +29,7 @@ export function CopyIdButton({ userId }: Props) {
     <AppIconTile
       icon={state === 'copied' ? Check : Copy}
       size={32}
+      iconSize={16}
       borderRadius={16}
       backgroundColor={colors.surface}
       borderColor={state === 'failed' ? colors.danger : colors.border}

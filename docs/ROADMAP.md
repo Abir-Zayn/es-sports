@@ -42,25 +42,42 @@ There are **no tables yet** for tournaments, teams, team members, invitations, s
 - PR #5 (friendly scorer + outbox into `main`) is merged; all five local and remote migration versions now agree.
 - PR #7 (fix for issue #6) is merged as `b68e7ec` and published as an OTA update on `preview`. Issue #6 is closed.
 
-## Current status (2026-11-01 at 7989ede)
+## Current status (2026-11-02)
 
-**Where we are:** Steps 1–5 merged (PRs #5–#12). Step 6 (scorer handover) is in progress. `main` is at `7989ede`.
+**Where we are:** Steps 1 to 6 are done, and the day plan for teams, tournaments, invitations and notifications is merged ([day-plan-tournament-invites.md](tasks/day-plan-tournament-invites.md)). `main` is at `0bf0a7b`.
 
-**Current state**
-- Steps 1–5 merged into `main` across PRs #5–#12.
-- Step 6 in progress; spec in [step-6-scorer-handover.md](tasks/step-6-scorer-handover.md).
-- Migrations through `20261101030000` (including `scorer_handover`) are applied remotely; local and remote histories match.
-- Device testing: rows 4–7 verified on PLR110; rows 8–15 pending.
+**Merged into `main`**
+- PRs #5 to #13: steps 1 to 6 (atomic friendly create, scoring write guard and score head, spectator screens with Realtime, scorer handover).
+- PR #14: teams, tournaments, invitations, notifications, delete an unfinished friendly (type `DELETE`), a notification for a chosen scorer, and the Profile on real data (matches, runs, wickets, teams, last five matches).
+- PR #15 (Argon 4, Gemini): match summary and spectator hero redesigned in a DAZN style (gradient scoreboard hero, underline tabs, flat table rows). Visual only; not checked against the real database.
+
+**Not on `main` yet**
+- PR #16 (Opus 5.5) was merged into `feat/tournament-core` **after** #14 had merged, so it is only on that branch (`a8cf827`). It needs a new PR from `feat/tournament-core` to `main`. It holds:
+  - search by user id: a copy button on the Profile (new package `expo-clipboard`, so a **new dev build** is needed), `searchPlayers` finds one account for a pasted id, and the same lookup works in tournament owner and moderator invites, friendly squad add and scorer handover;
+  - global search: Players are real accounts (name or id); Teams and tournaments there are still sample data;
+  - owner-invite search no longer hides anyone who already owns a team in that tournament (the server has no such rule); a regression test covers it;
+  - `src/lib/api-log.ts` (`traceApi`, `traceFlow`): every server call prints to the Metro terminal in dev builds only.
+
+**Database**
+- Migrations through `20261102030000` are applied to the dev project and match locally. Each has a rolled-back SQL test that passed.
+- Error codes are five characters: `ESH01` to `ESH05`, `ET001`, `EI001` to `EI003`, `ED001`.
 
 **Next steps**
-1. Finish step 6: review of the UI, GPT 6.1 Terra review of the migration, then merge.
-2. Run the manual two-session lock check described in `supabase/tests/scorer_handover.sql`.
-3. Complete device testing (rows 8, 9, 13–15 on two phones).
+1. Open a PR for #16's work (`feat/tournament-core` to `main`).
+2. Two-account smoke test of invitations and notifications with Realtime (not run).
+3. The two-session advisory-lock checks for step 6 and for the invitation accept (not run); device rows 8, 9 and 13 to 15.
+4. GPT review of the tournaments and invitations migrations (brief given, no answer yet).
+5. Steps 8 to 10: player profile, Matches tab and Search on real data (no decision blocks them).
+6. Remove the finished worktrees (`esSports-job1`, `2`, `4`, `5`) and the `job/*` branches.
 
 **Deferred or open**
-- Two-phone device tests (rows 8, 9, 13–15) and low-end phone check.
-- Plain wording for server errors (`23503`, `42501`) in unsent notice.
-- Spectator polling connection status observability (step 5 review, minor).
+- Low-end phone check; plain wording for server errors (`23503`, `42501`) in the unsent notice; spectator polling status (step 5 review, minor).
+- Tournament cover images and team logos are not uploaded (`cover_url` stays null); no screen yet to add members or admins to a real team; `/team/create` is reachable only from "Add my team" in the tournament flow.
+- A handover offer shows as a banner, not a notification. Maidens are not derived on the server (0 on the Profile).
+- Publish retry: if a publish succeeded but the reply was lost and the draft is then edited, the retry keeps the first version.
+- Owner account deletion leaves an ownerless team (step 22). Concurrency tests for teams and invitations are not written.
+- Draft (unpublished) tournaments still search a sample list, so a pasted id finds nothing there.
+- Team and tournament cards in Global search are still sample data.
 
 ## Model routing
 

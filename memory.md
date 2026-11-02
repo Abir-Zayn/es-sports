@@ -1,4 +1,10 @@
 # Universal AI Engineering Rules & Repository Memory
+## Application design direction
+- Use `DESIGN.md` as the visual reference for esSports. Apply its indigo, blue, layered surfaces, rounded components, spacing, and hierarchy through shared tokens in `src/theme`, with a coordinated light palette for device light mode.
+- Always use the device's system font; do not add or set the font families specified in `DESIGN.md`.
+- Always follow the device light/dark setting, including changes while the app is open; do not add an in-app theme override. Maintain `userInterfaceStyle: automatic`.
+- Respect accessibility and the performance rules below when adapting the reference: preserve legible contrast and avoid blur or costly glow effects. Keep user-uploaded images and functional content.
+
 **Target Assistive Agents:** Google Antigravity, Claude Code, OpenAI Codex, Warp Agent, Cursor.
 **Scope:** Mandatory engineering defaults for `esSports` and all TypeScript/JavaScript codebases. Treat these as absolute constraints unless explicit user instructions state otherwise.
 

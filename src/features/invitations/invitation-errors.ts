@@ -23,6 +23,8 @@ export function invitationMessage(error: unknown): string {
       return 'An invitation is already pending for this person.';
     case 'EI003':
       return 'The sender no longer owns this team, so this invitation is no longer open.';
+    case 'ET002':
+      return 'This player already plays for another team in this tournament. A player can play for one team per tournament.';
     case '42501':
       return 'You are not allowed to do that.';
     case '22023':

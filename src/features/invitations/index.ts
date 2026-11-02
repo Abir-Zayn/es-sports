@@ -12,6 +12,7 @@ export {
   formatSentLabel,
   sendModeratorInvite,
   sendTeamOwnerInvite,
+  sendTeamPlayerInvite,
   toInvitation,
 } from './invitations-repository';
 export { InvitationsScreen, invitationsKey } from './invitations-screen';

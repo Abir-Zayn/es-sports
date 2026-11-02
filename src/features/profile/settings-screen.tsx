@@ -15,7 +15,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, SettingsGroup, SettingsRow, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth/auth-provider';
 import { signOut } from '@/features/auth/sign-out';
-import { AppearancePicker } from '@/features/settings/appearance-picker';
 import { comingSoon } from '@/lib/coming-soon';
 import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
@@ -88,7 +87,7 @@ export function SettingsScreen() {
         </View>
 
         <View style={styles.actions}>
-          <AppearancePicker />
+          <Text muted>Appearance follows your device settings.</Text>
           {error ? (
             <Text variant="caption" style={styles.error} accessibilityLiveRegion="polite">
               {error}

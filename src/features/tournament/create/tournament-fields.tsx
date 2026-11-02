@@ -65,7 +65,7 @@ export function TournamentFields({ draft, errors, onChange, onBusyChange, onAddT
       <Pressable accessibilityRole="button" accessibilityLabel="Add teams and staff" onPress={onAddTeams}
         style={({ pressed }) => [styles.addTeams, pressed && styles.pressed]}>
         <Users size={20} color={colors.textMuted} strokeWidth={1.6} />
-        <View style={styles.addCopy}><Text>Add teams</Text><Text variant="caption" muted>Create teams, invite team owners and moderators</Text></View>
+        <View style={styles.addCopy}><Text>Add teams</Text><Text variant="caption" muted>Publishes the tournament, then create teams and invite owners and moderators</Text></View>
         <Plus size={19} color={colors.link} />
       </Pressable>
     </SettingsCard>
