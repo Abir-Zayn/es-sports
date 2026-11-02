@@ -13,7 +13,6 @@ import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from 
 import { emptyDraft, validateDraft, type DraftErrors, type TournamentDraft } from './draft';
 import { draftQueryKey, loadDraft, saveDraft } from './draft-storage';
 import { tournamentErrorText } from '../data/tournament-errors';
-import { setupParams } from '../roster/setup';
 import { TournamentFields } from './tournament-fields';
 import { usePublishTournament } from './use-publish-tournament';
 
@@ -86,7 +85,8 @@ function TournamentForm({ userId, initial }: { userId: string; initial: Tourname
     } catch { /* Mutation errors render below while entered values remain intact. */ }
     finally { saving.current = false; }
   }
-  async function publish() {
+  /** Publishes the draft, then opens the tournament, or its Teams screen when `next` is `teams`. */
+  async function publish(next: 'tournament' | 'teams' = 'tournament') {
     if (saving.current || pickingCover) return;
     Keyboard.dismiss();
     const nextErrors = validateDraft(draft);
@@ -95,7 +95,10 @@ function TournamentForm({ userId, initial }: { userId: string; initial: Tourname
     saving.current = true;
     try {
       const id = await publisher.mutateAsync(draft);
-      if (mounted.current) router.replace({ pathname: '/tournament/[id]', params: { id } });
+      if (!mounted.current) return;
+      router.replace({ pathname: '/tournament/[id]', params: { id } });
+      // Teams live on the server, so owner search and invites reach real players. Back returns to the tournament.
+      if (next === 'teams') router.push({ pathname: '/tournament/add-teams', params: { tournamentId: id } });
     } catch { /* The error renders below while entered values remain intact. */ }
     finally { saving.current = false; }
   }
@@ -113,7 +116,7 @@ function TournamentForm({ userId, initial }: { userId: string; initial: Tourname
       keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" showsVerticalScrollIndicator={false}>
       <View pointerEvents={mutation.isPending ? 'none' : 'auto'}>
         <TournamentFields draft={draft} errors={errors} onChange={change} onBusyChange={setPickingCover}
-          onAddTeams={() => router.push({ pathname: '/tournament/add-teams', params: setupParams(draft) })} />
+          onAddTeams={() => { void publish('teams'); }} />
       </View>
       {Object.values(errors).some(Boolean) ? <Text accessibilityRole="alert" style={styles.error}>Check the highlighted fields to save your tournament.</Text> : null}
       {mutation.isError ? <Text accessibilityRole="alert" style={styles.error}>Could not save your draft. Your entries are still here. Please try again.</Text> : null}

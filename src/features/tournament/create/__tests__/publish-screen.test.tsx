@@ -9,10 +9,11 @@ import { emptyDraft, localDateKey } from '../draft';
 import { loadDraft } from '../draft-storage';
 
 const mockReplace = jest.fn();
+const mockPush = jest.fn();
 const mockPublish = jest.fn();
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), replace: mockReplace, back: jest.fn(), canGoBack: () => true }),
+  useRouter: () => ({ push: mockPush, replace: mockReplace, back: jest.fn(), canGoBack: () => true }),
   useLocalSearchParams: () => ({}), useFocusEffect: jest.fn(), Stack: { Screen: () => null },
 }));
 jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn() }));
@@ -53,6 +54,16 @@ describe('publishing from the create screen', () => {
     await fireEvent.press(await screen.findByRole('button', { name: 'Publish tournament' }));
     await waitFor(() => expect(mockPublish).toHaveBeenCalledWith(valid));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: '/tournament/[id]', params: { id: 'f5c00000-0000-4000-8000-000000000001' } }));
+  });
+
+  it('publishes before Add teams, so the Teams screen works on the real tournament', async () => {
+    jest.mocked(loadDraft).mockResolvedValue(valid);
+    mockPublish.mockResolvedValue('f5c00000-0000-4000-8000-000000000001');
+    await show();
+    await fireEvent.press(await screen.findByRole('button', { name: 'Add teams and staff' }));
+    await waitFor(() => expect(mockPublish).toHaveBeenCalledWith(valid));
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith({ pathname: '/tournament/add-teams', params: { tournamentId: 'f5c00000-0000-4000-8000-000000000001' } }));
+    expect(mockReplace).toHaveBeenCalledWith({ pathname: '/tournament/[id]', params: { id: 'f5c00000-0000-4000-8000-000000000001' } });
   });
 
   it('keeps the form and says why when the server refuses', async () => {

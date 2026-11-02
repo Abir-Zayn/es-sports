@@ -40,7 +40,7 @@ declare
 begin
   insert into auth.users (id, email, raw_user_meta_data, created_at, updated_at)
   select pg_temp.inv_uid(s), 'inv' || s || '@test.local', jsonb_build_object('name', 'InvUser ' || s), now(), now()
-  from generate_series(1, 5) as s;
+  from generate_series(1, 6) as s;
 
   -- 1. Grants, direct write denials, and realtime publication
   perform pg_temp.inv_assert(not has_table_privilege('anon', 'public.invitations', 'SELECT'), 'anon no invitations select');
@@ -128,14 +128,16 @@ begin
     select 1 from public.team_members where team_id = v_team2 and profile_id = pg_temp.inv_uid(2) and role = 'admin'
   ), 'team2 ownership moved to user 4 and user 2 demoted to admin');
 
-  -- 4. Sender no longer owns team at accept -> EI003
+  -- 4. User 3 already owns team1 in this tournament, so owning team3 too is ET002 (migration 20261102040000).
+  --    Sender no longer owns team at accept -> EI003 (user 6 has no team in this tournament).
   perform pg_temp.inv_as(1);
-  v_inv := public.send_team_owner_invite(v_tour, v_team3, pg_temp.inv_uid(3));
+  perform pg_temp.inv_err(format('select public.send_team_owner_invite(%L, %L, %L)', v_tour, v_team3, pg_temp.inv_uid(3)), 'ET002', 'second team in one tournament ET002');
+  v_inv := public.send_team_owner_invite(v_tour, v_team3, pg_temp.inv_uid(6));
   set local role postgres;
   insert into public.team_members (team_id, profile_id, role) values (v_team3, pg_temp.inv_uid(5), 'player');
   perform pg_temp.inv_as(1);
   perform public.transfer_team_ownership(v_team3, pg_temp.inv_uid(5));
-  perform pg_temp.inv_as(3);
+  perform pg_temp.inv_as(6);
   perform pg_temp.inv_err(format('select public.accept_invitation(%L)', v_inv), 'EI003', 'accept when sender lost ownership EI003');
 
   -- 5. Decline, cancel, and expiry (EI001) + lazy expiry on re-send
