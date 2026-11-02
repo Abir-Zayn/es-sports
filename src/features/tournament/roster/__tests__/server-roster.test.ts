@@ -122,9 +122,44 @@ describe('changes to a published tournament', () => {
   });
 
   it('refuses the changes the server does not store yet', async () => {
-    for (const run of [server.removeModerator, server.disbandTeam, server.closeRegistration, server.lockRosters]) {
+    for (const run of [server.closeRegistration, server.lockRosters]) {
       await expect(run()).rejects.toThrow('not available for published tournaments yet');
     }
     expect(fake.rpc).not.toHaveBeenCalled();
+  });
+
+  it('removes a moderator, or withdraws their invite, in one server call', async () => {
+    const roster = await server.removeModerator(T, 'me', 'u8');
+    expect(fake.rpc).toHaveBeenCalledWith('remove_tournament_moderator', { p_tournament: T, p_user: 'u8' });
+    expect(roster.server).toBe(true);
+  });
+
+  it('takes a team out of the tournament through the server', async () => {
+    await server.disbandTeam(T, 'me', 'c');
+    expect(fake.rpc).toHaveBeenCalledWith('remove_tournament_team', { p_tournament: T, p_team: 'c' });
+  });
+
+  it('says plainly when a moderator tries to remove a team', async () => {
+    fake.rpcResult = { data: null, error: { code: '42501', message: 'raw db text' } };
+    await expect(server.disbandTeam(T, 'me', 'c')).rejects.toThrow('not allowed');
+  });
+});
+
+describe('moderator requests that were declined', () => {
+  const invite = (id: string, to: string, status: string, name: string) => (
+    { id, kind: 'tournament_moderator', team_id: null, to_user: to, from_user: 'me', status, expires_at: '2999-01-01', profiles: profile(name) }
+  );
+
+  it('lists a decline once, so the owner can re-invite, and never over a newer pending request', async () => {
+    fake.results.invitations = { data: [invite('p', 'u8', 'pending', 'Tanvir'), invite('d1', 'u8', 'declined', 'Tanvir'), invite('d2', 'u9', 'declined', 'Mitu')], error: null };
+    const roster = await server.fetchRoster(T, me);
+    expect(roster.staff.map((m) => `${m.user.name}:${m.status}`)).toEqual(['Organiser:accepted', 'Tanvir:pending', 'Mitu:declined']);
+  });
+
+  it('does not list a decline from someone who is now on the staff', async () => {
+    fake.results.tournament_staff = { data: [{ role: 'owner', user_id: 'me', profiles: profile('Organiser') }, { role: 'moderator', user_id: 'u9', profiles: profile('Mitu') }], error: null };
+    fake.results.invitations = { data: [invite('d2', 'u9', 'declined', 'Mitu')], error: null };
+    const roster = await server.fetchRoster(T, me);
+    expect(roster.staff.map((m) => `${m.user.name}:${m.status}`)).toEqual(['Organiser:accepted', 'Mitu:accepted']);
   });
 });

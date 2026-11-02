@@ -1014,6 +1014,14 @@ export type Database = {
         Args: { p_profile: string; p_team: string }
         Returns: undefined
       }
+      remove_tournament_moderator: {
+        Args: { p_tournament: string; p_user: string }
+        Returns: undefined
+      }
+      remove_tournament_team: {
+        Args: { p_team: string; p_tournament: string }
+        Returns: undefined
+      }
       reopen_match: {
         Args: { p_expected_head: string; p_match: string; p_op: string }
         Returns: undefined

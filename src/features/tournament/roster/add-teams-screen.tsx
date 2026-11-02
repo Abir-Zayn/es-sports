@@ -61,7 +61,7 @@ export function AddTeamsScreen() {
   const subtitle = data?.tournamentName ?? params.name;
   // A moderator search leaves out current staff. An owner search leaves out only yourself and that team's own owner or
   // waiting invitee: someone who owns or played for another team can still own this one.
-  const staffIds = data ? data.staff.map((m) => m.user.id) : [];
+  const staffIds = data ? data.staff.filter((m) => m.status !== 'declined').map((m) => m.user.id) : [];
   const ownerIds = sheet?.kind === 'team-owner' ? [me.id] : [];
   const shareInvite = (team: RosterTeam) =>
     void shareText(ownerInviteMessage({ fromName: me.name, teamName: team.name, tournamentName: data?.tournamentName ?? '' }));
@@ -86,9 +86,9 @@ export function AddTeamsScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}>
-          {actions.inlineError || (sheet === null && inviteOwner.error) ? (
+          {actions.inlineError || (sheet === null && (inviteOwner.error || inviteModerator.error)) ? (
             <Text accessibilityRole="alert" style={styles.error}>
-              {rosterErrorText(actions.inlineError ?? inviteOwner.error)}
+              {rosterErrorText(actions.inlineError ?? inviteOwner.error ?? inviteModerator.error)}
             </Text>
           ) : null}
           <RegistrationSection
@@ -109,6 +109,7 @@ export function AddTeamsScreen() {
             busy={busy}
             onInvite={() => open({ kind: 'moderator' })}
             onRemove={(member) => actions.removeModerator.mutate(member.user.id)}
+            onReinvite={(member) => inviteModerator.mutate(member.user)}
           />
           <TeamsSection
             roster={data}
@@ -165,9 +166,11 @@ export function AddTeamsScreen() {
         visible={sheet?.kind === 'disband'}
         title="Disband team?"
         message={
-          sheet?.kind === 'disband'
-            ? `${sheet.team.name} will be removed from the tournament, along with its owner and players. This cannot be undone.`
-            : ''
+          sheet?.kind !== 'disband'
+            ? ''
+            : data?.server
+              ? `${sheet.team.name} will leave the tournament and any owner request still waiting is cancelled. The team itself stays with its owner; a team made here with no owner yet is deleted.`
+              : `${sheet.team.name} will be removed from the tournament, along with its owner and players. This cannot be undone.`
         }
         confirmLabel="Disband team"
         busy={disband.isPending}

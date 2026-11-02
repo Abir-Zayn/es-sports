@@ -62,7 +62,7 @@ describe('teams and staff of a published tournament', () => {
     expect(screen.getByText('3/4 added')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Add my team' })).toBeTruthy();
     expect(screen.queryByText('Schedule')).toBeNull();
-    expect(screen.queryByRole('button', { name: /Disband/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Disband Alpha' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /squad/ })).toBeNull();
     expect(screen.getByRole('button', { name: /Cancel owner invite/ })).toBeTruthy();
     expect(screen.queryByText('Lock rosters')).toBeNull();
@@ -101,6 +101,26 @@ describe('teams and staff of a published tournament', () => {
     expect(screen.getByText('Invite someone else')).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Re-invite Nayeem' }));
     await waitFor(() => expect(fake.rpc).toHaveBeenCalledWith('send_team_owner_invite', { p_tournament: T, p_team: 'c', p_to: 'u7' }));
+  });
+
+  it('removes a team after the owner confirms', async () => {
+    await show();
+    await fireEvent.press(screen.getByRole('button', { name: 'Disband Charlie' }));
+    expect(await screen.findByText(/stays with its owner/)).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Disband team' }));
+    await waitFor(() => expect(fake.rpc).toHaveBeenCalledWith('remove_tournament_team', { p_tournament: T, p_team: 'c' }));
+  });
+
+  it('removes a moderator, and re-invites one who declined', async () => {
+    const mod = (id: string, to: string, status: string, name: string) => ({ id, kind: 'tournament_moderator', team_id: null, to_user: to, from_user: 'me', status, expires_at: '2999-01-01', profiles: profile(name) });
+    fake.results.tournament_staff = { data: [{ role: 'owner', user_id: 'me', profiles: profile('Organiser') }, { role: 'moderator', user_id: 'u8', profiles: profile('Tanvir') }], error: null };
+    fake.results.invitations = { data: [mod('d', 'u9', 'declined', 'Mitu')], error: null };
+    await show();
+    expect(screen.getByText('Declined')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Remove Tanvir' }));
+    await waitFor(() => expect(fake.rpc).toHaveBeenCalledWith('remove_tournament_moderator', { p_tournament: T, p_user: 'u8' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Re-invite Mitu' }));
+    await waitFor(() => expect(fake.rpc).toHaveBeenCalledWith('send_tournament_moderator_invite', { p_tournament: T, p_to: 'u9' }));
   });
 
   it('opens the list of my own teams, which says when there is none to add, and can start a new team', async () => {

@@ -44,6 +44,18 @@ export async function createTournamentTeam(tournamentId: string, team: NewTourna
   if (error) throw toTournamentError(error);
 }
 
+/** Removes a moderator, or withdraws a moderator invite still waiting. Owner only, or a moderator stepping down. */
+export async function removeTournamentModerator(tournamentId: string, userId: string): Promise<void> {
+  const { error } = await traceApi('tournament.removeModerator', { tournamentId, userId }, () => supabase.rpc('remove_tournament_moderator', { p_tournament: tournamentId, p_user: userId }));
+  if (error) throw toTournamentError(error);
+}
+
+/** Takes a team out of the tournament and cancels its waiting owner requests. Owner only. A repeat is fine. */
+export async function removeTournamentTeam(tournamentId: string, teamId: string): Promise<void> {
+  const { error } = await traceApi('tournament.removeTeam', { tournamentId, teamId }, () => supabase.rpc('remove_tournament_team', { p_tournament: tournamentId, p_team: teamId }));
+  if (error) throw toTournamentError(error);
+}
+
 /** Enters a team the caller owns or administers. A repeat is fine. */
 export async function addTournamentTeam(tournamentId: string, teamId: string): Promise<void> {
   const { error } = await traceApi('tournament.addTeam', { tournamentId, teamId }, () => supabase.rpc('add_tournament_team', { p_tournament: tournamentId, p_team: teamId }));
