@@ -13,6 +13,7 @@ import { appLink, shareText } from '@/lib/share';
 import { radius, sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { FriendlyFormatCard, ScorerAssignmentRow } from './components/friendly-setup-form';
+import { FriendlyMatchupHero } from './components/friendly-matchup-hero';
 import { FriendlySheets, type FriendlySheet } from './components/friendly-sheets';
 import { FriendlyTeamCard } from './components/friendly-team-card';
 import { SavedFriendlies } from './components/saved-friendlies';
@@ -125,8 +126,12 @@ export function FriendlySetupScreen() {
     <View style={s.progress}><View style={[s.bar, s.barOn]} /><View style={s.bar} /></View>
     <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 120 }]} keyboardShouldPersistTaps="handled">
       <SavedFriendlies userId={me.id} />
+      <FriendlyMatchupHero teamA={setup.teamA} teamB={setup.teamB} nameA={teamLabel(setup, 'teamA')} nameB={teamLabel(setup, 'teamB')}
+        overs={setup.overs} playersPerSide={setup.playersPerSide} />
+      <Text accessibilityRole="header" muted style={s.section}>Format</Text>
       <FriendlyFormatCard overs={setup.overs} playersPerSide={setup.playersPerSide} error={shown.format}
         onOvers={(overs) => setSetup({ ...setup, overs })} onPlayersPerSide={(n) => setSetup(withPlayersPerSide(setup, n))} />
+      <Text accessibilityRole="header" muted style={s.section}>Squads</Text>
       {sides.map((side: FriendlySide) => <FriendlyTeamCard key={side} label={side === 'teamA' ? 'Team A' : 'Team B'}
         squad={setup[side]} playersPerSide={setup.playersPerSide} error={notice?.side === side ? notice.message : shown[side]}
         onRename={(name) => setSetup(renameTeam(setup, side, name))}
@@ -137,13 +142,14 @@ export function FriendlySetupScreen() {
         onRemove={(p) => setSetup(removePlayer(setup, side, p.id))}
         onFind={() => open({ kind: 'find', side })} onQuickAdd={() => open({ kind: 'guest', side })}
         onAddMe={me.id && !inSquad(me.id) ? () => change((c) => addPlayer(c, side, { id: localEventId(), name: me.name || 'Me', role: 'All-rounder', userId: me.id, avatarUrl: me.avatarUrl })) : undefined} />)}
-      <ScorerAssignmentRow name={scorer ? scorer.name : 'You'} error={shown.scorer}
+      <Text accessibilityRole="header" muted style={s.section}>Scorer</Text>
+      <ScorerAssignmentRow name={scorer ? scorer.name : 'You'} avatarUrl={scorer ? scorer.avatarUrl : me.avatarUrl} error={shown.scorer}
         detail={scorer ? 'Only this person can enter scores. They will receive a link.' : 'Only you enter scores. Pick an app user in a squad to hand it over.'}
         onPress={() => open({ kind: 'scorer' })} />
       {attempted && Object.keys(problems).length > 0 ? <Text style={s.error} accessibilityLiveRegion="polite">Fix the highlighted parts to go to the toss.</Text> : null}
     </ScrollView>
     <View style={[s.footer, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
-      <Button label="Proceed to Toss" onPress={() => { setAttempted(true); if (Object.keys(problems).length === 0) setTossing(true); }} />
+      <View style={s.glow}><Button label="Proceed to Toss" onPress={() => { setAttempted(true); if (Object.keys(problems).length === 0) setTossing(true); }} /></View>
     </View>
     <FriendlySheets sheet={sheet} error={sheetError} meId={me.id} setup={setup} onClose={() => setSheet(null)}
       onAddMember={(side, user, role) => { if (change((c) => addPlayer(c, side, { id: localEventId(), name: user.name, role, userId: user.id, avatarUrl: user.avatarUrl }))) setSheet(null); }}
@@ -157,14 +163,16 @@ export function FriendlySetupScreen() {
 
 const styles = (c: Palette) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: c.background },
-  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter, paddingVertical: spacing.md },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter, paddingTop: spacing.md, paddingBottom: spacing.lg },
   titles: { flex: 1, gap: 2 },
-  title: { fontSize: 22, lineHeight: 28, fontWeight: '800' },
-  step: { fontSize: 12, lineHeight: 17 },
+  title: { fontSize: 24, lineHeight: 28, fontWeight: '700', letterSpacing: -0.2 },
+  step: { fontSize: 13, lineHeight: 18, fontWeight: '500' },
   progress: { flexDirection: 'row', gap: 6, paddingHorizontal: sizes.gutter },
-  bar: { flex: 1, height: 4, borderRadius: 2, backgroundColor: c.border },
-  barOn: { backgroundColor: c.primary },
+  bar: { flex: 1, height: 6, borderRadius: radius.pill, backgroundColor: c.surfaceRaised },
+  barOn: { backgroundColor: c.primary, shadowColor: c.primary, shadowOpacity: 0.5, shadowRadius: 8, shadowOffset: { width: 0, height: 0 } },
   content: { padding: sizes.gutter, gap: spacing.lg },
+  section: { marginTop: spacing.sm, marginBottom: -spacing.xs, fontSize: 12, lineHeight: 16, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase' },
   error: { fontSize: 13, lineHeight: 18, color: c.danger },
   footer: { paddingHorizontal: sizes.gutter, paddingTop: spacing.md, borderTopWidth: 1, borderTopColor: c.border, backgroundColor: c.background },
+  glow: { borderRadius: radius.control, shadowColor: c.primary, shadowOpacity: 0.4, shadowRadius: 15, shadowOffset: { width: 0, height: 0 } },
 });

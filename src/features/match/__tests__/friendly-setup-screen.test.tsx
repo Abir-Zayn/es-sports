@@ -87,13 +87,22 @@ describe('friendly match setup', () => {
   it('builds two squads, benches the extra player, and keeps the side at its size', async () => {
     await show();
     await fillForm();
+    expect(screen.getAllByText('4/4 Playing · 4/16 Squad')).toHaveLength(2);
+    expect(screen.queryByText('Organiser Me')).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Show Team A squad' }));
+    expect(screen.getByText('Karnaphuli Kings squad')).toBeTruthy();
     expect(screen.getByText('Organiser Me')).toBeTruthy();
-    expect(screen.getAllByText('4/4 playing · 4/16 in squad')).toHaveLength(2);
+    await fireEvent.press(screen.getByRole('button', { name: 'Close karnaphuli kings squad' }));
+    expect(screen.queryByText('Organiser Me')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add me to Team B' })).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Show Team B squad' }));
     expect(screen.queryByText('Playing')).toBeNull();
     expect(screen.queryByRole('switch', { name: 'Liton Roy playing' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Add me to Team B' })).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Close chattogram strikers squad' }));
     await quickAdd('Team B', 'Reserve Player');
-    expect(screen.getByText('4/4 playing · 5/16 in squad')).toBeTruthy();
+    expect(screen.getByText('4/4 Playing · 5/16 Squad')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Show Team B squad' }));
+    expect(screen.getByText('Select the players in the lineup.')).toBeTruthy();
     expect(screen.getByRole('switch', { name: 'Reserve Player playing', checked: false })).toBeTruthy();
     await fireEvent.press(screen.getByRole('switch', { name: 'Reserve Player playing' }));
     expect(screen.getByText('4 are already playing. Bench someone first.')).toBeTruthy();
@@ -111,6 +120,7 @@ describe('friendly match setup', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Find player for Team A' }));
     await fireEvent.changeText(screen.getByLabelText('Search players by name'), 'Rafi');
     await fireEvent.press(await screen.findByRole('button', { name: 'Add Rafi Hasan' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Show Team A squad' }));
     expect(screen.getByText('Rafi Hasan')).toBeTruthy();
     expect(screen.getByTestId(`image-${avatarUrl}`, { includeHiddenElements: true })).toBeTruthy();
   });

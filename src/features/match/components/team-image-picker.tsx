@@ -7,11 +7,11 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/ui';
 import { spacing, useThemedStyles, type Palette } from '@/theme';
 
-type Props = { label: string; uri?: string; onChange: (uri?: string, mimeType?: string) => void };
+type Props = { label: string; uri?: string; /** Square size in px. */ size?: number; onChange: (uri?: string, mimeType?: string) => void };
 const TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_BYTES = 2 * 1024 * 1024;
 
-export function TeamImagePicker({ label, uri, onChange }: Props) {
+export function TeamImagePicker({ label, uri, size = 48, onChange }: Props) {
   const s = useThemedStyles(styles);
   const [error, setError] = useState<string | null>(null);
   const busy = useRef(false);
@@ -39,8 +39,8 @@ export function TeamImagePicker({ label, uri, onChange }: Props) {
 
   return <View style={s.wrap}>
     <Pressable accessibilityRole="button" accessibilityLabel={`${uri ? 'Change' : 'Add'} ${label} image`}
-      onPress={() => void pick()} style={s.button}>
-      {uri ? <Image source={{ uri }} style={s.image} contentFit="cover" /> : <Camera size={22} color={s.icon.color} />}
+      onPress={() => void pick()} style={[s.button, { width: size, height: size, borderRadius: Math.round(size / 4) }]}>
+      {uri ? <Image source={{ uri }} style={s.image} contentFit="cover" /> : <Camera size={size > 56 ? 28 : 22} color={s.icon.color} />}
     </Pressable>
     {uri ? <Text onPress={() => onChange(undefined, undefined)} accessibilityRole="button" accessibilityLabel={`Remove ${label} image`} style={s.remove}>Remove</Text> : null}
     {error ? <Text accessibilityRole="alert" style={s.error}>{error}</Text> : null}
@@ -49,9 +49,9 @@ export function TeamImagePicker({ label, uri, onChange }: Props) {
 
 const styles = (c: Palette) => StyleSheet.create({
   wrap: { alignItems: 'center', gap: spacing.xs },
-  button: { width: 48, height: 48, borderRadius: 12, borderWidth: 1, borderColor: c.border, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
+  button: { borderWidth: 1, borderColor: c.border, backgroundColor: c.surfaceRaised, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   image: { width: '100%', height: '100%' },
   icon: { color: c.textMuted },
   remove: { color: c.link, fontSize: 12 },
-  error: { color: c.danger, fontSize: 12, maxWidth: 110 },
+  error: { color: c.danger, fontSize: 12, maxWidth: 160, textAlign: 'center' },
 });

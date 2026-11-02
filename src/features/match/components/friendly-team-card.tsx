@@ -1,13 +1,16 @@
-import X from 'lucide-react-native/icons/x';
-import Check from 'lucide-react-native/icons/check';
-import { Pressable, StyleSheet, View } from 'react-native';
+import UserCheck from 'lucide-react-native/icons/user-check';
+import UserPlus from 'lucide-react-native/icons/user-plus';
+import UserSearch from 'lucide-react-native/icons/user-search';
+import Users from 'lucide-react-native/icons/users';
+import { useState, type ComponentType } from 'react';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
-import { AppIconTile, Button, InitialsAvatar, Text, TextField } from '@/components/ui';
-import { initialsOf } from '@/lib/initials';
-import { radius, spacing, useThemedStyles, type Palette } from '@/theme';
+import { Text } from '@/components/ui';
+import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { SQUAD_MAX } from '../friendly/friendly-rules';
 import type { FriendlyPlayer, FriendlyTeamSquad } from '../types';
+import { FriendlySquadSheet } from './friendly-squad-sheet';
 import { TeamImagePicker } from './team-image-picker';
 
 type Props = {
@@ -25,56 +28,62 @@ type Props = {
   onQuickAdd: () => void;
 };
 
-/** One side of a friendly: name and colour, its lineup with playing and bench, and the two ways to add players. */
+/** One side of a friendly: image, name and lineup count stacked in the centre, then icon tiles to add players or open the squad. */
 export function FriendlyTeamCard({ label, squad, playersPerSide, error, onAddMe, onRename, onImage, onTogglePlaying, onRemove, onFind, onQuickAdd }: Props) {
   const s = useThemedStyles(styles);
+  const { colors } = useTheme();
+  const [squadOpen, setSquadOpen] = useState(false);
+  const [focused, setFocused] = useState(false);
   const playing = squad.players.filter((p) => p.playing).length;
   const full = squad.players.length >= SQUAD_MAX;
-  const hasReserves = squad.players.length > playersPerSide;
-  return <View style={s.card}>
-    <View style={s.top}>
-      <TeamImagePicker label={label} uri={squad.imageUri} onChange={onImage} />
-      <View style={s.name}><TextField label={`${label} name`} value={squad.name} onChangeText={onRename} placeholder="e.g. Karnaphuli Kings" maxLength={30} autoCapitalize="words" /></View>
-    </View>
-    <Text muted style={s.count}>{playing}/{playersPerSide} playing · {squad.players.length}/{SQUAD_MAX} in squad</Text>
-    {hasReserves ? <Text muted style={s.detail}>Select the players in the lineup.</Text> : null}
-    {squad.players.length === 0 ? <Text muted style={s.empty}>No players yet. Find app users or quick add guests.</Text> : null}
-    {squad.players.map((p) => <View key={p.id} style={s.player}>
-      <InitialsAvatar label={initialsOf(p.name)} imageUri={p.avatarUrl} size={36} />
-      <View style={s.who}>
-        <Text style={s.playerName} numberOfLines={1}>{p.name}</Text>
-        <Text muted style={s.detail}>{p.role} · {p.userId ? 'App user' : 'Guest'}</Text>
-      </View>
-      {hasReserves ? <Pressable accessibilityRole="switch" accessibilityState={{ checked: p.playing }} accessibilityLabel={`${p.name} playing`}
-        onPress={() => onTogglePlaying(p)} style={s.selection}>
-        <View style={[s.box, p.playing && s.boxOn]}>{p.playing ? <Check size={16} color={s.check.color} /> : null}</View>
-      </Pressable> : null}
-      <AppIconTile icon={X} size={36} borderRadius={radius.pill} accessibilityLabel={`Remove ${p.name}`} onPress={() => onRemove(p)} />
-    </View>)}
-    {error ? <Text style={s.error} accessibilityLiveRegion="polite">{error}</Text> : null}
+  const title = squad.name.trim() || label;
+  return <View style={[s.card, error ? s.cardError : null]}>
+    <TeamImagePicker label={label} uri={squad.imageUri} size={72} onChange={onImage} />
+    <TextInput value={squad.name} onChangeText={onRename} placeholder={`${label} name`} accessibilityLabel={`${label} name`}
+      maxLength={30} autoCapitalize="words" placeholderTextColor={colors.textMuted} selectionColor={colors.primary}
+      onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+      style={[s.input, focused ? s.inputFocused : null, error ? s.inputError : null]} />
+    <Text muted style={s.count}>{playing}/{playersPerSide} Playing · {squad.players.length}/{SQUAD_MAX} Squad</Text>
+    {error && !squadOpen ? <Text style={s.error} accessibilityLiveRegion="polite">{error}</Text> : null}
     <View style={s.actions}>
-      <View style={s.action}><Button label="Find player" size="compact" variant="secondary" disabled={full} accessibilityLabel={`Find player for ${label}`} onPress={onFind} /></View>
-      <View style={s.action}><Button label="Quick add" size="compact" variant="secondary" disabled={full} accessibilityLabel={`Quick add to ${label}`} onPress={onQuickAdd} /></View>
+      <ActionTile icon={UserSearch} accessibilityLabel={`Find player for ${label}`} disabled={full} onPress={onFind} />
+      <ActionTile icon={UserPlus} accessibilityLabel={`Quick add to ${label}`} disabled={full} onPress={onQuickAdd} />
+      {onAddMe && !full ? <ActionTile icon={UserCheck} accessibilityLabel={`Add me to ${label}`} onPress={onAddMe} /> : null}
+      <ActionTile icon={Users} accessibilityLabel={`Show ${label} squad`} onPress={() => setSquadOpen(true)} />
     </View>
-    {onAddMe && !full ? <Button label="Add me to this team" size="compact" variant="ghost" accessibilityLabel={`Add me to ${label}`} onPress={onAddMe} /> : null}
+    <FriendlySquadSheet visible={squadOpen} title={`${title} squad`} squad={squad} playersPerSide={playersPerSide}
+      error={squadOpen ? error : undefined} onClose={() => setSquadOpen(false)} onTogglePlaying={onTogglePlaying} onRemove={onRemove} />
   </View>;
 }
 
+type TileProps = { icon: ComponentType<{ size?: number; color?: string }>; accessibilityLabel: string; disabled?: boolean; onPress: () => void };
+
+/** A square icon tile. Stays visible and announced as disabled when the squad is full. */
+function ActionTile({ icon: Icon, accessibilityLabel, disabled = false, onPress }: TileProps) {
+  const s = useThemedStyles(styles);
+  const { colors } = useTheme();
+  return <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel} accessibilityState={{ disabled }} disabled={disabled}
+    onPress={onPress} style={({ pressed }) => [s.tile, disabled && s.disabled, pressed && s.pressed]}>
+    <Icon size={22} color={colors.text} />
+  </Pressable>;
+}
+
 const styles = (c: Palette) => StyleSheet.create({
-  card: { gap: spacing.md, padding: spacing.lg, borderRadius: 20, borderWidth: 1, borderColor: c.border, backgroundColor: c.surface },
-  top: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing.md },
-  name: { flex: 1 },
-  count: { fontSize: 12, lineHeight: 17 },
-  empty: { fontSize: 13, lineHeight: 18 },
-  player: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  who: { flex: 1, minWidth: 0 },
-  playerName: { fontSize: 14, lineHeight: 19, fontWeight: '600' },
-  detail: { fontSize: 12, lineHeight: 16 },
-  selection: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  box: { width: 22, height: 22, borderRadius: 5, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
-  boxOn: { borderColor: c.primary, backgroundColor: c.primary },
-  check: { color: c.primaryText },
-  error: { fontSize: 13, lineHeight: 18, color: c.danger },
-  actions: { flexDirection: 'row', gap: spacing.sm },
-  action: { flex: 1 },
+  card: { alignItems: 'center', gap: spacing.md, padding: 20, borderRadius: radius.lg, borderWidth: 1, borderColor: c.border, backgroundColor: c.surface },
+  cardError: { borderColor: c.danger },
+  input: {
+    alignSelf: 'stretch', height: 52, paddingHorizontal: spacing.xl, borderRadius: radius.pill, borderWidth: 1, borderColor: c.border,
+    backgroundColor: c.background, color: c.text, fontSize: 16, fontWeight: '600', textAlign: 'center', paddingVertical: 0,
+  },
+  inputFocused: { borderColor: c.primary },
+  inputError: { borderColor: c.danger },
+  count: { fontSize: 13, lineHeight: 18, fontWeight: '600', textAlign: 'center', fontVariant: ['tabular-nums'] },
+  error: { fontSize: 13, lineHeight: 18, color: c.danger, textAlign: 'center' },
+  actions: { flexDirection: 'row', justifyContent: 'center', gap: spacing.md, paddingTop: spacing.xs },
+  tile: {
+    width: 52, height: 52, alignItems: 'center', justifyContent: 'center',
+    borderRadius: radius.md, borderWidth: 1, borderColor: c.border, backgroundColor: c.surfaceRaised,
+  },
+  disabled: { opacity: 0.45 },
+  pressed: { opacity: 0.7 },
 });
