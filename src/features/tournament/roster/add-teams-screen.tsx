@@ -124,7 +124,8 @@ export function AddTeamsScreen() {
             onDisband={(team) => open({ kind: 'disband', team })}
             onAddOwn={data.server ? () => open({ kind: 'add-own' }) : undefined}
           />
-          {data.server ? null : <ScheduleSection caps={caps} busy={busy} teamCount={data.teams.length} onOpen={() => router.push('/tournament/schedule')} />}
+          <ScheduleSection caps={caps} busy={busy} teamCount={data.teams.length}
+            onOpen={() => router.push(data.server ? { pathname: '/tournament/schedule', params: { tournamentId } } : '/tournament/schedule')} />
         </ScrollView>
       )}
 

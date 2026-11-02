@@ -61,7 +61,7 @@ describe('teams and staff of a published tournament', () => {
     expect(screen.getByText('Port City Cup')).toBeTruthy();
     expect(screen.getByText('3/4 added')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Add my team' })).toBeTruthy();
-    expect(screen.queryByText('Schedule')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Create schedule' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Disband Alpha' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'View Alpha squad' })).toBeTruthy();
     expect(screen.getByRole('button', { name: /Cancel owner invite/ })).toBeTruthy();

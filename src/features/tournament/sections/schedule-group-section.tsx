@@ -4,13 +4,23 @@ import { FixtureTile } from '@/components/match/fixture-tile';
 import { Text } from '@/components/ui';
 import { useOpenMatch } from '@/features/match/use-match-routes';
 import { useThemedStyles, type Palette } from '@/theme';
+import type { Fixture } from '@/types/cricket';
 
 import type { ScheduleGroup } from '../schedule';
 
-type Props = { group: ScheduleGroup; showTitle: boolean; showBadge?: boolean; badgeLabel?: string };
+type Props = {
+  group: ScheduleGroup;
+  showTitle: boolean;
+  showBadge?: boolean;
+  badgeLabel?: string;
+  /** False for fixtures that have no match page yet (a published schedule before scoring starts). */
+  openable?: boolean;
+  /** A badge for one fixture only, e.g. "Cancelled"; overrides the group badge. */
+  badgeFor?: (fixture: Fixture) => string | null;
+};
 
 /** Live now, Upcoming or Results: month headings over flat bars (a live match has no month heading). */
-export function ScheduleGroupSection({ group, showTitle, showBadge = false, badgeLabel }: Props) {
+export function ScheduleGroupSection({ group, showTitle, showBadge = false, badgeLabel, openable = true, badgeFor }: Props) {
   const openMatch = useOpenMatch();
   const styles = useThemedStyles(createStyles);
   return (
@@ -27,9 +37,9 @@ export function ScheduleGroupSection({ group, showTitle, showBadge = false, badg
             <FixtureTile
               key={fixture.id}
               fixture={fixture}
-              showBadge={showBadge}
-              badgeLabel={badgeLabel}
-              onPress={() => openMatch(fixture.id, fixture.state)}
+              showBadge={showBadge || Boolean(badgeFor?.(fixture))}
+              badgeLabel={badgeFor?.(fixture) ?? badgeLabel}
+              onPress={openable ? () => openMatch(fixture.id, fixture.state) : undefined}
             />
           ))}
         </View>

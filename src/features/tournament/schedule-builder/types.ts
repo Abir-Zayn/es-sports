@@ -23,6 +23,10 @@ export type ScheduledMatch = Pairing & {
   date: string;
   /** Minutes after midnight, e.g. 540 for 9:00 AM. */
   startMin: number;
+  /** A published match the owner called off, with the reason the teams were given. Absent means scheduled. */
+  cancelled?: { reason: string };
+  /** Scoring has begun, so the match can no longer move or be cancelled. */
+  started?: boolean;
 };
 
 export type Competition = TournamentDraft['competition'];
@@ -31,8 +35,12 @@ export type MatchFormat = TournamentDraft['matchFormat'];
 /** How matches are spread over the tournament days. */
 export type SlotSettings = { perDay: number; firstStartMin: number };
 
+/** Auto: drawn from the teams and settings, then adjusted. Manual: the owner adds each match. */
+export type ScheduleMode = 'auto' | 'manual';
+
 export type Schedule = {
   tournamentId: string;
+  mode: ScheduleMode;
   settings: SlotSettings;
   matches: ScheduledMatch[];
   /** When it was last published, or null while it is a draft only the organisers see. */

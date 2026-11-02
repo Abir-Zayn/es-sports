@@ -20,9 +20,9 @@ export type Capabilities = {
   settleInvites?: boolean;
 };
 
-/** What the server cannot do yet: registration windows and the schedule (Track B) still live on the device. */
+/** What the server cannot do yet: registration windows and roster locking still live on the device. */
 export const serverCapabilities = (caps: Capabilities): Capabilities => ({
-  ...caps, manageSchedule: false, manageRegistration: false,
+  ...caps, manageRegistration: false,
 });
 
 export function capabilitiesOf(role: TournamentRole | null): Capabilities {

@@ -7,15 +7,19 @@ import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { competitionFormats, type TournamentDraft } from '../create/draft';
 import { ConfirmSheet } from '../roster/components/confirm-sheet';
+import { AddMatchSheet } from './components/add-match-sheet';
 import { EditMatchSheet } from './components/edit-match-sheet';
+import { ScheduleControls } from './components/schedule-controls';
 import { ScheduleDay } from './components/schedule-day';
-import { ScheduleSettings } from './components/schedule-settings';
 import type { ScheduledMatch, ScheduleTeam } from './types';
 import { useScheduleBuilder } from './use-schedule-builder';
 
+/** What the builder needs from the tournament: a draft's setup or a published tournament's. */
+export type ScheduleSetup = Pick<TournamentDraft, 'competition' | 'matchFormat' | 'venue' | 'startDate' | 'endDate'>;
+
 type Props = {
   tournamentId: string;
-  setup: TournamentDraft;
+  setup: ScheduleSetup;
   days: string[];
   teams: ScheduleTeam[];
   isOwner: boolean;
@@ -25,20 +29,31 @@ type Props = {
 const shortDate = (date: string) => format(parseISO(date), 'd MMM');
 
 /**
- * Settings, then the matches day by day, then Publish. The owner draws, moves and publishes; anyone else on
- * the staff sees the schedule read-only.
+ * The owner picks auto draw or manual, builds the matches, then publishes. Once published, tapping a match moves or
+ * cancels it at once (the owner panel). Anyone else on the staff sees the schedule read-only.
  */
 export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, bottomInset }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const builder = useScheduleBuilder({ tournamentId, teams, competition: setup.competition, matchFormat: setup.matchFormat, days, isOwner });
   const [editing, setEditing] = useState<ScheduledMatch | null>(null);
+  const [adding, setAdding] = useState(false);
   const [confirmRedraw, setConfirmRedraw] = useState(false);
-  const { matches, saved, publish } = builder;
+  const { matches, saved, publish, live } = builder;
   const playingDays = [...new Set(matches.map((m) => m.date))];
   const formatLabel = competitionFormats.find((f) => f.value === setup.competition)?.label ?? '';
+  const locked = live && matches.some((m) => m.started);
+  const published = Boolean(saved.data?.publishedAt);
 
   if (saved.isPending) return <ActivityIndicator color={colors.link} accessibilityLabel="Loading schedule" style={styles.status} />;
+  if (saved.isError) {
+    return (
+      <View style={styles.content}>
+        <Text muted>Could not load the schedule.</Text>
+        <Button label="Try again" variant="secondary" onPress={() => void saved.refetch()} />
+      </View>
+    );
+  }
 
   return (
     <>
@@ -47,73 +62,59 @@ export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, bot
           {formatLabel} · {setup.matchFormat} · {teams.length} teams · {shortDate(setup.startDate)} – {shortDate(setup.endDate)}
         </Text>
         {isOwner ? (
-          <>
-            <ScheduleSettings settings={builder.settings} onChange={builder.changeSettings} />
-            <Button
-              label={matches.length > 0 ? 'Redraw schedule' : 'Draw schedule'}
-              variant={matches.length > 0 ? 'secondary' : 'primary'}
-              onPress={() => (matches.length > 0 ? setConfirmRedraw(true) : builder.draw())}
-            />
-          </>
+          <ScheduleControls mode={builder.mode} settings={builder.settings} hasMatches={matches.length > 0} locked={locked}
+            onMode={builder.changeMode} onSettings={builder.changeSettings} onAdd={() => setAdding(true)}
+            onDraw={() => (matches.length > 0 ? setConfirmRedraw(true) : builder.draw())} />
         ) : (
-          <Text variant="caption" muted>
-            Only the tournament owner can change the schedule.
-          </Text>
+          <Text variant="caption" muted>Only the tournament owner can change the schedule.</Text>
         )}
-        {builder.problem ? (
-          <Text accessibilityRole="alert" style={styles.error}>
-            {builder.problem}
-          </Text>
-        ) : null}
+        {builder.problem ? <Text accessibilityRole="alert" style={styles.error}>{builder.problem}</Text> : null}
         {builder.outOfDate ? (
           <Text accessibilityRole="alert" style={styles.warning}>
-            The teams have changed since this schedule was drawn. Draw it again before publishing.
+            The teams have changed since this schedule was made. Draw it again or fix the matches before publishing.
           </Text>
         ) : null}
         {matches.length === 0 ? (
           <Text muted style={styles.empty}>
-            {teams.length < 2 ? 'Add at least 2 teams, then draw the schedule.' : 'No schedule yet. Pick the settings and draw it.'}
+            {teams.length < 2 ? 'Add at least 2 teams first.' : builder.mode === 'manual' ? 'No matches yet. Add the first one.' : 'No schedule yet. Pick the settings and draw it.'}
           </Text>
         ) : (
           <>
             <Text variant="caption" muted>
-              {matches.length} matches over {playingDays.length} days.{isOwner ? ' Tap a match to move it.' : ''}
+              {matches.length} matches over {playingDays.length} days.{isOwner ? ' Tap a match to change it.' : ''}
             </Text>
             {playingDays.map((date) => (
-              <ScheduleDay
-                key={date}
-                date={date}
-                venue={setup.venue}
-                matches={matches.filter((m) => m.date === date)}
-                onEdit={isOwner ? setEditing : undefined}
-              />
+              <ScheduleDay key={date} date={date} venue={setup.venue} matches={matches.filter((m) => m.date === date)} onEdit={isOwner ? setEditing : undefined} />
             ))}
           </>
         )}
-        {isOwner && matches.length > 0 ? (
+        {isOwner && (matches.length > 0 || builder.dirty) ? (
           <View style={styles.publish}>
             <Text variant="caption" muted accessibilityLiveRegion="polite">
-              {saved.data?.publishedAt && !builder.dirty ? 'Published. Teams and followers can see it.' : 'Not published yet. Only the staff can see it.'}
+              {live ? 'Published. Moving or cancelling a match saves at once and tells both teams.' : 'Not published yet. Only the staff can see these changes.'}
             </Text>
-            {builder.publishError ? (
-              <Text accessibilityRole="alert" style={styles.error}>
-                {builder.publishError}
-              </Text>
-            ) : null}
-            <Button
-              label={saved.data?.publishedAt ? 'Publish changes' : 'Publish schedule'}
-              loading={publish.isPending}
-              disabled={builder.outOfDate || (!builder.dirty && Boolean(saved.data?.publishedAt))}
-              onPress={() => publish.mutate()}
-            />
+            {builder.publishError ? <Text accessibilityRole="alert" style={styles.error}>{builder.publishError}</Text> : null}
+            {live ? null : (
+              <Button label={published ? 'Publish changes' : 'Publish schedule'} loading={publish.isPending}
+                disabled={builder.outOfDate || matches.length === 0} onPress={() => publish.mutate()} />
+            )}
+            {published && builder.dirty ? <Button label="Discard changes" variant="secondary" disabled={publish.isPending} onPress={builder.discard} /> : null}
           </View>
         ) : null}
       </ScrollView>
-      <EditMatchSheet match={editing} days={days} onSave={(date, startMin) => (editing ? builder.move(editing.id, date, startMin) : null)} onClose={() => setEditing(null)} />
+      <EditMatchSheet
+        match={editing}
+        days={days}
+        onSave={(date, startMin) => (editing ? builder.move(editing.id, date, startMin) : Promise.resolve(null))}
+        onRemove={!live && builder.mode === 'manual' && editing ? () => builder.remove(editing.id) : undefined}
+        onCancelMatch={live && editing ? (reason) => builder.cancelMatch(editing.id, reason) : undefined}
+        onClose={() => setEditing(null)}
+      />
+      <AddMatchSheet visible={adding} teams={teams} days={days} firstStartMin={builder.settings.firstStartMin} onAdd={builder.add} onClose={() => setAdding(false)} />
       <ConfirmSheet
         visible={confirmRedraw}
         title="Redraw schedule?"
-        message="Every match is drawn again from the teams and settings. Matches you moved by hand go back to their drawn days."
+        message="Every match is drawn again from the teams and settings. Matches you moved or added by hand are replaced."
         confirmLabel="Redraw"
         busy={false}
         error={null}

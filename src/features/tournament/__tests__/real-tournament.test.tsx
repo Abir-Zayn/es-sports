@@ -103,7 +103,7 @@ describe('a real tournament', () => {
 
   it('says matches and the table wait for a schedule rather than showing sample numbers', async () => {
     await show(<RealTournamentScreen id={T} section="table" />);
-    expect(await screen.findByText(/appear once the schedule is drawn/)).toBeTruthy();
+    expect(await screen.findByText(/appear once matches are played/)).toBeTruthy();
   });
 
   it('says so when the tournament does not exist', async () => {

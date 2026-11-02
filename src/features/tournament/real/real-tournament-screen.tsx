@@ -13,6 +13,7 @@ import { tournamentErrorText } from '../data/tournament-errors';
 import { fetchTournament, fetchTournamentStaff, tournamentKey } from '../data/tournament-repository';
 import type { TournamentSectionId } from '../sample-data';
 import { useTournamentRoutes } from '../use-tournament-routes';
+import { RealTournamentMatches } from './real-tournament-matches';
 import { RealTournamentOverview } from './real-tournament-overview';
 import { RealTournamentTeams } from './real-tournament-teams';
 
@@ -20,7 +21,7 @@ type Props = { id: string; section: TournamentSectionId };
 
 const initials = (name: string) => name.split(/\s+/).filter(Boolean).map((word) => word[0]).join('').slice(0, 3).toUpperCase() || 'T';
 
-/** A published tournament, read from the server. Fixtures, the table and stats arrive once a schedule exists. */
+/** A published tournament, read from the server. The table, knockout and stats arrive once matches are played. */
 export function RealTournamentScreen({ id, section }: Props) {
   const { colors } = useTheme();
   const router = useRouter();
@@ -32,6 +33,7 @@ export function RealTournamentScreen({ id, section }: Props) {
   const record = tournament.data;
   const role = staff.data?.find((member) => member.user.id === session?.user.id)?.role ?? null;
   const manage = () => router.push({ pathname: '/tournament/add-teams', params: { tournamentId: id } });
+  const schedule = () => router.push({ pathname: '/tournament/schedule', params: { tournamentId: id } });
   let body;
   if (tournament.isPending) body = <ActivityIndicator color={colors.link} accessibilityLabel="Loading tournament" />;
   else if (tournament.isError) {
@@ -44,7 +46,8 @@ export function RealTournamentScreen({ id, section }: Props) {
   } else if (!record) body = <Text muted>This tournament could not be found.</Text>;
   else if (section === 'overview') body = <RealTournamentOverview tournament={record} staff={staff.data ?? []} canManage={role !== null} onManage={manage} />;
   else if (section === 'teams') body = <RealTournamentTeams tournament={record} canManage={role !== null} onManage={manage} />;
-  else body = <Text muted>Matches, the table, the knockout and stats appear once the schedule is drawn.</Text>;
+  else if (section === 'matches') body = <RealTournamentMatches tournament={record} canSchedule={role === 'owner'} onSchedule={schedule} />;
+  else body = <Text muted>The table, the knockout and stats appear once matches are played.</Text>;
   const format = record ? `${competitionFormats.find((item) => item.value === record.competition)?.label ?? ''} · ${record.matchFormat}` : '';
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>

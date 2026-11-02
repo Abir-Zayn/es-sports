@@ -773,6 +773,88 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_fixtures: {
+        Row: {
+          away_label: string | null
+          away_team_id: string | null
+          cancel_reason: string | null
+          cancelled_at: string | null
+          created_at: string
+          home_label: string | null
+          home_team_id: string | null
+          id: string
+          match_date: string
+          match_id: string | null
+          number: number
+          round: number
+          stage: string
+          start_min: number
+          status: string
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          away_label?: string | null
+          away_team_id?: string | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          created_at?: string
+          home_label?: string | null
+          home_team_id?: string | null
+          id?: string
+          match_date: string
+          match_id?: string | null
+          number: number
+          round: number
+          stage: string
+          start_min: number
+          status?: string
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          away_label?: string | null
+          away_team_id?: string | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          created_at?: string
+          home_label?: string | null
+          home_team_id?: string | null
+          id?: string
+          match_date?: string
+          match_id?: string | null
+          number?: number
+          round?: number
+          stage?: string
+          start_min?: number
+          status?: string
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_fixtures_away_team_id_fkey"
+            columns: ["away_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_fixtures_home_team_id_fkey"
+            columns: ["home_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_fixtures_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_teams: {
         Row: {
           added_at: string
@@ -834,7 +916,11 @@ export type Database = {
           profile_url: string | null
           registration_deadline: string | null
           registration_opens: string | null
+          schedule_mode: string | null
+          schedule_published_at: string | null
           side_format: string
+          slots_per_day: number | null
+          first_start_min: number | null
           start_date: string
           teams_planned: number
           venue: string
@@ -976,6 +1062,18 @@ export type Database = {
       }
       can_score_match: { Args: { p_match: string }; Returns: boolean }
       cancel_invitation: { Args: { p_id: string }; Returns: undefined }
+      cancel_tournament_fixture: {
+        Args: { p_fixture: string; p_reason: string }
+        Returns: undefined
+      }
+      publish_tournament_schedule: {
+        Args: { p: Json; p_tournament: string }
+        Returns: undefined
+      }
+      reschedule_tournament_fixture: {
+        Args: { p_date: string; p_fixture: string; p_start_min: number }
+        Returns: undefined
+      }
       cancel_scorer_handover: { Args: { p_id: string }; Returns: undefined }
       claim_score_head: {
         Args: { p_expected_head: string; p_match: string; p_op: string }
