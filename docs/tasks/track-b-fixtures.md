@@ -7,11 +7,11 @@ Codex was assigned this track but never started it; Claude built it.
 
 | File | Adds |
 | --- | --- |
-| `20261103100000_tournament_fixtures.sql` | `tournament_fixtures` table, schedule columns on `tournaments` (`schedule_mode`, `slots_per_day`, `first_start_min`, `schedule_published_at`), the schedule check and notification helpers |
-| `20261103110000_tournament_schedule_writes.sql` | `publish_tournament_schedule`, `reschedule_tournament_fixture`, `cancel_tournament_fixture`; `remove_tournament_team` now refuses a team with scheduled fixtures |
+| `20261102192353_tournament_fixtures.sql` | `tournament_fixtures` table, schedule columns on `tournaments` (`schedule_mode`, `slots_per_day`, `first_start_min`, `schedule_published_at`), the schedule check and notification helpers |
+| `20261102192425_tournament_schedule_writes.sql` | `publish_tournament_schedule`, `reschedule_tournament_fixture`, `cancel_tournament_fixture`; `remove_tournament_team` now refuses a team with scheduled fixtures |
 
-SQL check: `supabase/tests/tournament_fixtures.sql` (paste into the SQL editor). **Not run**: no local database here.
-`src/lib/database.types.ts` was edited by hand; regenerate it after applying.
+SQL check: `supabase/tests/tournament_fixtures.sql`. **Applied to project `tedgyfczmqqnwrlucsoc` and the check PASSES there** (it rolls back).
+`src/lib/database.types.ts` matches the types generated from the live database.
 
 ### Design choices
 

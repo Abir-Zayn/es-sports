@@ -1,4 +1,4 @@
--- Verification for tournament squads (migration 20261103020000).
+-- Verification for tournament squads (migration 20261102192327).
 --
 -- Run as an administrator (SQL editor) after the migration is applied. Paste this whole file. Everything runs
 -- inside one transaction that is rolled back. Any failed assertion raises an exception that starts with FAIL.

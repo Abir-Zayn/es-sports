@@ -1,4 +1,4 @@
--- Verification for player availability (migration 20261103010000).
+-- Verification for player availability (migration 20261102192003).
 --
 -- Run as an administrator (SQL editor) after the migration is applied. Paste this whole file. Everything runs
 -- inside one transaction that is rolled back. Any failed assertion raises an exception that starts with FAIL.

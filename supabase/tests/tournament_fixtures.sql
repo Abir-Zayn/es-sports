@@ -1,4 +1,4 @@
--- Verification for tournament fixtures (migrations 20261103100000 and 20261103110000).
+-- Verification for tournament fixtures (migrations 20261102192353 and 20261102192425).
 --
 -- Run as an administrator (SQL editor) after both migrations are applied. Paste this whole file. Everything runs
 -- inside one transaction that is rolled back. Any failed assertion raises an exception that starts with FAIL.

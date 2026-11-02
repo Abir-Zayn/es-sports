@@ -6,15 +6,14 @@ Branch `feat/tc-roster`, cut from `b138766`. Covers workfile items 2, 3, 5 and 6
 
 | File | Adds |
 | --- | --- |
-| `20261103000000_tournament_staff_team_removal.sql` | `remove_tournament_moderator`, `remove_tournament_team` |
-| `20261103010000_team_member_availability.sql` | `team_members.availability` (available, injured, resting), `set_team_member_availability` |
-| `20261103020000_tournament_squads.sql` | `tournament_squads` table, `set_tournament_squad` |
+| `20261102191947_tournament_staff_team_removal.sql` | `remove_tournament_moderator`, `remove_tournament_team` |
+| `20261102192003_team_member_availability.sql` | `team_members.availability` (available, injured, resting), `set_team_member_availability` |
+| `20261102192327_tournament_squads.sql` | `tournament_squads` table, `set_tournament_squad` |
 
 SQL checks to paste into the SQL editor after each one: `supabase/tests/tournament_removal.sql`,
-`team_availability.sql`, `tournament_squads.sql`. They have **not been run** (no local database or Docker here).
+`team_availability.sql`, `tournament_squads.sql`. **Applied to project `tedgyfczmqqnwrlucsoc` on 2026-11-02 (UTC) and all three checks PASS there** (each rolls back).
 
-`src/lib/database.types.ts` was edited by hand for the new columns, table and functions. Regenerate it after the
-migrations are applied.
+`src/lib/database.types.ts` matches the types generated from the live database.
 
 ## What changed in the app
 

@@ -1,4 +1,4 @@
--- Verification for removing moderators and teams (migration 20261103000000).
+-- Verification for removing moderators and teams (migration 20261102191947).
 --
 -- Run as an administrator (SQL editor) after the migration is applied. Paste this whole file. Everything runs
 -- inside one transaction that is rolled back; the last block proves nothing was left behind. Any failed assertion
