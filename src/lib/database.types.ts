@@ -623,6 +623,8 @@ export type Database = {
       }
       team_members: {
         Row: {
+          availability: string
+          availability_updated_at: string | null
           is_captain: boolean
           joined_at: string
           profile_id: string
@@ -630,6 +632,8 @@ export type Database = {
           team_id: string
         }
         Insert: {
+          availability?: string
+          availability_updated_at?: string | null
           is_captain?: boolean
           joined_at?: string
           profile_id: string
@@ -637,6 +641,8 @@ export type Database = {
           team_id: string
         }
         Update: {
+          availability?: string
+          availability_updated_at?: string | null
           is_captain?: boolean
           joined_at?: string
           profile_id?: string
@@ -742,6 +748,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tournament_squads: {
+        Row: {
+          added_at: string
+          added_by: string | null
+          profile_id: string
+          team_id: string
+          tournament_id: string
+        }
+        Insert: {
+          added_at?: string
+          added_by?: string | null
+          profile_id: string
+          team_id: string
+          tournament_id: string
+        }
+        Update: {
+          added_at?: string
+          added_by?: string | null
+          profile_id?: string
+          team_id?: string
+          tournament_id?: string
+        }
+        Relationships: []
       }
       tournament_teams: {
         Row: {
@@ -1049,6 +1079,14 @@ export type Database = {
       }
       set_team_captain: {
         Args: { p_profile: string; p_team: string }
+        Returns: undefined
+      }
+      set_team_member_availability: {
+        Args: { p_availability: string; p_profile: string; p_team: string }
+        Returns: undefined
+      }
+      set_tournament_squad: {
+        Args: { p_players: string[]; p_team: string; p_tournament: string }
         Returns: undefined
       }
       set_team_member_role: {

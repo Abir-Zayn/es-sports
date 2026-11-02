@@ -84,6 +84,7 @@ function Members({ members, loading, failed }: { members: TeamMemberRecord[] | u
           <InitialsAvatar label={member.name.slice(0, 2).toUpperCase()} size={40} imageUri={member.avatarUrl ?? undefined} />
           <Text style={styles.memberName} numberOfLines={1}>{member.name}</Text>
           {member.isCaptain ? <AppBadge label="Captain" /> : null}
+          {member.availability === 'available' ? null : <AppBadge label={member.availability === 'injured' ? 'Injured' : 'Resting'} />}
           <AppBadge label={roleLabel[member.role]} />
         </View>
       ))}
