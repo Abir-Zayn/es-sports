@@ -1,10 +1,11 @@
--- Verification for one team per person per tournament (migration 20261102040000).
+-- Verification for one playing team per person per tournament (migrations 20261102040000 and 20261102050000).
 --
--- Run as an administrator (SQL editor) after the migration is applied. Paste this whole file. Everything runs
+-- Run as an administrator (SQL editor) after the migrations are applied. Paste this whole file. Everything runs
 -- inside one transaction that is rolled back. Any failed assertion raises an exception that starts with FAIL.
 --
--- Fixture accounts: 1 organiser of tournaments T and U, 2 invited team owner, 3 player, 4 moderator of T who owns
--- team D outside it. T and U have 4 seats each.
+-- Rule: a person may own any number of teams, in one tournament or many, but may play (role `player`) for one team
+-- per tournament only. Fixture accounts: 1 organiser of tournaments T and U, 2 owner of several teams, 3 player,
+-- 4 moderator of T who owns team D outside it. T and U have 4 seats each.
 
 begin;
 
@@ -27,8 +28,7 @@ end $$;
 select set_config('request.jwt.claims', '{"sub":"f7a00000-0000-4000-8000-000000000001","role":"authenticated"}', true);
 set local role authenticated;
 
--- a) The organiser creates T and U and three teams: A and B in T, C in U. Owning several of them as the creator is
---    a placeholder and is allowed.
+-- a) The organiser creates T and U and teams A, B, E in T and C in U, owning all four until owners accept.
 do $$
 declare body jsonb := jsonb_build_object('name', 'One Team Cup', 'city', 'Chattogram', 'venue', 'Main Ground',
   'start_date', current_date + 7, 'end_date', current_date + 9, 'match_format', 'T20', 'competition', 'league',
@@ -38,68 +38,56 @@ begin
   perform public.create_tournament(body || '{"id":"f7c00000-0000-4000-8000-00000000000b"}');
   perform public.create_tournament_team('f7c00000-0000-4000-8000-00000000000a', 'f7b00000-0000-4000-8000-00000000000a', 'Alpha XI', 'AXI', 'neutral');
   perform public.create_tournament_team('f7c00000-0000-4000-8000-00000000000a', 'f7b00000-0000-4000-8000-00000000000b', 'Bravo XI', 'BXI', 'neutral');
+  perform public.create_tournament_team('f7c00000-0000-4000-8000-00000000000a', 'f7b00000-0000-4000-8000-00000000000e', 'Echo XI', 'EXI', 'neutral');
   perform public.create_tournament_team('f7c00000-0000-4000-8000-00000000000b', 'f7b00000-0000-4000-8000-00000000000c', 'Charlie XI', 'CXI', 'neutral');
-  if (select count(*) from public.team_members where profile_id = 'f7a00000-0000-4000-8000-000000000001' and role = 'owner') <> 3 then
-    raise exception 'FAIL a: the organiser should own all three new teams';
-  end if;
 end $$;
 
--- b) Account 2 accepts ownership of A. Then an owner invite for B in the same tournament is ET002 and stores
---    nothing, while ownership of C in tournament U is fine.
+-- b) Account 2 is invited to own A and B (both in T) and C (in U). All three invitations stay open together, and
+--    all three acceptances succeed: owning several teams in one tournament is allowed.
 do $$
-declare inv uuid; code text;
+declare team uuid; invs uuid[] := '{}'; inv uuid;
   as_user text := '{"sub":"f7a00000-0000-4000-8000-00000000000%s","role":"authenticated"}';
 begin
-  inv := public.send_team_owner_invite('f7c00000-0000-4000-8000-00000000000a', 'f7b00000-0000-4000-8000-00000000000a', 'f7a00000-0000-4000-8000-000000000002');
-  perform set_config('request.jwt.claims', format(as_user, 2), true);
-  perform public.accept_invitation(inv);
-  perform set_config('request.jwt.claims', format(as_user, 1), true);
-  begin
-    perform public.send_team_owner_invite('f7c00000-0000-4000-8000-00000000000a', 'f7b00000-0000-4000-8000-00000000000b', 'f7a00000-0000-4000-8000-000000000002');
-  exception when others then code := sqlstate;
-  end;
-  if code is distinct from 'ET002' then raise exception 'FAIL b: second owner invite in T gave %', code; end if;
-  if exists (select 1 from public.invitations where team_id = 'f7b00000-0000-4000-8000-00000000000b') then
-    raise exception 'FAIL b: the refused invitation was stored';
+  invs := invs || public.send_team_owner_invite('f7c00000-0000-4000-8000-00000000000a', 'f7b00000-0000-4000-8000-00000000000a', 'f7a00000-0000-4000-8000-000000000002');
+  invs := invs || public.send_team_owner_invite('f7c00000-0000-4000-8000-00000000000a', 'f7b00000-0000-4000-8000-00000000000b', 'f7a00000-0000-4000-8000-000000000002');
+  invs := invs || public.send_team_owner_invite('f7c00000-0000-4000-8000-00000000000b', 'f7b00000-0000-4000-8000-00000000000c', 'f7a00000-0000-4000-8000-000000000002');
+  if (select count(*) from public.invitations where to_user = 'f7a00000-0000-4000-8000-000000000002' and status = 'pending') <> 3 then
+    raise exception 'FAIL b: three open owner invitations expected';
   end if;
-  inv := public.send_team_owner_invite('f7c00000-0000-4000-8000-00000000000b', 'f7b00000-0000-4000-8000-00000000000c', 'f7a00000-0000-4000-8000-000000000002');
   perform set_config('request.jwt.claims', format(as_user, 2), true);
-  perform public.accept_invitation(inv);
-  if (select count(*) from public.team_members where profile_id = 'f7a00000-0000-4000-8000-000000000002' and role = 'owner') <> 2 then
-    raise exception 'FAIL b: account 2 should own A (tournament T) and C (tournament U)';
+  foreach inv in array invs loop perform public.accept_invitation(inv); end loop;
+  if (select count(*) from public.team_members where profile_id = 'f7a00000-0000-4000-8000-000000000002' and role = 'owner') <> 3 then
+    raise exception 'FAIL b: account 2 should own A and B (tournament T) and C (tournament U)';
   end if;
   perform set_config('request.jwt.claims', format(as_user, 1), true);
 end $$;
 
--- c) Any direct membership change is checked too: account 2 cannot also play for B; account 3 plays for A and C
---    (two tournaments) but not for B. Account 1, now an admin of A, may still play for C.
+-- c) Playing is limited: account 3 plays for A (T) and C (U), but not also for B (T). Account 2, owner of A and B,
+--    may still play for E, and only for E. Management roles do not count; promoting them to player does.
 reset role;
 insert into public.team_members (team_id, profile_id, role) values
   ('f7b00000-0000-4000-8000-00000000000a', 'f7a00000-0000-4000-8000-000000000003', 'player'),
-  ('f7b00000-0000-4000-8000-00000000000c', 'f7a00000-0000-4000-8000-000000000003', 'player');
+  ('f7b00000-0000-4000-8000-00000000000c', 'f7a00000-0000-4000-8000-000000000003', 'player'),
+  ('f7b00000-0000-4000-8000-00000000000e', 'f7a00000-0000-4000-8000-000000000002', 'player'),
+  ('f7b00000-0000-4000-8000-00000000000b', 'f7a00000-0000-4000-8000-000000000003', 'staff');
 do $$
 declare stmt text; code text;
 begin
   foreach stmt in array array[
-    'insert into public.team_members (team_id, profile_id, role) values (''f7b00000-0000-4000-8000-00000000000b'', ''f7a00000-0000-4000-8000-000000000002'', ''player'')',
-    'insert into public.team_members (team_id, profile_id, role) values (''f7b00000-0000-4000-8000-00000000000b'', ''f7a00000-0000-4000-8000-000000000003'', ''player'')'
+    'update public.team_members set role = ''player'' where team_id = ''f7b00000-0000-4000-8000-00000000000b'' and profile_id = ''f7a00000-0000-4000-8000-000000000003''',
+    'insert into public.team_members (team_id, profile_id, role) values (''f7b00000-0000-4000-8000-00000000000e'', ''f7a00000-0000-4000-8000-000000000003'', ''player'')'
   ]::text[] loop
     code := null;
     begin execute stmt; exception when others then code := sqlstate; end;
     if code is distinct from 'ET002' then raise exception 'FAIL c: "%" gave %', stmt, code; end if;
   end loop;
-  -- Management roles do not count: account 3 may be staff of B.
-  insert into public.team_members (team_id, profile_id, role) values ('f7b00000-0000-4000-8000-00000000000b', 'f7a00000-0000-4000-8000-000000000003', 'staff');
-  code := null;
-  begin
-    update public.team_members set role = 'player' where team_id = 'f7b00000-0000-4000-8000-00000000000b' and profile_id = 'f7a00000-0000-4000-8000-000000000003';
-  exception when others then code := sqlstate;
-  end;
-  if code is distinct from 'ET002' then raise exception 'FAIL c: promoting staff to player in a second team gave %', code; end if;
+  -- The organiser, now admin of A and B after handing them over, may play for A.
+  update public.team_members set role = 'player'
+   where team_id = 'f7b00000-0000-4000-8000-00000000000a' and profile_id = 'f7a00000-0000-4000-8000-000000000001';
 end $$;
 
 -- d) A team entering T is refused when one of its players already plays for another team in T. Account 4 is a
---    moderator of T and owns team D, where account 3 plays.
+--    moderator of T and owns team D, where account 3 plays. D owned by account 2 alone would be fine.
 insert into public.tournament_staff (tournament_id, user_id, role)
 values ('f7c00000-0000-4000-8000-00000000000a', 'f7a00000-0000-4000-8000-000000000004', 'moderator');
 select set_config('request.jwt.claims', '{"sub":"f7a00000-0000-4000-8000-000000000004","role":"authenticated"}', true);
@@ -121,7 +109,11 @@ begin
     raise exception 'FAIL d: D was entered';
   end if;
 end $$;
+reset role;
+delete from public.team_members where team_id = 'f7b00000-0000-4000-8000-00000000000d' and profile_id = 'f7a00000-0000-4000-8000-000000000003';
+set local role authenticated;
+select public.add_tournament_team('f7c00000-0000-4000-8000-00000000000a', 'f7b00000-0000-4000-8000-00000000000d');
 
 reset role;
-select 'PASS one team per tournament' as result;
+select 'PASS one playing team per tournament' as result;
 rollback;

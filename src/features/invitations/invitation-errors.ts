@@ -24,7 +24,7 @@ export function invitationMessage(error: unknown): string {
     case 'EI003':
       return 'The sender no longer owns this team, so this invitation is no longer open.';
     case 'ET002':
-      return 'This player is already with another team in this tournament. A player can join one team per tournament.';
+      return 'This player already plays for another team in this tournament. A player can play for one team per tournament.';
     case '42501':
       return 'You are not allowed to do that.';
     case '22023':
