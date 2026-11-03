@@ -10,7 +10,7 @@ const mockChannel = jest.fn();
 const mockRemove = jest.fn();
 jest.mock('@/lib/supabase', () => ({ supabase: { channel: (...args: unknown[]) => mockChannel(...args), removeChannel: (...args: unknown[]) => mockRemove(...args) } }));
 
-test('refreshes the schedule and the table after changes, coalesces updates and cleans up', async () => {
+test('refreshes the schedule, table and top players after changes, coalesces updates and cleans up', async () => {
   jest.useFakeTimers();
   const channel = { on: mockOn, subscribe: mockSubscribe };
   mockChannel.mockReturnValue(channel);
@@ -24,13 +24,14 @@ test('refreshes the schedule and the table after changes, coalesces updates and 
   const change = mockOn.mock.calls[0][2] as () => void;
   await act(() => { change(); change(); jest.advanceTimersByTime(300); });
   // One burst of changes refreshes each query once.
-  expect(invalidate).toHaveBeenCalledTimes(2);
+  expect(invalidate).toHaveBeenCalledTimes(3);
   expect(invalidate).toHaveBeenCalledWith({ queryKey: ['tournament-schedule', 'tournament'] });
   expect(invalidate).toHaveBeenCalledWith({ queryKey: ['tournament-standings', 'tournament'] });
+  expect(invalidate).toHaveBeenCalledWith({ queryKey: ['tournament-player-stats', 'tournament'] });
   await act(() => { change(); });
   await unmount();
   await act(() => { jest.runOnlyPendingTimers(); });
-  expect(invalidate).toHaveBeenCalledTimes(2);
+  expect(invalidate).toHaveBeenCalledTimes(3);
   expect(mockRemove).toHaveBeenCalledWith(channel);
   jest.useRealTimers();
 });

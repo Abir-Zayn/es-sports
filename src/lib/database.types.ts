@@ -1296,6 +1296,30 @@ export type Database = {
         Args: { p_profile: string; p_role: string; p_team: string }
         Returns: string
       }
+      tournament_player_stats: {
+        Args: { p_tournament: string }
+        Returns: {
+          balls_bowled: number
+          balls_faced: number
+          best_runs: number | null
+          best_wickets: number | null
+          dots: number
+          fours: number
+          highest: number | null
+          highest_not_out: boolean | null
+          innings: number
+          matches: number
+          name: string
+          outs: number
+          profile_id: string
+          runs: number
+          runs_conceded: number
+          sixes: number
+          team_name: string
+          team_short: string
+          wickets: number
+        }[]
+      }
       transfer_team_ownership: {
         Args: { p_profile: string; p_team: string }
         Returns: undefined
