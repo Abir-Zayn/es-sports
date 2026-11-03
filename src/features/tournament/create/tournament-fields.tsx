@@ -11,7 +11,7 @@ import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { CoverPicker, ProfilePhotoPicker } from './cover-picker';
 import { DatePicker } from './date-picker';
-import { competitionFormats, matchFormats, teamCounts, type DraftErrors, type TournamentDraft } from './draft';
+import { competitionFormats, oversChoices, oversLabel, teamCounts, type DraftErrors, type TournamentDraft } from './draft';
 import { CardDivider, SelectionField, SettingsCard } from './settings-card';
 import { SquadFormatFields } from './squad-format-fields';
 
@@ -20,6 +20,11 @@ type Props = {
   onChange: <K extends keyof TournamentDraft>(key: K, value: TournamentDraft[K]) => void;
 };
 
+
+/** Every allowed number of overs; the familiar formats say their name. */
+const oversOptions = oversChoices.map((value) => ({
+  value, label: oversLabel(value), detail: value === 10 ? 'T10' : value === 20 ? 'T20' : value === 50 ? 'One-day (ODI)' : undefined,
+}));
 export function TournamentFields({ draft, errors, onChange, onBusyChange, onAddTeams }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
@@ -53,7 +58,7 @@ export function TournamentFields({ draft, errors, onChange, onBusyChange, onAddT
       {errors.city || errors.venue ? <Text variant="caption" style={[styles.error, styles.locationError]} accessibilityLiveRegion="polite">{errors.city ?? errors.venue}</Text> : null}
     </SettingsCard>
     <SettingsCard>
-      <SelectionField label="Match format" icon={Volleyball} value={draft.matchFormat} options={matchFormats.map((value) => ({ value, label: value }))} onChange={(value) => onChange('matchFormat', value)} />
+      <SelectionField label="Overs per side" icon={Volleyball} value={draft.overs} options={oversOptions} onChange={(value) => onChange('overs', value)} />
       <CardDivider />
       <SelectionField label="Knockout type" icon={GitBranch} value={draft.competition} options={competitionFormats} onChange={(value) => onChange('competition', value)} />
       <CardDivider />

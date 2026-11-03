@@ -5,7 +5,7 @@ import { tournamentErrorText } from '../data/tournament-errors';
 import { generatePairings, pairingProblem } from './generate';
 import { cancelPublishedMatch, fetchSchedule, movePublishedMatch, publishSchedule, ScheduleError } from './schedule-repository';
 import { byKickoff, moveProblem, placeMatches } from './slots';
-import type { Competition, MatchFormat, Schedule, ScheduledMatch, ScheduleMode, ScheduleTeam, SlotSettings, StageName } from './types';
+import type { Competition, Schedule, ScheduledMatch, ScheduleMode, ScheduleTeam, SlotSettings, StageName } from './types';
 
 export const scheduleKey = (tournamentId: string) => ['tournament-schedule', tournamentId] as const;
 const DEFAULT_SETTINGS: SlotSettings = { perDay: 2, firstStartMin: 9 * 60 };
@@ -15,7 +15,8 @@ type Input = {
   tournamentId: string;
   teams: ScheduleTeam[];
   competition: Competition;
-  matchFormat: MatchFormat;
+  /** Overs per side; decides how long each match keeps the ground. */
+  overs: number;
   days: string[];
   isOwner: boolean;
 };
@@ -31,7 +32,7 @@ const playsIn = (m: ScheduledMatch, teamId: string) => [m.home, m.away].some((s)
  * until the owner decides. Once published and unchanged, the owner moves or cancels single matches straight away
  * (the owner panel), and the teams playing are told.
  */
-export function useScheduleBuilder({ tournamentId, teams, competition, matchFormat, days, isOwner }: Input) {
+export function useScheduleBuilder({ tournamentId, teams, competition, overs, days, isOwner }: Input) {
   const queryClient = useQueryClient();
   const saved = useQuery({ queryKey: scheduleKey(tournamentId), queryFn: () => fetchSchedule(tournamentId) });
   const [editedMode, setEditedMode] = useState<ScheduleMode | null>(null);
@@ -87,7 +88,7 @@ export function useScheduleBuilder({ tournamentId, teams, competition, matchForm
   function draw() {
     const refused = pairingProblem(teams.length, competition);
     if (refused) return setProblem(refused);
-    const placed = placeMatches(generatePairings(teams, competition), days, settings, matchFormat);
+    const placed = placeMatches(generatePairings(teams, competition), days, settings, overs);
     setProblem(placed.problem);
     if (!placed.problem) edit(placed.matches);
   }
@@ -100,7 +101,7 @@ export function useScheduleBuilder({ tournamentId, teams, competition, matchForm
       id: `new-${number}`, number, stage: match.stage, round: stageRound[match.stage], date: match.date, startMin: match.startMin,
       home: { kind: 'team', team: match.home }, away: { kind: 'team', team: match.away },
     };
-    const refused = moveProblem([...playing, added], added.id, match.date, match.startMin, matchFormat);
+    const refused = moveProblem([...playing, added], added.id, match.date, match.startMin, overs);
     if (refused) return refused;
     edit([...matches, added]);
     return null;
@@ -113,7 +114,7 @@ export function useScheduleBuilder({ tournamentId, teams, competition, matchForm
 
   /** Moves one match, or returns why it cannot go there. A published, unchanged schedule saves at once. */
   async function move(id: string, date: string, startMin: number): Promise<string | null> {
-    const refused = moveProblem(playing, id, date, startMin, matchFormat);
+    const refused = moveProblem(playing, id, date, startMin, overs);
     if (refused) return refused;
     if (!live) {
       edit(matches.map((m) => (m.id === id ? { ...m, date, startMin } : m)));

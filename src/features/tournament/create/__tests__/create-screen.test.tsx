@@ -47,7 +47,7 @@ describe('create tournament form', () => {
     expect(screen.getByRole('button', { name: 'Add tournament profile photo' })).toBeTruthy();
     expect(screen.queryByText('Add tournament cover')).toBeNull();
     expect(screen.getByLabelText('Tournament name')).toBeTruthy();
-    for (const name of ['Start date, Choose a date', 'End date, Choose a date', 'Match format, T20', 'Knockout type, League + knockout', 'Number of teams, 8 teams']) {
+    for (const name of ['Start date, Choose a date', 'End date, Choose a date', 'Overs per side, 20 overs', 'Knockout type, League + knockout', 'Number of teams, 8 teams']) {
       expect(screen.getByRole('button', { name })).toBeTruthy();
     }
     // Add teams publishes first, so an incomplete setup stops at the form instead of opening the teams screen.
@@ -56,7 +56,7 @@ describe('create tournament form', () => {
     expect(mockPush).not.toHaveBeenCalled();
     expect(screen.queryByText('Continue to format')).toBeNull();
   });
-  it('validates and saves the form with the selected format', async () => {
+  it('validates and saves the form with any number of overs', async () => {
     await show();
     await fireEvent.press(await screen.findByRole('button', { name: 'Save tournament draft' }));
     expect(screen.getByText('Enter a tournament name of at least 3 characters.')).toBeTruthy();
@@ -67,10 +67,10 @@ describe('create tournament form', () => {
       await fireEvent.press(screen.getByRole('button', { name: `${label}, Choose a date` }));
       await fireEvent.press(screen.getByRole('button', { name: formatDate(today) }));
     }
-    await fireEvent.press(screen.getByRole('button', { name: 'Match format, T20' }));
-    await fireEvent.press(screen.getByRole('radio', { name: 'T10' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Overs per side, 20 overs' }));
+    await fireEvent.press(screen.getByRole('radio', { name: '12 overs' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Save tournament draft' }));
-    await waitFor(() => expect(save).toHaveBeenCalledWith('organizer', { ...valid, matchFormat: 'T10' }));
+    await waitFor(() => expect(save).toHaveBeenCalledWith('organizer', { ...valid, overs: 12 }));
     expect(mockReplace).toHaveBeenCalledWith({ pathname: '/tournaments', params: { saved: '1' } });
   });
   it('prevents an incomplete knockout bracket', async () => {

@@ -8,7 +8,7 @@ import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme
 
 import { TournamentCompactHeader } from '../components/tournament-compact-header';
 import { TournamentSectionTabs } from '../components/tournament-section-tabs';
-import { competitionFormats } from '../create/draft';
+import { competitionFormats, oversLabel } from '../create/draft';
 import { tournamentErrorText } from '../data/tournament-errors';
 import { fetchTournament, fetchTournamentStaff, tournamentKey } from '../data/tournament-repository';
 import type { TournamentSectionId } from '../sample-data';
@@ -52,7 +52,7 @@ export function RealTournamentScreen({ id, section }: Props) {
   else if (section === 'table') body = <RealTournamentTable tournament={record} />;
   else if (section === 'stats') body = <RealTournamentStats tournament={record} />;
   else body = <Text muted>The knockout appears once matches are played.</Text>;
-  const format = record ? `${competitionFormats.find((item) => item.value === record.competition)?.label ?? ''} · ${record.matchFormat}` : '';
+  const format = record ? `${competitionFormats.find((item) => item.value === record.competition)?.label ?? ''} · ${oversLabel(record.overs)}` : '';
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <TournamentCompactHeader short={initials(record?.name ?? '')} name={record?.name ?? 'Tournament'} tone="blue" format={format} onBack={goBack} />

@@ -25,4 +25,19 @@ describe('tournament form validation', () => {
     const { coverUri, endDate, profileUri, ...legacy } = emptyDraft;
     expect(draftSchema.parse(legacy)).toEqual({ ...legacy, coverUri, endDate, profileUri });
   });
+
+  it('allows 4 to 50 overs and refuses anything else', () => {
+    expect(draftSchema.parse({ ...valid, overs: 4 }).overs).toBe(4);
+    expect(draftSchema.parse({ ...valid, overs: 50 }).overs).toBe(50);
+    for (const overs of [3, 51, 12.5]) expect(draftSchema.safeParse({ ...valid, overs }).success).toBe(false);
+  });
+
+  it('upgrades a draft saved with the old T10 / T20 / ODI format', () => {
+    const { overs, ...rest } = valid;
+    expect(overs).toBe(20);
+    expect(draftSchema.parse({ ...rest, matchFormat: 'T10' }).overs).toBe(10);
+    expect(draftSchema.parse({ ...rest, matchFormat: 'ODI' }).overs).toBe(50);
+    expect(draftSchema.parse({ ...rest, matchFormat: 'T5' }).overs).toBe(20);
+    expect(draftSchema.parse({ ...rest, matchFormat: 'ODI' })).not.toHaveProperty('matchFormat');
+  });
 });

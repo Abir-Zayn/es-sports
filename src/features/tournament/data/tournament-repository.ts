@@ -7,7 +7,8 @@ import { toTournamentError } from './tournament-errors';
 export type TournamentRole = 'owner' | 'moderator';
 export type TournamentRecord = {
   id: string; ownerId: string | null; name: string; city: string; venue: string; startDate: string; endDate: string;
-  matchFormat: string; competition: string; teamsPlanned: number; ball: string; sideFormat: string;
+  /** A label kept by the server: T<overs>, or ODI for 50. Show `overs` instead. */
+  matchFormat: string; overs: number; competition: string; teamsPlanned: number; ball: string; sideFormat: string;
   playersPerSide: number; minSquad: number; maxSquad: number; registrationOpens: string; registrationDeadline: string;
   profileUrl: string | null;
 };
@@ -18,11 +19,11 @@ export type StaffRecord = { user: PersonRecord; role: TournamentRole };
 export type EnteredTeam = { team: TeamRecord; owner: PersonRecord | null };
 
 // One string literal, so the client can type the rows from it.
-const TOURNAMENT_COLUMNS = 'id, owner_id, name, city, venue, start_date, end_date, match_format, competition, teams_planned, ball, side_format, players_per_side, min_squad, max_squad, registration_opens, registration_deadline, profile_url';
+const TOURNAMENT_COLUMNS = 'id, owner_id, name, city, venue, start_date, end_date, match_format, overs, competition, teams_planned, ball, side_format, players_per_side, min_squad, max_squad, registration_opens, registration_deadline, profile_url';
 const TEAM_COLUMNS = 'id, name, short_name, tone, logo_url, area, district';
 type TournamentRow = {
   id: string; owner_id: string | null; name: string; city: string; venue: string; start_date: string; end_date: string;
-  match_format: string; competition: string; teams_planned: number; ball: string; side_format: string; players_per_side: number;
+  match_format: string; overs: number; competition: string; teams_planned: number; ball: string; side_format: string; players_per_side: number;
   min_squad: number; max_squad: number; registration_opens: string | null; registration_deadline: string | null; profile_url: string | null;
 };
 type ProfileRow = { full_name: string | null; area: string | null; avatar_url: string | null } | null;
@@ -33,7 +34,7 @@ export const myTournamentsKey = (userId: string) => ['my-tournaments', userId] a
 export function toTournament(row: TournamentRow): TournamentRecord {
   return {
     id: row.id, ownerId: row.owner_id, name: row.name, city: row.city, venue: row.venue, startDate: row.start_date, endDate: row.end_date,
-    matchFormat: row.match_format, competition: row.competition, teamsPlanned: row.teams_planned, ball: row.ball, sideFormat: row.side_format,
+    matchFormat: row.match_format, overs: row.overs, competition: row.competition, teamsPlanned: row.teams_planned, ball: row.ball, sideFormat: row.side_format,
     playersPerSide: row.players_per_side, minSquad: row.min_squad, maxSquad: row.max_squad, registrationOpens: row.registration_opens ?? '',
     registrationDeadline: row.registration_deadline ?? '', profileUrl: row.profile_url,
   };
