@@ -5,7 +5,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Text } from '@/components/ui';
 import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import { competitionFormats, type TournamentDraft } from '../create/draft';
+import { competitionFormats, oversLabel, type TournamentDraft } from '../create/draft';
 import { isUuid } from '@/features/scoring/data/uuid';
 
 import { StartMatchSheet } from '../fixture-match/start-match-sheet';
@@ -19,7 +19,7 @@ import type { ScheduledMatch, ScheduleTeam } from './types';
 import { useScheduleBuilder } from './use-schedule-builder';
 
 /** What the builder needs from the tournament: a draft's setup or a published tournament's. */
-export type ScheduleSetup = Pick<TournamentDraft, 'competition' | 'matchFormat' | 'venue' | 'startDate' | 'endDate' | 'playersPerSide'>;
+export type ScheduleSetup = Pick<TournamentDraft, 'competition' | 'overs' | 'venue' | 'startDate' | 'endDate' | 'playersPerSide'>;
 
 type Props = {
   tournamentId: string;
@@ -40,7 +40,7 @@ const shortDate = (date: string) => format(parseISO(date), 'd MMM');
 export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isStaff = false, bottomInset }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
-  const builder = useScheduleBuilder({ tournamentId, teams, competition: setup.competition, matchFormat: setup.matchFormat, days, isOwner });
+  const builder = useScheduleBuilder({ tournamentId, teams, competition: setup.competition, overs: setup.overs, days, isOwner });
   const [starting, setStarting] = useState<ScheduledMatch | null>(null);
   const [editing, setEditing] = useState<ScheduledMatch | null>(null);
   const [adding, setAdding] = useState(false);
@@ -65,7 +65,7 @@ export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isS
     <>
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomInset + spacing.xxl }]}>
         <Text muted>
-          {formatLabel} · {setup.matchFormat} · {teams.length} teams · {shortDate(setup.startDate)} – {shortDate(setup.endDate)}
+          {formatLabel} · {oversLabel(setup.overs)} · {teams.length} teams · {shortDate(setup.startDate)} – {shortDate(setup.endDate)}
         </Text>
         {isOwner ? (
           <ScheduleControls mode={builder.mode} settings={builder.settings} hasMatches={matches.length > 0} locked={locked}

@@ -9,7 +9,7 @@ import { AppIconTile, Button, Text } from '@/components/ui';
 import { isUuid } from '@/features/scoring/data/uuid';
 import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import { competitionFormats, matchFormats } from '../create/draft';
+import { competitionFormats } from '../create/draft';
 import { draftQueryKey, loadDraft } from '../create/draft-storage';
 import { fetchTournament, tournamentKey } from '../data/tournament-repository';
 import { capabilitiesOf, roleIn } from '../roster/permissions';
@@ -29,7 +29,7 @@ function useSetup(tournamentId: string, meId: string): { setup: ScheduleSetup | 
   const t = record.data;
   const setup: ScheduleSetup | null = t ? {
     competition: competitionFormats.find((f) => f.value === t.competition)?.value ?? 'league',
-    matchFormat: matchFormats.find((f) => f === t.matchFormat) ?? 'T20',
+    overs: t.overs,
     playersPerSide: t.playersPerSide, venue: t.venue, startDate: t.startDate, endDate: t.endDate,
   } : null;
   return { setup, name: t?.name ?? '', pending: record.isPending, failed: record.isError, retry: () => void record.refetch() };

@@ -37,7 +37,6 @@ export type ScheduledMatch = Pairing & {
 };
 
 export type Competition = TournamentDraft['competition'];
-export type MatchFormat = TournamentDraft['matchFormat'];
 
 /** How matches are spread over the tournament days. */
 export type SlotSettings = { perDay: number; firstStartMin: number };

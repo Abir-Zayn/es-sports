@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { Button, Text } from '@/components/ui';
 import { spacing, useThemedStyles, type Palette } from '@/theme';
 
-import { competitionFormats, formatDate } from '../create/draft';
+import { competitionFormats, formatDate, oversLabel } from '../create/draft';
 import { describeRules } from '../create/squad-formats';
 import { fetchTournamentTeams, tournamentKey, type StaffRecord, type TournamentRecord } from '../data/tournament-repository';
 
@@ -19,7 +19,7 @@ export function RealTournamentOverview({ tournament: t, staff, canManage, onMana
   const rows = [
     { label: 'Dates', value: dates },
     { label: 'Venue', value: `${t.venue}, ${t.city}` },
-    { label: 'Format', value: `${competitionFormats.find((item) => item.value === t.competition)?.label ?? t.competition} · ${t.matchFormat}` },
+    { label: 'Format', value: `${competitionFormats.find((item) => item.value === t.competition)?.label ?? t.competition} · ${oversLabel(t.overs)}` },
     { label: 'Ball', value: t.ball },
     { label: 'Teams', value: teams.data ? `${teams.data.length} of ${t.teamsPlanned} joined` : `${t.teamsPlanned} planned` },
     { label: 'Squads', value: describeRules({ playersPerSide: t.playersPerSide, minSquad: t.minSquad, maxSquad: t.maxSquad }) },

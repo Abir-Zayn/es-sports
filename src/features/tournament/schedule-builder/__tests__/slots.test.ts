@@ -1,5 +1,5 @@
 import { generatePairings } from '../generate';
-import { dayFitProblem, moveProblem, placeMatches, timeLabel, tournamentDays } from '../slots';
+import { dayFitProblem, moveProblem, placeMatches, slotMinutes, timeLabel, tournamentDays } from '../slots';
 import type { ScheduledMatch, ScheduleTeam } from '../types';
 
 const teams = (n: number): ScheduleTeam[] => Array.from({ length: n }, (_, i) => ({ id: `t${i + 1}`, name: `Team ${i + 1}`, short: `T${i + 1}` }));
@@ -19,9 +19,9 @@ describe('times and days', () => {
   });
 
   it('refuses more matches a day than fit before 11 PM', () => {
-    expect(dayFitProblem({ perDay: 3, firstStartMin: 540 }, 'T20')).toBeNull();
-    expect(dayFitProblem({ perDay: 4, firstStartMin: 540 }, 'T20')).toMatch(/run past 11:00 PM/);
-    expect(dayFitProblem({ perDay: 2, firstStartMin: 540 }, 'ODI')).toMatch(/run past/);
+    expect(dayFitProblem({ perDay: 3, firstStartMin: 540 }, 20)).toBeNull();
+    expect(dayFitProblem({ perDay: 4, firstStartMin: 540 }, 20)).toMatch(/run past 11:00 PM/);
+    expect(dayFitProblem({ perDay: 2, firstStartMin: 540 }, 50)).toMatch(/run past/);
   });
 });
 
@@ -29,7 +29,7 @@ describe('placing matches', () => {
   const days = tournamentDays('2026-11-01', '2026-11-30');
 
   it('never puts a team in two matches on one day, and spaces matches one slot apart', () => {
-    const { matches, problem } = placeMatches(generatePairings(teams(6), 'league'), days, { perDay: 3, firstStartMin: 540 }, 'T20');
+    const { matches, problem } = placeMatches(generatePairings(teams(6), 'league'), days, { perDay: 3, firstStartMin: 540 }, 20);
     expect(problem).toBeNull();
     expect(matches).toHaveLength(15);
     for (const day of new Set(matches.map((m) => m.date))) {
@@ -41,7 +41,7 @@ describe('placing matches', () => {
   });
 
   it('gives each knockout round its own days, after the round before', () => {
-    const { matches } = placeMatches(generatePairings(teams(4), 'league-knockout'), days, { perDay: 2, firstStartMin: 540 }, 'T20');
+    const { matches } = placeMatches(generatePairings(teams(4), 'league-knockout'), days, { perDay: 2, firstStartMin: 540 }, 20);
     const dayOf = (stage: string) => matches.filter((m) => m.stage === stage).map((m) => m.date);
     const lastLeague = dayOf('League').sort().at(-1)!;
     expect(dayOf('Semi-final').every((d) => d > lastLeague)).toBe(true);
@@ -49,18 +49,28 @@ describe('placing matches', () => {
   });
 
   it('says how many days it needs when the tournament is too short', () => {
-    const result = placeMatches(generatePairings(teams(8), 'league'), days.slice(0, 5), { perDay: 2, firstStartMin: 540 }, 'T20');
+    const result = placeMatches(generatePairings(teams(8), 'league'), days.slice(0, 5), { perDay: 2, firstStartMin: 540 }, 20);
     expect(result.problem).toBe('This needs 14 days, but the tournament runs 5. Play more matches a day or move the end date.');
   });
 
   it('refuses a move onto a busy slot or a day a team already plays', () => {
-    const { matches } = placeMatches(generatePairings(teams(4), 'league'), days, { perDay: 2, firstStartMin: 540 }, 'T20');
+    const { matches } = placeMatches(generatePairings(teams(4), 'league'), days, { perDay: 2, firstStartMin: 540 }, 20);
     const [first, second, third] = matches;
-    expect(moveProblem(matches, third.id, first.date, first.startMin, 'T20')).toBe('Another match is on the ground at that time.');
+    expect(moveProblem(matches, third.id, first.date, first.startMin, 20)).toBe('Another match is on the ground at that time.');
     const sharesTeam = sides(third).some((s) => sides(first).includes(s) || sides(second).includes(s));
     expect(sharesTeam).toBe(true);
-    expect(moveProblem(matches, third.id, first.date, 20 * 60, 'T20')).toMatch(/run past/);
-    expect(moveProblem(matches, third.id, first.date, 17 * 60, 'T20')).toMatch(/already plays Match/);
-    expect(moveProblem(matches, third.id, '2026-11-20', 600, 'T20')).toBeNull();
+    expect(moveProblem(matches, third.id, first.date, 20 * 60, 20)).toMatch(/run past/);
+    expect(moveProblem(matches, third.id, first.date, 17 * 60, 20)).toMatch(/already plays Match/);
+    expect(moveProblem(matches, third.id, '2026-11-20', 600, 20)).toBeNull();
+  });
+});
+
+describe('ground time from overs', () => {
+  it('keeps 12 minutes an over, rounded up to half an hour, between 1 and 8 hours', () => {
+    expect([4, 6, 10, 12, 20, 35, 40, 50].map(slotMinutes)).toEqual([60, 90, 120, 150, 240, 420, 480, 480]);
+  });
+
+  it('names the overs when a day cannot fit the matches', () => {
+    expect(dayFitProblem({ perDay: 4, firstStartMin: 540 }, 25)).toMatch(/4 25-over matches from 9:00 AM/);
   });
 });

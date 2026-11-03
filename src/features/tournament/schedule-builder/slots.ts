@@ -1,9 +1,16 @@
 import { addDays, differenceInCalendarDays, format, parseISO } from 'date-fns';
 
-import type { MatchFormat, Pairing, ScheduledMatch, SideRef, SlotSettings } from './types';
+import type { Pairing, ScheduledMatch, SideRef, SlotSettings } from './types';
 
-/** Time kept for one match, play plus the change-over. */
-export const slotMinutes: Record<MatchFormat, number> = { T10: 120, T20: 240, ODI: 480 };
+/**
+ * Ground time kept for one match of this many overs: 12 minutes an over (both innings and the change-over), rounded
+ * up to half an hour, between 1 and 8 hours. T10 is 2 h, T20 4 h, a one-day game 8 h. The server uses the same rule
+ * (`fixture_slot_minutes_for_overs`).
+ */
+export function slotMinutes(overs: number): number {
+  const safe = Number.isFinite(overs) ? overs : 20;
+  return Math.min(480, Math.max(60, Math.ceil((safe * 12) / 30) * 30));
+}
 /** The last match of a day has to finish by 11:00 PM. */
 const DAY_END_MIN = 23 * 60;
 
@@ -26,10 +33,10 @@ export function tournamentDays(start: string, end: string): string[] {
 }
 
 /** Why a day cannot hold this many matches of this format, or null when it fits. */
-export function dayFitProblem(settings: SlotSettings, matchFormat: MatchFormat): string | null {
-  const end = settings.firstStartMin + settings.perDay * slotMinutes[matchFormat];
+export function dayFitProblem(settings: SlotSettings, overs: number): string | null {
+  const end = settings.firstStartMin + settings.perDay * slotMinutes(overs);
   if (end <= DAY_END_MIN) return null;
-  return `${settings.perDay} ${matchFormat} matches from ${timeLabel(settings.firstStartMin)} would run past ${timeLabel(DAY_END_MIN)}. Play fewer per day or start earlier.`;
+  return `${settings.perDay} ${overs}-over matches from ${timeLabel(settings.firstStartMin)} would run past ${timeLabel(DAY_END_MIN)}. Play fewer per day or start earlier.`;
 }
 
 const sideKey = (side: SideRef) => (side.kind === 'team' ? side.team.id : side.label);
@@ -41,10 +48,10 @@ type Placement = { matches: ScheduledMatch[]; problem: null } | { matches: []; p
  * A team plays at most once a day, and a day never mixes knockout rounds, so a round's results are in before
  * the next round is played. Fails with the number of days needed when the tournament dates are too few.
  */
-export function placeMatches(pairings: Pairing[], days: string[], settings: SlotSettings, matchFormat: MatchFormat): Placement {
-  const fit = dayFitProblem(settings, matchFormat);
+export function placeMatches(pairings: Pairing[], days: string[], settings: SlotSettings, overs: number): Placement {
+  const fit = dayFitProblem(settings, overs);
   if (fit) return { matches: [], problem: fit };
-  const slot = slotMinutes[matchFormat];
+  const slot = slotMinutes(overs);
   const pending = [...pairings];
   const placed: { pairing: Pairing; dayIndex: number; slotIndex: number }[] = [];
 
@@ -82,11 +89,11 @@ export function placeMatches(pairings: Pairing[], days: string[], settings: Slot
 }
 
 /** Why one match cannot move to this date and time, or null when it can. */
-export function moveProblem(matches: ScheduledMatch[], id: string, date: string, startMin: number, matchFormat: MatchFormat): string | null {
+export function moveProblem(matches: ScheduledMatch[], id: string, date: string, startMin: number, overs: number): string | null {
   const match = matches.find((m) => m.id === id);
   if (!match) return 'This match is no longer in the schedule.';
-  const slot = slotMinutes[matchFormat];
-  if (startMin + slot > DAY_END_MIN) return `A ${matchFormat} match starting then would run past ${timeLabel(DAY_END_MIN)}.`;
+  const slot = slotMinutes(overs);
+  if (startMin + slot > DAY_END_MIN) return `A ${overs}-over match starting then would run past ${timeLabel(DAY_END_MIN)}.`;
   const sameDay = matches.filter((m) => m.id !== id && m.date === date);
   if (sameDay.some((m) => Math.abs(m.startMin - startMin) < slot)) return 'Another match is on the ground at that time.';
   const sides = new Set([sideKey(match.home), sideKey(match.away)]);

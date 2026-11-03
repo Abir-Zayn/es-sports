@@ -27,7 +27,7 @@ jest.mock('@/features/auth/auth-provider', () => ({ useAuth: () => ({ session: {
 const profile = (name: string) => ({ full_name: name, area: null, avatar_url: null });
 const tournament = {
   id: T, owner_id: 'me', name: 'Port City Cup', city: 'Chattogram', venue: 'Main Ground', start_date: '2026-11-10', end_date: '2026-11-12',
-  match_format: 'T20', competition: 'league', teams_planned: 4, ball: 'Tennis', side_format: 'gully_6', players_per_side: 6, min_squad: 8,
+  match_format: 'T20', overs: 20, competition: 'league', teams_planned: 4, ball: 'Tennis', side_format: 'gully_6', players_per_side: 6, min_squad: 8,
   max_squad: 10, registration_opens: null, registration_deadline: null, profile_url: null,
 };
 

@@ -14,7 +14,7 @@ export function draftToPayload(id: string, draft: TournamentDraft) {
     venue: draft.venue.trim(),
     start_date: draft.startDate,
     end_date: draft.endDate,
-    match_format: draft.matchFormat,
+    overs: draft.overs,
     competition: draft.competition,
     teams_planned: draft.teams,
     ball: draft.ball,
