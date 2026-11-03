@@ -101,9 +101,9 @@ describe('a real tournament', () => {
     expect(screen.getByText('Owner: Rafi')).toBeTruthy();
   });
 
-  it('says the knockout and stats wait for played matches rather than showing sample numbers', async () => {
-    await show(<RealTournamentScreen id={T} section="stats" />);
-    expect(await screen.findByText(/appear once matches are played/)).toBeTruthy();
+  it('says the knockout waits for played matches rather than showing sample numbers', async () => {
+    await show(<RealTournamentScreen id={T} section="knockout" />);
+    expect(await screen.findByText(/knockout appears once matches are played/)).toBeTruthy();
   });
 
   it('says so when the tournament does not exist', async () => {

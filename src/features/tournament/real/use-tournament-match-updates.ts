@@ -3,11 +3,12 @@ import { useEffect } from 'react';
 
 import { supabase } from '@/lib/supabase';
 
+import { playerStatsKey } from '../data/player-stats-repository';
 import { standingsKey } from '../data/standings-repository';
 import { scheduleKey } from '../schedule-builder/use-schedule-builder';
 
 /**
- * Refreshes the schedule and the points table when a match of this tournament changes. Rapid score changes are
+ * Refreshes the schedule, the points table and the top players when a match of this tournament changes. Rapid score changes are
  * coalesced, and both the timer and the channel go on unmount. `scope` keeps two screens' channels apart.
  */
 export function useTournamentMatchUpdates(tournamentId: string, scope = 'matches') {
@@ -22,6 +23,7 @@ export function useTournamentMatchUpdates(tournamentId: string, scope = 'matches
           timer = undefined;
           void client.invalidateQueries({ queryKey: scheduleKey(tournamentId) });
           void client.invalidateQueries({ queryKey: standingsKey(tournamentId) });
+          void client.invalidateQueries({ queryKey: playerStatsKey(tournamentId) });
         }, 300);
       }).subscribe();
     return () => { if (timer) clearTimeout(timer); void supabase.removeChannel(channel); };
