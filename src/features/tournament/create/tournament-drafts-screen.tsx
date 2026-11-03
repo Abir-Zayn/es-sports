@@ -1,10 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import ArrowUpRight from 'lucide-react-native/icons/arrow-up-right';
 import Plus from 'lucide-react-native/icons/plus';
 import Trophy from 'lucide-react-native/icons/trophy';
 import { useCallback } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BOTTOM_NAV_CLEARANCE } from '@/components/navigation/bottom-nav';
@@ -13,7 +13,7 @@ import { useAuth } from '@/features/auth/auth-provider';
 import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { competitionFormats } from './draft';
-import { draftQueryKey, loadDraft } from './draft-storage';
+import { clearDraft, draftQueryKey, loadDraft } from './draft-storage';
 import { MyTournamentsSection } from './my-tournaments-section';
 
 export function TournamentDraftsScreen() {
@@ -24,9 +24,21 @@ export function TournamentDraftsScreen() {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const userId = session?.user.id ?? '';
+  const queryClient = useQueryClient();
+  const deletion = useMutation({ mutationFn: () => clearDraft(userId), onSuccess: () => queryClient.setQueryData(draftQueryKey(userId), null) });
   const { data: draft, isPending, isError, refetch } = useQuery({ queryKey: draftQueryKey(userId), queryFn: () => loadDraft(userId), enabled: Boolean(userId) });
   useFocusEffect(useCallback(() => { if (userId) void refetch(); }, [refetch, userId]));
   const openSetup = () => router.push('/tournament/create');
+  const confirmDelete = () => {
+    if (Platform.OS === 'web') {
+      if (globalThis.confirm('Delete this saved tournament from this device?')) deletion.mutate();
+      return;
+    }
+    Alert.alert('Delete draft?', 'This will permanently remove this saved tournament from this device.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: () => deletion.mutate() },
+    ]);
+  };
   return <ScrollView style={styles.screen} contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.xl, paddingBottom: BOTTOM_NAV_CLEARANCE + insets.bottom }]}>
     <View style={styles.header}>
       <View style={styles.flex}><Text style={styles.kicker}>ORGANIZER DESK</Text><Text variant="title" accessibilityRole="header">Tournaments</Text></View>
@@ -46,6 +58,8 @@ export function TournamentDraftsScreen() {
         <Text variant="caption" muted>{`${draft.matchFormat} · ${draft.teams} teams · ${competitionFormats.find((item) => item.value === draft.competition)?.label ?? ''}`}</Text>
         <Text style={styles.link}>Continue setup</Text>
       </Pressable>
+      <Button label="Delete draft" variant="secondary" loading={deletion.isPending} onPress={confirmDelete} />
+      {deletion.isError ? <Text accessibilityRole="alert">Could not delete your draft. Please try again.</Text> : null}
       <Text variant="caption" muted>This draft is private to your account on this device. It has not been published.</Text>
     </View> : <View style={styles.empty}>
       <View style={styles.art}><Trophy size={64} color={colors.link} strokeWidth={1.3} /></View>

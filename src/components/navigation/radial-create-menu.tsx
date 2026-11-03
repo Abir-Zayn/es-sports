@@ -85,9 +85,9 @@ export function RadialCreateMenu({ open, onChoose, onClose }: Props) {
           <RadialAction key={action.choice} {...action} index={index} progress={progress} onPress={() => onChoose(action.choice)} />
         ))}
         <Pressable accessibilityRole="button" accessibilityLabel="Close create menu" onPress={onClose}
-          style={[styles.close, { backgroundColor: colors.primary, borderColor: colors.background }]}>
+          style={[styles.close, { backgroundColor: colors.primary }]}>
           <Animated.View style={closeStyle}>
-            <Plus size={26} color={colors.primaryText} strokeWidth={2.6} />
+            <Plus size={24} color={colors.primaryText} strokeWidth={2.5} />
           </Animated.View>
         </Pressable>
       </View>
@@ -123,7 +123,8 @@ const styles = StyleSheet.create({
   anchor: { position: 'absolute', left: 0, right: 0, height: 0, alignItems: 'center' },
   close: {
     position: 'absolute', top: -CREATE_SIZE / 2, width: CREATE_SIZE, height: CREATE_SIZE, borderRadius: CREATE_SIZE / 2,
-    borderWidth: 5, alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.35, shadowRadius: 8, elevation: 6,
   },
   action: { position: 'absolute', top: -ACTION_SIZE / 2, width: 140, alignItems: 'center', gap: spacing.xs },
   actionButton: { width: ACTION_SIZE, height: ACTION_SIZE, borderRadius: ACTION_SIZE / 2, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },

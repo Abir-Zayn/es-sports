@@ -120,6 +120,11 @@ describe('create tournament form', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Save draft and leave' }));
     await waitFor(() => expect(save).toHaveBeenCalledWith('organizer', { ...emptyDraft, name: 'New Cup' }));
   });
+  it('automatically saves an incomplete draft for a later session', async () => {
+    await show();
+    await fireEvent.changeText(await screen.findByLabelText('Tournament name'), 'New Cup');
+    await waitFor(() => expect(save).toHaveBeenCalledWith('organizer', { ...emptyDraft, name: 'New Cup' }), { timeout: 3000 });
+  });
   it('links the tournaments tab to creation and reopens a draft', async () => {
     load.mockResolvedValue(valid); await show(<TournamentDraftsScreen />);
     await fireEvent.press(await screen.findByRole('button', { name: `Continue setup for ${valid.name}` }));
