@@ -84,7 +84,7 @@ describe('the schedule of a published tournament', () => {
 describe('the matches tab of a published tournament', () => {
   const tournament = {
     id: T, ownerId: 'o', name: 'Port City Cup', city: 'Ctg', venue: 'Main Ground', startDate: '2999-11-10', endDate: '2999-11-12',
-    matchFormat: 'T20', competition: 'league', teamsPlanned: 4, ball: 'Tennis', sideFormat: 'gully_6', playersPerSide: 6,
+    matchFormat: 'T20', overs: 20, competition: 'league', teamsPlanned: 4, ball: 'Tennis', sideFormat: 'gully_6', playersPerSide: 6,
     minSquad: 8, maxSquad: 10, registrationOpens: '', registrationDeadline: '', profileUrl: null,
   };
   async function show(canSchedule: boolean) {

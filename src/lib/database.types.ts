@@ -950,6 +950,7 @@ export type Database = {
           min_squad: number
           name: string
           owner_id: string | null
+          overs: number
           players_per_side: number
           profile_url: string | null
           registration_deadline: string | null
@@ -976,6 +977,7 @@ export type Database = {
           min_squad: number
           name: string
           owner_id?: string | null
+          overs?: number
           players_per_side: number
           profile_url?: string | null
           registration_deadline?: string | null
@@ -1002,6 +1004,7 @@ export type Database = {
           min_squad?: number
           name?: string
           owner_id?: string | null
+          overs?: number
           players_per_side?: number
           profile_url?: string | null
           registration_deadline?: string | null
@@ -1166,7 +1169,7 @@ export type Database = {
       decline_invitation: { Args: { p_id: string }; Returns: undefined }
       decline_scorer_handover: { Args: { p_id: string }; Returns: undefined }
       delete_friendly_match: { Args: { p_match: string }; Returns: undefined }
-      fixture_slot_minutes: { Args: { p_format: string }; Returns: number }
+      fixture_slot_minutes_for_overs: { Args: { p_overs: number }; Returns: number }
       insert_team: {
         Args: {
           p_area?: string

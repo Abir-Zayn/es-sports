@@ -6,7 +6,7 @@ import { AppBadge, Button, Text } from '@/components/ui';
 import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { fetchMyTournaments, myTournamentsKey } from '../data/tournament-repository';
-import { formatDate } from './draft';
+import { formatDate, oversLabel } from './draft';
 
 /** Tournaments this account runs, from the server. Drafts above are on this device only. */
 export function MyTournamentsSection({ userId }: { userId: string }) {
@@ -34,7 +34,7 @@ export function MyTournamentsSection({ userId }: { userId: string }) {
             <AppBadge label={tournament.myRole === 'owner' ? 'Organiser' : 'Moderator'} />
           </View>
           <Text muted>{`${tournament.city} · ${formatDate(tournament.startDate)}`}</Text>
-          <Text variant="caption" muted>{`${tournament.matchFormat} · ${tournament.teamsPlanned} teams`}</Text>
+          <Text variant="caption" muted>{`${oversLabel(tournament.overs)} · ${tournament.teamsPlanned} teams`}</Text>
         </Pressable>
       ))}
     </View>

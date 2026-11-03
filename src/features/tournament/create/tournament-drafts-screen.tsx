@@ -12,7 +12,7 @@ import { Button, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth/auth-provider';
 import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import { competitionFormats } from './draft';
+import { competitionFormats, oversLabel } from './draft';
 import { draftQueryKey, loadDraft } from './draft-storage';
 import { MyTournamentsSection } from './my-tournaments-section';
 
@@ -43,7 +43,7 @@ export function TournamentDraftsScreen() {
         <View style={styles.cardTop}><View style={styles.badge}><Text variant="caption" style={styles.badgeText}>SETUP DRAFT</Text></View><ArrowUpRight size={22} color={colors.link} /></View>
         <Text variant="heading">{draft.name || 'Untitled tournament'}</Text>
         <Text muted>{draft.city || 'Location to be added'}</Text>
-        <Text variant="caption" muted>{`${draft.matchFormat} · ${draft.teams} teams · ${competitionFormats.find((item) => item.value === draft.competition)?.label ?? ''}`}</Text>
+        <Text variant="caption" muted>{`${oversLabel(draft.overs)} · ${draft.teams} teams · ${competitionFormats.find((item) => item.value === draft.competition)?.label ?? ''}`}</Text>
         <Text style={styles.link}>Continue setup</Text>
       </Pressable>
       <Text variant="caption" muted>This draft is private to your account on this device. It has not been published.</Text>

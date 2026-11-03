@@ -11,7 +11,7 @@ const draft = {
   coverUri: 'file:///cover.jpg', profileUri: 'file:///profile.jpg',
 };
 const row = {
-  id: 't', owner_id: 'o', name: 'Cup', city: 'C', venue: 'V', start_date: '2026-11-10', end_date: '2026-11-12', match_format: 'T20',
+  id: 't', owner_id: 'o', name: 'Cup', city: 'C', venue: 'V', start_date: '2026-11-10', end_date: '2026-11-12', match_format: 'T20', overs: 20,
   competition: 'league', teams_planned: 8, ball: 'Tennis', side_format: 'standard_11', players_per_side: 11, min_squad: 14, max_squad: 16,
   registration_opens: null, registration_deadline: '2026-11-09', profile_url: null,
 };
@@ -23,7 +23,7 @@ describe('publishing a draft', () => {
   it('sends snake_case columns, trimmed text, null for empty registration dates, and no local image paths', () => {
     expect(draftToPayload('tid', draft)).toEqual({
       id: 'tid', name: 'Port City Cup', city: 'Chattogram', venue: 'Main Ground', start_date: '2026-11-10', end_date: '2026-11-12',
-      match_format: 'T20', competition: 'league-knockout', teams_planned: 8, ball: 'Tennis', side_format: 'standard_11',
+      overs: 20, competition: 'league-knockout', teams_planned: 8, ball: 'Tennis', side_format: 'standard_11',
       players_per_side: 11, min_squad: 14, max_squad: 16, registration_opens: null, registration_deadline: null,
     });
   });
