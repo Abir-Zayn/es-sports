@@ -44,7 +44,7 @@ export function UpcomingMatchTile({ match, onRemind }: Props) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    card: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: spacing.md },
+    card: { width: '100%', flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: spacing.md },
     date: { width: 64, gap: 2 },
     weekday: { fontSize: 12, lineHeight: 16, fontWeight: '600', color: colors.textMuted },
     day: { fontSize: 16, lineHeight: 22, fontWeight: '700' },

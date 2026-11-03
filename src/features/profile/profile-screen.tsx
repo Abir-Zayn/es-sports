@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import Bell from 'lucide-react-native/icons/bell';
 import Settings from 'lucide-react-native/icons/settings';
+import Trophy from 'lucide-react-native/icons/trophy';
 import Users from 'lucide-react-native/icons/users';
 import { useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
@@ -88,6 +89,11 @@ export function ProfileScreen() {
       <PersonalInfo profile={profile} email={session?.user.email} onEdit={() => router.push('/profile/edit')} />
       <View style={styles.links}>
         <SettingsGroup>
+          <SettingsRow
+            label="Drafted tournaments"
+            leading={<Trophy size={sizes.icon} color={colors.textMuted} />}
+            onPress={() => router.push('/tournaments')}
+          />
           <SettingsRow
             label="Team management"
             leading={<Users size={sizes.icon} color={colors.textMuted} />}

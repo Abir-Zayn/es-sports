@@ -14,7 +14,7 @@ const scoreText = ({ score, overs }: FixtureSide) => (score ? `${score}${overs ?
  * A match as a flat horizontal bar: date circle, "vs", the two team names stacked (the first larger, no
  * logos), then the start time. A match that has begun adds both scores beside the time, split by a thin
  * divider, and a line under the teams: who won, or what the chase needs. A live match also carries a LIVE
- * badge beside the first team. The hairline under it starts after the circle and runs to the edge.
+ * badge beside the first team. The horizontal dividing bar spans the full width of the tile with padding on both ends.
  * It has no card of its own, so stack several for a list.
  */
 export function FixtureTile({ fixture, onPress, showBadge = false, badgeLabel }: Props) {
@@ -94,7 +94,16 @@ const CIRCLE = 36;
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    bar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.xs },
+    bar: {
+      width: '100%',
+      minHeight: 64,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.md,
+      paddingVertical: 14,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
     pressed: { opacity: 0.85 },
     circle: {
       width: CIRCLE,
@@ -109,14 +118,10 @@ const createStyles = (colors: Palette) =>
     body: {
       flex: 1,
       minWidth: 0,
-      alignSelf: 'stretch',
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.sm,
       marginLeft: spacing.sm,
-      paddingVertical: 9,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
     },
     main: { flex: 1, minWidth: 0, gap: 4 },
     line: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
@@ -142,5 +147,5 @@ const createStyles = (colors: Palette) =>
     dim: { color: colors.textMuted },
     rule: { alignSelf: 'stretch', width: 1, marginVertical: 2, backgroundColor: colors.border },
     time: { fontSize: 12, lineHeight: 16, fontWeight: '700', color: colors.text, textAlign: 'right' },
-    result: { fontSize: 12, lineHeight: 16, fontWeight: '600', color: colors.link },
+    result: { paddingTop: spacing.xs, fontSize: 12, lineHeight: 16, fontWeight: '600', color: colors.link },
   });

@@ -172,3 +172,6 @@ graphify-out/
 *.gif.tmp
 **/__screenshots__/
 **/test-results/
+
+# Local git worktrees (other branches checked out inside this folder)
+.worktrees/
