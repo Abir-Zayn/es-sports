@@ -1,0 +1,27 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'com.essports.livestream'
+version = '0.1.0'
+
+android {
+  namespace "expo.modules.livestream"
+  defaultConfig {
+    versionCode 1
+    versionName '0.1.0'
+  }
+  testOptions {
+    unitTests.returnDefaultValues = true
+  }
+}
+
+dependencies {
+  // RootEncoder 2.8.0 is compiled with Kotlin 2.3.x, which the app's Kotlin 2.2 toolchain can read.
+  // 2.8.1 needs Kotlin 2.4 metadata. Pinned exactly: native streaming behaviour must not drift between builds.
+  implementation 'com.github.pedroSG94.RootEncoder:library:2.8.0'
+  implementation "androidx.core:core-ktx:1.17.0"
+
+  testImplementation 'junit:junit:4.13.2'
+}

@@ -37,7 +37,8 @@
           "imageWidth": 288
         }
       ],
-      "@react-native-google-signin/google-signin"
+      "@react-native-google-signin/google-signin",
+      "./modules/live-stream/plugin/with-live-stream"
     ],
     "experiments": {
       "typedRoutes": true,

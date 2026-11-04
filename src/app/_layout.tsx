@@ -72,6 +72,7 @@ function AppShell() {
             <Stack.Screen name="tournament/[id]/stats" />
             <Stack.Screen name="tournament/[id]/table" />
             <Stack.Screen name="tournament/[id]/teams" />
+            <Stack.Screen name="broadcast-lab" options={{ orientation: 'landscape' }} />
           </Stack.Protected>
         </Stack>
       )}
