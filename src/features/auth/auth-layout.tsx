@@ -54,5 +54,5 @@ const createStyles = (colors: Palette) =>
     content: { paddingHorizontal: spacing.xl, paddingTop: spacing.xl, paddingBottom: spacing.lg, gap: spacing.xl },
     logo: { paddingTop: spacing.xxl },
     heading: { gap: spacing.sm },
-    title: { fontWeight: '800' },
+    title: { fontWeight: '600' },
   });

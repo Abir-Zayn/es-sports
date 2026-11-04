@@ -86,8 +86,8 @@ export const sizes = { control: 48, field: 58, icon: 22, hitSlop: 12, gutter: 16
 export const radius = { sm: 8, md: 12, control: 16, lg: 20, pill: 999 } as const;
 
 export const typography = {
-  title: { fontSize: 28, fontWeight: '700', lineHeight: 34 },
-  heading: { fontSize: 20, fontWeight: '600', lineHeight: 26 },
+  title: { fontSize: 28, fontWeight: '600', lineHeight: 34 },
+  heading: { fontSize: 18, fontWeight: '600', lineHeight: 24 },
   body: { fontSize: 16, fontWeight: '400', lineHeight: 22 },
   caption: { fontSize: 13, fontWeight: '400', lineHeight: 18 },
 } as const;

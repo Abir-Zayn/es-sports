@@ -18,7 +18,7 @@ Out of scope: viewing *other* players' profiles (`/player/[id]`, separate task, 
 ## Design rules (match the rest of the app)
 
 - Theme tokens only (`Palette`, `spacing`, `sizes`, `radius`). No hex in screens. Works in light and dark.
-- Gutter `sizes.gutter` (20), section gap `sizes.sectionGap` (30). Headings: title case, 20px bold, no italic, via `SectionHeader`.
+- Gutter `sizes.gutter` (20), section gap `sizes.sectionGap` (30). Headings: title case, 18px semi-bold, no italic, via `SectionHeader`.
 - Cards: `colors.surface`, `radius.lg` (20) for big cards, `radius.md` (12) for rows and tiles, 1px `colors.border`.
 - Icons: per-icon lucide imports (`lucide-react-native/icons/<name>`), size `sizes.icon`.
 - Touch targets 48dp minimum. Every icon-only button has `accessibilityLabel`. Screen titles use `accessibilityRole="header"`.

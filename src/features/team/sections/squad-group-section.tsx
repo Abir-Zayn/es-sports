@@ -57,7 +57,7 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     section: { gap: 14 },
     header: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-    title: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
+    title: { fontSize: 18, lineHeight: 24, fontWeight: '600' },
     titleBench: { color: colors.textMuted },
     count: { fontSize: 12, lineHeight: 16, fontWeight: '700', color: colors.link },
     countBench: { color: colors.textMuted },

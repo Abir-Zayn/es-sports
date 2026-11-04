@@ -22,7 +22,7 @@ export function PlayerPitchZones({ shots }: { shots: readonly { runs: number; an
   </View>;
 }
 const createStyles = (c: Palette) => StyleSheet.create({
-  section: { gap: 12 }, heading: { color: c.text, fontWeight: '700', fontSize: 20, lineHeight: 26 },
+  section: { gap: 12 }, heading: { color: c.text, fontWeight: '600', fontSize: 18, lineHeight: 24 },
   caption: { color: c.textMuted, fontSize: 12, lineHeight: 17 }, empty: { color: c.textMuted, fontSize: 14 },
   bar: { flexDirection: 'row', height: 10, borderRadius: 5, overflow: 'hidden', backgroundColor: c.surfaceRaised },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

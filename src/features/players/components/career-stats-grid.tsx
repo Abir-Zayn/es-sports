@@ -26,7 +26,7 @@ export function CareerStatsGrid({ totals }: { totals: CareerTotals }) {
   </View>;
 }
 const createStyles = (c: Palette) => StyleSheet.create({
-  section: { gap: 12 }, heading: { color: c.text, fontWeight: '700', fontSize: 20, lineHeight: 26 },
+  section: { gap: 12 }, heading: { color: c.text, fontWeight: '600', fontSize: 18, lineHeight: 24 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tile: { flexBasis: '30%', flexGrow: 1, minHeight: 78, borderRadius: 14, backgroundColor: c.surface, padding: 12, justifyContent: 'center', gap: 4 },
   value: { color: c.text, fontSize: 20, lineHeight: 25, fontWeight: '700', fontVariant: ['tabular-nums'] },

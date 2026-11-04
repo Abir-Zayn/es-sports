@@ -22,7 +22,7 @@ export function PlayerRecentMatches({ matches }: { matches: readonly Performance
   </View>;
 }
 const createStyles = (c: Palette) => StyleSheet.create({
-  section: { gap: 16 }, heading: { color: c.text, fontWeight: '700', fontSize: 20, lineHeight: 26 },
+  section: { gap: 16 }, heading: { color: c.text, fontWeight: '600', fontSize: 18, lineHeight: 24 },
   empty: { color: c.textMuted, fontSize: 14 }, row: { flexDirection: 'row', gap: 12 },
   marker: { width: 12, alignItems: 'center', paddingTop: 6 }, dot: { width: 9, height: 9, borderRadius: 5, backgroundColor: c.primary },
   details: { flex: 1, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: c.border, paddingBottom: 16, gap: 4 },

@@ -68,7 +68,7 @@ const styles = (c: Palette) => StyleSheet.create({
   footer: { paddingHorizontal: sizes.gutter, paddingTop: 12, gap: 8 },
   header: { flexDirection: 'row', gap: 12, alignItems: 'center', minHeight: 48 },
   titleWrap: { flex: 1, gap: 2 },
-  title: { fontSize: 22, lineHeight: 28, fontWeight: '800' },
+  title: { fontSize: 22, lineHeight: 28, fontWeight: '600' },
   caption: { fontSize: 12, lineHeight: 17 },
   section: { gap: 10 },
   sectionTitle: { fontSize: 12, lineHeight: 16, fontWeight: '700', letterSpacing: 0.8, color: c.textMuted, textTransform: 'uppercase' },

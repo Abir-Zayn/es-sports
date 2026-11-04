@@ -29,7 +29,7 @@ function GroupTitle({ children }: { children: string }) {
   );
 }
 
-const groupTitleStyle = { fontSize: 20, lineHeight: 26, fontWeight: '700' } as const;
+const groupTitleStyle = { fontSize: 18, lineHeight: 24, fontWeight: '600' } as const;
 
 /** One list of account, sign-in, notifications, legal and version tiles, then theme, log out and account deletion. */
 export function SettingsScreen() {

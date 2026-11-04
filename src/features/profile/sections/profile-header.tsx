@@ -80,5 +80,5 @@ const createStyles = (colors: Palette) =>
     identity: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg, paddingHorizontal: sizes.gutter },
     names: { flex: 1, gap: spacing.xs },
     nameRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-    name: { flexShrink: 1, fontSize: 24, lineHeight: 30, fontWeight: '700', color: colors.text },
+    name: { flexShrink: 1, fontSize: 24, lineHeight: 30, fontWeight: '600', color: colors.text },
   });

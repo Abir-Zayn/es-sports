@@ -147,7 +147,7 @@ const createStyles = (colors: Palette) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background }, flex: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg, paddingHorizontal: sizes.gutter, paddingTop: spacing.sm,
     paddingBottom: spacing.xl, width: '100%', maxWidth: 600, alignSelf: 'center' },
-  headerTitle: { flex: 1, fontWeight: '700', fontSize: 18, lineHeight: 24, textAlign: 'center' },
+  headerTitle: { flex: 1, fontWeight: '600', fontSize: 18, lineHeight: 24, textAlign: 'center' },
   save: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   pressed: { opacity: 0.65 },
   content: { paddingHorizontal: sizes.gutter, paddingTop: spacing.sm, gap: spacing.lg, maxWidth: 600, width: '100%', alignSelf: 'center' },

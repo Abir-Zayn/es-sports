@@ -77,7 +77,7 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.background },
     header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter, paddingVertical: spacing.md },
-    title: { flex: 1, fontSize: 18, lineHeight: 24, fontWeight: '700' },
+    title: { flex: 1, fontSize: 18, lineHeight: 24, fontWeight: '600' },
     content: { paddingHorizontal: sizes.gutter, paddingTop: spacing.sm, gap: spacing.lg, maxWidth: 600, width: '100%', alignSelf: 'center' },
     status: { paddingVertical: spacing.xxl },
     failed: { alignItems: 'center', gap: spacing.md },

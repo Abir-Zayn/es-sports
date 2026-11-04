@@ -86,6 +86,6 @@ const createStyles = (colors: Palette) =>
     art: { position: 'absolute', top: 0, left: 0 },
     actions: { flexDirection: 'row', justifyContent: 'space-between' },
     identity: { marginTop: 8, alignItems: 'center', gap: 12 },
-    name: { fontSize: 28, lineHeight: 32, fontWeight: '800', textAlign: 'center' },
+    name: { fontSize: 28, lineHeight: 32, fontWeight: '600', textAlign: 'center' },
     meta: { fontSize: 13, lineHeight: 18, textAlign: 'center' },
   });

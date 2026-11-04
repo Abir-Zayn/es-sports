@@ -42,7 +42,7 @@ export function PartnershipsSection({ partnerships }: { partnerships: Partnershi
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     section: { gap: 14 },
-    title: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
+    title: { fontSize: 18, lineHeight: 24, fontWeight: '600' },
     item: { gap: 6 },
     row: { flexDirection: 'row', justifyContent: 'space-between' },
     pair: { fontSize: 13, lineHeight: 18 },

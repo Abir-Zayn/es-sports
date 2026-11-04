@@ -67,8 +67,8 @@ export function SquadsSection({ squads }: { squads: MatchInfoData['squads'] }) {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     section: { gap: 12 },
-    title: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
-    heading: { fontSize: 12, lineHeight: 16, fontWeight: '700', letterSpacing: 1.5 },
+    title: { fontSize: 18, lineHeight: 24, fontWeight: '600' },
+    heading: { fontSize: 12, lineHeight: 16, fontWeight: '600', letterSpacing: 1.5 },
     benchHeading: { marginTop: 6 },
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
     player: {

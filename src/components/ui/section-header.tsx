@@ -42,7 +42,7 @@ const createStyles = (colors: Palette) =>
     flush: { paddingHorizontal: 0 },
     titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexShrink: 1 },
     dot: { width: 8, height: 8, borderRadius: 4 },
-    title: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
-    compactTitle: { fontSize: 16, lineHeight: 22 },
+    title: { fontSize: 18, lineHeight: 24, fontWeight: '600' },
+    compactTitle: { fontSize: 15, lineHeight: 20 },
     action: { fontSize: 13, fontWeight: '600', color: colors.link },
   });

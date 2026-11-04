@@ -53,7 +53,7 @@ const createStyles = (colors: Palette) =>
     iconBtn: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center', marginLeft: -10 },
     pressed: { opacity: 0.7 },
     titles: { flex: 1, minWidth: 0, alignItems: 'center', gap: 2 },
-    title: { fontSize: 15, lineHeight: 20, fontWeight: '700', textAlign: 'center', color: colors.text },
+    title: { fontSize: 15, lineHeight: 20, fontWeight: '600', textAlign: 'center', color: colors.text },
     subtitle: { fontSize: 12, lineHeight: 16, textAlign: 'center' },
     liveChip: {
       flexDirection: 'row',

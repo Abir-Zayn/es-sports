@@ -29,7 +29,7 @@ const createStyles = (c: Palette) => StyleSheet.create({
   card: { backgroundColor: c.surface, borderRadius: 20, padding: 20, gap: 18, borderWidth: 1, borderColor: c.border },
   row: { flexDirection: 'row', alignItems: 'center', gap: 16 }, details: { flex: 1, gap: 4 },
   eyebrow: { color: c.link, fontWeight: '700', fontSize: 11, letterSpacing: 1 },
-  name: { color: c.text, fontSize: 23, lineHeight: 29, fontWeight: '700' },
+  name: { color: c.text, fontSize: 23, lineHeight: 29, fontWeight: '600' },
   number: { color: c.link, fontSize: 14, fontWeight: '700' }, pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   pill: { backgroundColor: c.surfaceRaised, color: c.text, borderRadius: 16, overflow: 'hidden', paddingHorizontal: 10, paddingVertical: 6, fontSize: 12, textTransform: 'capitalize' },
   note: { color: c.textMuted, fontSize: 12 },

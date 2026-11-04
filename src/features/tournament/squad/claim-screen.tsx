@@ -78,7 +78,7 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.background },
     header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter, paddingVertical: spacing.md },
-    title: { flex: 1, fontSize: 18, lineHeight: 24, fontWeight: '700' },
+    title: { flex: 1, fontSize: 18, lineHeight: 24, fontWeight: '600' },
     body: { gap: spacing.md, paddingHorizontal: spacing.lg, paddingTop: spacing.lg, maxWidth: 600, width: '100%', alignSelf: 'center' },
-    name: { fontSize: 22, lineHeight: 28, fontWeight: '700' },
+    name: { fontSize: 22, lineHeight: 28, fontWeight: '600' },
   });

@@ -24,5 +24,5 @@ export function ScheduleSection({ caps, busy, teamCount, onOpen }: Props) {
 
 const styles = StyleSheet.create({
   next: { gap: spacing.sm },
-  title: { fontSize: 16, lineHeight: 22, fontWeight: '700' },
+  title: { fontSize: 16, lineHeight: 22, fontWeight: '600' },
 });

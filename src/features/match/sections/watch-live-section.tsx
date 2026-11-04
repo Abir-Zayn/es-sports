@@ -40,7 +40,7 @@ export function WatchLiveSection({ streams }: { streams: MatchInfoData['streams'
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     section: { gap: 10 },
-    title: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
+    title: { fontSize: 18, lineHeight: 24, fontWeight: '600' },
     row: { flexDirection: 'row', gap: 10 },
     button: {
       flex: 1,

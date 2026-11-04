@@ -165,7 +165,7 @@ const styles = (c: Palette) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: c.background },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter, paddingTop: spacing.md, paddingBottom: spacing.lg },
   titles: { flex: 1, gap: 2 },
-  title: { fontSize: 24, lineHeight: 28, fontWeight: '700', letterSpacing: -0.2 },
+  title: { fontSize: 24, lineHeight: 28, fontWeight: '600', letterSpacing: -0.2 },
   step: { fontSize: 13, lineHeight: 18, fontWeight: '500' },
   progress: { flexDirection: 'row', gap: 6, paddingHorizontal: sizes.gutter },
   bar: { flex: 1, height: 6, borderRadius: radius.pill, backgroundColor: c.surfaceRaised },

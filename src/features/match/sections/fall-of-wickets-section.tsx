@@ -39,7 +39,7 @@ export function FallOfWicketsSection({ wickets }: { wickets: FallOfWicket[] }) {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     section: { gap: 12 },
-    title: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
+    title: { fontSize: 18, lineHeight: 24, fontWeight: '600' },
     // Lets the cards scroll edge to edge while the rest of the screen keeps its gutter.
     scroll: { marginHorizontal: -sizes.gutter },
     cards: { paddingHorizontal: sizes.gutter, gap: 10 },

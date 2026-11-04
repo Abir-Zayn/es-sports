@@ -81,7 +81,7 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     section: { gap: spacing.sm },
     heading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
-    title: { fontSize: 16, lineHeight: 22, fontWeight: '700' },
+    title: { fontSize: 16, lineHeight: 22, fontWeight: '600' },
     card: { borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, overflow: 'hidden' },
     error: { color: colors.dangerSoftText },
     locked: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },

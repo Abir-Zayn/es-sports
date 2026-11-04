@@ -26,7 +26,7 @@ export function TeamInfoCard({ info }: { info: { label: string; value: string }[
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     card: { borderRadius: 20, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
-    heading: { paddingTop: 14, paddingBottom: 6, paddingHorizontal: 16, fontSize: 12, lineHeight: 16, fontWeight: '700', letterSpacing: 1.5 },
+    heading: { paddingTop: 14, paddingBottom: 6, paddingHorizontal: 16, fontSize: 12, lineHeight: 16, fontWeight: '600', letterSpacing: 1.5 },
     row: { flexDirection: 'row', gap: 14, paddingVertical: 11, paddingHorizontal: 16, borderTopWidth: 1, borderTopColor: colors.border },
     label: { width: 100, fontSize: 13, lineHeight: 20 },
     value: { flex: 1, fontSize: 14, lineHeight: 20, fontWeight: '600' },

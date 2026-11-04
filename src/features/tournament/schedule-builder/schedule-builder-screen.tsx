@@ -109,7 +109,7 @@ const createStyles = (colors: Palette) =>
     screen: { flex: 1, backgroundColor: colors.background },
     header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter, paddingVertical: spacing.md },
     titles: { flex: 1, minWidth: 0 },
-    title: { fontSize: 18, lineHeight: 24, fontWeight: '700' },
+    title: { fontSize: 18, lineHeight: 24, fontWeight: '600' },
     subtitle: { fontSize: 13, lineHeight: 18 },
     status: { paddingVertical: spacing.xxl },
     message: { alignItems: 'center', gap: spacing.md, padding: spacing.xl },

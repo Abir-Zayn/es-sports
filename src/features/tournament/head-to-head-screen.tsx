@@ -96,9 +96,9 @@ const createStyles = (colors: Palette) =>
     screen: { flex: 1, backgroundColor: colors.background },
     content: { paddingBottom: spacing.xxl + spacing.xl },
     header: { paddingHorizontal: sizes.gutter, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-    title: { flex: 1, fontSize: 24, lineHeight: 30, fontWeight: '800' },
+    title: { flex: 1, fontSize: 24, lineHeight: 30, fontWeight: '600' },
     body: { paddingHorizontal: sizes.gutter, paddingTop: 22, gap: 22 },
     stats: { gap: spacing.lg },
     meetings: { gap: 10 },
-    meetingsTitle: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
+    meetingsTitle: { fontSize: 18, lineHeight: 24, fontWeight: '600' },
   });

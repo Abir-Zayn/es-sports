@@ -110,7 +110,7 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     row: { gap: spacing.xs, paddingVertical: spacing.lg },
     top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
-    title: { flex: 1, fontSize: 15, lineHeight: 20, fontWeight: '700' },
+    title: { flex: 1, fontSize: 15, lineHeight: 20, fontWeight: '600' },
     meta: { fontSize: 12, lineHeight: 16, color: colors.textMuted },
     actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
   });

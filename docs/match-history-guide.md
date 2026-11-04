@@ -1,7 +1,7 @@
 # Guide: tournament Match History (workfile item 10)
 
 Written 2026-11-03, on top of PR #23 (`feat/tc-fixtures`). The knockout tree (item 9) is out of scope here.
-Before writing code, read `AGENTS.md` and `memory.md`. The usual rules apply: files at most 200 lines (hard limit 270),
+Before writing code, read `AGENTS.md` and `memory.md`. The usual rules apply: files at most 200 lines (hard limit 270). Use the Reusable components.
 writes go through `security definer` RPCs, report PASS / FAIL / NOT RUN, and finish with the section 11 report.
 
 ## 1. What "done" means

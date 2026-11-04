@@ -94,7 +94,7 @@ const createStyles = (colors: Palette) =>
       gap: 12,
     },
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-    title: { fontSize: 14, lineHeight: 19, fontWeight: '700' },
+    title: { fontSize: 14, lineHeight: 19, fontWeight: '600' },
     caption: { fontSize: 12, lineHeight: 16 },
     plot: {
       height: PLOT_HEIGHT,

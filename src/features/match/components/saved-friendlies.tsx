@@ -105,6 +105,6 @@ const styles = (c: Palette) => StyleSheet.create({
   pressed: { opacity: 0.8 },
   play: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: radius.pill, backgroundColor: c.primarySoft },
   text: { flex: 1, minWidth: 0, gap: 2 },
-  title: { fontSize: 14, lineHeight: 19, fontWeight: '700' },
+  title: { fontSize: 14, lineHeight: 19, fontWeight: '600' },
   caption: { fontSize: 12, lineHeight: 16, fontWeight: '500' },
 });

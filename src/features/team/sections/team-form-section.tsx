@@ -46,7 +46,7 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     section: { gap: 12 },
     header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    title: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
+    title: { fontSize: 18, lineHeight: 24, fontWeight: '600' },
     link: { fontSize: 13, lineHeight: 18, fontWeight: '600', color: colors.link },
     row: { flexDirection: 'row', gap: 8 },
     tile: {

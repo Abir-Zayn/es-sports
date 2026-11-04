@@ -36,5 +36,5 @@ const createStyles = (c: Palette) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: c.background }, content: { paddingHorizontal: 20, gap: 26 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   back: { width: 48, height: 48, borderRadius: 24, backgroundColor: c.surface, justifyContent: 'center', alignItems: 'center' },
-  title: { color: c.text, fontSize: 22, fontWeight: '700', lineHeight: 28 },
+  title: { color: c.text, fontSize: 22, fontWeight: '600', lineHeight: 28 },
 });

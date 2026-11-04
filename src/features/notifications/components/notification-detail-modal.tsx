@@ -88,7 +88,7 @@ const createStyles = (c: Palette) =>
       padding: spacing.lg,
       gap: spacing.sm,
     },
-    title: { color: c.text, fontSize: 18, lineHeight: 24, fontWeight: '700' },
+    title: { color: c.text, fontSize: 18, lineHeight: 24, fontWeight: '600' },
     time: { color: c.textMuted, fontSize: 12, lineHeight: 16 },
     message: { color: c.text, fontSize: 15, lineHeight: 22 },
     error: { color: c.dangerSoftText, fontSize: 13, lineHeight: 18 },

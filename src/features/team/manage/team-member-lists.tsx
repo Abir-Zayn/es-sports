@@ -82,5 +82,5 @@ const createStyles = () =>
   StyleSheet.create({
     list: { gap: spacing.xs },
     actions: { flexDirection: 'row', gap: spacing.xs },
-    heading: { fontSize: 15, lineHeight: 20, fontWeight: '700' },
+    heading: { fontSize: 15, lineHeight: 20, fontWeight: '600' },
   });

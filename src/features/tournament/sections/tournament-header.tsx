@@ -96,7 +96,7 @@ const createStyles = (colors: Palette) =>
     wash: { position: 'absolute', top: 0, left: 0 },
     actions: { paddingHorizontal: sizes.gutter, flexDirection: 'row', justifyContent: 'space-between' },
     identity: { paddingHorizontal: sizes.gutter, alignItems: 'center', gap: spacing.md },
-    name: { fontSize: 24, lineHeight: 30, fontWeight: '800', textAlign: 'center' },
+    name: { fontSize: 24, lineHeight: 30, fontWeight: '600', textAlign: 'center' },
     chips: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.sm },
     chip: {
       paddingHorizontal: 10,

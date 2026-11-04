@@ -46,7 +46,7 @@ export function RealTournamentTeams({ tournament, canManage, onManage }: Props) 
 
 const createStyles = (colors: Palette) => StyleSheet.create({
   gap: { gap: spacing.md },
-  title: { fontSize: 20, lineHeight: 26, fontWeight: '800' },
+  title: { fontSize: 18, lineHeight: 24, fontWeight: '600' },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   pressed: { opacity: 0.7 },
   names: { flex: 1, minWidth: 0, gap: 2 },

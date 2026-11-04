@@ -59,7 +59,7 @@ export function TournamentTeamsScreen() {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     heading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-    title: { fontSize: 24, lineHeight: 30, fontWeight: '800' },
+    title: { fontSize: 24, lineHeight: 30, fontWeight: '600' },
     link: { fontSize: 13, lineHeight: 18, fontWeight: '600', color: colors.link },
     grid: { gap: spacing.md },
     gridRow: { flexDirection: 'row', gap: spacing.md },

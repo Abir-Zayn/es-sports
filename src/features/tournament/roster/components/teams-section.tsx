@@ -75,7 +75,7 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     section: { gap: spacing.sm },
     heading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: spacing.md },
-    title: { fontSize: 16, lineHeight: 22, fontWeight: '700' },
+    title: { fontSize: 16, lineHeight: 22, fontWeight: '600' },
     count: { fontSize: 12, lineHeight: 16, fontWeight: '600', color: colors.textMuted, fontVariant: ['tabular-nums'] },
     empty: { paddingVertical: spacing.md },
     divided: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },

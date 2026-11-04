@@ -171,7 +171,7 @@ const createStyles = (colors: Palette) =>
     screen: { flex: 1, backgroundColor: colors.background },
     header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter, paddingVertical: spacing.md },
     titles: { flex: 1, minWidth: 0 },
-    title: { fontSize: 18, lineHeight: 24, fontWeight: '700' },
+    title: { fontSize: 18, lineHeight: 24, fontWeight: '600' },
     subtitle: { fontSize: 13, lineHeight: 18 },
     content: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, gap: spacing.lg, maxWidth: 600, width: '100%', alignSelf: 'center' },
     status: { paddingVertical: spacing.xxl },

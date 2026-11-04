@@ -73,7 +73,7 @@ export function EndOfOverScreen() {
 const styles = (c: Palette) => StyleSheet.create({
   summary: { padding: 16, borderRadius: 22, borderWidth: 1, borderColor: c.primaryDeep, backgroundColor: c.primarySoft, gap: 14 },
   heading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 },
-  title: { fontSize: 24, lineHeight: 30, fontWeight: '800' }, runs: { fontSize: 22, lineHeight: 28, fontWeight: '800' },
+  title: { fontSize: 24, lineHeight: 30, fontWeight: '600' }, runs: { fontSize: 22, lineHeight: 28, fontWeight: '800' },
   caption: { fontSize: 13, lineHeight: 18 }, link: { color: c.link, fontWeight: '700' }, bold: { fontWeight: '700' },
   ends: { padding: 14, flexDirection: 'row', gap: 12, borderRadius: 16, borderWidth: 1, borderColor: c.border, backgroundColor: c.surface },
   list: { borderWidth: 1, borderColor: c.border, borderRadius: 20, overflow: 'hidden', backgroundColor: c.surface },

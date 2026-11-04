@@ -107,7 +107,7 @@ const createStyles = (colors: Palette) =>
     },
     divider: { borderTopWidth: 1, borderTopColor: colors.border },
     meta: { flex: 1, minWidth: 0, gap: 2 },
-    title: { fontSize: 14, lineHeight: 19, fontWeight: '700', color: colors.text },
+    title: { fontSize: 14, lineHeight: 19, fontWeight: '600', color: colors.text },
     previousLabel: { fontSize: 13, lineHeight: 18, fontWeight: '600', color: colors.text },
     sub: { fontSize: 12, lineHeight: 16, fontVariant: ['tabular-nums'] },
     runs: { fontSize: 13, lineHeight: 18 },

@@ -156,10 +156,10 @@ const createStyles = (c: Palette) =>
     markText: { color: c.link, fontSize: 14, fontWeight: '700' },
     disabled: { color: c.textMuted },
     titleRow: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 24, flexDirection: 'row', alignItems: 'center', gap: 12, flexWrap: 'wrap' },
-    title: { color: c.text, fontSize: 30, lineHeight: 38, fontWeight: '700' },
+    title: { color: c.text, fontSize: 30, lineHeight: 38, fontWeight: '600' },
     pill: { color: c.link, backgroundColor: c.primarySoft, paddingHorizontal: 10, paddingVertical: 5, overflow: 'hidden', borderRadius: 14, fontSize: 12, fontWeight: '700' },
     errorBanner: { color: c.dangerSoftText, paddingHorizontal: 20, paddingBottom: 12, fontSize: 14 },
     empty: { padding: 32, alignItems: 'center', gap: 6 },
-    emptyTitle: { color: c.text, fontSize: 17, fontWeight: '700' },
+    emptyTitle: { color: c.text, fontSize: 17, fontWeight: '600' },
     emptyText: { color: c.textMuted, textAlign: 'center' },
   });
