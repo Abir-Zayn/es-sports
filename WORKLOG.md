@@ -13,6 +13,25 @@ Entry template:
 
 ---
 
+## 2026-11-10
+
+**Done** (branch `feat/live-broadcast-moderator`, from `feat/live-broadcast-phase0` plus `main`, local only, not pushed)
+- 3-moderator cap per tournament: trigger plus invite check, error `ET008`.
+- Demo teams for testing with two phones: `seed_demo_teams` / `clear_demo_teams`, off unless `app_flags.demo_data` is on, buttons only with `EXPO_PUBLIC_DEMO_TOOLS=1`.
+- Streamer assignment per fixture (`fixture_streamers`, moderator only, Facebook only, state assigned / live / ended).
+- Matches tab dashboard: next-match card with countdown, streamer, choose / take / go live, LIVE on Facebook badge.
+- Streamer console `/tournament/stream` (landscape): camera preview with the real live score, Facebook URL and key, Go live / End, state mirrored to the server.
+- Auto-pick both XIs when starting a match.
+
+**Decisions**
+- Streamer = tournament moderator (max 3), Facebook only, Android only. See `docs/tasks/live-broadcast.md` update block.
+
+**Open / next**
+- Nothing here has run on a device, and the three SQL migrations have **not been run** against any database (no local Postgres: the brew upgrade broke `postgresql@14`, which needs `brew reinstall postgresql@14`). Apply and test them first, with `docs/live-streaming-test-guide.md`.
+- Graphics are still the Phase 0 proof of concept.
+
+---
+
 ## 2026-10-28
 
 **Start here (next session).** Paste this entry back to Claude. The app is on `main` at `e1d2790` (= `origin/main`). Run it on a phone as a real build, not Expo Go (see "How to run").
