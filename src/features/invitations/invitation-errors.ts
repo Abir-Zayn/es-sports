@@ -25,6 +25,8 @@ export function invitationMessage(error: unknown): string {
       return 'This invitation can no longer be accepted.';
     case 'ET002':
       return 'This player already plays for another team in this tournament. A player can play for one team per tournament.';
+    case 'ET008':
+      return 'This tournament already has 3 moderators, the most it can have.';
     case '42501':
       return 'You are not allowed to do that.';
     case '22023':
