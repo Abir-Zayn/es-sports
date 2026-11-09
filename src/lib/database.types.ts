@@ -1224,6 +1224,14 @@ export type Database = {
         Args: { p_tournament: string; p_user: string }
         Returns: undefined
       }
+      seed_demo_teams: {
+        Args: { p_count?: number; p_tournament: string }
+        Returns: number
+      }
+      clear_demo_teams: {
+        Args: { p_tournament: string }
+        Returns: number
+      }
       remove_tournament_team: {
         Args: { p_team: string; p_tournament: string }
         Returns: undefined

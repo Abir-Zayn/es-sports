@@ -5,12 +5,14 @@ import { Button, InitialsAvatar, Text } from '@/components/ui';
 import { useOpenTeam } from '@/features/team';
 import { spacing, useThemedStyles, type Palette } from '@/theme';
 
+import { demoToolsEnabled } from '../data/demo-teams';
 import { fetchTournamentTeams, tournamentKey, type TournamentRecord } from '../data/tournament-repository';
+import { DemoTeamsPanel } from './demo-teams-panel';
 
-type Props = { tournament: TournamentRecord; canManage: boolean; onManage: () => void };
+type Props = { tournament: TournamentRecord; canManage: boolean; isOwner?: boolean; onManage: () => void };
 
 /** The teams that have joined, in the order they joined, each with its owner. */
-export function RealTournamentTeams({ tournament, canManage, onManage }: Props) {
+export function RealTournamentTeams({ tournament, canManage, isOwner = false, onManage }: Props) {
   const styles = useThemedStyles(createStyles);
   const openTeam = useOpenTeam();
   const teams = useQuery({ queryKey: [...tournamentKey(tournament.id), 'teams'], queryFn: () => fetchTournamentTeams(tournament.id) });
@@ -40,6 +42,7 @@ export function RealTournamentTeams({ tournament, canManage, onManage }: Props) 
         ))}
       </View>
       {canManage ? <Button label="Add teams" variant="secondary" onPress={onManage} /> : null}
+      {isOwner && demoToolsEnabled ? <DemoTeamsPanel tournamentId={tournament.id} /> : null}
     </>
   );
 }
