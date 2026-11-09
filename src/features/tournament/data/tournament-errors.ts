@@ -17,6 +17,8 @@ export function tournamentMessage(error: unknown): string {
     case 'ET005': return 'This team has scheduled matches. Cancel them or redraw the schedule first.';
     case 'ET007': return 'Both teams must be known before starting this match.';
     case 'ET006': return 'That does not fit the schedule: two matches would be on the ground at once, a team would play twice that day, or the match falls outside the tournament days.';
+    case 'ET010': return 'The broadcast has already started, so the streamer can no longer be changed.';
+    case 'ET011': return 'Start the match first, then go live.';
     case 'ET009': return 'Demo teams are switched off on this server. Turn on the demo_data flag in Supabase first.';
     case 'ET008': return 'This tournament already has 3 moderators, the most it can have.';
     case '42501': return 'You are not allowed to do that in this tournament.';

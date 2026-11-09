@@ -721,6 +721,42 @@ export type Database = {
           },
         ]
       }
+      fixture_streamers: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          ended_at: string | null
+          fixture_id: string
+          live_at: string | null
+          platform: string
+          state: string
+          streamer_id: string
+          tournament_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          ended_at?: string | null
+          fixture_id: string
+          live_at?: string | null
+          platform?: string
+          state?: string
+          streamer_id: string
+          tournament_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          ended_at?: string | null
+          fixture_id?: string
+          live_at?: string | null
+          platform?: string
+          state?: string
+          streamer_id?: string
+          tournament_id?: string
+        }
+        Relationships: []
+      }
       tournament_fixtures: {
         Row: {
           away_label: string | null
@@ -1222,6 +1258,18 @@ export type Database = {
       }
       remove_tournament_moderator: {
         Args: { p_tournament: string; p_user: string }
+        Returns: undefined
+      }
+      assign_fixture_streamer: {
+        Args: { p_fixture: string; p_user: string }
+        Returns: undefined
+      }
+      clear_fixture_streamer: {
+        Args: { p_fixture: string }
+        Returns: undefined
+      }
+      set_fixture_broadcast_state: {
+        Args: { p_fixture: string; p_state: string }
         Returns: undefined
       }
       seed_demo_teams: {
