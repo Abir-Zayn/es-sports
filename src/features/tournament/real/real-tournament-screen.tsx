@@ -48,7 +48,7 @@ export function RealTournamentScreen({ id, section }: Props) {
   } else if (!record) body = <Text muted>This tournament could not be found.</Text>;
   else if (section === 'overview') body = <RealTournamentOverview tournament={record} staff={staff.data ?? []} canManage={role !== null} onManage={manage} />;
   else if (section === 'teams') body = <RealTournamentTeams tournament={record} canManage={role !== null} isOwner={role === 'owner'} onManage={manage} />;
-  else if (section === 'matches') body = <RealTournamentMatches tournament={record} canSchedule={role === 'owner'} canStart={role !== null} onSchedule={schedule} />;
+  else if (section === 'matches') body = <RealTournamentMatches tournament={record} canSchedule={role === 'owner'} canStart={role !== null} role={role} onSchedule={schedule} />;
   else if (section === 'table') body = <RealTournamentTable tournament={record} />;
   else if (section === 'stats') body = <RealTournamentStats tournament={record} />;
   else body = <Text muted>The knockout appears once matches are played.</Text>;

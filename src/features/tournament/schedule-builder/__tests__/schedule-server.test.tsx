@@ -11,6 +11,8 @@ import type { ScheduledMatch } from '../types';
 
 jest.mock('@/lib/supabase', () => ({ supabase: jest.requireActual('../../__fixtures__/supabase-fake').fake }));
 const mockOpenMatch = jest.fn();
+jest.mock('@/features/auth/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'me' } } }) }));
+jest.mock('expo-router', () => ({ useRouter: () => ({ push: jest.fn() }) }));
 jest.mock('@/features/match/use-match-routes', () => ({ useOpenMatch: () => mockOpenMatch }));
 
 const T = 'f5c00000-0000-4000-8000-000000000001';

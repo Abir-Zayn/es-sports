@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
+import { streamersKey } from '@/features/broadcast/data/fixture-streamers';
 import { supabase } from '@/lib/supabase';
 
 import { playerStatsKey } from '../data/player-stats-repository';
@@ -25,6 +26,9 @@ export function useTournamentMatchUpdates(tournamentId: string, scope = 'matches
           void client.invalidateQueries({ queryKey: standingsKey(tournamentId) });
           void client.invalidateQueries({ queryKey: playerStatsKey(tournamentId) });
         }, 300);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'fixture_streamers', filter: `tournament_id=eq.${tournamentId}` }, () => {
+        void client.invalidateQueries({ queryKey: streamersKey(tournamentId) });
       }).subscribe();
     return () => { if (timer) clearTimeout(timer); void supabase.removeChannel(channel); };
   }, [client, tournamentId, scope]);
