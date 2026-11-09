@@ -1,7 +1,7 @@
 # Live streaming test guide: a 4-team tournament with two phones
 
-Written 2026-11-10 for the first real test. Everything here is **untested on a device**: the code was written
-and unit tested without a phone or a local Supabase. Expect to find bugs, and note them down.
+Written 2026-11-10 for the first real test. Everything here is **untested on a device**. The SQL passed its tests on a WASM Postgres with stubbed Supabase
+schemas, and the app code has unit tests, but nothing has run on a phone or on Supabase itself. Expect to find bugs.
 
 ## What you need
 
@@ -16,7 +16,7 @@ and unit tested without a phone or a local Supabase. Expect to find bugs, and no
 
 1. **Apply the migrations** to the Supabase project (SQL editor or `supabase db push`), in order:
    `20261110000000_moderator_cap`, `20261110010000_demo_teams`, `20261110020000_fixture_streamers`.
-   Then run the SQL tests in `supabase/tests/moderator_cap.sql` if you can (they roll back).
+   Then paste `supabase/tests/moderator_cap.sql`, `fixture_streamers.sql` and `demo_teams.sql` into the SQL editor one at a time; each rolls back and ends with a `PASS` row.
 2. **Switch demo teams on** (test project only, never production):
    ```sql
    update public.app_flags set enabled = true where key = 'demo_data';

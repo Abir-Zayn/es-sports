@@ -51,6 +51,7 @@ declare
   f public.tournament_fixtures;
   v_role text;
   v_state text;
+  v_current uuid;
 begin
   select * into f from public.tournament_fixtures where id = p_fixture;
   if not found then raise exception 'Match not found' using errcode = 'P0002'; end if;
@@ -63,8 +64,11 @@ begin
   end if;
   select * into f from public.tournament_fixtures where id = p_fixture for update;
   if f.status <> 'scheduled' then raise exception 'This match is cancelled' using errcode = '22023'; end if;
-  select state into v_state from public.fixture_streamers where fixture_id = p_fixture for update;
+  select state, streamer_id into v_state, v_current from public.fixture_streamers where fixture_id = p_fixture for update;
   if v_state in ('live', 'ended') then raise exception 'The broadcast has already started' using errcode = 'ET010'; end if;
+  if v_role = 'moderator' and v_current is not null and v_current <> v_uid then
+    raise exception 'Another moderator is already the streamer; only the owner can change that' using errcode = '42501';
+  end if;
   insert into public.fixture_streamers (fixture_id, tournament_id, streamer_id, assigned_by)
   values (p_fixture, f.tournament_id, p_user, v_uid)
   on conflict (fixture_id) do update set streamer_id = excluded.streamer_id, assigned_by = excluded.assigned_by, assigned_at = now();

@@ -27,7 +27,7 @@ Entry template:
 - Streamer = tournament moderator (max 3), Facebook only, Android only. See `docs/tasks/live-broadcast.md` update block.
 
 **Open / next**
-- Nothing here has run on a device, and the three SQL migrations have **not been run** against any database (no local Postgres: the brew upgrade broke `postgresql@14`, which needs `brew reinstall postgresql@14`). Apply and test them first, with `docs/live-streaming-test-guide.md`.
+- Nothing here has run on a device. The three migrations and their SQL tests (`supabase/tests/moderator_cap.sql`, `fixture_streamers.sql`, `demo_teams.sql`) **PASS on PGlite (Postgres in WASM) with stubbed `auth` / `storage`**, after all 34 migrations applied. They have **not** been run on Supabase itself, so RLS, grants and Realtime are unchecked. Apply them to the test project and follow `docs/live-streaming-test-guide.md`. (Side effect found: the Homebrew upgrade broke `postgresql@14`; `brew reinstall postgresql@14` fixes it.)
 - Graphics are still the Phase 0 proof of concept.
 
 ---
