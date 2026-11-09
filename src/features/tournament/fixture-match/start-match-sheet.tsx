@@ -14,6 +14,7 @@ import { Sheet } from '../roster/components/sheet';
 import { fetchServerSquad, serverSquadKey } from '../squad/server/squad-server';
 import { scheduleKey } from '../schedule-builder/use-schedule-builder';
 import type { ScheduledMatch } from '../schedule-builder/types';
+import { autoPickXi } from './auto-pick';
 import { startFixtureMatch } from './start-fixture';
 import { XiPickerSheet } from './xi-picker-sheet';
 
@@ -51,6 +52,7 @@ export function StartMatchSheet({ tournamentId, match, playersPerSide, onClose }
         <Text accessibilityRole="alert">Could not load both squads.</Text>
         <Button label="Try again" variant="secondary" onPress={() => { void homeSquad.refetch(); void awaySquad.refetch(); }} />
       </View> : <>
+        <Button label="Auto-pick both XIs" variant="ghost" onPress={() => { setHome(autoPickXi(homeSquad.data!, playersPerSide)); setAway(autoPickXi(awaySquad.data!, playersPerSide)); }} />
         <Button label={`${homeSquad.data!.teamName}: ${home.length}/${playersPerSide}`} variant="secondary" onPress={() => setPicker('home')} />
         <Button label={`${awaySquad.data!.teamName}: ${away.length}/${playersPerSide}`} variant="secondary" onPress={() => setPicker('away')} />
         <Button label={`Scorer: ${scorer.name}`} variant="secondary" onPress={() => setPicker('scorer')} />
