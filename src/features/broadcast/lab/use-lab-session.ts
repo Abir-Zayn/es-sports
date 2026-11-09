@@ -15,7 +15,7 @@ type GoLive = { platform: StreamPlatform; preset: StreamPreset; destination: Des
  * Phase 0 session persistence (§8, device-local part): descriptor file + SecureStore destination, recovery
  * classification at mount, intent=ended written before every deliberate stop.
  */
-export function useLabSession(status: StreamStatus | null, log: (text: string) => void) {
+export function useLabSession(status: StreamStatus | null, log: (text: string) => void, matchId: string = LAB_MATCH_ID) {
   // Classified once at mount from the file + native status (both synchronous reads).
   const [initial] = useState(() => {
     const stored = readSession();
@@ -58,7 +58,7 @@ export function useLabSession(status: StreamStatus | null, log: (text: string) =
       else await clearDestination(platform);
       const now = Date.now();
       await start({
-        v: 1, matchId: LAB_MATCH_ID, sessionId: uuid.v4(), platform, destHost: destinationHost(destination.url), preset,
+        v: 1, matchId, sessionId: uuid.v4(), platform, destHost: destinationHost(destination.url), preset,
         graphicPackId: 'classic', graphic: 'scorebug', flashes: true, watchUrl: null, intent: 'live',
         nativeState: 'idle', startedAt: now, lastLiveAt: null, updatedAt: now, resumeCount: 0,
       }, destination);
@@ -67,7 +67,7 @@ export function useLabSession(status: StreamStatus | null, log: (text: string) =
     } finally {
       setBusy(false);
     }
-  }, [busy, start, log]);
+  }, [busy, start, log, matchId]);
 
   /** Same session id; graphics are rebuilt from data by the overlay, never from a saved bitmap. */
   const resume = useCallback(async () => {
