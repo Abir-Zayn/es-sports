@@ -111,7 +111,7 @@ begin
   end if;
 end $$;
 
--- f) The owner removes both teams. X keeps existing and 4 is notified; ownerless Y is deleted. Repeats are no-ops.
+-- f) The owner removes both teams; a removed team is deleted with its members (20261110060000). Repeats are no-ops.
 do $$
 declare t uuid := 'f6c00000-0000-4000-8000-000000000001';
 begin
@@ -121,13 +121,8 @@ begin
   perform public.remove_tournament_team(t, 'f6b00000-0000-4000-8000-00000000000b');
   reset role;
   if exists (select 1 from public.tournament_teams where tournament_id = t) then raise exception 'FAIL f: a team is still entered'; end if;
-  if not exists (select 1 from public.teams where id = 'f6b00000-0000-4000-8000-00000000000a')
-    or exists (select 1 from public.teams where id = 'f6b00000-0000-4000-8000-00000000000b') then
-    raise exception 'FAIL f: X must stay and Y must be deleted';
-  end if;
-  if (select count(*) from public.notifications where user_id = 'f6a00000-0000-4000-8000-000000000004'
-        and data ->> 'event' = 'team_removed') <> 1 then
-    raise exception 'FAIL f: the owner of X was not notified once';
+  if exists (select 1 from public.teams where id in ('f6b00000-0000-4000-8000-00000000000a', 'f6b00000-0000-4000-8000-00000000000b')) then
+    raise exception 'FAIL f: both removed teams must be deleted';
   end if;
 end $$;
 
