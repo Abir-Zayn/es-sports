@@ -32,8 +32,12 @@ declare
   u1 constant uuid := 'f7a00000-0000-4000-8000-000000000001';
   m uuid := gen_random_uuid();
 begin
-  -- the owner assigns moderator 2
+  -- by default moderator 3 scores, so cannot be the streamer until the owner gives the streaming duty
   perform pg_temp.as_user(1);
+  begin perform public.assign_fixture_streamer(f, u3); raise exception 'FAIL streamer without the duty'; exception when sqlstate '22023' then null; end;
+  perform public.set_moderator_duties('f7b00000-0000-4000-8000-000000000001', u3, true, true);
+
+  -- the owner assigns moderator 2
   perform public.assign_fixture_streamer(f, u2);
   if (select streamer_id from public.fixture_streamers where fixture_id = f) <> u2 then raise exception 'FAIL assign'; end if;
   if not exists (select 1 from public.notifications where user_id = u2 and data ->> 'event' = 'streamer_assigned') then raise exception 'FAIL notice'; end if;

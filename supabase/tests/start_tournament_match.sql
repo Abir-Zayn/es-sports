@@ -38,7 +38,7 @@ values ('f8d00000-0000-4000-8000-000000000003', 'f8c00000-0000-4000-8000-0000000
 set local role authenticated;
 do $$
 declare
-  f uuid := 'f8d00000-0000-4000-8000-000000000001'; scorer uuid := 'f8a00000-0000-4000-8000-000000000015';
+  f uuid := 'f8d00000-0000-4000-8000-000000000001'; scorer uuid := 'f8a00000-0000-4000-8000-000000000002'; -- the moderator: the scoring duty
   h uuid[]; a uuid[]; m uuid; offer uuid; code text;
 begin
   select array_agg(('f8a00000-0000-4000-8000-' || lpad(n::text, 12, '0'))::uuid order by n) into h from generate_series(3, 8) n;
@@ -59,13 +59,15 @@ begin
   code := null; begin perform public.start_tournament_fixture(f, scorer, a, h); exception when others then code := sqlstate; end;
   if code is distinct from '22023' then raise exception 'FAIL wrong squad: %', code; end if;
   code := null; begin perform public.start_tournament_fixture(f, '00000000-0000-4000-8000-000000000000', h, a); exception when others then code := sqlstate; end;
-  if code is distinct from '22023' then raise exception 'FAIL scorer: %', code; end if;
+  if code is distinct from 'ET012' then raise exception 'FAIL scorer: %', code; end if;
   reset role;
   update public.team_members set availability = 'injured' where profile_id = h[1];
   set local role authenticated;
   code := null; begin perform public.start_tournament_fixture(f, scorer, h, a); exception when others then code := sqlstate; end;
   if code is distinct from '22023' then raise exception 'FAIL availability: %', code; end if;
   reset role; update public.team_members set availability = 'available' where profile_id = h[1]; set local role authenticated;
+  -- the owner starts it; the moderator (scorer) scores, and the owner cannot
+  perform set_config('request.jwt.claims', '{"sub":"f8a00000-0000-4000-8000-000000000001","role":"authenticated"}', true);
   m := public.start_tournament_fixture(f, scorer, h, a);
   if m is distinct from public.start_tournament_fixture(f, scorer, h, a) then raise exception 'FAIL retry'; end if;
   if (select match_id from public.tournament_fixtures where id = f) is distinct from m then raise exception 'FAIL link'; end if;
@@ -75,7 +77,7 @@ begin
   if (select count(*) from public.match_scorers where match_id = m) <> 1 then raise exception 'FAIL scorer count'; end if;
   if not exists (select 1 from public.notifications where user_id = scorer and data ->> 'match_id' = m::text) then raise exception 'FAIL notice'; end if;
   set local role authenticated;
-  perform set_config('request.jwt.claims', '{"sub":"f8a00000-0000-4000-8000-000000000015","role":"authenticated"}', true);
+  perform set_config('request.jwt.claims', '{"sub":"f8a00000-0000-4000-8000-000000000002","role":"authenticated"}', true);
   if not public.can_score_match(m) then raise exception 'FAIL assigned scorer cannot score'; end if;
   offer := public.offer_scorer_handover(m, 'f8a00000-0000-4000-8000-000000000016');
   perform set_config('request.jwt.claims', '{"sub":"f8a00000-0000-4000-8000-000000000016","role":"authenticated"}', true);

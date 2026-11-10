@@ -49,8 +49,8 @@ begin
   if (select count(*) from public.tournament_squads where tournament_id = t) <> 24 then raise exception 'FAIL squad rows'; end if;
   if (select count(distinct name) from public.teams x join public.tournament_teams tt on tt.team_id = x.id where tt.tournament_id = t) <> 4 then raise exception 'FAIL names'; end if;
   if exists (select 1 from public.team_members m join public.tournament_teams tt on tt.team_id = m.team_id
-              where tt.tournament_id = t and m.role = 'owner' and m.profile_id <> 'f8a00000-0000-4000-8000-000000000001') then
-    raise exception 'FAIL the owner should own every demo team';
+              where tt.tournament_id = t and m.role in ('owner', 'admin')) then
+    raise exception 'FAIL a demo team should have no owner';
   end if;
 
   -- the squads are good enough to start a match from: first 6 players of each side, the owner scores
@@ -64,8 +64,11 @@ begin
     values (v_fixture, t, 1, 'League', 0, v_home, v_away, current_date, 600);
     select array_agg(profile_id) into v_home_xi from (select profile_id from public.tournament_squads where tournament_id = t and team_id = v_home limit 6) x;
     select array_agg(profile_id) into v_away_xi from (select profile_id from public.tournament_squads where tournament_id = t and team_id = v_away limit 6) x;
-    v_match := public.start_tournament_fixture(v_fixture, 'f8a00000-0000-4000-8000-000000000001', v_home_xi, v_away_xi);
+    v_match := public.start_tournament_fixture(v_fixture, 'f8a00000-0000-4000-8000-000000000002', v_home_xi, v_away_xi);
     if v_match is null or (select count(*) from public.match_players where match_id = v_match) <> 12 then raise exception 'FAIL starting a demo match'; end if;
+    if not exists (select 1 from public.fixture_streamers where fixture_id = v_fixture and streamer_id = 'f8a00000-0000-4000-8000-000000000002') then
+      raise exception 'FAIL the only streaming moderator should be assigned automatically';
+    end if;
     -- a scheduled fixture blocks clearing; drop it so the cleanup below can run
     update public.tournament_fixtures set match_id = null where id = v_fixture;
     delete from public.tournament_fixtures where id = v_fixture;
