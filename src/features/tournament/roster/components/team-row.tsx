@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
-import { AppBadge, Button, InitialsAvatar, Text } from '@/components/ui';
-import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { Button, InitialsAvatar, Text } from '@/components/ui';
+import { spacing, useThemedStyles, type Palette } from '@/theme';
 
 import type { Capabilities } from '../permissions';
 import type { RosterTeam } from '../types';
@@ -11,59 +11,30 @@ type Props = {
   maxSquad: number;
   caps: Capabilities;
   busy: boolean;
-  onInviteOwner: () => void;
-  onReinviteOwner: () => void;
-  onCancelInvite: () => void;
-  onShareInvite: () => void;
   onViewSquad: () => void;
   onDisband: () => void;
+  /** Published tournaments only: staff invite players to the team. */
+  onInvitePlayers?: () => void;
 };
 
-const fromServer = (team: RosterTeam) => team.ownedByMe !== undefined;
-
-function ownerLine(team: RosterTeam): string {
-  if (!team.owner) return team.ownedByMe ? 'You own this team' : 'No team owner yet';
-  return team.owner.status === 'pending' ? `Owner invite sent to ${team.owner.user.name}` : team.owner.status === 'declined' ? `${team.owner.user.name} declined the invitation` : `Owner: ${team.owner.user.name}`;
-}
-
-const ownerBadge = (team: RosterTeam) => (!team.owner ? (team.ownedByMe ? 'Yours' : 'Vacant') : team.owner.status === 'pending' ? 'Invite pending' : team.owner.status === 'declined' ? 'Declined' : 'Accepted');
-
-/** One team: its short-name badge, name, owner status, squad size, and what the viewer may do with it. */
-export function TeamRow({ team, maxSquad, caps, busy, onInviteOwner, onReinviteOwner, onCancelInvite, onShareInvite, onViewSquad, onDisband }: Props) {
-  const { colors } = useTheme();
+/** One team: its short-name badge, name, and what the viewer may do with it. Teams have no owner; the staff run them. */
+export function TeamRow({ team, maxSquad, caps, busy, onViewSquad, onDisband, onInvitePlayers }: Props) {
   const styles = useThemedStyles(createStyles);
-  const canInvite = caps.manageTeams && (!team.owner || team.owner.status === 'declined');
-  const pending = caps.manageTeams && team.owner?.status === 'pending';
   // A server team's squad is read on its own screen, so only an in-memory team shows its size here.
-  const squad = !fromServer(team);
-  const accepted = team.owner?.status === 'accepted';
+  const line = team.ownedByMe === undefined ? `Run by the tournament staff · ${team.players.length}/${maxSquad} players` : 'Run by the tournament staff';
   return (
     <View style={styles.row}>
       <View style={styles.top}>
         <InitialsAvatar label={team.short} size={40} shape="square" />
         <View style={styles.names}>
-          <View style={styles.nameLine}>
-            <Text style={styles.name} numberOfLines={1}>
-              {team.name}
-            </Text>
-            <AppBadge label={ownerBadge(team)} backgroundColor={accepted ? colors.primarySoft : colors.surfaceRaised} color={accepted ? colors.link : colors.textMuted} />
-          </View>
-          <Text style={[styles.owner, accepted && styles.ownerSet]} numberOfLines={1}>
-            {squad ? `${ownerLine(team)} · ${team.players.length}/${maxSquad} players` : ownerLine(team)}
-          </Text>
+          <Text style={styles.name} numberOfLines={1}>{team.name}</Text>
+          <Text style={styles.line} numberOfLines={1}>{line}</Text>
         </View>
       </View>
       <View style={styles.actions}>
         <Button label="Squad" variant="secondary" size="compact" accessibilityLabel={`View ${team.name} squad`} onPress={onViewSquad} />
-        {canInvite ? (
-          <Button label={team.owner?.status === 'declined' ? 'Invite someone else' : 'Invite owner'} size="compact" disabled={busy} accessibilityLabel={`Invite owner for ${team.name}`} onPress={onInviteOwner} />
-        ) : null}
-        {canInvite && team.owner?.status === 'declined' ? <Button label="Re-invite" variant="secondary" size="compact" disabled={busy} accessibilityLabel={`Re-invite ${team.owner.user.name}`} onPress={onReinviteOwner} /> : null}
-        {pending ? (
-          <Button label="Share invite" variant="secondary" size="compact" accessibilityLabel={`Share owner invite for ${team.name}`} onPress={onShareInvite} />
-        ) : null}
-        {pending && caps.settleInvites !== false ? (
-          <Button label="Cancel invite" variant="secondary" size="compact" disabled={busy} accessibilityLabel={`Cancel owner invite for ${team.name}`} onPress={onCancelInvite} />
+        {caps.manageTeams && onInvitePlayers ? (
+          <Button label="Invite players" size="compact" disabled={busy} accessibilityLabel={`Invite players to ${team.name}`} onPress={onInvitePlayers} />
         ) : null}
         {caps.disbandTeams ? (
           <Button label="Disband" variant="ghost" size="compact" disabled={busy} accessibilityLabel={`Disband ${team.name}`} onPress={onDisband} />
@@ -78,9 +49,7 @@ const createStyles = (colors: Palette) =>
     row: { gap: spacing.sm, paddingVertical: spacing.md },
     top: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
     names: { flex: 1, minWidth: 0, gap: 2 },
-    nameLine: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-    name: { flexShrink: 1, fontSize: 15, lineHeight: 20, fontWeight: '700' },
-    owner: { fontSize: 12, lineHeight: 16, color: colors.textMuted },
-    ownerSet: { color: colors.link, fontWeight: '600' },
+    name: { fontSize: 15, lineHeight: 20, fontWeight: '700' },
+    line: { fontSize: 12, lineHeight: 16, color: colors.textMuted },
     actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginLeft: 52 },
   });

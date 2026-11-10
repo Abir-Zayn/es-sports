@@ -12,18 +12,14 @@ type Props = {
   caps: Capabilities;
   busy: boolean;
   onCreate: () => void;
-  onInviteOwner: (team: RosterTeam) => void;
-  onReinviteOwner: (team: RosterTeam) => void;
-  onCancelInvite: (team: RosterTeam) => void;
-  onShareInvite: (team: RosterTeam) => void;
   onViewSquad: (team: RosterTeam) => void;
   onDisband: (team: RosterTeam) => void;
-  /** Enters a team the viewer already owns or administers. Only published tournaments offer it. */
-  onAddOwn?: () => void;
+  /** Published tournaments only: staff invite players to a team. */
+  onInvitePlayers?: (team: RosterTeam) => void;
 };
 
 /** The tournament's teams, up to its team count, with hairlines between them and a button to add one. */
-export function TeamsSection({ roster, caps, busy, onCreate, onInviteOwner, onReinviteOwner, onCancelInvite, onShareInvite, onViewSquad, onDisband, onAddOwn }: Props) {
+export function TeamsSection({ roster, caps, busy, onCreate, onViewSquad, onDisband, onInvitePlayers }: Props) {
   const styles = useThemedStyles(createStyles);
   const full = roster.teams.length >= roster.maxTeams;
   return (
@@ -37,7 +33,7 @@ export function TeamsSection({ roster, caps, busy, onCreate, onInviteOwner, onRe
         </Text>
       </View>
       <Text variant="caption" muted>
-        Each team gets one owner. Once they accept, they invite the players and pick one team moderator.
+        Teams have no owner: you and the moderators run them. Create a team, then invite its players.
       </Text>
       {roster.teams.length === 0 ? (
         <Text muted style={styles.empty}>
@@ -52,12 +48,9 @@ export function TeamsSection({ roster, caps, busy, onCreate, onInviteOwner, onRe
                 maxSquad={roster.squadRules.maxSquad}
                 caps={caps}
                 busy={busy}
-                onInviteOwner={() => onInviteOwner(team)}
-                onReinviteOwner={() => onReinviteOwner(team)}
-                onCancelInvite={() => onCancelInvite(team)}
-                onShareInvite={() => onShareInvite(team)}
                 onViewSquad={() => onViewSquad(team)}
                 onDisband={() => onDisband(team)}
+                onInvitePlayers={onInvitePlayers ? () => onInvitePlayers(team) : undefined}
               />
             </View>
           ))}
@@ -66,7 +59,6 @@ export function TeamsSection({ roster, caps, busy, onCreate, onInviteOwner, onRe
       {caps.manageTeams ? (
         <Button label={full ? 'All teams added' : 'Create team'} disabled={busy || full} onPress={onCreate} />
       ) : null}
-      {caps.manageTeams && onAddOwn && !full ? <Button label="Add my team" variant="secondary" disabled={busy} onPress={onAddOwn} /> : null}
     </View>
   );
 }

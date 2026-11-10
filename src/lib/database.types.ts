@@ -895,18 +895,24 @@ export type Database = {
       tournament_staff: {
         Row: {
           added_at: string
+          can_score: boolean
+          can_stream: boolean
           role: string
           tournament_id: string
           user_id: string
         }
         Insert: {
           added_at?: string
+          can_score?: boolean
+          can_stream?: boolean
           role: string
           tournament_id: string
           user_id: string
         }
         Update: {
           added_at?: string
+          can_score?: boolean
+          can_stream?: boolean
           role?: string
           tournament_id?: string
           user_id?: string
@@ -1270,6 +1276,10 @@ export type Database = {
       }
       set_fixture_broadcast_state: {
         Args: { p_fixture: string; p_state: string }
+        Returns: undefined
+      }
+      set_moderator_duties: {
+        Args: { p_can_score: boolean; p_can_stream: boolean; p_tournament: string; p_user: string }
         Returns: undefined
       }
       seed_demo_teams: {

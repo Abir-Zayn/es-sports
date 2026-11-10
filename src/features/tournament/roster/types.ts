@@ -10,7 +10,7 @@ export type InviteStatus = 'pending' | 'accepted';
 export type UserSummary = { id: string; name: string; area: string | null; avatarUrl: string | null };
 
 /** A moderator who declined stays listed (server tournaments only) so the owner can re-invite them. */
-export type StaffMember = { user: UserSummary; role: TournamentRole; status: InviteStatus | 'declined' };
+export type StaffMember = { user: UserSummary; role: TournamentRole; status: InviteStatus | 'declined'; canStream?: boolean; canScore?: boolean };
 
 /** A team's owner, once invited. They later invite the players and one team moderator. */
 export type TeamOwnerSlot = { user: UserSummary; status: InviteStatus | 'declined'; invitationId?: string };

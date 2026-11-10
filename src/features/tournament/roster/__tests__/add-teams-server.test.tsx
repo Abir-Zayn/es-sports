@@ -44,7 +44,7 @@ function seed() {
     ],
     error: null,
   };
-  fake.results.invitations = { data: [{ id: 'i1', kind: 'team_owner', team_id: 'c', to_user: 'u7', from_user: 'me', status: 'pending', expires_at: '2999-01-01', profiles: profile('Nayeem') }], error: null };
+  fake.results.invitations = { data: [], error: null };
 }
 
 async function show() {
@@ -60,55 +60,46 @@ describe('teams and staff of a published tournament', () => {
     await show();
     expect(screen.getByText('Port City Cup')).toBeTruthy();
     expect(screen.getByText('3/4 added')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Add my team' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Create schedule' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Disband Alpha' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'View Alpha squad' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Cancel owner invite/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Add my team' })).toBeNull();
+    expect(screen.queryByText(/Invite owner/)).toBeNull();
     expect(screen.queryByText('Lock rosters')).toBeNull();
   });
 
-  it('lets me invite an owner only for a team I own that has no request waiting', async () => {
+  it('has no team owner: every team is run by the staff, who invite its players', async () => {
     await show();
-    expect(screen.getByRole('button', { name: 'Invite owner for Alpha' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Invite owner for Bravo' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Invite owner for Charlie' })).toBeNull();
-    expect(screen.getByText('Owner invite sent to Nayeem')).toBeTruthy();
-    expect(screen.getByText('No team owner yet')).toBeTruthy();
+    expect(screen.getAllByText('Run by the tournament staff')).toHaveLength(3);
+    expect(screen.getByRole('button', { name: 'Invite players to Alpha' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Invite players to Charlie' })).toBeTruthy();
   });
 
-  it('finds someone who already owns or plays for another team when picking an owner', async () => {
+  it('finds a person and sends them a player invitation for the team', async () => {
     const rafi = '11111111-1111-4111-8111-111111111111';
-    fake.results.team_members = {
-      data: [
-        { team_id: 'b', profile_id: rafi, profiles: profile('Rafi') },
-      ],
-      error: null,
-    };
     await show();
-    await fireEvent.press(screen.getByRole('button', { name: 'Invite owner for Alpha' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Invite players to Alpha' }));
     fake.results.profiles = { data: [{ id: rafi, full_name: 'Rafi Khan', area: null, avatar_url: null }], error: null };
     await fireEvent.changeText(screen.getByLabelText('Search players by name'), 'Rafi');
-    expect(await screen.findByRole('button', { name: 'Invite Rafi Khan' })).toBeTruthy();
-    // Rafi owns Bravo, yet the search must not leave him out.
-    expect(JSON.stringify(fake.calls('profiles', 'not'))).not.toContain(rafi);
+    await fireEvent.press(await screen.findByRole('button', { name: 'Invite Rafi Khan' }));
+    await waitFor(() => expect(fake.rpc).toHaveBeenCalledWith('send_team_player_invite', { p_team: 'a', p_to: rafi }));
   });
 
-  it('shows a declined invitation and sends a new request to the same person', async () => {
-    fake.results.invitations = { data: [{ id: 'old', kind: 'team_owner', team_id: 'c', to_user: 'u7', from_user: 'me', status: 'declined', expires_at: '2999-01-01', profiles: profile('Nayeem') }], error: null };
-    await show();
-    expect(screen.getByText('Nayeem declined the invitation')).toBeTruthy();
-    expect(screen.getByText('Invite someone else')).toBeTruthy();
-    await fireEvent.press(screen.getByRole('button', { name: 'Re-invite Nayeem' }));
-    await waitFor(() => expect(fake.rpc).toHaveBeenCalledWith('send_team_owner_invite', { p_tournament: T, p_team: 'c', p_to: 'u7' }));
-  });
-
-  it('removes a team after the owner confirms', async () => {
+  it('removes a team after the owner confirms, and says the team is deleted', async () => {
     await show();
     await fireEvent.press(screen.getByRole('button', { name: 'Disband Charlie' }));
-    expect(await screen.findByText(/stays with its owner/)).toBeTruthy();
+    expect(await screen.findByText(/be deleted, with its squad/)).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Disband team' }));
     await waitFor(() => expect(fake.rpc).toHaveBeenCalledWith('remove_tournament_team', { p_tournament: T, p_team: 'c' }));
+  });
+
+  it('lets the owner change what a moderator does on match day', async () => {
+    fake.results.tournament_staff = { data: [{ role: 'owner', user_id: 'me', can_stream: false, can_score: false, profiles: profile('Organiser') },
+      { role: 'moderator', user_id: 'u8', can_stream: true, can_score: false, profiles: profile('Tanvir') }], error: null };
+    await show();
+    expect(screen.getByRole('button', { name: 'Streaming duty for Tanvir' })).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Scoring duty for Tanvir' }));
+    await waitFor(() => expect(fake.rpc).toHaveBeenCalledWith('set_moderator_duties', { p_tournament: T, p_user: 'u8', p_can_stream: true, p_can_score: true }));
   });
 
   it('removes a moderator, and re-invites one who declined', async () => {
@@ -121,33 +112,5 @@ describe('teams and staff of a published tournament', () => {
     await waitFor(() => expect(fake.rpc).toHaveBeenCalledWith('remove_tournament_moderator', { p_tournament: T, p_user: 'u8' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Re-invite Mitu' }));
     await waitFor(() => expect(fake.rpc).toHaveBeenCalledWith('send_tournament_moderator_invite', { p_tournament: T, p_to: 'u9' }));
-  });
-
-  it('opens the list of my own teams, which says when there is none to add, and can start a new team', async () => {
-    await show();
-    await fireEvent.press(screen.getByRole('button', { name: 'Add my team' }));
-    expect(await screen.findByText('You have no other team to add.')).toBeTruthy();
-    await fireEvent.press(screen.getByRole('button', { name: 'Create a new team' }));
-    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/team/create'));
-  });
-
-  it('adds one of my teams through the server', async () => {
-    await show();
-    fake.results.team_members = { data: [{ role: 'owner', teams: team('d', 'Delta') }, { role: 'admin', teams: team('a', 'Alpha') }, { role: 'player', teams: team('e', 'Echo') }], error: null };
-    await fireEvent.press(screen.getByRole('button', { name: 'Add my team' }));
-    await fireEvent.press(await screen.findByRole('button', { name: 'Add Delta' }));
-    await waitFor(() => expect(fake.rpc).toHaveBeenCalledWith('add_tournament_team', { p_tournament: T, p_team: 'd' }));
-    // Alpha is already in, and I am only a player in Echo.
-    expect(screen.queryByRole('button', { name: 'Add Alpha' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Add Echo' })).toBeNull();
-  });
-
-  it('says the tournament is full when the server refuses', async () => {
-    await show();
-    fake.results.team_members = { data: [{ role: 'owner', teams: team('d', 'Delta') }], error: null };
-    fake.rpcResult = { data: null, error: { code: 'ET001', message: 'full' } };
-    await fireEvent.press(screen.getByRole('button', { name: 'Add my team' }));
-    await fireEvent.press(await screen.findByRole('button', { name: 'Add Delta' }));
-    expect(await screen.findByText(/already has all its teams/)).toBeTruthy();
   });
 });

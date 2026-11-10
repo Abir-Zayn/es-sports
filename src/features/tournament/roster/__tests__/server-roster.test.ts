@@ -90,19 +90,26 @@ describe('changes to a published tournament', () => {
     expect(roster.server).toBe(true);
   });
 
-  it('invites a team owner through the server', async () => {
-    await server.inviteTeamOwner(T, 'me', 'c', { id: 'u7', name: 'Nayeem', area: null, avatarUrl: null });
-    expect(fake.rpc).toHaveBeenCalledWith('send_team_owner_invite', { p_tournament: T, p_team: 'c', p_to: 'u7' });
+  it('invites a player to a team through the server', async () => {
+    await server.invitePlayer(T, 'me', 'a', { id: 'u7', name: 'Nayeem', area: null, avatarUrl: null });
+    expect(fake.rpc).toHaveBeenCalledWith('send_team_player_invite', { p_team: 'a', p_to: 'u7' });
   });
 
   it.each([
-    ['EI002', /already pending/], ['EI003', /already has an owner/], ['42501', /not allowed/],
-  ])('says why a request was refused (%s)', async (code, message) => {
+    ['EI002', /already pending/], ['42501', /not allowed/], ['ET002', /already plays for another team/],
+  ])('says why a player invitation was refused (%s)', async (code, message) => {
     fake.rpcResult = { data: null, error: { code, message: 'raw db text' } };
-    const failure = await server.inviteTeamOwner(T, 'me', 'c', me).catch((error: unknown) => error);
+    const failure = await server.invitePlayer(T, 'me', 'a', me).catch((error: unknown) => error);
     expect(failure).toBeInstanceOf(RosterError);
     expect((failure as Error).message).toMatch(message);
     expect((failure as Error).message).not.toContain('raw db text');
+  });
+
+  it('lets the owner set a moderator\'s duties and says why the server refuses', async () => {
+    await server.setModeratorDuties(T, 'me', 'u8', true, false);
+    expect(fake.rpc).toHaveBeenCalledWith('set_moderator_duties', { p_tournament: T, p_user: 'u8', p_can_stream: true, p_can_score: false });
+    fake.rpcResult = { data: null, error: { code: '22023', message: 'raw db text' } };
+    await expect(server.setModeratorDuties(T, 'me', 'u8', false, false)).rejects.toThrow(/Check the details/);
   });
 
   it('creates a new team with one id, so a retry cannot add two', async () => {
@@ -112,13 +119,6 @@ describe('changes to a published tournament', () => {
       ['create_tournament_team', 'team-d'], ['create_tournament_team', 'team-d'],
     ]);
     expect(fake.rpc.mock.calls[0][1]).toMatchObject({ p_name: 'Delta', p_short_name: 'DEL', p_tone: 'neutral' });
-  });
-
-  it('shows the full-tournament message and does not refetch the roster', async () => {
-    fake.rpcResult = { data: null, error: { code: 'ET001', message: 'full' } };
-    const before = fake.queries.length;
-    await expect(server.addOwnTeam(T, 'me', 'a')).rejects.toThrow('already has all its teams');
-    expect(fake.queries.length).toBe(before);
   });
 
   it('refuses the changes the server does not store yet', async () => {

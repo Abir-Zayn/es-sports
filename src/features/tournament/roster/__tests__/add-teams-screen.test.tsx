@@ -58,26 +58,19 @@ describe('add teams screen', () => {
     expect(screen.getByRole('button', { name: 'Cancel invite for Rafi Hasan' })).toBeTruthy();
   });
 
-  it('creates a team, invites its owner, then disbands it after confirming', async () => {
+  it('creates a team with no owner, then disbands it after confirming', async () => {
     await show();
     await fireEvent.press(screen.getByRole('button', { name: 'Create team' }));
     await fireEvent.changeText(screen.getByLabelText('Team name'), 'Chattogram Strikers');
     await fireEvent.press(screen.getAllByRole('button', { name: 'Create team' }).at(-1)!);
     expect(await screen.findByText('Chattogram Strikers')).toBeTruthy();
-    expect(screen.getByText('No team owner yet · 0/16 players')).toBeTruthy();
-    expect(screen.getByText('Vacant')).toBeTruthy();
-
-    await fireEvent.press(screen.getByRole('button', { name: 'Invite owner for Chattogram Strikers' }));
-    expect(await screen.findByText('Suggested players')).toBeTruthy();
-    expect(await screen.findByRole('button', { name: 'Invite Nayeem Islam' })).toBeTruthy();
-    await searchAndInvite('Nayeem Islam');
-    expect(await screen.findByText('Owner invite sent to Nayeem Islam · 0/16 players')).toBeTruthy();
-    expect(screen.getByText('Invite pending')).toBeTruthy();
+    expect(screen.getByText('Run by the tournament staff · 0/16 players')).toBeTruthy();
+    expect(screen.queryByText(/Invite owner/)).toBeNull();
 
     await fireEvent.press(screen.getByRole('button', { name: 'Disband Chattogram Strikers' }));
     expect(screen.getByText(/will be removed from the tournament/)).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Disband team' }));
-    await waitFor(() => expect(screen.queryByText('Invite pending')).toBeNull());
+    await waitFor(() => expect(screen.queryByText('Chattogram Strikers')).toBeNull());
     expect(screen.getByText('No teams yet.')).toBeTruthy();
   });
 

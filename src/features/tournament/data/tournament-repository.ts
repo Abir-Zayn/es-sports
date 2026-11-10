@@ -14,7 +14,7 @@ export type TournamentRecord = {
 };
 export type MyTournament = TournamentRecord & { myRole: TournamentRole };
 export type PersonRecord = { id: string; name: string; area: string | null; avatarUrl: string | null };
-export type StaffRecord = { user: PersonRecord; role: TournamentRole };
+export type StaffRecord = { user: PersonRecord; role: TournamentRole; canStream: boolean; canScore: boolean };
 /** A team in a tournament, with who owns it now. */
 export type EnteredTeam = { team: TeamRecord; owner: PersonRecord | null };
 
@@ -61,10 +61,10 @@ export async function fetchMyTournaments(userId: string): Promise<MyTournament[]
 }
 
 export async function fetchTournamentStaff(id: string): Promise<StaffRecord[]> {
-  const { data, error } = await traceApi('tournament.staff', { id }, () => supabase.from('tournament_staff').select('role, user_id, added_at, profiles(full_name, area, avatar_url)')
+  const { data, error } = await traceApi('tournament.staff', { id }, () => supabase.from('tournament_staff').select('role, user_id, added_at, can_stream, can_score, profiles(full_name, area, avatar_url)')
     .eq('tournament_id', id).order('added_at'));
   if (error) throw toTournamentError(error);
-  return (data ?? []).map((row) => ({ user: toPerson(row.user_id, row.profiles), role: row.role === 'owner' ? 'owner' : 'moderator' }));
+  return (data ?? []).map((row) => ({ user: toPerson(row.user_id, row.profiles), role: row.role === 'owner' ? 'owner' : 'moderator', canStream: row.can_stream, canScore: row.can_score }));
 }
 
 /** The teams entered, in the order they joined, each with its current owner. */

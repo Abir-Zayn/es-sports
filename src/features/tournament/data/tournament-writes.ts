@@ -61,3 +61,11 @@ export async function addTournamentTeam(tournamentId: string, teamId: string): P
   const { error } = await traceApi('tournament.addTeam', { tournamentId, teamId }, () => supabase.rpc('add_tournament_team', { p_tournament: tournamentId, p_team: teamId }));
   if (error) throw toTournamentError(error);
 }
+
+/** The owner gives a moderator the streaming duty, the scoring duty, both or neither. Someone must still do each. */
+export async function setModeratorDuties(tournamentId: string, userId: string, canStream: boolean, canScore: boolean): Promise<void> {
+  const { error } = await traceApi('tournament.setDuties', { tournamentId, userId, canStream, canScore }, () => supabase.rpc('set_moderator_duties', {
+    p_tournament: tournamentId, p_user: userId, p_can_stream: canStream, p_can_score: canScore,
+  }));
+  if (error) throw toTournamentError(error);
+}

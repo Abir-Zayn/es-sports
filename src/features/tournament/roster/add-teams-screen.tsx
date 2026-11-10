@@ -9,7 +9,6 @@ import { searchPlayers, suggestPlayers } from '@/features/match/friendly/search-
 import { isUuid } from '@/features/scoring/data/uuid';
 import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import { AddOwnTeamSheet } from './components/add-own-team-sheet';
 import { ConfirmSheet } from './components/confirm-sheet';
 import { CreateTeamSheet } from './components/create-team-sheet';
 import { RegistrationSection } from './components/registration-section';
@@ -20,16 +19,12 @@ import { TeamsSection } from './components/teams-section';
 import { UserSearchSheet } from './components/user-search-sheet';
 import { capabilitiesOf, roleIn, serverCapabilities } from './permissions';
 import { repoFor } from './roster-source';
-import { sampleUsers } from './sample-users';
 import { parseSetup, type SetupParams } from './setup';
-import { ownerInviteMessage, shareText } from './share-invite';
 import type { RosterTeam } from './types';
 import { rosterErrorText, useMe, useRoster } from './use-roster';
 import { useRosterActions } from './use-roster-actions';
 
-type OpenSheet = { kind: 'moderator' } | { kind: 'create-team' } | { kind: 'add-own' } | { kind: 'team-owner'; team: RosterTeam } | { kind: 'disband'; team: RosterTeam } | { kind: 'lock' } | null;
-
-const suggestSamplePlayers = async (excludeIds: string[]) => sampleUsers.filter((user) => !excludeIds.includes(user.id)).slice(0, 20);
+type OpenSheet = { kind: 'moderator' } | { kind: 'create-team' } | { kind: 'team-players'; team: RosterTeam } | { kind: 'disband'; team: RosterTeam } | { kind: 'lock' } | null;
 
 /** Staff, teams and registration of the tournament being set up. What each person may change depends on their role. */
 export function AddTeamsScreen() {
@@ -45,7 +40,7 @@ export function AddTeamsScreen() {
   const roster = useRoster(tournamentId, me, parseSetup(params), repo);
   const actions = useRosterActions(tournamentId, me.id, repo);
   const [sheet, setSheet] = useState<OpenSheet>(null);
-  const { busy, inviteModerator, inviteOwner, createTeam, disband, lock } = actions;
+  const { busy, inviteModerator, invitePlayer, createTeam, disband, lock } = actions;
 
   function open(next: OpenSheet) {
     actions.reset();
@@ -59,12 +54,7 @@ export function AddTeamsScreen() {
   const role = data ? roleIn(data, me.id) : null;
   const caps = data?.server ? serverCapabilities(capabilitiesOf(role)) : capabilitiesOf(role);
   const subtitle = data?.tournamentName ?? params.name;
-  // A moderator search leaves out current staff. An owner search leaves out only yourself and that team's own owner or
-  // waiting invitee: someone who owns or played for another team can still own this one.
   const staffIds = data ? data.staff.filter((m) => m.status !== 'declined').map((m) => m.user.id) : [];
-  const ownerIds = sheet?.kind === 'team-owner' ? [me.id] : [];
-  const shareInvite = (team: RosterTeam) =>
-    void shareText(ownerInviteMessage({ fromName: me.name, teamName: team.name, tournamentName: data?.tournamentName ?? '' }));
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
@@ -86,9 +76,9 @@ export function AddTeamsScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}>
-          {actions.inlineError || (sheet === null && (inviteOwner.error || inviteModerator.error)) ? (
+          {actions.inlineError || (sheet === null && (invitePlayer.error || inviteModerator.error)) ? (
             <Text accessibilityRole="alert" style={styles.error}>
-              {rosterErrorText(actions.inlineError ?? inviteOwner.error ?? inviteModerator.error)}
+              {rosterErrorText(actions.inlineError ?? invitePlayer.error ?? inviteModerator.error)}
             </Text>
           ) : null}
           <RegistrationSection
@@ -110,19 +100,16 @@ export function AddTeamsScreen() {
             onInvite={() => open({ kind: 'moderator' })}
             onRemove={(member) => actions.removeModerator.mutate(member.user.id)}
             onReinvite={(member) => inviteModerator.mutate(member.user)}
+            onSetDuties={data.server ? (member, canStream, canScore) => actions.setDuties.mutate({ userId: member.user.id, canStream, canScore }) : undefined}
           />
           <TeamsSection
             roster={data}
             caps={caps}
             busy={busy}
             onCreate={() => open({ kind: 'create-team' })}
-            onInviteOwner={(team) => open({ kind: 'team-owner', team })}
-            onReinviteOwner={(team) => { if (team.owner?.status === 'declined') inviteOwner.mutate({ teamId: team.id, user: team.owner.user }); }}
-            onCancelInvite={(team) => actions.cancelOwner.mutate(team.id)}
-            onShareInvite={shareInvite}
             onViewSquad={viewSquad}
             onDisband={(team) => open({ kind: 'disband', team })}
-            onAddOwn={data.server ? () => open({ kind: 'add-own' }) : undefined}
+            onInvitePlayers={data.server ? (team) => open({ kind: 'team-players', team }) : undefined}
           />
           <ScheduleSection caps={caps} busy={busy} teamCount={data.teams.length}
             onOpen={() => router.push(data.server ? { pathname: '/tournament/schedule', params: { tournamentId } } : '/tournament/schedule')} />
@@ -130,30 +117,22 @@ export function AddTeamsScreen() {
       )}
 
       <UserSearchSheet
-        visible={sheet?.kind === 'moderator' || sheet?.kind === 'team-owner'}
-        title={sheet?.kind === 'team-owner' ? `Owner for ${sheet.team.name}` : 'Invite moderator'}
+        visible={sheet?.kind === 'moderator' || sheet?.kind === 'team-players'}
+        title={sheet?.kind === 'team-players' ? `Invite players to ${sheet.team.name}` : 'Invite moderator'}
         hint={
-          sheet?.kind === 'team-owner'
-            ? 'The owner runs the team: they invite the players and pick one team moderator.'
-            : 'A moderator helps you add teams and invite team owners.'
+          sheet?.kind === 'team-players'
+            ? 'The player gets an invitation and joins the team when they accept.'
+            : 'One moderator streams the match and the other scores it. A single moderator does both.'
         }
-        excludeIds={sheet?.kind === 'team-owner' ? ownerIds : staffIds}
+        excludeIds={staffIds}
         search={data?.server ? searchPlayers : undefined}
-        suggest={sheet?.kind === 'team-owner' ? (data?.server ? suggestPlayers : suggestSamplePlayers) : undefined}
-        inviting={inviteModerator.isPending || inviteOwner.isPending}
-        error={inviteModerator.isError || inviteOwner.isError ? rosterErrorText(inviteModerator.error ?? inviteOwner.error) : null}
+        suggest={sheet?.kind === 'team-players' && data?.server ? suggestPlayers : undefined}
+        inviting={inviteModerator.isPending || invitePlayer.isPending}
+        error={inviteModerator.isError || invitePlayer.isError ? rosterErrorText(inviteModerator.error ?? invitePlayer.error) : null}
         onInvite={(user) => {
-          if (sheet?.kind === 'team-owner') inviteOwner.mutate({ teamId: sheet.team.id, user }, { onSuccess: close });
+          if (sheet?.kind === 'team-players') invitePlayer.mutate({ teamId: sheet.team.id, user }, { onSuccess: close });
           else inviteModerator.mutate(user, { onSuccess: close });
         }}
-        onClose={close}
-      />
-      <AddOwnTeamSheet
-        visible={sheet?.kind === 'add-own'}
-        tournamentId={tournamentId}
-        userId={me.id}
-        takenIds={data?.teams.map((t) => t.id) ?? []}
-        onCreateTeam={() => { close(); router.push('/team/create'); }}
         onClose={close}
       />
       <CreateTeamSheet
@@ -170,8 +149,8 @@ export function AddTeamsScreen() {
           sheet?.kind !== 'disband'
             ? ''
             : data?.server
-              ? `${sheet.team.name} will leave the tournament and any owner request still waiting is cancelled. The team itself stays with its owner; a team made here with no owner yet is deleted.`
-              : `${sheet.team.name} will be removed from the tournament, along with its owner and players. This cannot be undone.`
+              ? `${sheet.team.name} will leave the tournament and be deleted, with its squad. This cannot be undone.`
+              : `${sheet.team.name} will be removed from the tournament, along with its players. This cannot be undone.`
         }
         confirmLabel="Disband team"
         busy={disband.isPending}

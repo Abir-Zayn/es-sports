@@ -1,7 +1,7 @@
 // The roster of a real tournament, read from and written to the server. Same function shapes as the in-memory
 // repository, so the screen and hooks do not care which one runs. Only what the server stores is supported:
 // staff, teams, owner and moderator requests, and removing staff or teams. The rest refuses with a plain message.
-import { cancelInvitation, InvitationError, sendModeratorInvite, sendTeamOwnerInvite } from '@/features/invitations';
+import { InvitationError, sendModeratorInvite, sendTeamPlayerInvite } from '@/features/invitations';
 import { traceApi } from '@/lib/api-log';
 import { localEventId } from '@/features/scoring/local-id';
 import { supabase } from '@/lib/supabase';
@@ -10,7 +10,7 @@ import {
   fetchTournament, fetchTournamentStaff, fetchTournamentTeams, toPerson, type PersonRecord, type StaffRecord,
 } from '../data/tournament-repository';
 import { tournamentErrorText } from '../data/tournament-errors';
-import { addTournamentTeam, createTournamentTeam, removeTournamentModerator, removeTournamentTeam } from '../data/tournament-writes';
+import { createTournamentTeam, removeTournamentModerator, removeTournamentTeam, setModeratorDuties as setDuties } from '../data/tournament-writes';
 import { RosterError } from './roster-store';
 import type { NewTeam, Roster, RosterTeam, StaffMember, TeamOwnerSlot, UserSummary } from './types';
 
@@ -28,7 +28,7 @@ async function pendingInvites(tournamentId: string, meId: string): Promise<Pendi
 }
 
 function staffOf(staff: StaffRecord[], pending: PendingInvite[]): StaffMember[] {
-  const accepted = staff.map((member): StaffMember => ({ user: toUser(member.user), role: member.role, status: 'accepted' }));
+  const accepted = staff.map((member): StaffMember => ({ user: toUser(member.user), role: member.role, status: 'accepted', canStream: member.canStream, canScore: member.canScore }));
   // Pending requests sort before declined ones, so a person's first request here decides: waiting, or declined and
   // ready to re-send. Staff and people already listed are skipped.
   const seen = new Set(staff.map((member) => member.user.id));
@@ -69,7 +69,7 @@ export function toRosterError(error: unknown): RosterError {
   if (error instanceof RosterError) return error;
   // Sending: EI003 means the sender is not the team's owner (the invitation text speaks to the recipient).
   if (error instanceof InvitationError) {
-    return new RosterError(error.code === 'EI003' ? 'This team already has an owner or can no longer accept this invitation.' : error.message);
+    return new RosterError(error.message);
   }
   return new RosterError(tournamentErrorText(error));
 }
@@ -86,16 +86,17 @@ async function change(tournamentId: string, actorId: string, run: () => Promise<
 export const inviteModerator = (tournamentId: string, actorId: string, user: UserSummary) =>
   change(tournamentId, actorId, () => sendModeratorInvite(tournamentId, user.id));
 
-export const inviteTeamOwner = (tournamentId: string, actorId: string, teamId: string, user: UserSummary) =>
-  change(tournamentId, actorId, () => sendTeamOwnerInvite(tournamentId, teamId, user.id));
+/** Staff invite a player to a team; the player accepts from their invitations. */
+export const invitePlayer = (tournamentId: string, actorId: string, teamId: string, user: UserSummary) =>
+  change(tournamentId, actorId, () => sendTeamPlayerInvite(teamId, user.id));
 
-/** A new team owned by the caller, entered in the tournament. The team id is made here, so a retry cannot add two. */
+/** The owner gives a moderator the streaming duty, the scoring duty, both or neither. */
+export const setModeratorDuties = (tournamentId: string, actorId: string, userId: string, canStream: boolean, canScore: boolean) =>
+  change(tournamentId, actorId, () => setDuties(tournamentId, userId, canStream, canScore));
+
+/** A new team with no owner: the tournament staff run it. The team id is made here, so a retry cannot add two. */
 export const createTeam = (tournamentId: string, actorId: string, team: NewTeam, teamId = localEventId()) =>
   change(tournamentId, actorId, () => createTournamentTeam(tournamentId, { id: teamId, name: team.name, shortName: team.short, tone: 'neutral' }));
-
-/** Enters a team the caller already owns or administers. */
-export const addOwnTeam = (tournamentId: string, actorId: string, teamId: string) =>
-  change(tournamentId, actorId, () => addTournamentTeam(tournamentId, teamId));
 
 const unavailable = async (): Promise<Roster> => {
   throw new RosterError('This is not available for published tournaments yet.');
@@ -103,14 +104,9 @@ const unavailable = async (): Promise<Roster> => {
 /** Removes an accepted moderator or withdraws a waiting invite: the server does both in one call. */
 export const removeModerator = (tournamentId: string, actorId: string, userId: string) =>
   change(tournamentId, actorId, () => removeTournamentModerator(tournamentId, userId));
-export const cancelTeamOwnerInvite = (tournamentId: string, actorId: string, teamId: string) =>
-  change(tournamentId, actorId, async () => {
-    const invites = await pendingInvites(tournamentId, actorId);
-    const invite = invites.find((item) => item.kind === 'team_owner' && item.teamId === teamId && item.status === 'pending');
-    if (!invite) throw new RosterError('This invitation is no longer pending.');
-    await cancelInvitation(invite.id);
-  });
-/** Takes the team out of the tournament. A team made here that never got an owner is deleted with it. */
+export const inviteTeamOwner = unavailable;
+export const cancelTeamOwnerInvite = unavailable;
+/** Takes the team out of the tournament; the team goes with it. */
 export const disbandTeam = (tournamentId: string, actorId: string, teamId: string) =>
   change(tournamentId, actorId, () => removeTournamentTeam(tournamentId, teamId));
 export const setRegistrationDeadline = unavailable;
