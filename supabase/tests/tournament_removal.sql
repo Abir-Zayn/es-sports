@@ -9,6 +9,10 @@
 
 begin;
 
+-- Setup helper: standalone create_team is retired (20261110040000), so tests make their teams with the internal function.
+create function pg_temp.create_team(p_id uuid, p_name text, p_short text, p_tone text default 'neutral') returns uuid
+language sql security definer as $$ select public.insert_team((select auth.uid()), p_id, p_name, p_short, p_tone) $$;
+
 insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 select ('f6a00000-0000-4000-8000-00000000000' || n)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
   'authenticated', 'removal-test-' || n || '@example.invalid', '{"provider":"email","providers":[]}'::jsonb,
@@ -37,7 +41,7 @@ select public.create_tournament(jsonb_build_object('id', 'f6c00000-0000-4000-800
 select public.create_tournament_team('f6c00000-0000-4000-8000-000000000001', 'f6b00000-0000-4000-8000-00000000000b',
   'Yellow Yaks', 'YY', 'neutral');
 select set_config('request.jwt.claims', '{"sub":"f6a00000-0000-4000-8000-000000000004","role":"authenticated"}', true);
-select public.create_team('f6b00000-0000-4000-8000-00000000000a', 'Xtreme XI', 'XXI');
+select pg_temp.create_team('f6b00000-0000-4000-8000-00000000000a', 'Xtreme XI', 'XXI');
 reset role;
 insert into public.tournament_teams (tournament_id, team_id)
 values ('f6c00000-0000-4000-8000-000000000001', 'f6b00000-0000-4000-8000-00000000000a');

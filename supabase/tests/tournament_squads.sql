@@ -8,6 +8,10 @@
 
 begin;
 
+-- Setup helper: standalone create_team is retired (20261110040000), so tests make their teams with the internal function.
+create function pg_temp.create_team(p_id uuid, p_name text, p_short text, p_tone text default 'neutral') returns uuid
+language sql security definer as $$ select public.insert_team((select auth.uid()), p_id, p_name, p_short, p_tone) $$;
+
 insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 select ('f8a00000-0000-4000-8000-00000000000' || n)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
   'authenticated', 'squads-test-' || n || '@example.invalid', '{"provider":"email","providers":[]}'::jsonb,
@@ -23,9 +27,9 @@ select public.create_tournament(jsonb_build_object('id', 'f8c00000-0000-4000-800
   'match_format', 'T20', 'competition', 'league', 'teams_planned', 4, 'ball', 'Tennis', 'side_format', 'gully_6',
   'players_per_side', 6, 'min_squad', 6, 'max_squad', 8, 'registration_deadline', current_date - 1 + 7));
 select set_config('request.jwt.claims', '{"sub":"f8a00000-0000-4000-8000-000000000002","role":"authenticated"}', true);
-select public.create_team('f8b00000-0000-4000-8000-00000000000a', 'Alpha XI', 'AXI');
+select pg_temp.create_team('f8b00000-0000-4000-8000-00000000000a', 'Alpha XI', 'AXI');
 select set_config('request.jwt.claims', '{"sub":"f8a00000-0000-4000-8000-000000000005","role":"authenticated"}', true);
-select public.create_team('f8b00000-0000-4000-8000-00000000000b', 'Bravo XI', 'BXI');
+select pg_temp.create_team('f8b00000-0000-4000-8000-00000000000b', 'Bravo XI', 'BXI');
 reset role;
 insert into public.team_members (team_id, profile_id, role) values
   ('f8b00000-0000-4000-8000-00000000000a', 'f8a00000-0000-4000-8000-000000000003', 'player'),
@@ -54,8 +58,8 @@ begin
     raise exception 'FAIL grants: RPC for authenticated, reads only, no direct writes';
   end if;
 
-  -- a) Only the team owner or an admin: a player, the tournament owner and a stranger are 42501.
-  foreach who in array array['3', '1', '6'] loop
+  -- a) Only team managers (tournament staff, since 20261110040000, or a legacy team owner): a player and a stranger are 42501.
+  foreach who in array array['3', '6'] loop
     perform set_config('request.jwt.claims', format(claims, who), true);
     code := null;
     begin perform public.set_tournament_squad(t, a, array[u3]); exception when others then code := sqlstate; end;

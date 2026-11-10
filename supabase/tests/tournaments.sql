@@ -9,6 +9,10 @@
 
 begin;
 
+-- Setup helper: standalone create_team is retired (20261110040000), so tests make their teams with the internal function.
+create function pg_temp.create_team(p_id uuid, p_name text, p_short text, p_tone text default 'neutral') returns uuid
+language sql security definer as $$ select public.insert_team((select auth.uid()), p_id, p_name, p_short, p_tone) $$;
+
 insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 select ('f5a00000-0000-4000-8000-00000000000' || n)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
   'authenticated', 'tournaments-test-' || n || '@example.invalid', '{"provider":"email","providers":[]}'::jsonb,
@@ -26,7 +30,7 @@ begin
     or has_function_privilege('authenticated', 'public.begin_tournament_change(uuid)', 'execute')
     or has_function_privilege('authenticated', 'public.link_tournament_team(uuid, uuid, text)', 'execute')
     or has_function_privilege('authenticated', 'public.insert_team(uuid, uuid, text, text, text, text, text, text)', 'execute')
-    or not has_function_privilege('authenticated', 'public.create_team(uuid, text, text, text, text, text, text)', 'execute') then
+    or has_function_privilege('authenticated', 'public.create_team(uuid, text, text, text, text, text, text)', 'execute') then
     raise exception 'FAIL grants: public functions for authenticated only, internal functions for nobody';
   end if;
   if has_table_privilege('authenticated', 'public.tournaments', 'insert, update, delete')
@@ -101,7 +105,7 @@ end $$;
 -- Team X belongs to account 3; account 2 is its admin and account 4 a player. Accounts 2 and 4 are moderators
 -- of T (moderators join through invitations, step 13; here the administrator adds them).
 select set_config('request.jwt.claims', '{"sub":"f5a00000-0000-4000-8000-000000000003","role":"authenticated"}', true);
-select public.create_team('f5b00000-0000-4000-8000-000000000003', 'Xtreme XI', 'XXI');
+select pg_temp.create_team('f5b00000-0000-4000-8000-000000000003', 'Xtreme XI', 'XXI');
 reset role;
 insert into public.team_members (team_id, profile_id, role)
 values ('f5b00000-0000-4000-8000-000000000003', 'f5a00000-0000-4000-8000-000000000002', 'admin'),
@@ -174,7 +178,7 @@ declare t uuid := current_setting('t.t')::uuid; code text;
 begin
   perform set_config('request.jwt.claims', format(as_user, 1), true);
   perform public.create_tournament_team(t, format(team, 4)::uuid, 'Chawkbazar Kings', 'CK', 'blue');
-  perform public.create_team(format(team, 6)::uuid, 'Eidgah Eagles', 'EE');
+  perform pg_temp.create_team(format(team, 6)::uuid, 'Eidgah Eagles', 'EE');
   begin perform public.create_tournament_team(t, format(team, 5)::uuid, 'Dewanhat Daredevils', 'DD', 'blue');
   exception when others then code := sqlstate; end;
   if code is distinct from 'ET001' or exists (select 1 from public.teams where id = format(team, 5)::uuid) then

@@ -7,6 +7,10 @@
 
 begin;
 
+-- Setup helper: standalone create_team is retired (20261110040000), so tests make their teams with the internal function.
+create function pg_temp.create_team(p_id uuid, p_name text, p_short text, p_tone text default 'neutral') returns uuid
+language sql security definer as $$ select public.insert_team((select auth.uid()), p_id, p_name, p_short, p_tone) $$;
+
 insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 select ('f7a00000-0000-4000-8000-00000000000' || n)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
   'authenticated', 'availability-test-' || n || '@example.invalid', '{"provider":"email","providers":[]}'::jsonb,
@@ -17,7 +21,7 @@ select id, 'Availability test' from auth.users where email like 'availability-te
 
 select set_config('request.jwt.claims', '{"sub":"f7a00000-0000-4000-8000-000000000001","role":"authenticated"}', true);
 set local role authenticated;
-select public.create_team('f7b00000-0000-4000-8000-000000000001', 'Avail XI', 'AXI');
+select pg_temp.create_team('f7b00000-0000-4000-8000-000000000001', 'Avail XI', 'AXI');
 reset role;
 insert into public.team_members (team_id, profile_id, role) values
   ('f7b00000-0000-4000-8000-000000000001', 'f7a00000-0000-4000-8000-000000000002', 'admin'),

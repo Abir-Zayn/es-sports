@@ -7,6 +7,10 @@
 
 begin;
 
+-- Setup helper: standalone create_team is retired (20261110040000), so tests make their teams with the internal function.
+create function pg_temp.create_team(p_id uuid, p_name text, p_short text, p_tone text default 'neutral') returns uuid
+language sql security definer as $$ select public.insert_team((select auth.uid()), p_id, p_name, p_short, p_tone) $$;
+
 insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 select ('f9a00000-0000-4000-8000-00000000000' || n)::uuid, '00000000-0000-0000-0000-000000000000', 'authenticated',
   'authenticated', 'fixtures-test-' || n || '@example.invalid', '{"provider":"email","providers":[]}'::jsonb,
@@ -22,11 +26,11 @@ select public.create_tournament(jsonb_build_object('id', 'f9c00000-0000-4000-800
   'match_format', 'T20', 'competition', 'league-knockout', 'teams_planned', 4, 'ball', 'Tennis', 'side_format', 'gully_6',
   'players_per_side', 6, 'min_squad', 6, 'max_squad', 8));
 select set_config('request.jwt.claims', '{"sub":"f9a00000-0000-4000-8000-000000000003","role":"authenticated"}', true);
-select public.create_team('f9b00000-0000-4000-8000-00000000000a', 'Alpha XI', 'AXI');
+select pg_temp.create_team('f9b00000-0000-4000-8000-00000000000a', 'Alpha XI', 'AXI');
 select set_config('request.jwt.claims', '{"sub":"f9a00000-0000-4000-8000-000000000004","role":"authenticated"}', true);
-select public.create_team('f9b00000-0000-4000-8000-00000000000b', 'Bravo XI', 'BXI');
+select pg_temp.create_team('f9b00000-0000-4000-8000-00000000000b', 'Bravo XI', 'BXI');
 select set_config('request.jwt.claims', '{"sub":"f9a00000-0000-4000-8000-000000000005","role":"authenticated"}', true);
-select public.create_team('f9b00000-0000-4000-8000-00000000000c', 'Charlie XI', 'CXI');
+select pg_temp.create_team('f9b00000-0000-4000-8000-00000000000c', 'Charlie XI', 'CXI');
 reset role;
 insert into public.tournament_teams (tournament_id, team_id)
 select 'f9c00000-0000-4000-8000-000000000001', id from public.teams where id::text like 'f9b00000-%';
@@ -106,8 +110,9 @@ begin
   if code is distinct from 'ET006' then raise exception 'FAIL d: team clash gave %', code; end if;
   perform public.reschedule_tournament_fixture(m2, current_date + 9, 900);
   reset role;
-  if (select count(*) from public.notifications where data ->> 'fixture_id' = m2::text and data ->> 'event' = 'fixture_moved') <> 2 then
-    raise exception 'FAIL d: both team owners should be told of the move';
+  -- Notices go to each team's players (20261110040000); this fixture has none, so nobody is told.
+  if (select count(*) from public.notifications where data ->> 'fixture_id' = m2::text and data ->> 'event' = 'fixture_moved') <> 0 then
+    raise exception 'FAIL d: only players should be told of the move';
   end if;
   set local role authenticated;
 
