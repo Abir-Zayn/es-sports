@@ -8,15 +8,18 @@ threshold. None of them is a measured result or a hardware guarantee.
 
 These come from the project owner and override anything below that disagrees:
 
-- **The streamer is a tournament moderator**, not a squad player or team staff. The owner can assign any of the
-  tournament's moderators to a match; a moderator may also take an unassigned match. A tournament has **at most 3
-  moderators** (migration `20261110000000_moderator_cap`). This replaces R1 and the "Confirmed (2026-11-03)" list.
-- **Facebook Live only for now.** YouTube is deferred (R2, R9 keep the RTMPS rule for Facebook).
+- **No team owner.** The tournament owner and moderators create teams, invite players and run squads (migration
+  `20261110040000`). A tournament has **at most 2 moderators**; the first to accept streams and the second scores, one
+  moderator does both, and the owner can reassign the duties (`20261110030000`). This replaces R1 and the
+  "Confirmed (2026-11-03)" list.
+- **The owner does not score or stream.** The scorer must be a moderator with the scoring duty (ET012); a single streaming
+  moderator becomes the match's streamer automatically (`20261110050000`).
+- **Facebook Live only for now.** YouTube is deferred (R2); R9 keeps RTMPS for Facebook.
 - **Android only**, as before. Start from this branch; do not rebuild from scratch.
-- Phases 1 and 2 are **authorised** for this work, locally only (no push, no remote migration). What exists:
-  `fixture_streamers` table and RPCs (`20261110020000`), the dashboard card on the Matches tab, the streamer console
-  at `/tournament/stream`, and demo teams for testing (`20261110010000`).
-- See `docs/live-streaming-test-guide.md` for how to test it with two phones.
+- Phases 1 and 2 are **authorised** for this work, locally only (no push). What exists: `fixture_streamers` and its RPCs,
+  the dashboard card on the Matches tab, the streamer console at `/tournament/stream`, demo teams for testing, and the
+  roles above.
+- See `docs/live-streaming-test-guide.md` for how to test it.
 
 v3.1 refinements:
 - **Two separate heartbeats** (§8.6):

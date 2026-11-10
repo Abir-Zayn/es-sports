@@ -15,20 +15,17 @@ Entry template:
 
 ## 2026-11-10
 
-**Done** (branch `feat/live-broadcast-moderator`, from `feat/live-broadcast-phase0` plus `main`, local only, not pushed)
-- 3-moderator cap per tournament: trigger plus invite check, error `ET008`.
-- Demo teams for testing with two phones: `seed_demo_teams` / `clear_demo_teams`, off unless `app_flags.demo_data` is on, buttons only with `EXPO_PUBLIC_DEMO_TOOLS=1`.
-- Streamer assignment per fixture (`fixture_streamers`, moderator only, Facebook only, state assigned / live / ended).
-- Matches tab dashboard: next-match card with countdown, streamer, choose / take / go live, LIVE on Facebook badge.
-- Streamer console `/tournament/stream` (landscape): camera preview with the real live score, Facebook URL and key, Go live / End, state mirrored to the server.
-- Auto-pick both XIs when starting a match.
+**Done** (branch `feat/live-broadcast-moderator`, from `feat/live-broadcast-phase0` plus `main`, not pushed)
+- **New roles:** no team owner; the tournament owner and moderators run teams. 2 moderators max; first streams, second scores, one does both; the owner can reassign. The owner does not score or stream. Migrations `20261110030000` to `20261110060000`, **applied to the Supabase project**, old owner/admin team rows and team-owner invitations deleted.
+- Demo teams, streamer assignment per fixture, matches dashboard (countdown, streamer, go live), streamer console `/tournament/stream`, auto-pick XIs (earlier the same day).
+- App: Add teams has Invite players and per-moderator Streams/Scores buttons; the start-match sheet uses the scoring moderator; team screens follow the server's `team_role`; the standalone create-team screen is gone.
+- EAS profile `streaming-test` (internal APK, own channel, demo tools on).
 
-**Decisions**
-- Streamer = tournament moderator (max 3), Facebook only, Android only. See `docs/tasks/live-broadcast.md` update block.
+**Verification:** `tsc`, lint and Jest PASS; every SQL test PASSes on PGlite (stubbed `auth`/`storage`) except `scorer_handover.sql`, which also fails on `main`. Removed three SQL tests of the retired team-owner features (`teams`, `invitations`, `one_team_per_tournament`): their moderator-invite, notification and one-team-per-tournament coverage is gone. Nothing has run on a device.
 
 **Open / next**
-- Nothing here has run on a device. The three migrations and their SQL tests (`supabase/tests/moderator_cap.sql`, `fixture_streamers.sql`, `demo_teams.sql`) **PASS on PGlite (Postgres in WASM) with stubbed `auth` / `storage`**, after all 34 migrations applied. They have **not** been run on Supabase itself, so RLS, grants and Realtime are unchecked. Apply them to the test project and follow `docs/live-streaming-test-guide.md`. (Side effect found: the Homebrew upgrade broke `postgresql@14`; `brew reinstall postgresql@14` fixes it.)
-- Graphics are still the Phase 0 proof of concept.
+- Test on a real phone and the emulator with `docs/live-streaming-test-guide.md`; turn `app_flags.demo_data` off afterwards.
+- The Homebrew upgrade broke `postgresql@14` (`brew reinstall postgresql@14` fixes it).
 
 ---
 
