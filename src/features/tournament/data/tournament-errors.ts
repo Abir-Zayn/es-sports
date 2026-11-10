@@ -20,7 +20,7 @@ export function tournamentMessage(error: unknown): string {
     case 'ET010': return 'The broadcast has already started, so the streamer can no longer be changed.';
     case 'ET011': return 'Start the match first, then go live.';
     case 'ET009': return 'Demo teams are switched off on this server. Turn on the demo_data flag in Supabase first.';
-    case 'ET008': return 'This tournament already has 3 moderators, the most it can have.';
+    case 'ET008': return 'This tournament already has 2 moderators, the most it can have.';
     case '42501': return 'You are not allowed to do that in this tournament.';
     case '22023': return 'Check the details: the dates, team count, squad sizes and team name must fit the rules.';
     case '23505': return 'This id is already used. Go back and try again.';
