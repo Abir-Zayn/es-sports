@@ -37,18 +37,18 @@ describe('MatchDashboardCard', () => {
   });
 
   it('lets a moderator take an unassigned match', async () => {
-    await show({ viewer: { userId: 'mod1', role: 'moderator' } });
+    await show({ viewer: { userId: 'mod1', role: 'moderator', canStream: true } });
     expect(screen.getByText('I will stream this match')).toBeTruthy();
   });
 
   it('tells the assigned streamer to wait until the match has started', async () => {
-    await show({ viewer: { userId: 'mod1', role: 'moderator' }, streamer: { fixtureId: 'f1', streamerId: 'mod1', state: 'assigned', liveAt: null } });
+    await show({ viewer: { userId: 'mod1', role: 'moderator', canStream: true }, streamer: { fixtureId: 'f1', streamerId: 'mod1', state: 'assigned', liveAt: null } });
     expect(screen.getByText(/once the match has been started/)).toBeTruthy();
     expect(screen.queryByText('Go live on Facebook')).toBeNull();
   });
 
   it('offers Go live to the assigned streamer once the match is on, and calls back with the fixture', async () => {
-    const goLive = await show({ match: started, viewer: { userId: 'mod1', role: 'moderator' }, streamer: { fixtureId: 'f1', streamerId: 'mod1', state: 'assigned', liveAt: null } });
+    const goLive = await show({ match: started, viewer: { userId: 'mod1', role: 'moderator', canStream: true }, streamer: { fixtureId: 'f1', streamerId: 'mod1', state: 'assigned', liveAt: null } });
     expect(screen.getByText('Live now')).toBeTruthy();
     fireEvent.press(screen.getByText('Go live on Facebook'));
     expect(goLive).toHaveBeenCalledWith('f1');

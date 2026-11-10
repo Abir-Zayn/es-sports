@@ -49,7 +49,7 @@ describe('countdownLabel', () => {
 
 describe('streamerAction', () => {
   const owner = { userId: 'o', role: 'owner' as const };
-  const mod = { userId: 'm1', role: 'moderator' as const };
+  const mod = { userId: 'm1', role: 'moderator' as const, canStream: true };
   it('lets the owner choose until the broadcast starts', () => {
     expect(streamerAction(owner, null, false)).toBe('choose');
     expect(streamerAction(owner, { streamerId: 'm1', state: 'assigned' }, false)).toBe('choose');
@@ -64,6 +64,9 @@ describe('streamerAction', () => {
     expect(streamerAction(mod, { streamerId: 'm1', state: 'assigned' }, true)).toBe('go-live');
     expect(streamerAction(mod, { streamerId: 'm1', state: 'live' }, true)).toBe('resume-live');
     expect(streamerAction(mod, { streamerId: 'm1', state: 'ended' }, true)).toBe('none');
+  });
+  it('does not let a moderator without the streaming duty take a match', () => {
+    expect(streamerAction({ userId: 'm2', role: 'moderator', canStream: false }, null, false)).toBe('none');
   });
   it('shows nothing to people who are not staff', () => {
     expect(streamerAction({ userId: 'x', role: null }, null, true)).toBe('none');

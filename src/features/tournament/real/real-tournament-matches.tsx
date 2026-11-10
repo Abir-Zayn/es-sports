@@ -36,7 +36,8 @@ export function RealTournamentMatches({ tournament, canSchedule, canStart = fals
   const schedule = useQuery({ queryKey: scheduleKey(tournament.id), queryFn: () => fetchSchedule(tournament.id) });
   const streamers = useQuery({ queryKey: streamersKey(tournament.id), queryFn: () => fetchFixtureStreamers(tournament.id) });
   const staff = useQuery({ queryKey: [...tournamentKey(tournament.id), 'staff'], queryFn: () => fetchTournamentStaff(tournament.id) });
-  const moderators = useMemo(() => (staff.data ?? []).filter((member) => member.role === 'moderator').map((member) => member.user), [staff.data]);
+  const moderators = useMemo(() => (staff.data ?? []).filter((member) => member.role === 'moderator' && member.canStream).map((member) => member.user), [staff.data]);
+  const canStream = (staff.data ?? []).some((member) => member.user.id === userId && member.canStream);
   const nameOf = (id: string) => staff.data?.find((member) => member.user.id === id)?.user.name;
   const next = useMemo(() => pickNextMatch(schedule.data?.matches ?? []), [schedule.data]);
   const goLive = (fixtureId: string) => router.push({ pathname: '/tournament/stream', params: { tournamentId: tournament.id, fixtureId } });
@@ -70,7 +71,7 @@ export function RealTournamentMatches({ tournament, canSchedule, canStart = fals
   return (
     <View style={{ gap: spacing.lg }}>
       {next ? <MatchDashboardCard tournamentId={tournament.id} match={next} streamer={streamers.data?.get(next.id)} moderators={moderators}
-        viewer={{ userId, role }} onGoLive={goLive} /> : null}
+        viewer={{ userId, role, canStream }} onGoLive={goLive} /> : null}
       {manage}
       {canStart ? (schedule.data.matches.filter((m) => m.date === localDateKey(new Date()) && canStartFixture(m, true)).map((m) =>
         <Button key={m.id} label={`Start match ${m.number}`} variant="secondary" onPress={() => setStarting(m)} />)) : null}
