@@ -10,6 +10,7 @@ export type SentPlayerInvite = { id: string; profileId: string; name: string; av
 const INVITE_LIMIT = 50;
 
 export const teamMembersKey = (teamId: string) => ['team-members', teamId] as const;
+export const teamRoleKey = (teamId: string) => ['team-role', teamId] as const;
 export const sentPlayerInvitesKey = (teamId: string, userId: string) => ['team-player-invites', teamId, userId] as const;
 
 /** Open player invitations for the team that `userId` sent. The server shows each person only the ones they sent. */
@@ -54,3 +55,13 @@ export const availabilityLabel: Record<Availability, string> = { available: 'Ava
 
 /** Owners and admins add members. */
 export const canManage = (role: TeamRole | null): boolean => role === 'owner' || role === 'admin';
+
+/**
+ * What the caller may do with a team. Teams have no owner: tournament staff are answered as 'owner' (they run it),
+ * everyone else as their own membership, or null when they are not on the team.
+ */
+export async function fetchTeamRole(teamId: string): Promise<TeamRole | null> {
+  const { data, error } = await traceApi('team.role', { teamId }, () => supabase.rpc('team_role', { p_team: teamId }));
+  if (error) throw toTeamError(error);
+  return data === 'owner' || data === 'admin' || data === 'player' || data === 'staff' ? data : null;
+}

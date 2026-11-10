@@ -1,6 +1,6 @@
 // What other features may use from teams.
 export {
-  createTeam, fetchMyTeams, fetchTeam, fetchTeamMembers, myTeamsKey, teamKey, toTeam,
+  fetchMyTeams, fetchTeam, fetchTeamMembers, myTeamsKey, teamKey, toTeam,
   type Availability, type MyTeam, type TeamMemberRecord, type TeamRecord, type TeamRole,
 } from './data/team-repository';
 export { availabilityLabel, teamMembersKey } from './data/team-management';

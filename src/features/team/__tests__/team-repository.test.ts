@@ -1,5 +1,5 @@
-import { createTeam, fetchMyTeams, fetchTeam, fetchTeamMembers } from '../data/team-repository';
-import { teamErrorText, TeamError } from '../data/team-errors';
+import { fetchMyTeams, fetchTeam, fetchTeamMembers } from '../data/team-repository';
+import { TeamError } from '../data/team-errors';
 import { cleanShortName, suggestShortName, teamProblem } from '../data/team-rules';
 
 const mockRpc = jest.fn();
@@ -29,40 +29,6 @@ describe('team rules', () => {
     expect(teamProblem({ ...input, shortName: 'TOOLONG' })).toMatch(/2 to 4/);
     expect(teamProblem({ ...input, shortName: 'H' })).toMatch(/2 to 4/);
     expect(teamProblem(input)).toBeNull();
-  });
-});
-
-describe('createTeam', () => {
-  beforeEach(() => jest.clearAllMocks());
-
-  it('sends the client id and trimmed details to create_team and returns the id', async () => {
-    mockRpc.mockResolvedValue({ data: 'team-id', error: null });
-    await expect(createTeam('team-id', input)).resolves.toBe('team-id');
-    expect(mockRpc).toHaveBeenCalledWith('create_team', {
-      p_id: 'team-id', p_name: 'Halishahar Strikers', p_short_name: 'HSS', p_tone: 'blue', p_area: 'Halishahar',
-    });
-  });
-
-  it('leaves the area out when it is empty', async () => {
-    mockRpc.mockResolvedValue({ data: 'team-id', error: null });
-    await createTeam('team-id', { ...input, area: '  ' });
-    expect(mockRpc.mock.calls[0][1].p_area).toBeUndefined();
-  });
-
-  it.each([
-    ['42501', /not allowed/], ['22023', /Check the team details/], ['23505', /already used/], ['P0002', /could not be found/], ['08006', /Could not reach the server/],
-  ])('turns code %s into a plain message', async (code, message) => {
-    mockRpc.mockResolvedValue({ data: null, error: { code, message: 'raw db text' } });
-    const failure = await createTeam('team-id', input).catch((error: unknown) => error);
-    expect(failure).toBeInstanceOf(TeamError);
-    expect((failure as TeamError).message).toMatch(message);
-    expect((failure as TeamError).message).not.toContain('raw db text');
-    expect(teamErrorText(failure)).toBe((failure as TeamError).message);
-  });
-
-  it('treats an empty reply as a failure, not a team', async () => {
-    mockRpc.mockResolvedValue({ data: null, error: null });
-    await expect(createTeam('team-id', input)).rejects.toBeInstanceOf(TeamError);
   });
 });
 

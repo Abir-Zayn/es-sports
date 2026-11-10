@@ -15,7 +15,7 @@ import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from 
 
 import { teamErrorText } from '../data/team-errors';
 import {
-  canManage, fetchSentPlayerInvites, removeTeamMember, sentPlayerInvitesKey, setMemberAvailability, teamMembersKey,
+  canManage, fetchSentPlayerInvites, fetchTeamRole, removeTeamMember, sentPlayerInvitesKey, setMemberAvailability, teamMembersKey, teamRoleKey,
 } from '../data/team-management';
 import { fetchTeam, fetchTeamMembers, myTeamsKey, teamKey, type Availability, type TeamMemberRecord } from '../data/team-repository';
 import { AvailabilitySheet } from './availability-sheet';
@@ -38,7 +38,8 @@ export function TeamManageScreen() {
 
   const team = useQuery({ queryKey: teamKey(id), queryFn: () => fetchTeam(id), enabled: Boolean(id) });
   const members = useQuery({ queryKey: teamMembersKey(id), queryFn: () => fetchTeamMembers(id), enabled: Boolean(id) });
-  const myRole = members.data?.find((member) => member.profileId === meId)?.role ?? null;
+  const role = useQuery({ queryKey: teamRoleKey(id), queryFn: () => fetchTeamRole(id), enabled: Boolean(id) });
+  const myRole = role.data ?? members.data?.find((member) => member.profileId === meId)?.role ?? null;
   const manager = canManage(myRole);
   const invites = useQuery({
     queryKey: sentPlayerInvitesKey(id, meId), queryFn: () => fetchSentPlayerInvites(id, meId), enabled: Boolean(id && meId) && manager,

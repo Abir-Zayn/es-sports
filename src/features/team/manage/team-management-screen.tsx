@@ -44,7 +44,7 @@ export function TeamManagementScreen() {
             <Button label="Try again" variant="secondary" size="compact" onPress={() => void teams.refetch()} />
           </View>
         ) : list.length === 0 ? (
-          <Text muted accessibilityLiveRegion="polite">You are not in a team yet. Create one to start adding players.</Text>
+          <Text muted accessibilityLiveRegion="polite">You are not in a team yet. A tournament organiser invites you to a team; the invitation appears in your notifications.</Text>
         ) : (
           list.map((team) => (
             <Pressable key={team.id} accessibilityRole="button" accessibilityLabel={`Manage ${team.name}`}
@@ -67,7 +67,6 @@ export function TeamManagementScreen() {
             </Pressable>
           ))
         )}
-        <Button label="Create team" variant="secondary" onPress={() => router.push('/team/create')} />
       </ScrollView>
     </View>
   );

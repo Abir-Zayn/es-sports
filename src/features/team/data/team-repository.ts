@@ -3,7 +3,6 @@ import { supabase } from '@/lib/supabase';
 import type { AvatarTone } from '@/theme';
 
 import { toTeamError } from './team-errors';
-import type { NewTeamInput } from './team-rules';
 
 export type TeamRole = 'owner' | 'admin' | 'player' | 'staff';
 export type TeamRecord = {
@@ -33,15 +32,6 @@ export function toTeam(row: TeamRow): TeamRecord {
 const toRole = (value: string): TeamRole => (roles.includes(value) ? (value as TeamRole) : 'player');
 const toAvailability = (value: string | null | undefined): Availability =>
   availabilities.find((item) => item === value) ?? 'available';
-
-/** Creates a team owned by the caller. Safe to repeat with the same `id`: the server returns the team it already made. */
-export async function createTeam(id: string, input: NewTeamInput): Promise<string> {
-  const { data, error } = await traceApi('team.create', { id, name: input.name.trim() }, () => supabase.rpc('create_team', {
-    p_id: id, p_name: input.name.trim(), p_short_name: input.shortName, p_tone: input.tone, p_area: input.area.trim() || undefined,
-  }));
-  if (error || !data) throw toTeamError(error);
-  return data;
-}
 
 /** The team, or null when it does not exist. */
 export async function fetchTeam(id: string): Promise<TeamRecord | null> {
