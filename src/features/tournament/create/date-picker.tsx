@@ -5,7 +5,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
-import { radius, spacing, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { formatDate, localDateKey } from './draft';
 
@@ -37,9 +37,9 @@ export function DatePicker({ label = 'Start date', value, onChange, error, minim
       <View style={styles.overlay}>
         <SafeAreaView edges={['bottom']} style={styles.sheet} accessibilityViewIsModal>
           <View style={styles.month}>
-            <AppIconTile icon={ChevronLeft} size={48} accessibilityLabel="Previous month" onPress={previousDisabled ? undefined : () => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} />
+            <AppIconTile icon={ChevronLeft} size={sizes.iconButton} accessibilityLabel="Previous month" onPress={previousDisabled ? undefined : () => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} />
             <Text variant="heading" accessibilityRole="header">{month.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</Text>
-            <AppIconTile icon={ChevronRight} size={48} accessibilityLabel="Next month" onPress={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} />
+            <AppIconTile icon={ChevronRight} size={sizes.iconButton} accessibilityLabel="Next month" onPress={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} />
           </View>
           <ScrollView horizontal contentContainerStyle={styles.calendarScroll}>
             <View style={styles.grid}>
@@ -64,16 +64,16 @@ export function DatePicker({ label = 'Start date', value, onChange, error, minim
   </View>;
 }
 const createStyles = (colors: Palette) => StyleSheet.create({
-  wrap: { gap: spacing.xs }, label: { flex: 1, lineHeight: 22, includeFontPadding: false, textAlignVertical: 'center' },
-  field: { minHeight: 64, paddingHorizontal: spacing.lg, paddingVertical: spacing.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
-  marker: { width: 8, height: 8, borderRadius: 4, borderWidth: 1.5, borderColor: colors.outline },
-  value: { flexShrink: 1, fontWeight: '500', lineHeight: 22, textAlign: 'right', textAlignVertical: 'center', includeFontPadding: false },
+  wrap: { gap: spacing.xs }, label: { flex: 1, lineHeight: dp(22), includeFontPadding: false, textAlignVertical: 'center' },
+  field: { minHeight: dp(64), paddingHorizontal: spacing.lg, paddingVertical: spacing.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
+  marker: { width: spacing.sm, height: spacing.sm, borderRadius: radius.pill, borderWidth: 1.5, borderColor: colors.outline },
+  value: { flexShrink: 1, lineHeight: dp(22), textAlign: 'right', textAlignVertical: 'center', includeFontPadding: false },
   invalid: { borderColor: colors.danger }, error: { color: colors.dangerSoftText, paddingHorizontal: spacing.lg, paddingBottom: spacing.sm },
   overlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
   sheet: { backgroundColor: colors.background, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, paddingTop: spacing.xl },
   month: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.md },
   calendarScroll: { flexGrow: 1, justifyContent: 'center', paddingVertical: spacing.md },
-  grid: { width: 336, flexDirection: 'row', flexWrap: 'wrap' }, day: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 24 },
-  selected: { backgroundColor: colors.primary }, selectedText: { color: colors.primaryText, fontWeight: '700' },
-  disabled: { opacity: 0.3 }, pressed: { opacity: 0.7 }, cancel: { padding: spacing.lg },
+  grid: { width: dp(336), flexDirection: 'row', flexWrap: 'wrap' }, day: { width: dp(48), height: dp(48), alignItems: 'center', justifyContent: 'center', borderRadius: radius.pill },
+  selected: { backgroundColor: colors.primary }, selectedText: { color: colors.primaryText },
+  disabled: { opacity: 0.3 }, pressed: { transform: [{ scale: 0.95 }] }, cancel: { padding: spacing.lg },
 });

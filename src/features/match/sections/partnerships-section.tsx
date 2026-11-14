@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import type { Partnership } from '../types';
 
@@ -41,14 +41,14 @@ export function PartnershipsSection({ partnerships }: { partnerships: Partnershi
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    section: { gap: 14 },
-    title: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
-    item: { gap: 6 },
+    section: { gap: spacing.lg },
+    title: typography.headlineLg,
+    item: { gap: spacing.sm },
     row: { flexDirection: 'row', justifyContent: 'space-between' },
-    pair: { fontSize: 13, lineHeight: 18 },
-    wicket: { fontSize: 13, lineHeight: 18, fontWeight: '600', color: colors.textMuted },
-    runs: { fontSize: 13, lineHeight: 18, fontWeight: '700' },
-    track: { height: 6, borderRadius: 3, backgroundColor: colors.surfaceRaised },
-    fill: { height: 6, borderRadius: 3, backgroundColor: colors.primaryDeep },
+    pair: typography.bodySm,
+    wicket: { ...typography.bodySm, color: colors.textMuted },
+    runs: { ...typography.labelMd, fontVariant: ['tabular-nums'] },
+    track: { height: sizes.progressBar, borderRadius: radius.pill, backgroundColor: colors.border },
+    fill: { height: sizes.progressBar, borderRadius: radius.pill, backgroundColor: colors.primaryTint },
     fillLive: { backgroundColor: colors.primary },
   });

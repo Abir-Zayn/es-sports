@@ -1,7 +1,7 @@
 import { StyleSheet, View, type ColorValue } from 'react-native';
 
 import { Text } from '@/components/ui/text';
-import { radius, spacing, useTheme } from '@/theme';
+import { dp, radius, typography, useTheme } from '@/theme';
 
 type Props = {
   label: string;
@@ -29,12 +29,12 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    paddingVertical: 3,
-    paddingHorizontal: spacing.sm,
+    gap: dp(6),
+    paddingVertical: dp(4),
+    paddingHorizontal: dp(12),
     borderRadius: radius.pill,
     alignSelf: 'flex-start',
   },
-  dot: { width: 6, height: 6, borderRadius: 3 },
-  label: { fontSize: 10, lineHeight: 12, fontWeight: '800', letterSpacing: 1 },
+  dot: { width: dp(6), height: dp(6), borderRadius: radius.pill },
+  label: typography.labelSm,
 });

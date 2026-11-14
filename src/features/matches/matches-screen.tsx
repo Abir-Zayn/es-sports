@@ -78,7 +78,7 @@ export function MatchesScreen() {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.background },
-    content: { paddingHorizontal: sizes.gutter, gap: 18 },
+    content: { paddingHorizontal: sizes.gutter, gap: sizes.sectionGap },
     header: { gap: spacing.xs },
     status: { alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xl },
   });

@@ -1114,6 +1114,10 @@ export type Database = {
       abandon_friendly_matches: { Args: { p_ids: string[] }; Returns: string[] }
       accept_invitation: { Args: { p_id: string }; Returns: undefined }
       accept_scorer_handover: { Args: { p_id: string }; Returns: undefined }
+      add_tournament_squad_player: {
+        Args: { p_profile: string; p_team: string; p_tournament: string }
+        Returns: undefined
+      }
       add_tournament_team: {
         Args: { p_team: string; p_tournament: string }
         Returns: undefined

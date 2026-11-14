@@ -10,12 +10,12 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { palettes, spacing } from '@/theme';
+import { palettes, spacing, sp, typography } from '@/theme';
 
-// The splash is always the dark brand screen, whatever theme the user picked.
-const colors = palettes.dark;
+// The splash is always the light Coral Daylight brand screen, whatever the device theme.
+const colors = palettes.light;
 
-// The native splash is only the dark background (a blank image in app.json), so the mark fades in here.
+// The native splash is only the page background (a blank image in app.json), so the mark fades in here.
 const MARK_SIZE = 288;
 const BAR_WIDTH = 120;
 const MIN_VISIBLE_MS = 1900;
@@ -24,8 +24,9 @@ const FADE_OUT_MS = 240;
 const easeOut = Easing.out(Easing.cubic);
 const fill = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 } as const;
 
-const letters = require('../../../assets/images/splash/letters.png');
-const trail = require('../../../assets/images/splash/trail.png');
+// Dark-ink variants of the mark, for the light background.
+const letters = require('../../../assets/images/splash/letters-ink.png');
+const trail = require('../../../assets/images/splash/trail-ink.png');
 const ball = require('../../../assets/images/splash/ball.png');
 
 type Props = {
@@ -153,10 +154,10 @@ const styles = StyleSheet.create({
   mark: { position: 'absolute', width: MARK_SIZE, height: MARK_SIZE },
   layer: { ...fill },
   words: { position: 'absolute', left: 0, right: 0, alignItems: 'center', gap: spacing.xs },
-  wordmark: { fontSize: 44, lineHeight: 50, fontWeight: '800', fontStyle: 'italic', letterSpacing: -1, color: colors.text },
+  wordmark: { fontSize: sp(44), lineHeight: sp(50), fontWeight: '500', fontStyle: 'italic', letterSpacing: sp(44) * -0.02, color: colors.text },
   wordmarkSignal: { color: colors.primary },
-  tagline: { fontSize: 15, lineHeight: 20, color: colors.textMuted },
-  track: { position: 'absolute', width: BAR_WIDTH, height: 3, borderRadius: 2, overflow: 'hidden', backgroundColor: colors.surfaceRaised },
+  tagline: { ...typography.bodyMd, color: colors.textMuted },
+  track: { position: 'absolute', width: BAR_WIDTH, height: 4, borderRadius: 999, overflow: 'hidden', backgroundColor: colors.border },
   fill: { flex: 1, backgroundColor: colors.primary },
   line: { position: 'absolute', backgroundColor: colors.primary, opacity: 0.1 },
   vertical: { top: 0, bottom: 0, width: 1 },

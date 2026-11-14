@@ -54,8 +54,8 @@ begin
     raise exception 'FAIL grants: RPC for authenticated, reads only, no direct writes';
   end if;
 
-  -- a) Only the team owner or an admin: a player, the tournament owner and a stranger are 42501.
-  foreach who in array array['3', '1', '6'] loop
+  -- a) Only the team owner, an admin or (since 20261114234500) the tournament owner: a player and a stranger are 42501.
+  foreach who in array array['3', '6'] loop
     perform set_config('request.jwt.claims', format(claims, who), true);
     code := null;
     begin perform public.set_tournament_squad(t, a, array[u3]); exception when others then code := sqlstate; end;

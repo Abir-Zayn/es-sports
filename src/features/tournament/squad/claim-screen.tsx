@@ -5,7 +5,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
-import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { claimGuestProfile, findClaim } from '../roster/squad-repository';
 import { rosterErrorText, useMe } from '../roster/use-roster';
@@ -26,7 +26,7 @@ export function ClaimScreen() {
   return (
     <View style={[styles.screen, { paddingTop: insets.top, paddingBottom: insets.bottom + spacing.xl }]}>
       <View style={styles.header}>
-        <AppIconTile icon={ChevronLeft} size={44} borderRadius={radius.pill} accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : goHome())} />
+        <AppIconTile icon={ChevronLeft} size={sizes.iconButton} borderRadius={radius.pill} accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : goHome())} />
         <Text accessibilityRole="header" style={styles.title}>
           Claim your profile
         </Text>
@@ -78,7 +78,7 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.background },
     header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter, paddingVertical: spacing.md },
-    title: { flex: 1, fontSize: 18, lineHeight: 24, fontWeight: '700' },
-    body: { gap: spacing.md, paddingHorizontal: spacing.lg, paddingTop: spacing.lg, maxWidth: 600, width: '100%', alignSelf: 'center' },
-    name: { fontSize: 22, lineHeight: 28, fontWeight: '700' },
+    title: { flex: 1, ...typography.headlineLg },
+    body: { gap: spacing.md, paddingHorizontal: sizes.gutter, paddingTop: spacing.lg, maxWidth: dp(600), width: '100%', alignSelf: 'center' },
+    name: typography.displayMd,
   });

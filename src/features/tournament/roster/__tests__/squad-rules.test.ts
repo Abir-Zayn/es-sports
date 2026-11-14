@@ -6,11 +6,13 @@ const guest = { name: 'Liton Roy', userId: null, phone: null };
 const today = '2026-11-05';
 
 describe('squad rules', () => {
-  it('lets only an accepted team owner manage the squad', () => {
+  it('lets the accepted team owner or the tournament owner manage the squad', () => {
     expect(squadManagerId(owned())).toBe('boss');
     expect(squadManagerId(team('a', { owner: { user: user('boss'), status: 'pending' } }))).toBeNull();
-    expect(addPlayerProblem(roster({ teams: [owned()] }), 'a', 'owner', guest, '', today)).toMatch(/Only the team owner/);
+    expect(addPlayerProblem(roster({ teams: [owned()] }), 'a', 'stranger', guest, '', today)).toMatch(/Only the team owner or the tournament owner/);
     expect(addPlayerProblem(roster({ teams: [owned()] }), 'a', 'boss', guest, '', today)).toBeNull();
+    // The organiser adds players directly, even to a team with no owner yet.
+    expect(addPlayerProblem(roster({ teams: [team('a')] }), 'a', 'owner', guest, '', today)).toBeNull();
   });
 
   it('follows the registration window, and after the lock asks for a reason', () => {

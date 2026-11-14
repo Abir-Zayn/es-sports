@@ -2,7 +2,7 @@ import UserPlus from 'lucide-react-native/icons/user-plus';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import type { AppNotification, InviteStatus } from '../types';
 import { NotificationRow } from './notification-row';
@@ -34,7 +34,7 @@ export function InviteCard({ item, busy = false, onOpen, onRespond }: Props) {
       accessibilityLabel={`Open notification: ${item.title}`}
       onPress={onOpen}
     >
-      <NotificationRow item={item} icon={<UserPlus size={24} color={colors.link} />}>
+      <NotificationRow item={item} icon={<UserPlus size={sizes.icon} color={colors.link} />}>
         {canRespond && onRespond ? (
           <View style={styles.actions}>
             <Pressable
@@ -66,28 +66,28 @@ export function InviteCard({ item, busy = false, onOpen, onRespond }: Props) {
 
 const createStyles = (c: Palette) =>
   StyleSheet.create({
-    actions: { flexDirection: 'row', gap: 8, marginTop: 8, flexWrap: 'wrap' },
+    actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm, flexWrap: 'wrap' },
     accept: {
-      minHeight: 48,
-      minWidth: 96,
-      borderRadius: 10,
+      minHeight: dp(48),
+      minWidth: dp(96),
+      borderRadius: radius.pill,
       backgroundColor: c.primary,
       alignItems: 'center',
       justifyContent: 'center',
-      paddingHorizontal: 16,
+      paddingHorizontal: spacing.lg,
+      ...shadows.primary,
     },
     decline: {
-      minHeight: 48,
-      minWidth: 96,
-      borderRadius: 10,
-      borderWidth: 1,
-      borderColor: c.border,
+      minHeight: dp(48),
+      minWidth: dp(96),
+      borderRadius: radius.pill,
+      backgroundColor: c.surfaceRaised,
       alignItems: 'center',
       justifyContent: 'center',
-      paddingHorizontal: 16,
+      paddingHorizontal: spacing.lg,
     },
     disabled: { opacity: 0.6 },
-    acceptText: { color: c.primaryText, fontWeight: '700' },
-    declineText: { color: c.text, fontWeight: '700' },
-    status: { color: c.textMuted, fontSize: 13, fontWeight: '700', marginTop: 6 },
+    acceptText: { ...typography.labelMd, color: c.primaryText },
+    declineText: { ...typography.labelMd, color: c.text },
+    status: { ...typography.bodySm, color: c.textMuted, marginTop: spacing.xs },
   });

@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth/auth-provider';
-import { sizes, spacing, useThemedStyles, type Palette } from '@/theme';
+import { radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { expiryText, isOpen } from '../handover-rules';
 import { useIncomingOffers, useNow } from '../use-handover';
@@ -33,7 +33,7 @@ export function IncomingHandoverBanner() {
 
 const createStyles = (colors: Palette) => StyleSheet.create({
   list: { gap: spacing.sm },
-  card: { gap: spacing.sm, padding: sizes.gutter, borderRadius: 16, borderWidth: 1, borderColor: colors.primary, backgroundColor: colors.primarySoft },
-  title: { fontSize: 15, lineHeight: 20, fontWeight: '700' },
-  detail: { fontSize: 13, lineHeight: 18 },
+  card: { gap: spacing.sm, padding: sizes.cardPadding, borderRadius: radius.lg, backgroundColor: colors.surface, ...shadows.card },
+  title: typography.headlineMd,
+  detail: typography.bodyMd,
 });

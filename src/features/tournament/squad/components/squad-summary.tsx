@@ -1,8 +1,8 @@
 import Lock from 'lucide-react-native/icons/lock';
 import { StyleSheet, View } from 'react-native';
 
-import { AppBadge, Text } from '@/components/ui';
-import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { AppBadge, Card, Text } from '@/components/ui';
+import { sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { registrationLabel, registrationStatus } from '../../roster/registration';
 import { squadShortfall } from '../../roster/squad-rules';
@@ -19,7 +19,7 @@ export function SquadSummary({ roster, team, canManage }: Props) {
   const shortfall = squadShortfall(roster, team);
   const open = status === 'open';
   return (
-    <View style={styles.wrap}>
+    <Card style={styles.wrap}>
       <View style={styles.top}>
         <Text style={styles.count}>
           {team.players.length}/{maxSquad} players
@@ -40,7 +40,7 @@ export function SquadSummary({ roster, team, canManage }: Props) {
       ) : null}
       {roster.locked ? (
         <View style={styles.locked}>
-          <Lock size={14} color={colors.accent} />
+          <Lock size={sizes.iconSmall} color={colors.accent} />
           <Text variant="caption" style={styles.warn}>
             Roster locked. Changes need a reason and alert the organisers.
           </Text>
@@ -51,15 +51,15 @@ export function SquadSummary({ roster, team, canManage }: Props) {
           Only the team owner changes this squad.
         </Text>
       )}
-    </View>
+    </Card>
   );
 }
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    wrap: { gap: spacing.xs },
+    wrap: { gap: spacing.sm },
     top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
-    count: { fontSize: 22, lineHeight: 28, fontWeight: '700', fontVariant: ['tabular-nums'] },
+    count: { ...typography.headlineLg, fontVariant: ['tabular-nums'] },
     warn: { color: colors.accent, flexShrink: 1 },
     locked: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   });

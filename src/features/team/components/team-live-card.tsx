@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppBadge, Text } from '@/components/ui';
-import { useTheme, useThemedStyles, type Palette } from '@/theme';
+import { radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import type { TeamLiveMatch } from '../types';
 
@@ -43,20 +43,18 @@ export function TeamLiveCard({ match, onPress }: Props) {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     card: {
-      paddingVertical: 14,
-      paddingHorizontal: 16,
-      borderRadius: 20,
+      padding: sizes.cardPaddingTight,
+      borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.dangerSoft,
-      gap: 10,
+      ...shadows.card,
+      gap: spacing.md,
     },
-    pressed: { opacity: 0.85 },
-    top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
-    label: { flexShrink: 1, fontSize: 11, lineHeight: 14, fontWeight: '600', letterSpacing: 1 },
+    pressed: { transform: [{ scale: 0.95 }] },
+    top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
+    label: { flexShrink: 1, ...typography.labelUppercase },
     middle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    versus: { fontSize: 14, lineHeight: 19 },
-    score: { fontSize: 20, lineHeight: 24, fontWeight: '800', fontVariant: ['tabular-nums'] },
-    overs: { fontSize: 12, lineHeight: 16, fontWeight: '400' },
-    status: { fontSize: 13, lineHeight: 18, fontWeight: '600', color: colors.link },
+    versus: typography.bodyMd,
+    score: { ...typography.headlineLg, fontVariant: ['tabular-nums'] },
+    overs: typography.bodySm,
+    status: { ...typography.bodySm, color: colors.link },
   });

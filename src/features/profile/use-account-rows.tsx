@@ -7,7 +7,7 @@ import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-nat
 import { SettingsRow, Text } from '@/components/ui';
 import { linkGoogleAccount } from '@/features/auth/google-auth';
 import { loadLinkedAccounts, type LinkedAccounts } from '@/features/auth/linked-accounts';
-import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { useProfile } from './profile-provider';
 
@@ -141,13 +141,13 @@ function ImportButton({ busy, disabled, onPress }: { busy: boolean; disabled: bo
 }
 
 const importStyles = StyleSheet.create({
-  button: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  pressed: { opacity: 0.6 },
+  button: { width: dp(44), height: dp(44), alignItems: 'center', justifyContent: 'center' },
+  pressed: { transform: [{ scale: 0.95 }] },
 });
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     googleIcon: { width: sizes.icon, height: sizes.icon },
     linked: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
-    linkedLabel: { fontSize: 14, lineHeight: 20, color: colors.textMuted },
+    linkedLabel: { ...typography.bodyMd, color: colors.textMuted },
   });

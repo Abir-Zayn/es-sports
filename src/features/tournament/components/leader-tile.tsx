@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { InitialsAvatar, Text } from '@/components/ui';
-import { spacing, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
+import { sizes, spacing, typography, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
 
 type Props = {
   /** Player or team name. */
@@ -18,7 +18,7 @@ type Props = {
   imageUri?: string;
 };
 
-const PHOTO_SIZE = 44;
+const PHOTO_SIZE = sizes.avatar;
 
 /**
  * One leader as a flat row with no background: photo, the name over the award, and the figure on the right.
@@ -48,10 +48,10 @@ export function LeaderTile({ name, award, value, unit, initials, tone, imageUri 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md },
-    names: { flex: 1, minWidth: 0, gap: 2 },
-    name: { fontSize: 15, lineHeight: 20, fontWeight: '700' },
-    award: { fontSize: 12, lineHeight: 16, fontWeight: '600', color: colors.textMuted },
+    names: { flex: 1, minWidth: 0, gap: spacing.xs / 2 },
+    name: typography.bodyMd,
+    award: { ...typography.bodySm, color: colors.textMuted },
     score: { alignItems: 'flex-end' },
-    value: { fontSize: 20, lineHeight: 24, fontWeight: '800', fontVariant: ['tabular-nums'] },
-    unit: { fontSize: 11, lineHeight: 14, color: colors.textMuted },
+    value: { ...typography.headlineLg, fontVariant: ['tabular-nums'] },
+    unit: { ...typography.labelSm, color: colors.textMuted },
   });

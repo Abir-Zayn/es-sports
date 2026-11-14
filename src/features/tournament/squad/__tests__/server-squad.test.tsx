@@ -99,4 +99,19 @@ describe('the squad screen', () => {
     expect(screen.queryByRole('button', { name: 'Save squad' })).toBeNull();
     expect(screen.queryByRole('button', { name: /to the squad/ })).toBeNull();
   });
+
+  it('lets the tournament owner add anyone straight to the team and squad', async () => {
+    seed('player');
+    (fake.results.tournaments.data as { owner_id: string }).owner_id = 'me';
+    fake.results.profiles = { data: [{ id: 'u9', full_name: 'Mehedi', area: null, avatar_url: null }], error: null };
+    await show();
+    await fireEvent.press(screen.getByRole('button', { name: 'Add player' }));
+    await fireEvent.press(await screen.findByRole('button', { name: 'Add Mehedi' }));
+    await waitFor(() => expect(fake.rpc).toHaveBeenCalledWith('add_tournament_squad_player', { p_tournament: T, p_team: 'a', p_profile: 'u9' }));
+  });
+
+  it('shows no add button to a team owner who does not run the tournament', async () => {
+    await show();
+    expect(screen.queryByRole('button', { name: 'Add player' })).toBeNull();
+  });
 });

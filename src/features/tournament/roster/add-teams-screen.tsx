@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppIconTile, Button, Text } from '@/components/ui';
 import { searchPlayers, suggestPlayers } from '@/features/match/friendly/search-players';
 import { isUuid } from '@/features/scoring/data/uuid';
-import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { AddOwnTeamSheet } from './components/add-own-team-sheet';
 import { ConfirmSheet } from './components/confirm-sheet';
@@ -69,7 +69,7 @@ export function AddTeamsScreen() {
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <AppIconTile icon={ChevronLeft} size={44} borderRadius={radius.pill} accessibilityLabel="Back" onPress={goBack} />
+        <AppIconTile icon={ChevronLeft} size={sizes.iconButton} borderRadius={radius.pill} accessibilityLabel="Back" onPress={goBack} />
         <View style={styles.titles}>
           <Text accessibilityRole="header" style={styles.title}>
             Teams & staff
@@ -198,9 +198,9 @@ const createStyles = (colors: Palette) =>
     screen: { flex: 1, backgroundColor: colors.background },
     header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter, paddingVertical: spacing.md },
     titles: { flex: 1, minWidth: 0 },
-    title: { fontSize: 18, lineHeight: 24, fontWeight: '700' },
-    subtitle: { fontSize: 13, lineHeight: 18 },
-    content: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, gap: spacing.xl, maxWidth: 600, width: '100%', alignSelf: 'center' },
+    title: typography.headlineLg,
+    subtitle: typography.bodySm,
+    content: { paddingHorizontal: sizes.gutter, paddingTop: spacing.sm, gap: sizes.sectionGap, maxWidth: dp(600), width: '100%', alignSelf: 'center' },
     status: { paddingVertical: spacing.xxl },
     failed: { alignItems: 'center', gap: spacing.md, padding: spacing.xl },
     error: { color: colors.dangerSoftText },

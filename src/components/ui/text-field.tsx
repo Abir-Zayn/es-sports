@@ -2,7 +2,7 @@ import { useState, type ComponentRef, type ReactNode, type Ref } from 'react';
 import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
 import { Text } from '@/components/ui/text';
-import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, sp, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 type Props = Omit<TextInputProps, 'style'> & {
   label: string;
@@ -56,14 +56,15 @@ const createStyles = (colors: Palette) =>
       flexDirection: 'row',
       alignItems: 'center',
       height: sizes.field,
-      paddingHorizontal: spacing.xl,
-      borderRadius: radius.pill,
-      borderWidth: 1,
-      borderColor: colors.border,
-      backgroundColor: colors.surface,
+      paddingHorizontal: dp(20),
+      borderRadius: radius.md,
+      // Transparent 2px border reserves space so the focus ring doesn't shift layout.
+      borderWidth: 2,
+      borderColor: 'transparent',
+      backgroundColor: colors.surfaceRaised,
     },
-    focused: { borderColor: colors.primary },
+    focused: { borderColor: colors.primaryTint },
     invalid: { borderColor: colors.danger },
-    input: { flex: 1, minWidth: 0, fontSize: 16, color: colors.text, paddingVertical: 0 },
+    input: { flex: 1, minWidth: 0, fontSize: sp(16), color: colors.text, paddingVertical: 0 },
     error: { color: colors.danger },
   });

@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { InitialsAvatar, Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { dp, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { StandingRow } from '@/types/cricket';
 
 type Props = { rows: StandingRow[] };
@@ -22,7 +22,7 @@ export function StandingsTable({ rows }: Props) {
         <View key={row.team.short} style={[styles.row, i < rows.length - 1 && styles.rowDivider]}>
           <Text style={[styles.posText, styles.pos]}>{row.pos}</Text>
           <View style={[styles.team, styles.teamCell]}>
-            <InitialsAvatar label={row.team.short} tone={row.team.tone} imageUri={row.team.avatarUri} size={26} />
+            <InitialsAvatar label={row.team.short} tone={row.team.tone} imageUri={row.team.avatarUri} size={dp(26)} />
             <Text style={styles.teamName} numberOfLines={1}>
               {row.team.name}
             </Text>
@@ -38,19 +38,19 @@ export function StandingsTable({ rows }: Props) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
+    row: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.md },
     head: { borderBottomWidth: 1, borderBottomColor: colors.border },
     rowDivider: { borderBottomWidth: 1, borderBottomColor: colors.border },
-    headText: { fontSize: 11, lineHeight: 14, fontWeight: '700', letterSpacing: 1, color: colors.textMuted },
-    pos: { width: 28 },
+    headText: { ...typography.labelUppercase, color: colors.textMuted },
+    pos: { width: dp(28) },
     team: { flex: 1, minWidth: 0 },
-    teamCell: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-    played: { width: 34, textAlign: 'center' },
-    points: { width: 40, textAlign: 'center' },
-    nrr: { width: 60, textAlign: 'right' },
-    posText: { fontSize: 14, lineHeight: 20, fontWeight: '700', color: colors.link },
-    teamName: { flexShrink: 1, fontSize: 14, lineHeight: 20, fontWeight: '600' },
-    cell: { fontSize: 14, lineHeight: 20, color: colors.textMuted },
-    nrrText: { fontSize: 13, fontVariant: ['tabular-nums'] },
-    pointsText: { fontSize: 14, lineHeight: 20, fontWeight: '800' },
+    teamCell: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+    played: { width: dp(34), textAlign: 'center' },
+    points: { width: dp(40), textAlign: 'center' },
+    nrr: { width: dp(60), textAlign: 'right' },
+    posText: { ...typography.bodyMd, color: colors.link, fontVariant: ['tabular-nums'] },
+    teamName: { ...typography.bodyMd, flexShrink: 1, color: colors.text },
+    cell: { ...typography.bodyMd, color: colors.textMuted, fontVariant: ['tabular-nums'] },
+    nrrText: { fontVariant: ['tabular-nums'] },
+    pointsText: { ...typography.bodyMd, fontWeight: typography.headlineMd.fontWeight, color: colors.text, fontVariant: ['tabular-nums'] },
   });

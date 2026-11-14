@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { Text } from '@/components/ui';
 import { quadrantSplit } from '@/lib/pitch-quadrant';
-import { useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 export function PlayerPitchZones({ shots }: { shots: readonly { runs: number; angle: number }[] }) {
   const styles = useThemedStyles(createStyles);
@@ -22,12 +22,13 @@ export function PlayerPitchZones({ shots }: { shots: readonly { runs: number; an
   </View>;
 }
 const createStyles = (c: Palette) => StyleSheet.create({
-  section: { gap: 12 }, heading: { color: c.text, fontWeight: '700', fontSize: 20, lineHeight: 26 },
-  caption: { color: c.textMuted, fontSize: 12, lineHeight: 17 }, empty: { color: c.textMuted, fontSize: 14 },
-  bar: { flexDirection: 'row', height: 10, borderRadius: 5, overflow: 'hidden', backgroundColor: c.surfaceRaised },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  card: { flexBasis: '46%', flexGrow: 1, backgroundColor: c.surface, borderRadius: 14, padding: 12, gap: 4 },
-  dot: { height: 8, width: 8, borderRadius: 4 }, label: { color: c.textMuted, fontSize: 13 },
-  value: { color: c.text, fontWeight: '700', fontSize: 20, fontVariant: ['tabular-nums'] },
-  off: { backgroundColor: c.primary }, straight: { backgroundColor: c.accent }, leg: { backgroundColor: c.link }, behind: { backgroundColor: c.danger },
+  section: { gap: spacing.md }, heading: { ...typography.headlineMd, color: c.text },
+  caption: { ...typography.bodySm, color: c.textMuted }, empty: { ...typography.bodyMd, color: c.textMuted },
+  bar: { flexDirection: 'row', height: sizes.progressBar, borderRadius: radius.pill, overflow: 'hidden', backgroundColor: c.border },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  card: { flexBasis: '46%', flexGrow: 1, backgroundColor: c.surface, borderRadius: radius.lg, padding: spacing.md, gap: spacing.xs, ...shadows.card },
+  dot: { height: dp(8), width: dp(8), borderRadius: radius.pill }, label: { ...typography.bodySm, color: c.textMuted },
+  value: { ...typography.headlineLg, color: c.text, fontVariant: ['tabular-nums'] },
+  // Categorical chart colours, one per zone.
+  off: { backgroundColor: c.primary }, straight: { backgroundColor: c.accent }, leg: { backgroundColor: c.info }, behind: { backgroundColor: c.danger },
 });

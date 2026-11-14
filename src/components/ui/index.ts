@@ -4,6 +4,7 @@ export { AppIconTile } from './app-icon-tile';
 export { AppTabs, type AppTab } from './app-tabs';
 export { InitialsAvatar } from './initials-avatar';
 export { Button } from './button';
+export { Card } from './card';
 export { Checkbox } from './checkbox';
 export { PasswordField } from './password-field';
 export { SearchField } from './search-field';

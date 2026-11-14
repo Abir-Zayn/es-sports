@@ -3,7 +3,7 @@ import Play from 'lucide-react-native/icons/play';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 type Props = { label: string; source: string; onPress: () => void };
 
@@ -19,7 +19,7 @@ export function StreamLinkCard({ label, source, onPress }: Props) {
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
       <View style={[styles.icon, { backgroundColor: colors.live }]}>
-        <Play size={18} color={colors.onLive} fill={colors.onLive} />
+        <Play size={sizes.iconSmall} color={colors.onLive} fill={colors.onLive} />
       </View>
       <View style={styles.text}>
         <Text style={styles.label}>{label}</Text>
@@ -27,7 +27,7 @@ export function StreamLinkCard({ label, source, onPress }: Props) {
           {source}
         </Text>
       </View>
-      <ExternalLink size={18} color={colors.textMuted} />
+      <ExternalLink size={sizes.iconSmall} color={colors.textMuted} />
     </Pressable>
   );
 }
@@ -37,17 +37,15 @@ const createStyles = (colors: Palette) =>
     card: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 14,
-      paddingVertical: 12,
-      paddingHorizontal: 14,
-      borderRadius: 18,
+      gap: spacing.md,
+      padding: spacing.lg,
+      borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
+      ...shadows.card,
     },
-    pressed: { opacity: 0.85 },
-    icon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-    text: { flex: 1, minWidth: 0, gap: 2 },
-    label: { fontSize: 14, lineHeight: 19, fontWeight: '700' },
-    source: { fontSize: 12, lineHeight: 16 },
+    pressed: { transform: [{ scale: 0.98 }] },
+    icon: { width: sizes.iconButton, height: sizes.iconButton, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
+    text: { flex: 1, minWidth: 0, gap: dp(2) },
+    label: typography.headlineMd,
+    source: typography.bodySm,
   });

@@ -1,7 +1,7 @@
 import { View, type ColorValue } from 'react-native';
 
 import { Text } from '@/components/ui/text';
-import { useTheme } from '@/theme';
+import { sizes, useTheme } from '@/theme';
 
 type Props = {
   /** The initials or short code shown inside. */
@@ -22,7 +22,7 @@ type Props = {
 /** A circle holding a short label, for people and teams. */
 export function AppAvatar({
   label,
-  size = 36,
+  size = sizes.avatar,
   backgroundColor,
   color,
   borderColor,
@@ -42,7 +42,7 @@ export function AppAvatar({
         width: size,
         height: size,
         borderRadius: borderRadius ?? size / 2,
-        backgroundColor: backgroundColor ?? colors.surfaceRaised,
+        backgroundColor: backgroundColor ?? colors.border,
         borderColor,
         borderWidth,
         alignItems: 'center',
@@ -55,7 +55,7 @@ export function AppAvatar({
           color: color ?? colors.text,
           fontSize: Math.round(size * 0.4),
           lineHeight: Math.round(size * 0.5),
-          fontWeight: '800',
+          fontWeight: '500',
         }}
       >
         {label}

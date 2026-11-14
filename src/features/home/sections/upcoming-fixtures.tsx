@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { UpcomingMatchTile } from '@/components/match/upcoming-match-tile';
 import { Section, SectionHeader } from '@/components/ui';
-import { sizes, useThemedStyles, type Palette } from '@/theme';
+import { radius, shadows, sizes, useThemedStyles, type Palette } from '@/theme';
 import type { UpcomingMatch } from '@/types/cricket';
 
 type Props = {
@@ -31,6 +31,12 @@ export function UpcomingFixtures({ fixtures, onAllFixtures, onRemind }: Props) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    list: { paddingHorizontal: sizes.gutter },
+    list: {
+      marginHorizontal: sizes.gutter,
+      paddingHorizontal: sizes.cardPaddingTight,
+      borderRadius: radius.lg,
+      backgroundColor: colors.surface,
+      ...shadows.card,
+    },
     divider: { height: 1, backgroundColor: colors.border },
   });

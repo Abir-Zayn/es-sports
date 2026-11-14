@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import { Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { Performance } from '@/types/profile';
 
 export function PlayerRecentMatches({ matches }: { matches: readonly Performance[] }) {
@@ -22,11 +22,11 @@ export function PlayerRecentMatches({ matches }: { matches: readonly Performance
   </View>;
 }
 const createStyles = (c: Palette) => StyleSheet.create({
-  section: { gap: 16 }, heading: { color: c.text, fontWeight: '700', fontSize: 20, lineHeight: 26 },
-  empty: { color: c.textMuted, fontSize: 14 }, row: { flexDirection: 'row', gap: 12 },
-  marker: { width: 12, alignItems: 'center', paddingTop: 6 }, dot: { width: 9, height: 9, borderRadius: 5, backgroundColor: c.primary },
-  details: { flex: 1, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: c.border, paddingBottom: 16, gap: 4 },
-  line: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 }, opponent: { color: c.text, fontWeight: '700', flexShrink: 1 },
-  date: { color: c.textMuted, fontSize: 12 }, result: { color: c.textMuted, fontSize: 12 },
-  figures: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 }, figure: { color: c.text, fontSize: 13 },
+  section: { gap: spacing.lg }, heading: { ...typography.headlineMd, color: c.text },
+  empty: { ...typography.bodyMd, color: c.textMuted }, row: { flexDirection: 'row', gap: spacing.md },
+  marker: { width: dp(12), alignItems: 'center', paddingTop: dp(6) }, dot: { width: dp(9), height: dp(9), borderRadius: radius.pill, backgroundColor: c.outline },
+  details: { flex: 1, borderBottomWidth: 1, borderColor: c.border, paddingBottom: spacing.lg, gap: spacing.xs },
+  line: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.sm }, opponent: { ...typography.labelMd, color: c.text, flexShrink: 1 },
+  date: { ...typography.bodySm, color: c.textMuted }, result: { ...typography.bodySm, color: c.textMuted },
+  figures: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }, figure: { ...typography.bodySm, color: c.text, fontVariant: ['tabular-nums'] },
 });

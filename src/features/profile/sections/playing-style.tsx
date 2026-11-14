@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Section, SectionHeader, Text } from '@/components/ui';
-import { radius, sizes, spacing, useThemedStyles, type Palette } from '@/theme';
+import { radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { PlayerProfile } from '@/types/profile';
 
 import { battingLabels, roleLabels } from '../labels';
@@ -29,11 +29,9 @@ const createStyles = (colors: Palette) =>
     row: { paddingHorizontal: sizes.gutter, flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
     pill: {
       paddingVertical: spacing.sm,
-      paddingHorizontal: spacing.md,
+      paddingHorizontal: spacing.lg,
       borderRadius: radius.pill,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
+      backgroundColor: colors.surfaceRaised,
     },
-    label: { fontSize: 13, lineHeight: 18, fontWeight: '600' },
+    label: { ...typography.labelSm, color: colors.textMuted },
   });

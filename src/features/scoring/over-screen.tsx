@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { OverBalls } from './components/over-balls';
 import { chaseLabel } from './components/score-summary';
@@ -71,16 +71,16 @@ export function EndOfOverScreen() {
   </ScorerFrame>;
 }
 const styles = (c: Palette) => StyleSheet.create({
-  summary: { padding: 16, borderRadius: 22, borderWidth: 1, borderColor: c.primaryDeep, backgroundColor: c.primarySoft, gap: 14 },
-  heading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 },
-  title: { fontSize: 24, lineHeight: 30, fontWeight: '800' }, runs: { fontSize: 22, lineHeight: 28, fontWeight: '800' },
-  caption: { fontSize: 13, lineHeight: 18 }, link: { color: c.link, fontWeight: '700' }, bold: { fontWeight: '700' },
-  ends: { padding: 14, flexDirection: 'row', gap: 12, borderRadius: 16, borderWidth: 1, borderColor: c.border, backgroundColor: c.surface },
-  list: { borderWidth: 1, borderColor: c.border, borderRadius: 20, overflow: 'hidden', backgroundColor: c.surface },
-  bowler: { minHeight: 64, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderBottomWidth: 1, borderBottomColor: c.border },
-  selected: { backgroundColor: c.primarySoft }, disabled: { opacity: 0.4 }, pressed: { opacity: 0.75 },
-  radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: c.outline, alignItems: 'center', justifyContent: 'center' },
-  radioSelected: { borderColor: c.primary, backgroundColor: c.primary }, dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: c.primaryText },
-  nameWrap: { flex: 1, gap: 2 }, name: { fontSize: 14, lineHeight: 19, fontWeight: '700' },
-  left: { fontSize: 11, lineHeight: 16, fontWeight: '600' }, unavailable: { color: c.dangerSoftText },
+  summary: { padding: sizes.cardPadding, borderRadius: radius.lg, backgroundColor: c.surface, ...shadows.card, gap: spacing.lg },
+  heading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: spacing.md },
+  title: typography.displayMd, runs: { ...typography.headlineLg, fontVariant: ['tabular-nums'] },
+  caption: typography.bodyMd, link: { color: c.link }, bold: { color: c.text },
+  ends: { padding: spacing.lg, flexDirection: 'row', gap: spacing.md, borderRadius: radius.lg, backgroundColor: c.surface, ...shadows.card },
+  list: { borderRadius: radius.lg, overflow: 'hidden', backgroundColor: c.surface, ...shadows.card },
+  bowler: { minHeight: dp(64), flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md, paddingHorizontal: sizes.cardPaddingTight, borderBottomWidth: 1, borderBottomColor: c.border },
+  selected: { backgroundColor: c.primarySoft }, disabled: { opacity: 0.4 }, pressed: { backgroundColor: c.surfaceRaised },
+  radio: { width: dp(20), height: dp(20), borderRadius: radius.pill, borderWidth: 2, borderColor: c.outline, alignItems: 'center', justifyContent: 'center' },
+  radioSelected: { borderColor: c.primary, backgroundColor: c.primary }, dot: { width: dp(8), height: dp(8), borderRadius: radius.pill, backgroundColor: c.primaryText },
+  nameWrap: { flex: 1, gap: spacing.xs / 2 }, name: typography.labelMd,
+  left: typography.labelSm, unavailable: { color: c.dangerSoftText },
 });

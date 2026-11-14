@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { InitialsAvatar, Text } from '@/components/ui';
-import { spacing, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { TournamentTeam } from '@/types/cricket';
 
 import { useToneColors } from '../use-tone-colors';
@@ -29,7 +29,7 @@ export function TeamCard({ entry, qualifyCount, onPress }: Props) {
     >
       <View style={[styles.stripe, { backgroundColor: stripe }]} />
       <View style={styles.top}>
-        <InitialsAvatar label={team.short} tone={team.tone} imageUri={team.avatarUri} size={48} />
+        <InitialsAvatar label={team.short} tone={team.tone} imageUri={team.avatarUri} size={dp(48)} />
         <Text style={[styles.pos, qualifies && styles.posQualified]}>#{entry.pos}</Text>
       </View>
       <View style={styles.names}>
@@ -54,24 +54,23 @@ const createStyles = (colors: Palette) =>
       flex: 1,
       minWidth: 0,
       paddingTop: spacing.lg,
-      paddingHorizontal: 14,
-      paddingBottom: 14,
-      borderRadius: 20,
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.lg,
+      borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
       overflow: 'hidden',
+      ...shadows.card,
       gap: spacing.md,
     },
-    pressed: { opacity: 0.85 },
-    stripe: { position: 'absolute', top: 0, left: 0, right: 0, height: 4 },
+    pressed: { transform: [{ scale: 0.95 }] },
+    stripe: { position: 'absolute', top: 0, left: 0, right: 0, height: dp(4) },
     top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    pos: { fontSize: 20, lineHeight: 26, fontWeight: '800', color: colors.outline },
+    pos: { ...typography.headlineLg, color: colors.outline, fontVariant: ['tabular-nums'] },
     posQualified: { color: colors.link },
-    names: { gap: 4 },
-    name: { fontSize: 15, lineHeight: 19, fontWeight: '700' },
-    captain: { fontSize: 12, lineHeight: 16 },
+    names: { gap: spacing.xs },
+    name: typography.headlineMd,
+    captain: typography.bodySm,
     foot: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    footText: { fontSize: 12, lineHeight: 16 },
-    points: { fontSize: 12, lineHeight: 16, fontWeight: '700' },
+    footText: typography.bodySm,
+    points: { ...typography.labelSm, fontVariant: ['tabular-nums'] },
   });

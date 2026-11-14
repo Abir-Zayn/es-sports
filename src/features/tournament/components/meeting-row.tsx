@@ -2,7 +2,7 @@ import ChevronRight from 'lucide-react-native/icons/chevron-right';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { InitialsAvatar, Text } from '@/components/ui';
-import { useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { HeadToHeadMeeting, TeamInfo } from '@/types/cricket';
 
 type Props = { meeting: HeadToHeadMeeting; winner: TeamInfo; onPress?: () => void };
@@ -18,14 +18,14 @@ export function MeetingRow({ meeting, winner, onPress }: Props) {
       onPress={onPress}
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}
     >
-      <InitialsAvatar label={winner.short} tone={winner.tone} imageUri={winner.avatarUri} size={36} />
+      <InitialsAvatar label={winner.short} tone={winner.tone} imageUri={winner.avatarUri} size={dp(36)} />
       <View style={styles.text}>
         <Text style={styles.result}>{meeting.result}</Text>
         <Text muted style={styles.meta}>
           {meeting.meta}
         </Text>
       </View>
-      <ChevronRight size={18} color={colors.outline} />
+      <ChevronRight size={sizes.iconSmall} color={colors.outline} />
     </Pressable>
   );
 }
@@ -35,16 +35,15 @@ const createStyles = (colors: Palette) =>
     row: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 12,
-      paddingVertical: 12,
-      paddingHorizontal: 14,
-      borderRadius: 16,
+      gap: spacing.md,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
+      borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
+      ...shadows.card,
     },
-    pressed: { opacity: 0.85 },
-    text: { flex: 1, minWidth: 0, gap: 3 },
-    result: { fontSize: 13, lineHeight: 18, fontWeight: '600' },
-    meta: { fontSize: 12, lineHeight: 16 },
+    pressed: { transform: [{ scale: 0.95 }] },
+    text: { flex: 1, minWidth: 0, gap: spacing.xs / 2 },
+    result: typography.bodyMd,
+    meta: typography.bodySm,
   });

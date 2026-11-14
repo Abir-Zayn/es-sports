@@ -1,6 +1,8 @@
 # Universal AI Engineering Rules & Repository Memory
 ## Application design direction
-- Use `DESIGN.md` as the visual reference for esSports. Apply its indigo, blue, layered surfaces, rounded components, spacing, and hierarchy through shared tokens in `src/theme`, with a coordinated light palette for device light mode.
+- Use `DESIGN.md` (Coral Daylight) as the design system for esSports. Apply its coral accent, white cards on an off-white page, pill controls, spacing and hierarchy only through the shared tokens in `src/theme` (`@/theme`); the dark palette is derived from the light spec.
+- Font weights: headings `fontWeight.heading` ('500'), all other text `fontWeight.regular` ('400'); nothing heavier.
+- Sizes scale with the device: use `dp()` for layout numbers and `sp()` for font sizes (both from `@/theme`); tokens are pre-scaled.
 - Always use the device's system font; do not add or set the font families specified in `DESIGN.md`.
 - Always follow the device light/dark setting, including changes while the app is open; do not add an in-app theme override. Maintain `userInterfaceStyle: automatic`.
 - Respect accessibility and the performance rules below when adapting the reference: preserve legible contrast and avoid blur or costly glow effects. Keep user-uploaded images and functional content.

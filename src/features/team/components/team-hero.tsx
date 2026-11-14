@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, InitialsAvatar, Text } from '@/components/ui';
 import { useToneColors } from '@/features/tournament/use-tone-colors';
-import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { TeamInfo } from '@/types/cricket';
 
 type Props = {
@@ -36,18 +36,20 @@ export function TeamHero({ team, captain, location, following, onToggleFollow, o
       <View style={styles.actions}>
         <AppIconTile
           icon={ChevronLeft}
-          size={44}
+          size={sizes.iconButton}
           borderRadius={radius.pill}
-          backgroundColor={colors.overlay}
+          backgroundColor={colors.surface}
+          elevated
           accessibilityLabel="Back"
           onPress={onBack}
         />
         <AppIconTile
           icon={Share2}
-          size={44}
+          size={sizes.iconButton}
           borderRadius={radius.pill}
-          backgroundColor={colors.overlay}
-          iconSize={18}
+          backgroundColor={colors.surface}
+          elevated
+          iconSize={dp(18)}
           accessibilityLabel="Share team"
           onPress={onShare}
         />
@@ -58,7 +60,7 @@ export function TeamHero({ team, captain, location, following, onToggleFollow, o
           label={team.short}
           tone={team.tone}
           imageUri={team.avatarUri}
-          size={96}
+          size={dp(96)}
           borderColor={tint}
           borderWidth={3}
         />
@@ -82,10 +84,10 @@ export function TeamHero({ team, captain, location, following, onToggleFollow, o
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    hero: { paddingHorizontal: sizes.gutter, paddingBottom: 22, backgroundColor: colors.primarySoft, overflow: 'hidden' },
+    hero: { paddingHorizontal: sizes.gutter, paddingBottom: spacing.xl, backgroundColor: colors.primarySoft, overflow: 'hidden' },
     art: { position: 'absolute', top: 0, left: 0 },
     actions: { flexDirection: 'row', justifyContent: 'space-between' },
-    identity: { marginTop: 8, alignItems: 'center', gap: 12 },
-    name: { fontSize: 28, lineHeight: 32, fontWeight: '800', textAlign: 'center' },
-    meta: { fontSize: 13, lineHeight: 18, textAlign: 'center' },
+    identity: { marginTop: spacing.sm, alignItems: 'center', gap: spacing.md },
+    name: { ...typography.displayMd, textAlign: 'center' },
+    meta: { ...typography.bodySm, textAlign: 'center' },
   });

@@ -1,9 +1,9 @@
 import { StyleSheet, View } from 'react-native';
 
-import { Button, Text } from '@/components/ui';
-import { spacing, useThemedStyles, type Palette } from '@/theme';
+import { Button, Card, Text } from '@/components/ui';
+import { spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
-import type { Capabilities } from '../permissions';
+import { INVITES_ENABLED, type Capabilities } from '../permissions';
 import type { Roster, RosterTeam } from '../types';
 import { TeamRow } from './team-row';
 
@@ -27,7 +27,7 @@ export function TeamsSection({ roster, caps, busy, onCreate, onInviteOwner, onRe
   const styles = useThemedStyles(createStyles);
   const full = roster.teams.length >= roster.maxTeams;
   return (
-    <View style={styles.section}>
+    <Card style={styles.section}>
       <View style={styles.heading}>
         <Text accessibilityRole="header" style={styles.title}>
           Teams
@@ -37,7 +37,9 @@ export function TeamsSection({ roster, caps, busy, onCreate, onInviteOwner, onRe
         </Text>
       </View>
       <Text variant="caption" muted>
-        Each team gets one owner. Once they accept, they invite the players and pick one team moderator.
+        {INVITES_ENABLED
+          ? 'Each team gets one owner. Once they accept, they invite the players and pick one team moderator.'
+          : 'Open a team\'s squad to add players to it directly.'}
       </Text>
       {roster.teams.length === 0 ? (
         <Text muted style={styles.empty}>
@@ -67,7 +69,7 @@ export function TeamsSection({ roster, caps, busy, onCreate, onInviteOwner, onRe
         <Button label={full ? 'All teams added' : 'Create team'} disabled={busy || full} onPress={onCreate} />
       ) : null}
       {caps.manageTeams && onAddOwn && !full ? <Button label="Add my team" variant="secondary" disabled={busy} onPress={onAddOwn} /> : null}
-    </View>
+    </Card>
   );
 }
 
@@ -75,8 +77,8 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     section: { gap: spacing.sm },
     heading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: spacing.md },
-    title: { fontSize: 16, lineHeight: 22, fontWeight: '700' },
-    count: { fontSize: 12, lineHeight: 16, fontWeight: '600', color: colors.textMuted, fontVariant: ['tabular-nums'] },
+    title: typography.headlineMd,
+    count: { ...typography.labelSm, color: colors.textMuted, fontVariant: ['tabular-nums'] },
     empty: { paddingVertical: spacing.md },
     divided: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
   });

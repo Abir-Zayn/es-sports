@@ -53,15 +53,38 @@ describe('placing matches', () => {
     expect(result.problem).toBe('This needs 14 days, but the tournament runs 5. Play more matches a day or move the end date.');
   });
 
-  it('refuses a move onto a busy slot or a day a team already plays', () => {
+  it('allows up to 3 matches per team in a day, and pushes a 4th match to the next day', () => {
+    const [t1, t2, t3, t4] = teams(4);
+    const fourWithT1 = [
+      { number: 1, stage: 'League' as const, round: 0, home: { kind: 'team' as const, team: t1 }, away: { kind: 'team' as const, team: t2 } },
+      { number: 2, stage: 'League' as const, round: 0, home: { kind: 'team' as const, team: t1 }, away: { kind: 'team' as const, team: t3 } },
+      { number: 3, stage: 'League' as const, round: 0, home: { kind: 'team' as const, team: t1 }, away: { kind: 'team' as const, team: t4 } },
+      { number: 4, stage: 'League' as const, round: 0, home: { kind: 'team' as const, team: t1 }, away: { kind: 'team' as const, team: t2 } },
+    ];
+    const { matches, problem } = placeMatches(fourWithT1, days, { perDay: 4, firstStartMin: 8 * 60 }, 10);
+    expect(problem).toBeNull();
+    expect(matches.slice(0, 3).every((m) => m.date === days[0])).toBe(true);
+    expect(matches[3].date).toBe(days[1]);
+  });
+
+  it('refuses a move onto a busy slot or a 4th match for a team on the same day', () => {
     const { matches } = placeMatches(generatePairings(teams(4), 'league'), days, { perDay: 2, firstStartMin: 540 }, 20);
     const [first, second, third] = matches;
     expect(moveProblem(matches, third.id, first.date, first.startMin, 20)).toBe('Another match is on the ground at that time.');
     const sharesTeam = sides(third).some((s) => sides(first).includes(s) || sides(second).includes(s));
     expect(sharesTeam).toBe(true);
     expect(moveProblem(matches, third.id, first.date, 20 * 60, 20)).toMatch(/run past/);
-    expect(moveProblem(matches, third.id, first.date, 17 * 60, 20)).toMatch(/already plays Match/);
+    // A 2nd or 3rd match for the same team on the same day is allowed when the ground is free.
+    expect(moveProblem(matches, third.id, first.date, 17 * 60, 20)).toBeNull();
     expect(moveProblem(matches, third.id, '2026-11-20', 600, 20)).toBeNull();
+
+    const [t1, t2, t3, t4] = teams(4);
+    const make = (n: number, startMin: number, opp: ScheduleTeam): ScheduledMatch => ({
+      id: `m${n}`, number: n, stage: 'League', round: 0, date: '2026-11-01', startMin,
+      home: { kind: 'team', team: t1 }, away: { kind: 'team', team: opp },
+    });
+    const busyDay = [make(1, 7 * 60, t2), make(2, 11 * 60, t3), make(3, 15 * 60, t4), make(4, 19 * 60, t2)];
+    expect(moveProblem(busyDay, 'm4', '2026-11-01', 19 * 60, 20)).toBe('A team in this match already plays 3 matches that day.');
   });
 });
 

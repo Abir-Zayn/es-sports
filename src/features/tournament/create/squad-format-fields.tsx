@@ -4,7 +4,7 @@ import Shirt from 'lucide-react-native/icons/shirt';
 import { StyleSheet, View } from 'react-native';
 
 import { AppIconTile, Text } from '@/components/ui';
-import { radius, spacing, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { DatePicker } from './date-picker';
 import type { DraftErrors, TournamentDraft } from './draft';
@@ -52,16 +52,16 @@ function Stepper({ label, value, min, max, onChange }: { label: string; value: n
   const styles = useThemedStyles(createStyles);
   return <View style={styles.stepper}>
     <Text style={styles.stepperLabel}>{label}</Text>
-    <AppIconTile icon={Minus} size={44} borderRadius={radius.pill} accessibilityLabel={`Fewer: ${label}`} onPress={value > min ? () => onChange(value - 1) : undefined} />
+    <AppIconTile icon={Minus} size={sizes.iconButton} borderRadius={radius.pill} accessibilityLabel={`Fewer: ${label}`} onPress={value > min ? () => onChange(value - 1) : undefined} />
     <Text style={styles.stepperValue} accessibilityLabel={`${label}, ${value}`}>{value}</Text>
-    <AppIconTile icon={Plus} size={44} borderRadius={radius.pill} accessibilityLabel={`More: ${label}`} onPress={value < max ? () => onChange(value + 1) : undefined} />
+    <AppIconTile icon={Plus} size={sizes.iconButton} borderRadius={radius.pill} accessibilityLabel={`More: ${label}`} onPress={value < max ? () => onChange(value + 1) : undefined} />
   </View>;
 }
 
 const createStyles = (colors: Palette) => StyleSheet.create({
   summary: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
   error: { color: colors.dangerSoftText, paddingHorizontal: spacing.lg, paddingBottom: spacing.md },
-  stepper: { minHeight: 60, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingVertical: spacing.xs },
+  stepper: { minHeight: dp(60), flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingVertical: spacing.xs },
   stepperLabel: { flex: 1 },
-  stepperValue: { minWidth: 28, textAlign: 'center', fontWeight: '700', fontVariant: ['tabular-nums'] },
+  stepperValue: { minWidth: dp(28), textAlign: 'center', fontVariant: ['tabular-nums'] },
 });

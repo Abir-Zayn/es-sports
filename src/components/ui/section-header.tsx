@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui/text';
-import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 type Props = {
   title: string;
@@ -41,8 +41,8 @@ const createStyles = (colors: Palette) =>
     row: { paddingHorizontal: sizes.gutter, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     flush: { paddingHorizontal: 0 },
     titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexShrink: 1 },
-    dot: { width: 8, height: 8, borderRadius: 4 },
-    title: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
-    compactTitle: { fontSize: 16, lineHeight: 22 },
-    action: { fontSize: 13, fontWeight: '600', color: colors.link },
+    dot: { width: dp(8), height: dp(8), borderRadius: radius.pill },
+    title: { ...typography.headlineMd, color: colors.text },
+    compactTitle: typography.labelMd,
+    action: { ...typography.labelMd, color: colors.link },
   });

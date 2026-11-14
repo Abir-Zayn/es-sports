@@ -1,12 +1,12 @@
 import { StyleSheet, View } from 'react-native';
 
-import { Text } from '@/components/ui';
-import { sizes, useThemedStyles, type Palette } from '@/theme';
+import { Card, Text } from '@/components/ui';
+import { sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { ProfileData } from '@/types/profile';
 
 type Props = Pick<ProfileData, 'batting' | 'bowling' | 'teams'>;
 
-/** Matches, runs, wickets and teams in one bordered strip. */
+/** Matches, runs, wickets and teams in one card. */
 export function StatStrip({ batting, bowling, teams }: Props) {
   const styles = useThemedStyles(createStyles);
   const cells: [string, number][] = [
@@ -17,16 +17,16 @@ export function StatStrip({ batting, bowling, teams }: Props) {
   ];
   return (
     <View style={styles.wrap}>
-      <View style={styles.strip}>
+      <Card padding="none" style={styles.strip}>
         {cells.map(([label, value], i) => (
           <View key={label} accessible accessibilityLabel={`${label} ${value}`} style={[styles.cell, i < cells.length - 1 && styles.divider]}>
             <Text style={styles.value}>{value}</Text>
-            <Text muted style={styles.label}>
+            <Text variant="bodySm" muted>
               {label}
             </Text>
           </View>
         ))}
-      </View>
+      </Card>
     </View>
   );
 }
@@ -34,9 +34,8 @@ export function StatStrip({ batting, bowling, teams }: Props) {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     wrap: { paddingHorizontal: sizes.gutter },
-    strip: { flexDirection: 'row', borderTopWidth: 1, borderBottomWidth: 1, borderColor: colors.border },
-    cell: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: 14 },
+    strip: { flexDirection: 'row', paddingVertical: sizes.cardPaddingTight },
+    cell: { flex: 1, alignItems: 'center', gap: spacing.xs },
     divider: { borderRightWidth: 1, borderRightColor: colors.border },
-    value: { fontSize: 22, lineHeight: 28, fontWeight: '800', fontVariant: ['tabular-nums'] },
-    label: { fontSize: 11, lineHeight: 14 },
+    value: typography.numeralStat,
   });

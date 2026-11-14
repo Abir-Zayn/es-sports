@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
-import { Button, InitialsAvatar, Text } from '@/components/ui';
+import { Button, Card, InitialsAvatar, Text } from '@/components/ui';
 import { useOpenTeam } from '@/features/team';
-import { spacing, useThemedStyles, type Palette } from '@/theme';
+import { sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { fetchTournamentTeams, tournamentKey, type TournamentRecord } from '../data/tournament-repository';
 
@@ -27,18 +27,20 @@ export function RealTournamentTeams({ tournament, canManage, onManage }: Props) 
     <>
       <Text accessibilityRole="header" style={styles.title}>{`${teams.data.length} of ${tournament.teamsPlanned} teams`}</Text>
       {teams.data.length === 0 ? <Text muted>No teams have joined yet.</Text> : null}
-      <View>
+      {teams.data.length > 0 ? (
+      <Card padding="none" style={styles.list}>
         {teams.data.map(({ team, owner }) => (
           <Pressable key={team.id} accessibilityRole="button" accessibilityLabel={`Open ${team.name}`} onPress={() => openTeam(team.id)}
             style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
-            <InitialsAvatar label={team.shortName} tone={team.tone} imageUri={team.logoUrl ?? undefined} size={44} shape="square" />
+            <InitialsAvatar label={team.shortName} tone={team.tone} imageUri={team.logoUrl ?? undefined} size={sizes.avatar} shape="square" />
             <View style={styles.names}>
               <Text style={styles.name} numberOfLines={1}>{team.name}</Text>
               {owner ? <Text muted variant="caption" numberOfLines={1}>{`Owner: ${owner.name}`}</Text> : null}
             </View>
           </Pressable>
         ))}
-      </View>
+      </Card>
+      ) : null}
       {canManage ? <Button label="Add teams" variant="secondary" onPress={onManage} /> : null}
     </>
   );
@@ -46,9 +48,10 @@ export function RealTournamentTeams({ tournament, canManage, onManage }: Props) 
 
 const createStyles = (colors: Palette) => StyleSheet.create({
   gap: { gap: spacing.md },
-  title: { fontSize: 20, lineHeight: 26, fontWeight: '800' },
+  title: typography.headlineLg,
+  list: { paddingHorizontal: sizes.cardPaddingTight },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
-  pressed: { opacity: 0.7 },
-  names: { flex: 1, minWidth: 0, gap: 2 },
-  name: { fontWeight: '700' },
+  pressed: { transform: [{ scale: 0.95 }] },
+  names: { flex: 1, minWidth: 0, gap: spacing.xs / 2 },
+  name: typography.bodyMd,
 });

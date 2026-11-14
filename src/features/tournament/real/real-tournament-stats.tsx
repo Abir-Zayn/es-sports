@@ -46,7 +46,7 @@ export function RealTournamentStats({ tournament }: Props) {
   const board = categories.find((c) => c.id === categoryId[mode]) ?? categories[0];
   return (
     <View style={styles.gap}>
-      <SegmentedControl options={modeOptions} selected={mode} onSelect={setMode} height={40} accessibilityLabel="Stat type" />
+      <SegmentedControl options={modeOptions} selected={mode} onSelect={setMode} height={sizes.iconButton} accessibilityLabel="Stat type" />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll} contentContainerStyle={styles.chips}>
         <AppTabs tabs={categories.map((c) => ({ id: c.id, label: c.label }))} selected={board.id}
           onSelect={(id) => setCategoryId((current) => ({ ...current, [mode]: id }))} />

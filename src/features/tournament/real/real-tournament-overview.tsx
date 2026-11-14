@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
-import { spacing, useThemedStyles, type Palette } from '@/theme';
+import { radius, shadows, sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { competitionFormats, formatDate, oversLabel } from '../create/draft';
 import { describeRules } from '../create/squad-formats';
@@ -43,7 +43,7 @@ export function RealTournamentOverview({ tournament: t, staff, canManage, onMana
 }
 
 const createStyles = (colors: Palette) => StyleSheet.create({
-  card: { backgroundColor: colors.surface, borderRadius: 16, borderWidth: 1, borderColor: colors.border, paddingHorizontal: spacing.lg },
+  card: { backgroundColor: colors.surface, borderRadius: radius.lg, paddingHorizontal: sizes.cardPadding, paddingVertical: spacing.sm, ...shadows.card },
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md, paddingVertical: spacing.md },
-  value: { flexShrink: 1, fontWeight: '600', textAlign: 'right' },
+  value: { flexShrink: 1, textAlign: 'right' },
 });

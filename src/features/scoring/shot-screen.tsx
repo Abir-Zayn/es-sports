@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, Text } from '@/components/ui';
 import { quadrantAngle } from '@/lib/pitch-quadrant';
-import { useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { ScorerFrame, ScorerNotice } from './components/scorer-ui';
 import { PitchQuadrantBar } from './components/pitch-quadrant-bar';
@@ -25,7 +25,7 @@ export function ShotDirectionScreen() {
     if (score.awaitingBowler) routes.replace('over'); else routes.back();
   };
   return <View style={s.overlay}>
-    <View style={[s.sheet, { paddingBottom: Math.max(insets.bottom, 20) }]} accessibilityViewIsModal>
+    <View style={[s.sheet, { paddingBottom: Math.max(insets.bottom, sizes.cardPaddingTight) }]} accessibilityViewIsModal>
       <View style={s.handle} />
       <ScrollView contentContainerStyle={s.content}>
         <View style={s.heading}><View style={s.badge}><Text style={s.runs}>{pendingShot.runs}</Text></View>
@@ -43,11 +43,11 @@ export function ShotDirectionScreen() {
 }
 const styles = (c: Palette) => StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: c.overlay },
-  sheet: { maxHeight: '90%', backgroundColor: c.surface, borderTopLeftRadius: 28, borderTopRightRadius: 28, borderWidth: 1, borderColor: c.border, paddingHorizontal: 20, paddingTop: 12 },
-  handle: { height: 4, width: 44, alignSelf: 'center', borderRadius: 2, backgroundColor: c.outline, marginBottom: 18 },
-  content: { gap: 14, paddingBottom: 4 }, heading: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  badge: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: c.primary },
-  runs: { color: c.primaryText, fontSize: 24, lineHeight: 30, fontWeight: '800' }, title: { flex: 1, gap: 2 }, caption: { fontSize: 12, lineHeight: 17 },
-  direction: { fontSize: 14, lineHeight: 19, textAlign: 'center' }, selected: { color: c.link, fontWeight: '700' },
-  actions: { flexDirection: 'row', gap: 10 }, skip: { flex: 1 }, save: { flex: 2 },
+  sheet: { maxHeight: '90%', backgroundColor: c.surface, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, paddingHorizontal: sizes.gutter, paddingTop: spacing.md },
+  handle: { height: dp(4), width: dp(44), alignSelf: 'center', borderRadius: radius.pill, backgroundColor: c.outline, marginBottom: spacing.lg },
+  content: { gap: spacing.lg, paddingBottom: spacing.xs }, heading: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  badge: { width: dp(48), height: dp(48), borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: c.primarySoft },
+  runs: { ...typography.headlineLg, color: c.link, fontVariant: ['tabular-nums'] }, title: { flex: 1, gap: spacing.xs / 2 }, caption: typography.bodySm,
+  direction: { ...typography.bodyMd, textAlign: 'center' }, selected: { color: c.link },
+  actions: { flexDirection: 'row', gap: spacing.md }, skip: { flex: 1 }, save: { flex: 2 },
 });

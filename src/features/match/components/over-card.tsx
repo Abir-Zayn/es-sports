@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import type { OverSummary } from '../types';
 import { LiveBallPill, spokenBall } from './live-ball-pill';
@@ -37,7 +37,7 @@ export function OverCard({ over }: { over: OverSummary }) {
       </View>
       <View style={styles.balls}>
         {over.balls.map((ball, i) => (
-          <LiveBallPill key={i} value={ball} size={32} />
+          <LiveBallPill key={i} value={ball} size={dp(32)} />
         ))}
       </View>
     </View>
@@ -47,24 +47,26 @@ export function OverCard({ over }: { over: OverSummary }) {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     card: {
-      paddingVertical: 14,
-      paddingHorizontal: 16,
-      borderRadius: 20,
+      paddingVertical: spacing.lg,
+      paddingHorizontal: sizes.cardPaddingTight,
+      borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      gap: 12,
+      // Reserves the live outline so the in-progress over does not shift.
+      borderWidth: 2,
+      borderColor: 'transparent',
+      ...shadows.card,
+      gap: spacing.md,
     },
     cardLive: { borderColor: colors.primary },
-    top: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-    number: { width: 48, alignItems: 'center' },
-    numberLabel: { fontSize: 10, lineHeight: 12, fontWeight: '700', letterSpacing: 1 },
-    numberValue: { fontSize: 26, lineHeight: 30, fontWeight: '800' },
-    who: { flex: 1, minWidth: 0, gap: 3 },
-    bowler: { fontSize: 14, lineHeight: 19, fontWeight: '600' },
-    to: { fontSize: 12, lineHeight: 16 },
-    result: { alignItems: 'flex-end', gap: 3 },
-    runs: { fontSize: 14, lineHeight: 19, fontWeight: '700' },
-    score: { fontSize: 12, lineHeight: 16 },
-    balls: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingLeft: 60 },
+    top: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+    number: { width: dp(48), alignItems: 'center' },
+    numberLabel: typography.tabLabel,
+    numberValue: { ...typography.displayMd, fontVariant: ['tabular-nums'] },
+    who: { flex: 1, minWidth: 0, gap: dp(3) },
+    bowler: typography.headlineMd,
+    to: typography.bodySm,
+    result: { alignItems: 'flex-end', gap: dp(3) },
+    runs: { ...typography.labelMd, fontVariant: ['tabular-nums'] },
+    score: { ...typography.bodySm, fontVariant: ['tabular-nums'] },
+    balls: { flexDirection: 'row', flexWrap: 'wrap', gap: dp(6), paddingLeft: dp(60) },
   });

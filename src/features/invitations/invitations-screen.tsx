@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth/auth-provider';
-import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { InvitationCard } from './invitation-card';
 import { invitationErrorText, toInvitationError } from './invitation-errors';
@@ -67,8 +67,10 @@ export function InvitationsScreen() {
       <View style={styles.header}>
         <AppIconTile
           icon={ChevronLeft}
-          size={44}
+          size={sizes.iconButton}
           borderRadius={radius.pill}
+          backgroundColor={colors.surface}
+          elevated
           accessibilityLabel="Back"
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/home'))}
         />
@@ -95,8 +97,8 @@ export function InvitationsScreen() {
               No invitations right now.
             </Text>
           ) : (
-            list.map((invitation, i) => (
-              <View key={invitation.id} style={i > 0 ? styles.divided : undefined}>
+            list.map((invitation) => (
+              <View key={invitation.id}>
                 <InvitationCard
                   invitation={invitation}
                   busy={answer.isPending}
@@ -118,10 +120,9 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.background },
     header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter, paddingVertical: spacing.md },
-    title: { flex: 1, fontSize: 18, lineHeight: 24, fontWeight: '700' },
-    content: { paddingHorizontal: spacing.lg, maxWidth: 600, width: '100%', alignSelf: 'center' },
+    title: { ...typography.headlineLg, flex: 1, color: colors.text },
+    content: { paddingHorizontal: sizes.gutter, paddingTop: spacing.sm, gap: spacing.lg, maxWidth: 600, width: '100%', alignSelf: 'center' },
     status: { paddingVertical: spacing.xxl },
     failed: { alignItems: 'center', gap: spacing.md, padding: spacing.xl },
-    error: { color: colors.dangerSoftText, paddingVertical: spacing.sm },
-    divided: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
+    error: { ...typography.bodyMd, color: colors.dangerSoftText, paddingVertical: spacing.sm },
   });

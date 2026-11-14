@@ -5,7 +5,7 @@ import { ActivityIndicator, KeyboardAvoidingView, ScrollView, StyleSheet, View }
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, AppTabs, SearchField, Text } from '@/components/ui';
-import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { RecentSearches } from './components/recent-searches';
 import { ResultRow } from './components/result-row';
@@ -50,11 +50,10 @@ export function SearchScreen() {
         <View style={styles.header}>
           <AppIconTile
             icon={ChevronLeft}
-            size={44}
+            size={sizes.iconButton}
             borderRadius={radius.pill}
             backgroundColor={colors.surface}
-            borderColor={colors.border}
-            borderWidth={1}
+            elevated
             accessibilityLabel="Back"
             onPress={() => (router.canGoBack() ? router.back() : router.replace('/home'))}
           />
@@ -100,15 +99,12 @@ export function SearchScreen() {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.background },
-    content: { paddingHorizontal: sizes.gutter, gap: 18 },
-    header: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-    group: { gap: spacing.xs },
+    content: { paddingHorizontal: sizes.gutter, gap: sizes.sectionGap },
+    header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+    group: { gap: spacing.sm },
     groupTitle: {
-      marginBottom: 6,
-      fontSize: 12,
-      lineHeight: 16,
-      fontWeight: '700',
-      letterSpacing: 1.5,
+      ...typography.labelUppercase,
+      marginBottom: spacing.xs,
       color: colors.textMuted,
     },
     empty: { gap: spacing.sm, paddingTop: spacing.lg },

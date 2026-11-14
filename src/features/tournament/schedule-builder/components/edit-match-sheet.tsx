@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { ScrollView } from 'react-native';
 
 import { Button, Text, TextField } from '@/components/ui';
-import { useTheme } from '@/theme';
+import { spacing, useTheme } from '@/theme';
 
 import { Sheet } from '../../roster/components/sheet';
 import type { ScheduledMatch, SideRef } from '../types';
@@ -77,7 +78,7 @@ function EditMatchBody({ match, days, onSave, onRemove, onCancelMatch, onStart, 
   }
 
   return (
-    <>
+    <ScrollView bounces={false} showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: spacing.md }}>
       <Text muted>{summary}</Text>
       {readOnly ? null : <WhenChips days={days} date={date} startMin={startMin}
         onDate={(next) => { setDate(next); setError(null); }} onStart={(next) => { setStartMin(next); setError(null); }} />}
@@ -86,6 +87,6 @@ function EditMatchBody({ match, days, onSave, onRemove, onCancelMatch, onStart, 
       {readOnly ? null : <Button label="Save" loading={busy} onPress={() => void run(() => onSave(date, startMin))} />}
       {onCancelMatch ? <Button label="Cancel this match" variant="ghost" disabled={busy} onPress={() => { setError(null); setReason(''); }} /> : null}
       {onRemove ? <Button label="Remove match" variant="ghost" disabled={busy} onPress={() => { onRemove(); onClose(); }} /> : null}
-    </>
+    </ScrollView>
   );
 }

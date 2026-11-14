@@ -4,13 +4,13 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Text } from '@/components/ui';
-import { radius, sizes, spacing, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 export function ScorerFrame({ children, footer }: { children: ReactNode; footer?: ReactNode }) {
   const s = useThemedStyles(styles);
   const insets = useSafeAreaInsets();
   return (
-    <View style={[s.screen, { paddingTop: insets.top + 12, paddingBottom: Math.max(insets.bottom, 12) }]}>
+    <View style={[s.screen, { paddingTop: insets.top + spacing.md, paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
       <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">{children}</ScrollView>
       {footer ? <View style={s.footer}>{footer}</View> : null}
     </View>
@@ -64,20 +64,20 @@ export function ScorerNotice({ children }: { children: ReactNode }) {
 
 const styles = (c: Palette) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: c.background },
-  content: { paddingHorizontal: sizes.gutter, gap: 22, paddingBottom: 24, flexGrow: 1 },
-  footer: { paddingHorizontal: sizes.gutter, paddingTop: 12, gap: 8 },
-  header: { flexDirection: 'row', gap: 12, alignItems: 'center', minHeight: 48 },
-  titleWrap: { flex: 1, gap: 2 },
-  title: { fontSize: 22, lineHeight: 28, fontWeight: '800' },
-  caption: { fontSize: 12, lineHeight: 17 },
-  section: { gap: 10 },
-  sectionTitle: { fontSize: 12, lineHeight: 16, fontWeight: '700', letterSpacing: 0.8, color: c.textMuted, textTransform: 'uppercase' },
-  choice: { minHeight: 46, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 16, borderWidth: 1, borderColor: c.border, backgroundColor: c.surface, justifyContent: 'center', gap: 3 },
-  choiceLabel: { fontSize: 14, lineHeight: 19, fontWeight: '600' },
+  content: { paddingHorizontal: sizes.gutter, gap: sizes.sectionGap, paddingBottom: spacing.xl, flexGrow: 1 },
+  footer: { paddingHorizontal: sizes.gutter, paddingTop: spacing.md, gap: spacing.sm },
+  header: { flexDirection: 'row', gap: spacing.md, alignItems: 'center', minHeight: sizes.topBar },
+  titleWrap: { flex: 1, gap: spacing.xs / 2 },
+  title: typography.headlineLg,
+  caption: typography.bodySm,
+  section: { gap: spacing.md },
+  sectionTitle: { ...typography.labelUppercase, color: c.textMuted },
+  choice: { minHeight: dp(48), paddingVertical: spacing.md, paddingHorizontal: spacing.lg, borderRadius: radius.md, borderWidth: 2, borderColor: 'transparent', backgroundColor: c.surfaceRaised, justifyContent: 'center', gap: spacing.xs },
+  choiceLabel: typography.labelMd,
   selected: { borderColor: c.primary, backgroundColor: c.primarySoft },
-  danger: { borderColor: c.dangerSoftText, backgroundColor: c.dangerSoft },
+  danger: { borderColor: c.danger, backgroundColor: c.dangerSoft },
   disabled: { opacity: 0.4 },
-  pressed: { opacity: 0.75 },
+  pressed: { transform: [{ scale: 0.95 }] },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  notice: { fontSize: 12, lineHeight: 17 },
+  notice: typography.bodySm,
 });

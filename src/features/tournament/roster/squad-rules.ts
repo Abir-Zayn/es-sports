@@ -1,5 +1,6 @@
 import { normalisePhone, phoneProblem } from '@/lib/phone';
 
+import { roleIn } from './permissions';
 import { registrationStatus } from './registration';
 import type { Roster, RosterTeam } from './types';
 
@@ -13,6 +14,11 @@ export function squadManagerId(team: RosterTeam): string | null {
   return team.owner?.status === 'accepted' ? team.owner.user.id : null;
 }
 
+/** The accepted team owner or the tournament owner, who adds players straight in while invites are hidden. */
+export function canManageSquad(roster: Roster, team: RosterTeam, userId: string): boolean {
+  return squadManagerId(team) === userId || roleIn(roster, userId) === 'owner';
+}
+
 export { normalisePhone, phoneProblem };
 
 /** How many more players the squad needs to reach the tournament minimum. */
@@ -23,7 +29,7 @@ export function squadShortfall(roster: Roster, team: RosterTeam): number {
 /** Why the squad cannot change right now, or null. After the lock a change needs a reason, since it alerts the organisers. */
 function changeProblem(roster: Roster, team: RosterTeam | undefined, actorId: string, reason: string, on?: string): string | null {
   if (!team) return 'This team no longer exists.';
-  if (squadManagerId(team) !== actorId) return 'Only the team owner can change the squad.';
+  if (!canManageSquad(roster, team, actorId)) return 'Only the team owner or the tournament owner can change the squad.';
   const status = registrationStatus(roster, on);
   if (status === 'upcoming') return 'Registration has not opened yet.';
   if (status === 'locked' && reason.trim().length < 3) return 'The rosters are locked. Give a reason for this change.';

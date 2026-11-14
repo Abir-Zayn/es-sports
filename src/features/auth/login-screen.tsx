@@ -115,5 +115,5 @@ const createStyles = (colors: Palette) =>
     form: { gap: spacing.lg },
     formError: { color: colors.danger },
     forgot: { alignSelf: 'flex-end' },
-    forgotAction: { color: colors.link, fontWeight: '700' },
+    forgotAction: { color: colors.link },
   });

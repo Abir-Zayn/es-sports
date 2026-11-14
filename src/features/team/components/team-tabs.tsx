@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { AppTabs } from '@/components/ui';
-import { sizes, useThemedStyles, type Palette } from '@/theme';
+import { sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
 import type { TeamTabId } from '../types';
 import { teamTabs, useTeamRoutes } from '../use-team-routes';
@@ -23,7 +23,7 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     bar: {
       paddingHorizontal: sizes.gutter,
-      paddingVertical: 14,
+      paddingVertical: spacing.md,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },

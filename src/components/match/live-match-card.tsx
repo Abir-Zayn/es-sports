@@ -1,13 +1,13 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppBadge, Text } from '@/components/ui';
-import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { LiveMatch } from '@/types/cricket';
 
 import { BallChip } from './ball-chip';
 import { TeamScoreRow } from './team-score-row';
 
-export const LIVE_MATCH_CARD_WIDTH = 300;
+export const LIVE_MATCH_CARD_WIDTH = dp(300);
 
 type Props = {
   match: LiveMatch;
@@ -58,21 +58,18 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     card: {
       width: LIVE_MATCH_CARD_WIDTH,
-      paddingTop: spacing.md,
-      paddingHorizontal: spacing.lg,
-      paddingBottom: spacing.md,
+      padding: sizes.cardPaddingTight,
       borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      gap: 10,
+      ...shadows.card,
+      gap: spacing.md,
     },
-    pressed: { opacity: 0.85 },
+    pressed: { transform: [{ scale: 0.95 }] },
     topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
-    label: { flexShrink: 1, textAlign: 'right', fontSize: 10, lineHeight: 13, fontWeight: '600', letterSpacing: 1, color: colors.textMuted },
+    label: { ...typography.labelUppercase, flexShrink: 1, textAlign: 'right', color: colors.textMuted },
     teams: { gap: spacing.sm },
     divider: { height: 1, backgroundColor: colors.border },
-    status: { fontSize: 15, lineHeight: 20, fontWeight: '700' },
-    ballsRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs + 1 },
-    thisOver: { fontSize: 10, lineHeight: 13, color: colors.textMuted, marginRight: spacing.xs },
+    status: { ...typography.headlineMd, color: colors.text },
+    ballsRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+    thisOver: { ...typography.labelSm, color: colors.textMuted, marginRight: spacing.xs },
   });

@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/ui';
 import { useToneColors } from '@/features/tournament/use-tone-colors';
 import { initialsOf } from '@/lib/initials';
-import { useThemedStyles, type AvatarTone, type Palette } from '@/theme';
+import { radius, sizes, spacing, typography, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
 
 import type { MemberTag, TeamMember } from '../types';
 
@@ -52,16 +52,17 @@ const createStyles = (colors: Palette) =>
     row: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 12,
-      paddingVertical: 10,
+      gap: spacing.md,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
-    pressed: { opacity: 0.8 },
+    pressed: { transform: [{ scale: 0.95 }] },
     avatar: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
+      width: sizes.avatar,
+      height: sizes.avatar,
+      borderRadius: radius.pill,
       backgroundColor: colors.surfaceRaised,
       borderWidth: 1.5,
       alignItems: 'center',
@@ -69,13 +70,13 @@ const createStyles = (colors: Palette) =>
     },
     avatarInvited: { backgroundColor: colors.surface, borderStyle: 'dashed', borderColor: colors.outline },
     avatarStaff: { borderColor: colors.border },
-    initials: { fontSize: 14, lineHeight: 20, fontWeight: '700' },
+    initials: typography.labelMd,
     mutedInk: { color: colors.textMuted },
-    text: { flex: 1, minWidth: 0, gap: 2 },
-    name: { fontSize: 15, lineHeight: 20, fontWeight: '600' },
-    detail: { fontSize: 12, lineHeight: 16 },
-    chip: { paddingVertical: 4, paddingHorizontal: 9, borderRadius: 999 },
-    chipText: { fontSize: 11, lineHeight: 14, fontWeight: '700' },
+    text: { flex: 1, minWidth: 0, gap: spacing.xs / 2 },
+    name: typography.bodyMd,
+    detail: typography.bodySm,
+    chip: { paddingVertical: spacing.xs, paddingHorizontal: spacing.sm, borderRadius: radius.pill },
+    chipText: typography.labelSm,
     chipInvited: { backgroundColor: colors.accentSoft },
     inkInvited: { color: colors.accent },
     chipRole: { backgroundColor: colors.primarySoft },

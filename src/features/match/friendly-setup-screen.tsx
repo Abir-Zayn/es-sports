@@ -10,7 +10,7 @@ import { buildMatchRows, FRIENDLY_REF_PREFIX } from '@/features/scoring/data/mat
 import { localEventId } from '@/features/scoring/local-id';
 import { useMe } from '@/features/tournament/roster';
 import { appLink, shareText } from '@/lib/share';
-import { radius, sizes, spacing, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { FriendlyFormatCard, ScorerAssignmentRow } from './components/friendly-setup-form';
 import { FriendlyMatchupHero } from './components/friendly-matchup-hero';
@@ -121,10 +121,10 @@ export function FriendlySetupScreen() {
         <Text accessibilityRole="header" style={s.title}>Friendly Match Setup</Text>
         <Text muted style={s.step}>Step 1 of 2 · Teams & format, then the toss</Text>
       </View>
-      <AppIconTile icon={X} size={44} borderRadius={radius.pill} accessibilityLabel="Close friendly match setup" onPress={close} />
+      <AppIconTile icon={X} size={sizes.iconButton} borderRadius={radius.pill} accessibilityLabel="Close friendly match setup" onPress={close} />
     </View>
     <View style={s.progress}><View style={[s.bar, s.barOn]} /><View style={s.bar} /></View>
-    <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 120 }]} keyboardShouldPersistTaps="handled">
+    <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + dp(120) }]} keyboardShouldPersistTaps="handled">
       <SavedFriendlies userId={me.id} />
       <FriendlyMatchupHero teamA={setup.teamA} teamB={setup.teamB} nameA={teamLabel(setup, 'teamA')} nameB={teamLabel(setup, 'teamB')}
         overs={setup.overs} playersPerSide={setup.playersPerSide} />
@@ -149,7 +149,7 @@ export function FriendlySetupScreen() {
       {attempted && Object.keys(problems).length > 0 ? <Text style={s.error} accessibilityLiveRegion="polite">Fix the highlighted parts to go to the toss.</Text> : null}
     </ScrollView>
     <View style={[s.footer, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
-      <View style={s.glow}><Button label="Proceed to Toss" onPress={() => { setAttempted(true); if (Object.keys(problems).length === 0) setTossing(true); }} /></View>
+      <Button label="Proceed to Toss" onPress={() => { setAttempted(true); if (Object.keys(problems).length === 0) setTossing(true); }} />
     </View>
     <FriendlySheets sheet={sheet} error={sheetError} meId={me.id} setup={setup} onClose={() => setSheet(null)}
       onAddMember={(side, user, role) => { if (change((c) => addPlayer(c, side, { id: localEventId(), name: user.name, role, userId: user.id, avatarUrl: user.avatarUrl }))) setSheet(null); }}
@@ -164,15 +164,14 @@ export function FriendlySetupScreen() {
 const styles = (c: Palette) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: c.background },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter, paddingTop: spacing.md, paddingBottom: spacing.lg },
-  titles: { flex: 1, gap: 2 },
-  title: { fontSize: 24, lineHeight: 28, fontWeight: '700', letterSpacing: -0.2 },
-  step: { fontSize: 13, lineHeight: 18, fontWeight: '500' },
-  progress: { flexDirection: 'row', gap: 6, paddingHorizontal: sizes.gutter },
-  bar: { flex: 1, height: 6, borderRadius: radius.pill, backgroundColor: c.surfaceRaised },
-  barOn: { backgroundColor: c.primary, shadowColor: c.primary, shadowOpacity: 0.5, shadowRadius: 8, shadowOffset: { width: 0, height: 0 } },
-  content: { padding: sizes.gutter, gap: spacing.lg },
-  section: { marginTop: spacing.sm, marginBottom: -spacing.xs, fontSize: 12, lineHeight: 16, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase' },
-  error: { fontSize: 13, lineHeight: 18, color: c.danger },
+  titles: { flex: 1, gap: dp(2) },
+  title: typography.displayMd,
+  step: typography.bodySm,
+  progress: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: sizes.gutter },
+  bar: { flex: 1, height: dp(6), borderRadius: radius.pill, backgroundColor: c.border },
+  barOn: { backgroundColor: c.primary },
+  content: { padding: sizes.gutter, gap: sizes.sectionGap },
+  section: { ...typography.labelUppercase, marginTop: spacing.sm, marginBottom: -spacing.md },
+  error: { ...typography.bodySm, color: c.danger },
   footer: { paddingHorizontal: sizes.gutter, paddingTop: spacing.md, borderTopWidth: 1, borderTopColor: c.border, backgroundColor: c.background },
-  glow: { borderRadius: radius.control, shadowColor: c.primary, shadowOpacity: 0.4, shadowRadius: 15, shadowOffset: { width: 0, height: 0 } },
 });

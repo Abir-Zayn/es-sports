@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { radius, spacing, useThemedStyles, type Palette } from '@/theme';
+import { radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { PlayingRole } from '@/types/profile';
 
 import { roleLabels } from '../labels';
@@ -57,18 +57,18 @@ export function PlayingRoleOption({ role, selected = false, onPress }: Props) {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     option: {
-      minHeight: 56,
+      minHeight: sizes.field,
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.md,
       paddingHorizontal: spacing.lg,
       borderRadius: radius.md,
-      backgroundColor: colors.surface,
-      borderWidth: 1.5,
-      borderColor: colors.border,
+      backgroundColor: colors.surfaceRaised,
+      borderWidth: 2,
+      borderColor: 'transparent',
     },
     selected: { backgroundColor: colors.primarySoft, borderColor: colors.primary },
-    pressed: { opacity: 0.8 },
-    icon: { width: 28, height: 28 },
-    label: { flexShrink: 1, fontSize: 15, lineHeight: 20, fontWeight: '600' },
+    pressed: { transform: [{ scale: 0.95 }] },
+    icon: { width: sizes.tabIcon, height: sizes.tabIcon },
+    label: { ...typography.labelMd, flexShrink: 1 },
   });

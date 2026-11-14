@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui/text';
-import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 type Props = {
   checked: boolean;
@@ -28,7 +28,7 @@ export function Checkbox({ checked, onChange, children, accessibilityLabel, erro
         style={styles.row}
       >
         <View style={[styles.box, checked && styles.boxChecked, !!error && !checked && styles.boxInvalid]}>
-          {checked ? <Check size={16} color={colors.primaryText} strokeWidth={3} /> : null}
+          {checked ? <Check size={dp(16)} color={colors.primaryText} strokeWidth={3} /> : null}
         </View>
         <Text variant="caption" muted style={styles.label}>
           {children}
@@ -48,12 +48,12 @@ const createStyles = (colors: Palette) =>
     wrap: { gap: spacing.xs },
     row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xs },
     box: {
-      width: 24,
-      height: 24,
+      width: dp(24),
+      height: dp(24),
       borderRadius: radius.sm,
-      borderWidth: 1.5,
+      borderWidth: 2,
       borderColor: colors.border,
-      backgroundColor: colors.surface,
+      backgroundColor: colors.surfaceRaised,
       alignItems: 'center',
       justifyContent: 'center',
     },

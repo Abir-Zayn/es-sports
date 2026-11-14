@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
 import type { QuadrantShare } from '@/lib/pitch-quadrant';
-import { useThemedStyles, type Palette } from '@/theme';
+import { radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 /** Runs in each of the four pitch zones, separated by clean horizontal bars without tile backgrounds. */
 export function QuadrantSplitCards({ split }: { split: QuadrantShare[] }) {
@@ -37,11 +37,11 @@ export function QuadrantSplitCards({ split }: { split: QuadrantShare[] }) {
 const styles = (c: Palette) =>
   StyleSheet.create({
     list: { borderTopWidth: 1, borderTopColor: c.border },
-    row: { paddingVertical: 12, gap: 6, borderBottomWidth: 1, borderBottomColor: c.border },
+    row: { paddingVertical: spacing.md, gap: spacing.sm, borderBottomWidth: 1, borderBottomColor: c.border },
     topLine: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    label: { fontSize: 14, lineHeight: 19, fontWeight: '600', color: c.text },
-    runs: { fontSize: 15, lineHeight: 20, fontWeight: '800', color: c.text, fontVariant: ['tabular-nums'] },
-    percent: { fontSize: 12, lineHeight: 16, fontWeight: '600' },
-    track: { height: 5, borderRadius: 3, backgroundColor: c.surfaceRaised, overflow: 'hidden' },
-    fill: { height: 5, borderRadius: 3, backgroundColor: c.accent },
+    label: { ...typography.labelMd, color: c.text },
+    runs: { ...typography.headlineMd, color: c.text, fontVariant: ['tabular-nums'] },
+    percent: { ...typography.bodySm, fontVariant: ['tabular-nums'] },
+    track: { height: sizes.progressBar, borderRadius: radius.pill, backgroundColor: c.border, overflow: 'hidden' },
+    fill: { height: sizes.progressBar, borderRadius: radius.pill, backgroundColor: c.primary },
   });

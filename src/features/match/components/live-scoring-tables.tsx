@@ -2,25 +2,25 @@ import { StyleSheet, View } from 'react-native';
 
 import { StatsTable, type StatsColumn } from '@/components/match/stats-table';
 import { Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { dp, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { economy, strikeRate } from '../format';
 import type { BowlerLine, LiveBatter } from '../types';
 
 const batterColumns: StatsColumn[] = [
-  { label: 'R', width: 34, emphasis: true },
-  { label: 'B', width: 34 },
-  { label: '4S', width: 30 },
-  { label: '6S', width: 30 },
-  { label: 'SR', width: 50 },
+  { label: 'R', width: dp(34), emphasis: true },
+  { label: 'B', width: dp(34) },
+  { label: '4S', width: dp(30) },
+  { label: '6S', width: dp(30) },
+  { label: 'SR', width: dp(50) },
 ];
 
 const bowlerColumns: StatsColumn[] = [
-  { label: 'O', width: 34 },
-  { label: 'M', width: 30 },
-  { label: 'R', width: 34 },
-  { label: 'W', width: 30, emphasis: true },
-  { label: 'ECON', width: 50 },
+  { label: 'O', width: dp(34) },
+  { label: 'M', width: dp(30) },
+  { label: 'R', width: dp(34) },
+  { label: 'W', width: dp(30), emphasis: true },
+  { label: 'ECON', width: dp(50) },
 ];
 
 /** The two batters at the crease, with the stand they have built. */
@@ -76,12 +76,12 @@ const createStyles = (colors: Palette) =>
     footer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      paddingVertical: 10,
-      paddingHorizontal: 14,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
       borderTopWidth: 1,
       borderTopColor: colors.border,
-      backgroundColor: colors.background,
+      backgroundColor: colors.surfaceRaised,
     },
-    footerLabel: { fontSize: 12, lineHeight: 16 },
-    footerValue: { fontSize: 12, lineHeight: 16, fontWeight: '600' },
+    footerLabel: typography.bodySm,
+    footerValue: { ...typography.bodySm, fontVariant: ['tabular-nums'] },
   });

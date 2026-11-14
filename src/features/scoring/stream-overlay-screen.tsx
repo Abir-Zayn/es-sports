@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
-import { useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { OverlayPreview, type OverlayGraphic } from './components/overlay-preview';
 import { ScorerFrame, ScorerHeader, ScorerNotice, ScorerSection } from './components/scorer-ui';
@@ -57,15 +57,15 @@ export function StreamOverlayScreen() {
   </ScorerFrame>;
 }
 const styles = (c: Palette) => StyleSheet.create({
-  badge: { backgroundColor: c.primarySoft, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5 },
-  badgeText: { color: c.link, fontSize: 11, lineHeight: 16, fontWeight: '700' },
-  caption: { fontSize: 13, lineHeight: 18 }, linkRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  link: { flex: 1, minHeight: 50, paddingHorizontal: 14, justifyContent: 'center', borderRadius: 16, borderWidth: 1, borderColor: c.border, backgroundColor: c.surface },
-  graphics: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  graphicButton: { width: '48%', minHeight: 52, borderRadius: 16, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
-  graphicLabel: { fontSize: 14, lineHeight: 19, fontWeight: '600' }, selected: { borderColor: c.primary, backgroundColor: c.primarySoft }, pressed: { opacity: 0.75 },
-  toggles: { gap: 8 }, colorRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  swatches: { flexDirection: 'row', gap: 4 }, swatchTarget: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  swatch: { width: 30, height: 30, borderRadius: 15, borderWidth: 2, borderColor: c.background },
-  swatchSelected: { borderColor: c.text, borderWidth: 3 },
+  badge: { backgroundColor: c.primarySoft, borderRadius: radius.pill, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
+  badgeText: { ...typography.labelSm, color: c.link },
+  caption: typography.bodyMd, linkRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
+  link: { flex: 1, minHeight: sizes.field, paddingHorizontal: sizes.cardPaddingTight, justifyContent: 'center', borderRadius: radius.md, backgroundColor: c.surfaceRaised },
+  graphics: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  graphicButton: { width: '48%', minHeight: sizes.control, borderRadius: radius.md, backgroundColor: c.surfaceRaised, borderWidth: 2, borderColor: 'transparent', alignItems: 'center', justifyContent: 'center' },
+  graphicLabel: typography.labelMd, selected: { borderColor: c.primary, backgroundColor: c.primarySoft }, pressed: { transform: [{ scale: 0.95 }] },
+  toggles: { gap: spacing.sm }, colorRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  swatches: { flexDirection: 'row', gap: spacing.xs }, swatchTarget: { width: dp(48), height: dp(48), alignItems: 'center', justifyContent: 'center' },
+  swatch: { width: dp(30), height: dp(30), borderRadius: radius.pill, borderWidth: 2, borderColor: c.background },
+  swatchSelected: { borderColor: c.primary, borderWidth: 3 },
 });

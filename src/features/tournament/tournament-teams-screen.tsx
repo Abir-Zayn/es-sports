@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
 import { useOpenTeam } from '@/features/team/use-team-routes';
-import { spacing, useThemedStyles, type Palette } from '@/theme';
+import { sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { TournamentTeam } from '@/types/cricket';
 
 import { TeamCard } from './components/team-card';
@@ -33,7 +33,7 @@ export function TournamentTeamsScreen() {
         <Text accessibilityRole="header" style={styles.title}>
           {tournamentTeams.length} Teams
         </Text>
-        <Pressable accessibilityRole="link" hitSlop={12} onPress={openHeadToHead}>
+        <Pressable accessibilityRole="link" hitSlop={sizes.hitSlop} onPress={openHeadToHead}>
           <Text style={styles.link}>Head to head</Text>
         </Pressable>
       </View>
@@ -59,8 +59,8 @@ export function TournamentTeamsScreen() {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     heading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-    title: { fontSize: 24, lineHeight: 30, fontWeight: '800' },
-    link: { fontSize: 13, lineHeight: 18, fontWeight: '600', color: colors.link },
+    title: typography.headlineLg,
+    link: { ...typography.labelMd, color: colors.link },
     grid: { gap: spacing.md },
     gridRow: { flexDirection: 'row', gap: spacing.md },
     spacer: { flex: 1 },

@@ -2,7 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { StyleSheet } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { sizes, useThemedStyles, type Palette } from '@/theme';
+import { sizes, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { PointsTable } from './components/points-table';
 import { TournamentScreenFrame } from './components/tournament-screen-frame';
@@ -24,5 +24,5 @@ export function TournamentTableScreen() {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    rules: { paddingHorizontal: sizes.gutter, fontSize: 12, lineHeight: 18, color: colors.textMuted },
+    rules: { paddingHorizontal: sizes.gutter, ...typography.bodySm, color: colors.textMuted },
   });

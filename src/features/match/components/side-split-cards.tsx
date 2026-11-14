@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 type Props = { off: number; leg: number; offPercent: number; legPercent: number };
 
@@ -33,21 +33,20 @@ function SideCard({ label, runs, percent }: { label: string; runs: number; perce
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: 12 },
+  row: { flexDirection: 'row', gap: spacing.md },
 });
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     card: {
       flex: 1,
-      padding: 14,
-      borderRadius: 18,
+      padding: sizes.cardPaddingTight,
+      borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      gap: 4,
+      ...shadows.card,
+      gap: spacing.xs,
     },
-    label: { fontSize: 11, lineHeight: 14, fontWeight: '700', letterSpacing: 1.2 },
-    runs: { fontSize: 28, lineHeight: 32, fontWeight: '800', fontVariant: ['tabular-nums'] },
-    detail: { fontSize: 13, lineHeight: 18, fontWeight: '500' },
+    label: typography.labelUppercase,
+    runs: typography.numeralStat,
+    detail: typography.bodySm,
   });

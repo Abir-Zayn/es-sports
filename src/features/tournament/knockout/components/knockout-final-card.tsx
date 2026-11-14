@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { radius, spacing, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import type { KnockoutMatch } from '../types';
 import { KnockoutTeamBadge } from './knockout-team-badge';
@@ -33,7 +33,7 @@ export function KnockoutFinalCard({ match, onPress }: Props) {
             short={match.home.short}
             badgeBg={match.home.badgeBg}
             badgeText={match.home.badgeText}
-            size={40}
+            size={sizes.avatar}
           />
           <Text style={styles.teamName} numberOfLines={1}>
             {match.home.short}
@@ -44,7 +44,7 @@ export function KnockoutFinalCard({ match, onPress }: Props) {
         </View>
 
         <View style={styles.trophyCol}>
-          <KnockoutTrophy size={50} />
+          <KnockoutTrophy size={dp(50)} />
           <Text style={styles.statusLabel}>{match.status}</Text>
         </View>
 
@@ -53,7 +53,7 @@ export function KnockoutFinalCard({ match, onPress }: Props) {
             short={match.away.short}
             badgeBg={match.away.badgeBg}
             badgeText={match.away.badgeText}
-            size={40}
+            size={sizes.avatar}
           />
           <Text style={styles.teamName} numberOfLines={1}>
             {match.away.short}
@@ -75,9 +75,7 @@ const createStyles = (colors: Palette) =>
       width: '100%',
     },
     roundLabel: {
-      fontSize: 12,
-      lineHeight: 16,
-      fontWeight: '600',
+      ...typography.labelSm,
       color: colors.textMuted,
       textTransform: 'capitalize',
     },
@@ -85,28 +83,21 @@ const createStyles = (colors: Palette) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      backgroundColor: colors.surfaceRaised,
+      backgroundColor: colors.surface,
       borderRadius: radius.lg,
-      borderWidth: 1,
-      borderColor: colors.border,
+      ...shadows.card,
       paddingVertical: spacing.md,
       paddingHorizontal: spacing.lg,
       width: '100%',
-      maxWidth: 390,
-      shadowColor: '#000000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.25,
-      shadowRadius: 8,
-      elevation: 4,
+      maxWidth: dp(390),
     },
     pressed: {
-      opacity: 0.88,
-      transform: [{ scale: 0.99 }],
+      transform: [{ scale: 0.95 }],
     },
     teamCol: {
       flex: 1,
       alignItems: 'center',
-      gap: 4,
+      gap: spacing.xs,
     },
     trophyCol: {
       alignItems: 'center',
@@ -114,29 +105,22 @@ const createStyles = (colors: Palette) =>
       paddingHorizontal: spacing.sm,
     },
     teamName: {
-      fontSize: 13,
-      lineHeight: 16,
-      fontWeight: '700',
+      ...typography.labelMd,
       color: colors.text,
       textTransform: 'uppercase',
     },
     teamScore: {
-      fontSize: 18,
-      lineHeight: 22,
-      fontWeight: '700',
+      ...typography.headlineMd,
       color: colors.textMuted,
+      fontVariant: ['tabular-nums'],
     },
     scoreWinner: {
       color: colors.text,
-      fontWeight: '800',
     },
     statusLabel: {
-      fontSize: 10,
-      lineHeight: 13,
-      fontWeight: '700',
+      ...typography.tabLabel,
       color: colors.textMuted,
-      marginTop: -4,
-      letterSpacing: 0.5,
+      marginTop: -spacing.xs,
     },
   });
 

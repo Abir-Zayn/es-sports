@@ -1,7 +1,7 @@
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
-import { spacing, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import type { AppNotification, InviteStatus } from '../types';
 
@@ -78,23 +78,24 @@ const createStyles = (c: Palette) =>
   StyleSheet.create({
     backdrop: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.5)',
+      backgroundColor: c.overlay,
       justifyContent: 'center',
-      padding: spacing.lg,
+      padding: sizes.gutter,
     },
     sheet: {
       backgroundColor: c.surface,
-      borderRadius: 16,
-      padding: spacing.lg,
+      borderRadius: radius.lg,
+      padding: sizes.cardPadding,
       gap: spacing.sm,
+      ...shadows.card,
     },
-    title: { color: c.text, fontSize: 18, lineHeight: 24, fontWeight: '700' },
-    time: { color: c.textMuted, fontSize: 12, lineHeight: 16 },
-    message: { color: c.text, fontSize: 15, lineHeight: 22 },
-    error: { color: c.dangerSoftText, fontSize: 13, lineHeight: 18 },
+    title: { ...typography.headlineMd, color: c.text },
+    time: { ...typography.bodySm, color: c.textMuted },
+    message: { ...typography.bodyMd, color: c.text },
+    error: { ...typography.bodySm, color: c.dangerSoftText },
     actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
-    status: { color: c.link, fontSize: 14, fontWeight: '700', marginTop: spacing.xs },
-    close: { minHeight: 44, alignItems: 'center', justifyContent: 'center', marginTop: spacing.xs },
-    closeText: { color: c.textMuted, fontWeight: '700', fontSize: 14 },
+    status: { ...typography.labelMd, color: c.link, marginTop: spacing.xs },
+    close: { minHeight: dp(44), alignItems: 'center', justifyContent: 'center', marginTop: spacing.xs },
+    closeText: { ...typography.labelMd, color: c.textMuted },
   });
 

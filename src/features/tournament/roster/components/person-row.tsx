@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppBadge, InitialsAvatar, Text } from '@/components/ui';
 import { initialsOf } from '@/lib/initials';
-import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import type { UserSummary } from '../types';
 
@@ -23,7 +23,7 @@ export function PersonRow({ user, detail, badge, trailing }: Props) {
   const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.row}>
-      <InitialsAvatar label={initialsOf(user.name)} imageUri={user.avatarUrl} size={40} />
+      <InitialsAvatar label={initialsOf(user.name)} imageUri={user.avatarUrl} size={sizes.avatar} />
       <View style={styles.names}>
         <View style={styles.nameLine}>
           <Text style={styles.name} numberOfLines={1}>
@@ -51,8 +51,8 @@ export function PersonRow({ user, detail, badge, trailing }: Props) {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md },
-    names: { flex: 1, minWidth: 0, gap: 2 },
+    names: { flex: 1, minWidth: 0, gap: spacing.xs / 2 },
     nameLine: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-    name: { flexShrink: 1, fontSize: 15, lineHeight: 20, fontWeight: '700' },
-    detail: { fontSize: 12, lineHeight: 16, color: colors.textMuted },
+    name: { flexShrink: 1, ...typography.bodyMd },
+    detail: { ...typography.bodySm, color: colors.textMuted },
   });

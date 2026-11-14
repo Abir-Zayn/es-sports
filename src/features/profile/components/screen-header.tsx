@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AppIconTile, Text } from '@/components/ui';
-import { radius, spacing, useTheme } from '@/theme';
+import { sizes, spacing, useTheme } from '@/theme';
 
 type Props = {
   title: string;
@@ -20,9 +20,8 @@ export function ScreenHeader({ title, trailing }: Props) {
     <View style={styles.header}>
       <AppIconTile
         icon={ChevronLeft}
-        size={44}
-        borderRadius={radius.md}
-        backgroundColor={colors.surfaceRaised}
+        backgroundColor={colors.surface}
+        elevated
         accessibilityLabel="Go back"
         onPress={() => (router.canGoBack() ? router.back() : router.replace('/profile'))}
       />
@@ -35,6 +34,6 @@ export function ScreenHeader({ title, trailing }: Props) {
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter, paddingVertical: spacing.md },
   title: { flex: 1 },
 });

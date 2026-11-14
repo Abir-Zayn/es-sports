@@ -11,7 +11,7 @@ import { useAuth } from '@/features/auth/auth-provider';
 import { cancelInvitation, invitationErrorText, sendTeamPlayerInvite } from '@/features/invitations';
 import { searchPlayers } from '@/features/match/friendly/search-players';
 import { UserSearchSheet } from '@/features/tournament/roster';
-import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { teamErrorText } from '../data/team-errors';
 import {
@@ -64,7 +64,7 @@ export function TeamManageScreen() {
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <AppIconTile icon={ChevronLeft} size={44} borderRadius={radius.pill} accessibilityLabel="Back"
+        <AppIconTile icon={ChevronLeft} size={sizes.iconButton} borderRadius={radius.pill} accessibilityLabel="Back"
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/team/manage'))} />
         <View style={styles.titles}>
           <Text accessibilityRole="header" style={styles.title}>Team members</Text>
@@ -81,7 +81,7 @@ export function TeamManageScreen() {
       ) : (
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}>
           {manager ? (
-            <Button label="Add member" leading={<UserPlus size={18} color={colors.primaryText} />} disabled={busy}
+            <Button label="Add member" leading={<UserPlus size={dp(18)} color={colors.primaryText} />} disabled={busy}
               onPress={() => { invite.reset(); setAdding(true); }} />
           ) : (
             <Text muted>Only the owner or an admin can add members.</Text>
@@ -120,11 +120,11 @@ const createStyles = (colors: Palette) =>
     screen: { flex: 1, backgroundColor: colors.background },
     header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter, paddingVertical: spacing.md },
     titles: { flex: 1, minWidth: 0 },
-    title: { fontSize: 18, lineHeight: 24, fontWeight: '700' },
-    subtitle: { fontSize: 13, lineHeight: 18 },
-    content: { paddingHorizontal: sizes.gutter, paddingTop: spacing.sm, gap: spacing.lg, maxWidth: 600, width: '100%', alignSelf: 'center' },
+    title: typography.headlineLg,
+    subtitle: typography.bodySm,
+    content: { paddingHorizontal: sizes.gutter, paddingTop: spacing.sm, gap: spacing.lg, maxWidth: dp(600), width: '100%', alignSelf: 'center' },
     status: { paddingVertical: spacing.xxl },
     failed: { alignItems: 'center', gap: spacing.md, padding: spacing.xl },
-    heading: { fontSize: 15, lineHeight: 20, fontWeight: '700' },
+    heading: typography.headlineMd,
     error: { color: colors.dangerSoftText },
   });

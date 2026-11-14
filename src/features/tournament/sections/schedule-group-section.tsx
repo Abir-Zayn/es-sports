@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { FixtureTile } from '@/components/match/fixture-tile';
 import { Text } from '@/components/ui';
 import { useOpenMatch } from '@/features/match/use-match-routes';
-import { useThemedStyles, type Palette } from '@/theme';
+import { spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { Fixture } from '@/types/cricket';
 
 import type { ScheduleGroup } from '../schedule';
@@ -51,8 +51,8 @@ export function ScheduleGroupSection({ group, showTitle, showBadge = false, badg
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    group: { gap: 14 },
-    title: { fontSize: 12, lineHeight: 16, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase', color: colors.textMuted },
-    slice: { gap: 4 },
-    heading: { fontSize: 14, lineHeight: 20, fontWeight: '700', color: colors.text },
+    group: { gap: spacing.md },
+    title: { ...typography.labelUppercase, color: colors.textMuted },
+    slice: { gap: spacing.md },
+    heading: { ...typography.headlineMd, color: colors.text },
   });

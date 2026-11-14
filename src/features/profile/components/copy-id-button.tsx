@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { AppIconTile } from '@/components/ui';
 import { copyText } from '@/lib/copy-text';
-import { useTheme } from '@/theme';
+import { dp, sizes, useTheme } from '@/theme';
 
 const RESET_MS = 2000;
 
@@ -28,11 +28,9 @@ export function CopyIdButton({ userId }: Props) {
   return (
     <AppIconTile
       icon={state === 'copied' ? Check : Copy}
-      size={32}
-      iconSize={16}
-      borderRadius={16}
-      backgroundColor={colors.surface}
-      borderColor={state === 'failed' ? colors.danger : colors.border}
+      size={dp(32)}
+      iconSize={sizes.iconSmall}
+      borderColor={state === 'failed' ? colors.danger : 'transparent'}
       borderWidth={1}
       accessibilityLabel={label}
       onPress={() => void copy()}

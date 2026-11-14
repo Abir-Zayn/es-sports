@@ -7,7 +7,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
 import { supabase } from '@/lib/supabase';
-import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { DeleteFriendlyError, deleteFriendlyMatch } from '../friendly/delete-friendly';
 import { DeleteMatchSheet } from './delete-match-sheet';
@@ -77,13 +77,13 @@ export function SavedFriendlies({ userId }: { userId: string }) {
       <Pressable accessibilityRole="button" accessibilityLabel={`${match.team_a_name} vs ${match.team_b_name}. Resume scoring`}
         onPress={() => router.push({ pathname: '/scorer/[id]', params: { id: match.id } })}
         style={({ pressed }) => [s.open, pressed && s.pressed]}>
-        <View style={s.play}><Play size={16} color={colors.link} fill={colors.link} /></View>
+        <View style={s.play}><Play size={sizes.iconSmall} color={colors.link} fill={colors.link} /></View>
         <View style={s.text}>
           <Text style={s.title} numberOfLines={1}>{match.team_a_name} vs {match.team_b_name}</Text>
           <Text muted style={s.caption}>Tap to resume scoring</Text>
         </View>
       </Pressable>
-      {canDeleteSaved(match, userId) ? <AppIconTile icon={Trash} size={44} borderRadius={radius.pill}
+      {canDeleteSaved(match, userId) ? <AppIconTile icon={Trash} size={sizes.iconButton} borderRadius={radius.pill}
         iconColor={colors.danger}
         accessibilityLabel={`Delete ${match.team_a_name} vs ${match.team_b_name}`} onPress={() => setTarget(match)} /> : null}
     </View>)}
@@ -96,15 +96,15 @@ export function SavedFriendlies({ userId }: { userId: string }) {
 
 const styles = (c: Palette) => StyleSheet.create({
   group: { gap: spacing.sm },
-  label: { fontSize: 12, lineHeight: 16, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase' },
+  label: typography.labelUppercase,
   row: {
-    flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingRight: spacing.sm,
-    borderRadius: radius.lg, borderWidth: 1, borderColor: c.border, backgroundColor: c.surface,
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingRight: spacing.md,
+    borderRadius: radius.lg, backgroundColor: c.surface, ...shadows.card,
   },
-  open: { flex: 1, minHeight: 64, flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderRadius: radius.lg },
-  pressed: { opacity: 0.8 },
-  play: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: radius.pill, backgroundColor: c.primarySoft },
-  text: { flex: 1, minWidth: 0, gap: 2 },
-  title: { fontSize: 14, lineHeight: 19, fontWeight: '700' },
-  caption: { fontSize: 12, lineHeight: 16, fontWeight: '500' },
+  open: { flex: 1, minHeight: dp(64), flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderRadius: radius.lg },
+  pressed: { transform: [{ scale: 0.98 }] },
+  play: { width: sizes.iconButton, height: sizes.iconButton, alignItems: 'center', justifyContent: 'center', borderRadius: radius.pill, backgroundColor: c.primarySoft },
+  text: { flex: 1, minWidth: 0, gap: dp(2) },
+  title: typography.headlineMd,
+  caption: typography.bodySm,
 });

@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { FixtureTile } from '@/components/match/fixture-tile';
 import { Section, SectionHeader } from '@/components/ui';
+import { spacing } from '@/theme';
 import type { Fixture } from '@/types/cricket';
 
 type Props = {
@@ -25,5 +26,5 @@ export function RecentResultsSection({ results, onAllMatches, onResultPress }: P
 }
 
 const styles = StyleSheet.create({
-  list: { gap: 4 },
+  list: { gap: spacing.xs },
 });

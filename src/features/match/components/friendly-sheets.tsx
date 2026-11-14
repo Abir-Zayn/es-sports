@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { SegmentedControl, Text } from '@/components/ui';
 import { playerRoles, Sheet, UserSearchSheet, type PlayerRole, type UserSummary } from '@/features/tournament/roster';
 import { AddGuestSheet } from '@/features/tournament/squad';
-import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import type { FriendlyMatchSetup, FriendlySide } from '../types';
 import { searchPlayers } from '../friendly/search-players';
@@ -63,7 +63,7 @@ function ScorerOptions({ meId, setup, onPick }: { meId: string; setup: FriendlyM
     {options.map((o) => <Pressable key={o.id} accessibilityRole="radio" accessibilityState={{ checked: o.id === current }}
       accessibilityLabel={`Scorer ${o.name}`} onPress={() => onPick(o.id)} style={[s.option, o.id === current && s.on]}>
       <View style={s.text}><Text style={s.name}>{o.name}</Text><Text muted style={s.detail}>{o.detail}</Text></View>
-      {o.id === current ? <Check size={20} color={colors.link} /> : null}
+      {o.id === current ? <Check size={sizes.icon} color={colors.link} /> : null}
     </Pressable>)}
     {members.length === 0 ? <Text muted style={s.detail}>Add app users to a squad to hand scoring to one of them.</Text> : null}
   </View>;
@@ -71,9 +71,12 @@ function ScorerOptions({ meId, setup, onPick }: { meId: string; setup: FriendlyM
 
 const styles = (c: Palette) => StyleSheet.create({
   list: { gap: spacing.sm, paddingBottom: spacing.md },
-  option: { minHeight: 56, flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderRadius: 14, borderWidth: 1, borderColor: c.border },
+  option: {
+    minHeight: dp(56), flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg,
+    borderRadius: radius.md, borderWidth: 2, borderColor: 'transparent', backgroundColor: c.surfaceRaised,
+  },
   on: { borderColor: c.primary, backgroundColor: c.primarySoft },
-  text: { flex: 1, gap: 2 },
-  name: { fontSize: 15, lineHeight: 20, fontWeight: '700' },
-  detail: { fontSize: 12, lineHeight: 17 },
+  text: { flex: 1, gap: dp(2) },
+  name: typography.headlineMd,
+  detail: typography.bodySm,
 });

@@ -34,5 +34,6 @@ export function TournamentsToFollow({ tournaments, onTournamentPress }: Props) {
 }
 
 const styles = StyleSheet.create({
-  cards: { paddingHorizontal: sizes.gutter, gap: CARD_GAP },
+  // Vertical room so card shadows aren't clipped by the scroller.
+  cards: { paddingHorizontal: sizes.gutter, paddingVertical: spacing.lg, gap: CARD_GAP },
 });

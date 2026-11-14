@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppIconTile, AppTabs, Button, Text, TextField } from '@/components/ui';
 import { useAuth } from '@/features/auth/auth-provider';
 import { localEventId } from '@/features/scoring/local-id';
-import { radius, sizes, spacing, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
 
 import { teamErrorText } from '../data/team-errors';
 import { createTeam, myTeamsKey } from '../data/team-repository';
@@ -64,7 +64,7 @@ export function CreateTeamScreen() {
   return (
     <KeyboardAvoidingView style={[styles.screen, { paddingTop: insets.top }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={styles.header}>
-        <AppIconTile icon={ChevronLeft} size={44} borderRadius={radius.pill} accessibilityLabel="Back" onPress={goBack} />
+        <AppIconTile icon={ChevronLeft} size={sizes.iconButton} borderRadius={radius.pill} accessibilityLabel="Back" onPress={goBack} />
         <Text accessibilityRole="header" style={styles.title}>Create team</Text>
       </View>
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]} keyboardShouldPersistTaps="handled">
@@ -86,8 +86,8 @@ export function CreateTeamScreen() {
 const createStyles = (colors: Palette) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter, paddingVertical: spacing.md },
-  title: { fontSize: 18, lineHeight: 24, fontWeight: '700' },
-  content: { paddingHorizontal: sizes.gutter, gap: spacing.lg, maxWidth: 600, width: '100%', alignSelf: 'center' },
+  title: typography.headlineLg,
+  content: { paddingHorizontal: sizes.gutter, gap: spacing.lg, maxWidth: dp(600), width: '100%', alignSelf: 'center' },
   group: { gap: spacing.sm },
   error: { color: colors.dangerSoftText },
 });

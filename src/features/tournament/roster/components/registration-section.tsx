@@ -1,8 +1,8 @@
 import Lock from 'lucide-react-native/icons/lock';
 import { StyleSheet, View } from 'react-native';
 
-import { AppBadge, Button, Text } from '@/components/ui';
-import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { AppBadge, Button, Card, Text } from '@/components/ui';
+import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { DatePicker } from '../../create/date-picker';
 import { formatDate } from '../../create/draft';
@@ -30,7 +30,7 @@ export function RegistrationSection({ roster, caps, busy, error, onSetDeadline, 
   const open = status === 'open';
   const manage = caps.manageRegistration && !roster.locked;
   return (
-    <View style={styles.section}>
+    <Card style={styles.section}>
       <View style={styles.heading}>
         <Text accessibilityRole="header" style={styles.title}>
           Registration
@@ -60,7 +60,7 @@ export function RegistrationSection({ roster, caps, busy, error, onSetDeadline, 
       ) : null}
       {roster.locked ? (
         <View style={styles.locked}>
-          <Lock size={16} color={colors.accent} />
+          <Lock size={sizes.iconSmall} color={colors.accent} />
           <Text variant="caption" style={styles.lockedText}>
             Rosters are locked. Any squad change now needs a reason and alerts the organisers.
           </Text>
@@ -73,7 +73,7 @@ export function RegistrationSection({ roster, caps, busy, error, onSetDeadline, 
           <Button label="Lock rosters" variant="ghost" size="compact" disabled={busy} onPress={onLock} />
         </View>
       ) : null}
-    </View>
+    </Card>
   );
 }
 
@@ -81,8 +81,8 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     section: { gap: spacing.sm },
     heading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
-    title: { fontSize: 16, lineHeight: 22, fontWeight: '700' },
-    card: { borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, overflow: 'hidden' },
+    title: typography.headlineMd,
+    card: { borderRadius: radius.md, backgroundColor: colors.surfaceRaised, overflow: 'hidden' },
     error: { color: colors.dangerSoftText },
     locked: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
     lockedText: { flex: 1, color: colors.accent },

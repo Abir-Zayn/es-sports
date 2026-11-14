@@ -1,7 +1,7 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { sizes, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import type { FallOfWicket } from '../types';
 
@@ -38,22 +38,22 @@ export function FallOfWicketsSection({ wickets }: { wickets: FallOfWicket[] }) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    section: { gap: 12 },
-    title: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
+    section: { gap: spacing.md },
+    title: typography.headlineLg,
     // Lets the cards scroll edge to edge while the rest of the screen keeps its gutter.
     scroll: { marginHorizontal: -sizes.gutter },
-    cards: { paddingHorizontal: sizes.gutter, gap: 10 },
+    // Vertical padding leaves room for the card shadow inside the scroll view's clip.
+    cards: { paddingHorizontal: sizes.gutter, paddingVertical: spacing.sm, gap: spacing.md },
     card: {
-      width: 120,
-      padding: 12,
-      borderRadius: 16,
+      width: dp(120),
+      padding: spacing.lg,
+      borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      gap: 4,
+      ...shadows.card,
+      gap: spacing.xs,
     },
-    scoreRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
-    score: { fontSize: 20, lineHeight: 24, fontWeight: '800', fontVariant: ['tabular-nums'] },
-    over: { fontSize: 11, lineHeight: 14 },
-    name: { fontSize: 13, lineHeight: 18, fontWeight: '600' },
+    scoreRow: { flexDirection: 'row', alignItems: 'baseline', gap: dp(6) },
+    score: { ...typography.headlineLg, fontVariant: ['tabular-nums'] },
+    over: { ...typography.labelSm, fontVariant: ['tabular-nums'] },
+    name: typography.bodySm,
   });

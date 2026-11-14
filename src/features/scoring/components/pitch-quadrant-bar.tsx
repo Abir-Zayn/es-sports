@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
 import { pitchQuadrants, quadrantOf } from '@/lib/pitch-quadrant';
-import { useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { PitchQuadrant } from '@/types/cricket';
 
 type Props = {
@@ -28,11 +28,11 @@ export function PitchQuadrantBar({ angle, onPick }: Props) {
   </View>;
 }
 const styles = (c: Palette) => StyleSheet.create({
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  zone: { flexBasis: '48%', flexGrow: 1, minHeight: 64, padding: 10, gap: 2, justifyContent: 'center', borderRadius: 16, borderWidth: 1, borderColor: c.border, backgroundColor: c.surface },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  zone: { flexBasis: '48%', flexGrow: 1, minHeight: dp(64), padding: spacing.md, gap: spacing.xs / 2, justifyContent: 'center', borderRadius: radius.md, borderWidth: 2, borderColor: 'transparent', backgroundColor: c.surfaceRaised },
   on: { borderColor: c.primary, backgroundColor: c.primarySoft },
-  pressed: { opacity: 0.85 },
-  label: { fontSize: 14, lineHeight: 19, fontWeight: '700' },
+  pressed: { transform: [{ scale: 0.95 }] },
+  label: typography.labelMd,
   onText: { color: c.link },
-  detail: { fontSize: 11, lineHeight: 15 },
+  detail: typography.bodySm,
 });

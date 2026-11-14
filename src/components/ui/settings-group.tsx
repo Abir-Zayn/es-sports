@@ -1,7 +1,7 @@
 import { Children, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { useThemedStyles, type Palette } from '@/theme';
+import { radius, shadows, useThemedStyles, type Palette } from '@/theme';
 
 /** A rounded card that stacks `SettingsRow`s, split by hairlines. */
 export function SettingsGroup({ children }: { children: ReactNode }) {
@@ -20,6 +20,6 @@ export function SettingsGroup({ children }: { children: ReactNode }) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    card: { borderRadius: 20, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
+    card: { borderRadius: radius.lg, backgroundColor: colors.surface, ...shadows.card },
     divider: { borderBottomWidth: 1, borderBottomColor: colors.border },
   });

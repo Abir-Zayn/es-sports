@@ -5,7 +5,7 @@ import { Button, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth/auth-provider';
 import { searchPlayers } from '@/features/match/friendly/search-players';
 import { UserSearchSheet, type UserSummary } from '@/features/tournament/roster';
-import { spacing, useTheme } from '@/theme';
+import { spacing, typography, useTheme } from '@/theme';
 
 import { ScorerNotice } from '../../components/scorer-ui';
 import { handoverErrorText } from '../handover-errors';
@@ -87,7 +87,7 @@ export function HandoverSection({ matchId, ready, onLeave }: Props) {
 const styles = StyleSheet.create({
   box: { gap: spacing.sm },
   waiting: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  text: { flex: 1, gap: 2 },
-  line: { fontSize: 14, lineHeight: 19, fontWeight: '700' },
-  caption: { fontSize: 12, lineHeight: 17 },
+  text: { flex: 1, gap: spacing.xs / 2 },
+  line: typography.labelMd,
+  caption: typography.bodySm,
 });

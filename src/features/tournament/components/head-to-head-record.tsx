@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { TeamInfo } from '@/types/cricket';
 
 import { useToneColors } from '../use-tone-colors';
@@ -48,12 +48,12 @@ export function HeadToHeadRecord({ teamA, teamB, played, winsA, winsB }: Props) 
 
 const createStyles = (_colors: Palette) =>
   StyleSheet.create({
-    block: { gap: 10 },
+    block: { gap: spacing.md },
     numbers: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-    wins: { fontSize: 40, lineHeight: 44, fontWeight: '800', fontVariant: ['tabular-nums'] },
-    played: { fontSize: 13, lineHeight: 18 },
-    bar: { flexDirection: 'row', gap: 4, height: 10 },
-    segment: { borderRadius: 5 },
+    wins: { ...typography.displayLg, fontVariant: ['tabular-nums'] },
+    played: typography.bodySm,
+    bar: { flexDirection: 'row', gap: spacing.xs, height: sizes.progressBar },
+    segment: { borderRadius: radius.pill },
     names: { flexDirection: 'row', justifyContent: 'space-between' },
-    nameText: { fontSize: 12, lineHeight: 16 },
+    nameText: typography.bodySm,
   });

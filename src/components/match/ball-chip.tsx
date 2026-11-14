@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useTheme } from '@/theme';
+import { dp, fontWeight, sp, useTheme } from '@/theme';
 
 const EXTRAS = ['Wd', 'Nb', 'Lb', 'B'];
 
@@ -14,22 +14,22 @@ type Props = {
  * One ball of an over: a run count, a boundary, a wicket ("W"), or an extra ("Wd", "Nb", "Lb", "B").
  * An empty value is a ball yet to be bowled, drawn as a dashed ring.
  */
-export function BallChip({ value, size = 24 }: Props) {
+export function BallChip({ value, size = dp(24) }: Props) {
   const { colors } = useTheme();
-  const large = size > 30;
+  const large = size > dp(30);
   let background = colors.surfaceRaised;
   let color = colors.text;
-  let fontSize = large ? 13 : 11;
+  let fontSize = sp(large ? 13 : 11);
   if (value === 'W') {
     background = colors.dangerSoft;
     color = colors.dangerSoftText;
   } else if (value === '4' || value === '6') {
-    background = colors.primary;
-    color = colors.primaryText;
+    background = colors.primarySoft;
+    color = colors.link;
   } else if (EXTRAS.includes(value)) {
     background = colors.accentSoft;
     color = colors.accent;
-    fontSize = large ? 11 : 9;
+    fontSize = sp(large ? 11 : 9);
   }
   const empty = value === '';
   return (
@@ -42,7 +42,7 @@ export function BallChip({ value, size = 24 }: Props) {
         empty && { borderWidth: 1.5, borderStyle: 'dashed', borderColor: colors.outline },
       ]}
     >
-      {empty ? null : <Text style={{ color, fontSize, lineHeight: fontSize + 3, fontWeight: '700' }}>{value}</Text>}
+      {empty ? null : <Text style={{ color, fontSize, lineHeight: Math.round(fontSize * 1.3), fontWeight: fontWeight.heading, fontVariant: ['tabular-nums'] }}>{value}</Text>}
     </View>
   );
 }

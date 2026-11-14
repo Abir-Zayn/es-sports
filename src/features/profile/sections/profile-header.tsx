@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppIconTile, InitialsAvatar, Text } from '@/components/ui';
 import { initialsOf } from '@/lib/initials';
-import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { PlayerProfile } from '@/types/profile';
 
 import { CopyIdButton } from '../components/copy-id-button';
@@ -33,21 +33,15 @@ export function ProfileHeader({ profile, userId, onSettings, onEdit }: Props) {
         <View style={styles.actions}>
           <AppIconTile
             icon={Pencil}
-            size={44}
-            borderRadius={22}
             backgroundColor={colors.surface}
-            borderColor={colors.border}
-            borderWidth={1}
+            elevated
             accessibilityLabel="Edit profile"
             onPress={onEdit}
           />
           <AppIconTile
             icon={Settings}
-            size={44}
-            borderRadius={22}
             backgroundColor={colors.surface}
-            borderColor={colors.border}
-            borderWidth={1}
+            elevated
             accessibilityLabel="Settings"
             onPress={onSettings}
           />
@@ -57,7 +51,7 @@ export function ProfileHeader({ profile, userId, onSettings, onEdit }: Props) {
         <InitialsAvatar
           label={initialsOf(profile.fullName)}
           imageUri={profile.avatarUri}
-          size={72}
+          size={dp(72)}
           accessibilityLabel={`${profile.fullName} profile picture`}
         />
         <View style={styles.names}>
@@ -65,7 +59,7 @@ export function ProfileHeader({ profile, userId, onSettings, onEdit }: Props) {
             <Text style={styles.name}>{profile.fullName}</Text>
             {userId ? <CopyIdButton userId={userId} /> : null}
           </View>
-          <Text muted>{meta}</Text>
+          <Text variant="bodySm" muted>{meta}</Text>
         </View>
       </View>
     </View>
@@ -80,5 +74,5 @@ const createStyles = (colors: Palette) =>
     identity: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg, paddingHorizontal: sizes.gutter },
     names: { flex: 1, gap: spacing.xs },
     nameRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-    name: { flexShrink: 1, fontSize: 24, lineHeight: 30, fontWeight: '700', color: colors.text },
+    name: { ...typography.headlineLg, flexShrink: 1, color: colors.text },
   });

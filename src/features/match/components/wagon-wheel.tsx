@@ -38,10 +38,10 @@ export function WagonWheel({ shots, filter, accessibilityLabel }: Props) {
         <Path d={shotsPath(shots, (s) => s.runs < 4 && keep(s))} fill="none" stroke={RUNS_LINE} strokeWidth={2} strokeLinecap="round" opacity={0.75} />
         <Path d={shotsPath(shots, (s) => s.runs === 4 && keep(s))} fill="none" stroke={colors.primary} strokeWidth={2.5} strokeLinecap="round" />
         <Path d={shotsPath(shots, (s) => s.runs === 6 && keep(s))} fill="none" stroke={colors.primary} strokeWidth={4} strokeLinecap="round" />
-        <SvgText x={300} y={28} textAnchor="end" fontSize={11} fontWeight="700" fill={LABEL} letterSpacing={1.5}>
+        <SvgText x={300} y={28} textAnchor="end" fontSize={11} fontWeight="400" fill={LABEL} letterSpacing={1.5}>
           OFF
         </SvgText>
-        <SvgText x={40} y={28} fontSize={11} fontWeight="700" fill={LABEL} letterSpacing={1.5}>
+        <SvgText x={40} y={28} fontSize={11} fontWeight="400" fill={LABEL} letterSpacing={1.5}>
           LEG
         </SvgText>
       </Svg>

@@ -2,11 +2,8 @@ import { StyleSheet, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { InitialsAvatar, Text } from '@/components/ui';
-import { sizes, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { TeamInfo } from '@/types/cricket';
-
-const AMBER_PILL = '#E08214';
-const ON_AMBER = '#0A0E0D';
 
 export type ResultTeamLine = { team: TeamInfo; score: string; overs: string; won: boolean };
 export type ResultHighlight = { title: string; name: string; figure: string };
@@ -50,9 +47,9 @@ export function MatchResultSummaryCard({ headline, teams, highlights }: Props) {
                 label={first.team.short}
                 tone={first.team.tone}
                 imageUri={first.team.avatarUri}
-                size={52}
-                borderColor={first.won ? colors.accent : colors.border}
-                borderWidth={first.won ? 2 : 1}
+                size={dp(52)}
+                borderColor={first.won ? colors.primary : 'transparent'}
+                borderWidth={2}
               />
               <Text style={[s.teamName, first.won && s.winner]} numberOfLines={2}>
                 {first.team.name}
@@ -76,9 +73,9 @@ export function MatchResultSummaryCard({ headline, teams, highlights }: Props) {
                 label={second.team.short}
                 tone={second.team.tone}
                 imageUri={second.team.avatarUri}
-                size={52}
-                borderColor={second.won ? colors.accent : colors.border}
-                borderWidth={second.won ? 2 : 1}
+                size={dp(52)}
+                borderColor={second.won ? colors.primary : 'transparent'}
+                borderWidth={2}
               />
               <Text style={[s.teamName, second.won && s.winner]} numberOfLines={2}>
                 {second.team.name}
@@ -104,8 +101,8 @@ export function MatchResultSummaryCard({ headline, teams, highlights }: Props) {
                   {h.name}
                 </Text>
                 <Text muted style={s.roleText}>{shortTag(h.title)}</Text>
-                <View style={s.amberPill}>
-                  <Text style={s.amberFigure}>{h.figure}</Text>
+                <View style={s.figurePill}>
+                  <Text style={s.figure}>{h.figure}</Text>
                 </View>
               </View>
             ))}
@@ -124,27 +121,27 @@ const styles = (c: Palette) =>
       position: 'relative',
     },
     inner: {
-      paddingVertical: 14,
+      paddingVertical: spacing.lg,
       paddingHorizontal: sizes.gutter,
-      gap: 14,
+      gap: spacing.lg,
     },
     scoreboard: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
-    teamCol: { width: 96, alignItems: 'center', gap: 10 },
-    teamName: { fontSize: 14, lineHeight: 18, fontWeight: '700', textAlign: 'center', color: c.text },
-    winner: { color: c.text, fontWeight: '800' },
-    centerCol: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 2, gap: 4 },
-    oversLine: { fontSize: 12, lineHeight: 16, fontVariant: ['tabular-nums'] },
-    scoreRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    scoreBig: { fontSize: 28, lineHeight: 34, fontWeight: '800', color: c.text, fontVariant: ['tabular-nums'] },
+    teamCol: { width: dp(96), alignItems: 'center', gap: spacing.sm },
+    teamName: { ...typography.labelMd, textAlign: 'center', color: c.text },
+    winner: { ...typography.headlineMd, color: c.text },
+    centerCol: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: dp(2), gap: spacing.xs },
+    oversLine: { ...typography.bodySm, fontVariant: ['tabular-nums'] },
+    scoreRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+    scoreBig: { ...typography.numeralStat, color: c.text },
     scoreDim: { color: c.textMuted },
-    scoreDash: { fontSize: 24, lineHeight: 30, fontWeight: '700', color: c.textMuted },
-    statusTag: { fontSize: 12, lineHeight: 16, fontWeight: '600', letterSpacing: 0.8 },
+    scoreDash: { ...typography.displayMd, color: c.textMuted },
+    statusTag: typography.labelUppercase,
     summaryBlock: { alignItems: 'center' },
-    headline: { fontSize: 14, lineHeight: 19, fontWeight: '700', color: c.textMuted, textAlign: 'center' },
-    highlights: { gap: 8, paddingTop: 2 },
-    highlightRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
-    playerName: { width: 132, textAlign: 'right', fontSize: 13, lineHeight: 18, fontWeight: '500', color: c.textMuted },
-    roleText: { fontSize: 11, lineHeight: 14, fontWeight: '700', letterSpacing: 0.5 },
-    amberPill: { minWidth: 64, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 5, backgroundColor: AMBER_PILL, alignItems: 'center' },
-    amberFigure: { fontSize: 11, lineHeight: 15, fontWeight: '800', color: ON_AMBER, fontVariant: ['tabular-nums'] },
+    headline: { ...typography.headlineMd, color: c.textMuted, textAlign: 'center' },
+    highlights: { gap: spacing.sm, paddingTop: dp(2) },
+    highlightRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm },
+    playerName: { ...typography.bodySm, width: dp(132), textAlign: 'right', color: c.textMuted },
+    roleText: typography.labelSm,
+    figurePill: { minWidth: dp(64), paddingHorizontal: spacing.sm, paddingVertical: dp(3), borderRadius: radius.pill, backgroundColor: c.surfaceRaised, alignItems: 'center' },
+    figure: { ...typography.labelSm, color: c.text, fontVariant: ['tabular-nums'] },
   });

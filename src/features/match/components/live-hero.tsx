@@ -5,13 +5,10 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { InitialsAvatar, Text } from '@/components/ui';
-import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import type { LiveMatchViewData } from '../live/live-view';
 import type { LiveSide } from '../types';
-
-const AMBER_PILL = '#E08214';
-const ON_AMBER = '#0A0E0D';
 
 type Props = {
   view: Pick<LiveMatchViewData, 'header' | 'sides' | 'summary' | 'currentRunRate' | 'requiredRunRate'>;
@@ -39,7 +36,7 @@ export function LiveHero({ view, onBack, onShare }: Props) {
           onPress={onBack}
           style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
         >
-          <ChevronLeft size={22} color={colors.text} strokeWidth={2.2} />
+          <ChevronLeft size={sizes.icon} color={colors.text} strokeWidth={2.2} />
         </Pressable>
         <Text accessibilityRole="header" style={styles.label} numberOfLines={1}>
           {view.header.label}
@@ -50,7 +47,7 @@ export function LiveHero({ view, onBack, onShare }: Props) {
           onPress={onShare}
           style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
         >
-          <Share2 size={18} color={colors.textMuted} strokeWidth={2} />
+          <Share2 size={sizes.iconSmall} color={colors.textMuted} strokeWidth={2} />
         </Pressable>
       </View>
 
@@ -100,15 +97,15 @@ export function LiveHero({ view, onBack, onShare }: Props) {
                   {side.team.short} · {idx === 0 ? '1st inn' : '2nd inn'}
                 </Text>
                 <View style={[styles.eventIcon, side.batting ? styles.eventIconActive : styles.eventIconIdle]} />
-                <View style={styles.amberPill}>
-                  <Text style={styles.amberText}>{side.overs}</Text>
+                <View style={styles.oversPill}>
+                  <Text style={styles.oversText}>{side.overs}</Text>
                 </View>
               </View>
             ))}
           </View>
         )}
         <View style={styles.chevronRow}>
-          <ChevronDown size={16} color={colors.textMuted} strokeWidth={2.2} />
+          <ChevronDown size={sizes.iconSmall} color={colors.textMuted} strokeWidth={2.2} />
         </View>
       </View>
     </View>
@@ -129,9 +126,9 @@ function TeamCrest({ side }: { side: LiveSide }) {
         label={team.short}
         tone={team.tone}
         imageUri={team.avatarUri}
-        size={52}
-        borderColor={batting ? colors.accent : colors.border}
-        borderWidth={batting ? 2 : 1}
+        size={dp(52)}
+        borderColor={batting ? colors.primary : 'transparent'}
+        borderWidth={2}
       />
       <Text style={styles.teamName} numberOfLines={2}>
         {team.name}
@@ -142,35 +139,38 @@ function TeamCrest({ side }: { side: LiveSide }) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    hero: { paddingHorizontal: sizes.gutter, paddingBottom: 10, backgroundColor: colors.background },
-    topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 48 },
-    iconBtn: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center', marginHorizontal: -10 },
-    pressed: { opacity: 0.7 },
-    label: { flex: 1, textAlign: 'center', fontSize: 14, lineHeight: 19, fontWeight: '600', color: colors.text, paddingHorizontal: 8 },
-    scoreboard: { marginTop: 18, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
-    column: { width: 96, alignItems: 'center', gap: 10 },
-    teamName: { fontSize: 14, lineHeight: 18, fontWeight: '700', textAlign: 'center', color: colors.text },
-    centerCol: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 2, gap: 4 },
-    rates: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-    rate: { fontSize: 11, lineHeight: 15, fontVariant: ['tabular-nums'] },
-    rateValue: { fontSize: 11, lineHeight: 15, fontWeight: '700', color: colors.text, fontVariant: ['tabular-nums'] },
-    scoreLine: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    scoreNum: { fontSize: 28, lineHeight: 34, fontWeight: '800', color: colors.text, fontVariant: ['tabular-nums'] },
+    hero: { paddingHorizontal: sizes.gutter, paddingBottom: spacing.md, backgroundColor: colors.background },
+    topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: dp(48) },
+    iconBtn: {
+      width: sizes.iconButton, height: sizes.iconButton, alignItems: 'center', justifyContent: 'center',
+      borderRadius: radius.pill, backgroundColor: colors.surface, ...shadows.iconButton,
+    },
+    pressed: { transform: [{ scale: 0.95 }] },
+    label: { ...typography.headlineLg, flex: 1, textAlign: 'center', color: colors.text, paddingHorizontal: spacing.sm },
+    scoreboard: { marginTop: spacing.lg, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
+    column: { width: dp(96), alignItems: 'center', gap: spacing.sm },
+    teamName: { ...typography.labelMd, textAlign: 'center', color: colors.text },
+    centerCol: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: dp(2), gap: spacing.xs },
+    rates: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+    rate: { ...typography.labelSm, fontVariant: ['tabular-nums'] },
+    rateValue: { ...typography.labelSm, color: colors.text, fontVariant: ['tabular-nums'] },
+    scoreLine: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+    scoreNum: { ...typography.numeralStat, color: colors.text },
     scoreDim: { color: colors.textMuted },
-    scoreDash: { fontSize: 24, lineHeight: 30, fontWeight: '700', color: colors.textMuted },
-    statusRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
-    liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.live },
-    statusText: { fontSize: 12, lineHeight: 16, fontWeight: '600', letterSpacing: 0.8, color: colors.textMuted },
-    statusLive: { color: colors.live, fontWeight: '700' },
-    highlights: { marginTop: 18, alignItems: 'center', gap: 10 },
-    summary: { fontSize: 13, lineHeight: 18, fontWeight: '600', color: colors.textMuted, textAlign: 'center' },
-    eventRows: { width: '100%', gap: 8, marginTop: 2 },
-    eventRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
-    eventName: { width: 130, textAlign: 'right', fontSize: 13, lineHeight: 18, fontWeight: '500' },
-    eventIcon: { width: 10, height: 10, borderRadius: 5 },
-    eventIconActive: { backgroundColor: colors.accent },
+    scoreDash: { ...typography.displayMd, color: colors.textMuted },
+    statusRow: { flexDirection: 'row', alignItems: 'center', gap: dp(6), marginTop: dp(2) },
+    liveDot: { width: dp(6), height: dp(6), borderRadius: radius.pill, backgroundColor: colors.live },
+    statusText: { ...typography.labelUppercase, color: colors.textMuted },
+    statusLive: { color: colors.live },
+    highlights: { marginTop: spacing.lg, alignItems: 'center', gap: spacing.sm },
+    summary: { ...typography.bodyMd, color: colors.textMuted, textAlign: 'center' },
+    eventRows: { width: '100%', gap: spacing.sm, marginTop: dp(2) },
+    eventRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm },
+    eventName: { ...typography.bodySm, width: dp(130), textAlign: 'right' },
+    eventIcon: { width: dp(10), height: dp(10), borderRadius: radius.pill },
+    eventIconActive: { backgroundColor: colors.primary },
     eventIconIdle: { backgroundColor: colors.outline },
-    amberPill: { minWidth: 52, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 5, backgroundColor: AMBER_PILL, alignItems: 'center' },
-    amberText: { fontSize: 11, lineHeight: 15, fontWeight: '800', color: ON_AMBER, fontVariant: ['tabular-nums'] },
-    chevronRow: { paddingTop: 2, alignItems: 'center' },
+    oversPill: { minWidth: dp(52), paddingHorizontal: spacing.sm, paddingVertical: dp(3), borderRadius: radius.pill, backgroundColor: colors.surfaceRaised, alignItems: 'center' },
+    oversText: { ...typography.labelSm, color: colors.text, fontVariant: ['tabular-nums'] },
+    chevronRow: { paddingTop: dp(2), alignItems: 'center' },
   });

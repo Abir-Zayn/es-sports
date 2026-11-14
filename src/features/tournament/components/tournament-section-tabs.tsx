@@ -1,7 +1,7 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppTabs } from '@/components/ui';
-import { sizes, useThemedStyles, type Palette } from '@/theme';
+import { sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { tournamentSections, type TournamentSectionId } from '../sample-data';
 import { useTournamentRoutes } from '../use-tournament-routes';
@@ -23,7 +23,6 @@ export function TournamentSectionTabs({ tournamentId, selected }: Props) {
           tabs={[...tournamentSections]}
           selected={selected}
           onSelect={(section) => section !== selected && openSection(section)}
-          outlined={false}
         />
       </ScrollView>
     </View>
@@ -34,7 +33,7 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     bar: {
       marginTop: sizes.gutter,
-      paddingBottom: 14,
+      paddingBottom: spacing.md,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },

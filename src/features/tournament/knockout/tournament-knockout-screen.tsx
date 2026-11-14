@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { radius, sizes, spacing, useThemedStyles, type Palette } from '@/theme';
+import { radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { TournamentScreenFrame } from '../components/tournament-screen-frame';
 import { KnockoutBracketSide } from './components/knockout-bracket-side';
@@ -135,25 +135,20 @@ const createStyles = (colors: Palette) =>
       paddingBottom: spacing.md,
     },
     filterPill: {
-      paddingHorizontal: 12,
-      paddingVertical: 6,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
       borderRadius: radius.pill,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
+      backgroundColor: colors.surfaceRaised,
     },
     filterPillActive: {
-      backgroundColor: colors.text,
-      borderColor: colors.text,
+      backgroundColor: colors.primarySoft,
     },
     filterText: {
-      fontSize: 11,
-      lineHeight: 14,
-      fontWeight: '600',
+      ...typography.labelSm,
       color: colors.textMuted,
     },
     filterTextActive: {
-      color: colors.background,
+      color: colors.link,
     },
     scrollCanvas: {
       paddingHorizontal: sizes.gutter,
@@ -168,7 +163,7 @@ const createStyles = (colors: Palette) =>
     bothSidesRow: {
       flexDirection: 'row',
       alignItems: 'flex-start',
-      gap: 20,
+      gap: sizes.cardPaddingTight,
     },
     bracketDivider: {
       width: 1,

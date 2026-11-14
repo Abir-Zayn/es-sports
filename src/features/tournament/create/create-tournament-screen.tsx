@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth/auth-provider';
-import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { emptyDraft, validateDraft, type DraftErrors, type TournamentDraft } from './draft';
 import { draftQueryKey, loadDraft, saveDraft } from './draft-storage';
@@ -110,11 +110,11 @@ function TournamentForm({ userId, initial }: { userId: string; initial: Tourname
   return <KeyboardAvoidingView style={[styles.screen, { paddingTop: insets.top }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
     <Stack.Screen options={{ gestureEnabled: false }} />
     <View style={styles.header}>
-      <AppIconTile icon={X} size={48} borderRadius={24} accessibilityLabel="Close tournament setup" onPress={goBack} />
+      <AppIconTile icon={X} size={sizes.iconButton} borderRadius={radius.pill} accessibilityLabel="Close tournament setup" onPress={goBack} />
       <Text style={styles.headerTitle} accessibilityRole="header">Tournament</Text>
       <Pressable accessibilityRole="button" accessibilityLabel="Save tournament draft" accessibilityState={{ disabled: busy, busy: mutation.isPending }}
         disabled={busy} onPress={() => { void save(); }} style={({ pressed }) => [styles.save, (pressed || busy) && styles.pressed]}>
-        {mutation.isPending ? <ActivityIndicator color={colors.primaryText} /> : <Check size={23} color={colors.primaryText} strokeWidth={2.2} />}
+        {mutation.isPending ? <ActivityIndicator color={colors.primaryText} /> : <Check size={sizes.icon} color={colors.primaryText} strokeWidth={2.2} />}
       </Pressable>
     </View>
     <ScrollView ref={scroll} style={styles.flex} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}
@@ -147,10 +147,10 @@ const createStyles = (colors: Palette) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background }, flex: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg, paddingHorizontal: sizes.gutter, paddingTop: spacing.sm,
     paddingBottom: spacing.xl, width: '100%', maxWidth: 600, alignSelf: 'center' },
-  headerTitle: { flex: 1, fontWeight: '700', fontSize: 18, lineHeight: 24, textAlign: 'center' },
-  save: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { flex: 1, ...typography.headlineLg, textAlign: 'center' },
+  save: { width: sizes.iconButton, height: sizes.iconButton, borderRadius: radius.pill, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   pressed: { opacity: 0.65 },
   content: { paddingHorizontal: sizes.gutter, paddingTop: spacing.sm, gap: spacing.lg, maxWidth: 600, width: '100%', alignSelf: 'center' },
   error: { color: colors.dangerSoftText }, modal: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'center', padding: spacing.xl },
-  exit: { padding: spacing.lg, backgroundColor: colors.surfaceRaised, borderRadius: radius.lg, gap: spacing.md, maxWidth: 480, width: '100%', alignSelf: 'center' },
+  exit: { padding: sizes.cardPadding, backgroundColor: colors.surface, borderRadius: radius.lg, ...shadows.card, gap: spacing.md, maxWidth: 480, width: '100%', alignSelf: 'center' },
 });

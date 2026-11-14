@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/ui';
-import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 type Props = { title: string; subtitle: string; onBack: () => void };
 
@@ -20,7 +20,7 @@ export function MatchCompactHeader({ title, subtitle, onBack }: Props) {
         onPress={onBack}
         style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
       >
-        <ChevronLeft size={22} color={colors.text} strokeWidth={2.2} />
+        <ChevronLeft size={sizes.icon} color={colors.text} strokeWidth={2.2} />
       </Pressable>
       <View style={styles.titles}>
         <Text accessibilityRole="header" style={styles.title} numberOfLines={1}>
@@ -44,28 +44,29 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     row: {
       paddingHorizontal: sizes.gutter,
-      paddingBottom: 12,
+      paddingBottom: spacing.md,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       gap: spacing.sm,
     },
-    iconBtn: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center', marginLeft: -10 },
-    pressed: { opacity: 0.7 },
-    titles: { flex: 1, minWidth: 0, alignItems: 'center', gap: 2 },
-    title: { fontSize: 15, lineHeight: 20, fontWeight: '700', textAlign: 'center', color: colors.text },
-    subtitle: { fontSize: 12, lineHeight: 16, textAlign: 'center' },
+    iconBtn: {
+      width: sizes.iconButton, height: sizes.iconButton, alignItems: 'center', justifyContent: 'center',
+      borderRadius: radius.pill, backgroundColor: colors.surface, ...shadows.iconButton,
+    },
+    pressed: { transform: [{ scale: 0.95 }] },
+    titles: { flex: 1, minWidth: 0, alignItems: 'center', gap: dp(2) },
+    title: { ...typography.headlineLg, textAlign: 'center', color: colors.text },
+    subtitle: { ...typography.bodySm, textAlign: 'center' },
     liveChip: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 5,
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 6,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
+      gap: dp(5),
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      borderRadius: radius.pill,
+      backgroundColor: colors.dangerSoft,
     },
-    liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.live },
-    liveText: { fontSize: 11, lineHeight: 14, fontWeight: '700', letterSpacing: 0.6, color: colors.text },
+    liveDot: { width: dp(6), height: dp(6), borderRadius: radius.pill, backgroundColor: colors.live },
+    liveText: { ...typography.labelSm, color: colors.dangerSoftText },
   });

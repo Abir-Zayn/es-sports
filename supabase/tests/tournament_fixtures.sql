@@ -69,11 +69,10 @@ begin
     raise exception 'FAIL b: expected 3 fixtures in auto mode';
   end if;
 
-  -- c) Schedules that do not fit are ET006: outside the dates, a team twice a day, two matches at once, a side that
-  --    is both a team and a label. A bad mode or an unknown team is 22023.
+  -- c) Schedules that do not fit are ET006: outside the dates, two matches at once, a side that is both a team and a
+  --    label, or a team playing more than 3 times a day. A bad mode or an unknown team is 22023.
   foreach bad in array array[
     jsonb_build_object('match_date', current_date + 10),
-    jsonb_build_object('match_date', current_date + 7, 'start_min', 840),
     jsonb_build_object('match_date', current_date + 7, 'start_min', 600, 'home_team', 'f9b00000-0000-4000-8000-00000000000c', 'away_team', null, 'away_label', 'X'),
     jsonb_build_object('home_label', 'Also a label')
   ] loop
@@ -84,6 +83,22 @@ begin
     end;
     if code is distinct from 'ET006' then raise exception 'FAIL c: % gave %', bad, code; end if;
   end loop;
+  -- A team playing 3 times on the same day is allowed; a 4th match that day is ET006.
+  code := null;
+  begin
+    perform public.publish_tournament_schedule(t, jsonb_set(body, '{matches}', jsonb_build_array(
+      jsonb_build_object('number', 1, 'stage', 'League', 'round', 0, 'home_team', 'f9b00000-0000-4000-8000-00000000000a',
+        'away_team', 'f9b00000-0000-4000-8000-00000000000b', 'match_date', current_date + 7, 'start_min', 420),
+      jsonb_build_object('number', 2, 'stage', 'League', 'round', 0, 'home_team', 'f9b00000-0000-4000-8000-00000000000a',
+        'away_team', 'f9b00000-0000-4000-8000-00000000000c', 'match_date', current_date + 7, 'start_min', 660),
+      jsonb_build_object('number', 3, 'stage', 'League', 'round', 0, 'home_team', 'f9b00000-0000-4000-8000-00000000000a',
+        'away_team', 'f9b00000-0000-4000-8000-00000000000b', 'match_date', current_date + 7, 'start_min', 900),
+      jsonb_build_object('number', 4, 'stage', 'League', 'round', 0, 'home_team', 'f9b00000-0000-4000-8000-00000000000a',
+        'away_team', 'f9b00000-0000-4000-8000-00000000000c', 'match_date', current_date + 7, 'start_min', 1140)
+    )));
+  exception when others then code := sqlstate;
+  end;
+  if code is distinct from 'ET006' then raise exception 'FAIL c: 4th match for team gave %', code; end if;
   code := null;
   begin perform public.publish_tournament_schedule(t, body || '{"mode":"random"}'); exception when others then code := sqlstate; end;
   if code is distinct from '22023' then raise exception 'FAIL c: bad mode gave %', code; end if;
@@ -97,14 +112,11 @@ begin
   select id into m1 from public.tournament_fixtures where tournament_id = t and number = 1;
   select id into m2 from public.tournament_fixtures where tournament_id = t and number = 2;
 
-  -- d) Moving match 2 onto match 1's slot or onto A's day is ET006; to day 3 at 3 PM is fine and tells A and C.
+  -- d) Moving match 2 onto match 1's slot is ET006; onto A's day at 3 PM is fine (up to 3/day) and tells A and C.
   code := null;
   begin perform public.reschedule_tournament_fixture(m2, current_date + 7, 540); exception when others then code := sqlstate; end;
   if code is distinct from 'ET006' then raise exception 'FAIL d: ground clash gave %', code; end if;
-  code := null;
-  begin perform public.reschedule_tournament_fixture(m2, current_date + 7, 900); exception when others then code := sqlstate; end;
-  if code is distinct from 'ET006' then raise exception 'FAIL d: team clash gave %', code; end if;
-  perform public.reschedule_tournament_fixture(m2, current_date + 9, 900);
+  perform public.reschedule_tournament_fixture(m2, current_date + 7, 900);
   reset role;
   if (select count(*) from public.notifications where data ->> 'fixture_id' = m2::text and data ->> 'event' = 'fixture_moved') <> 2 then
     raise exception 'FAIL d: both team owners should be told of the move';

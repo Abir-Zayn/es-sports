@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, type PressableProps } from 'react-native';
 
 import { Text } from '@/components/ui/text';
-import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 type Props = Omit<PressableProps, 'children' | 'style'> & {
   label: string;
@@ -32,7 +32,7 @@ export function Button({ label, variant = 'primary', size = 'regular', loading =
       ) : (
         <>
           {leading}
-          <Text style={[styles.label, { color: labelColor }]}>{label}</Text>
+          <Text style={[variant === 'primary' ? styles.label : styles.labelQuiet, { color: labelColor }]}>{label}</Text>
         </>
       )}
     </Pressable>
@@ -43,18 +43,19 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     base: {
       minHeight: sizes.control,
-      borderRadius: radius.control,
+      borderRadius: radius.pill,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: spacing.md,
+      gap: spacing.sm,
       paddingHorizontal: spacing.xl,
     },
-    compact: { height: 40, paddingHorizontal: sizes.gutter },
-    primary: { backgroundColor: colors.primary },
-    secondary: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+    compact: { minHeight: dp(40), paddingHorizontal: dp(20) },
+    primary: { backgroundColor: colors.primary, ...shadows.primary },
+    secondary: { backgroundColor: colors.surfaceRaised },
     ghost: { backgroundColor: 'transparent' },
-    pressed: { opacity: 0.8 },
+    pressed: { transform: [{ scale: 0.95 }] },
     disabled: { opacity: 0.45 },
-    label: { fontSize: 16, lineHeight: 22, fontWeight: '700' },
+    label: typography.headlineMd,
+    labelQuiet: typography.labelMd,
   });

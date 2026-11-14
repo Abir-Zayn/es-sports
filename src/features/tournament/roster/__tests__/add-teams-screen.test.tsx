@@ -7,6 +7,8 @@ import { ThemeProvider } from '@/theme';
 import { AddTeamsScreen } from '../add-teams-screen';
 import { resetRosters } from '../roster-repository';
 
+// These cover the invite flow, hidden in the app for now.
+jest.mock('../permissions', () => ({ ...jest.requireActual('../permissions'), INVITES_ENABLED: true }));
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({

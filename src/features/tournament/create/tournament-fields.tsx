@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, sp, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { CoverPicker, ProfilePhotoPicker } from './cover-picker';
 import { DatePicker } from './date-picker';
@@ -49,7 +49,7 @@ export function TournamentFields({ draft, errors, onChange, onBusyChange, onAddT
       <DatePicker label="End date" value={draft.endDate} minimumDate={draft.startDate} onChange={(value) => onChange('endDate', value)} error={errors.endDate} />
     </SettingsCard>
     <SettingsCard>
-      <View style={styles.locationHeading}><MapPin size={20} color={colors.textMuted} strokeWidth={1.6} /><Text>Tournament location</Text></View>
+      <View style={styles.locationHeading}><MapPin size={dp(20)} color={colors.textMuted} strokeWidth={1.6} /><Text>Tournament location</Text></View>
       <TextInput accessibilityLabel="City or area" placeholder="City or area" placeholderTextColor={colors.textMuted} value={draft.city}
         onChangeText={(value) => onChange('city', value)} maxLength={60} autoCapitalize="words" style={styles.locationInput} />
       <CardDivider />
@@ -69,9 +69,9 @@ export function TournamentFields({ draft, errors, onChange, onBusyChange, onAddT
     <SettingsCard>
       <Pressable accessibilityRole="button" accessibilityLabel="Add teams and staff" onPress={onAddTeams}
         style={({ pressed }) => [styles.addTeams, pressed && styles.pressed]}>
-        <Users size={20} color={colors.textMuted} strokeWidth={1.6} />
+        <Users size={dp(20)} color={colors.textMuted} strokeWidth={1.6} />
         <View style={styles.addCopy}><Text>Add teams</Text><Text variant="caption" muted>Publishes the tournament, then create teams and invite owners and moderators</Text></View>
-        <Plus size={19} color={colors.link} />
+        <Plus size={dp(20)} color={colors.link} />
       </Pressable>
     </SettingsCard>
     <Text variant="caption" muted style={styles.note}>Save a private draft on this device. Your tournament is not published yet.</Text>
@@ -79,12 +79,12 @@ export function TournamentFields({ draft, errors, onChange, onBusyChange, onAddT
 }
 const createStyles = (colors: Palette) => StyleSheet.create({
   stack: { gap: spacing.xl }, nameWrap: { gap: spacing.sm },
-  artwork: { paddingBottom: 28 },
-  name: { fontSize: 20, lineHeight: 28, fontWeight: '500', color: colors.text, paddingVertical: spacing.sm, paddingHorizontal: 0, minHeight: 48, textAlignVertical: 'center' },
+  artwork: { paddingBottom: dp(28) },
+  name: { ...typography.headlineLg, color: colors.text, paddingVertical: spacing.sm, paddingHorizontal: 0, minHeight: dp(48), textAlignVertical: 'center' },
   locationHeading: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, paddingBottom: 0 },
-  locationInput: { minHeight: 54, fontSize: 16, color: colors.text, marginLeft: 48, paddingRight: spacing.lg, paddingVertical: spacing.md },
+  locationInput: { minHeight: dp(54), fontSize: sp(16), color: colors.text, marginLeft: dp(48), paddingRight: spacing.lg, paddingVertical: spacing.md },
   error: { color: colors.dangerSoftText }, locationError: { paddingHorizontal: spacing.lg, paddingBottom: spacing.md },
-  addTeams: { minHeight: 76, padding: spacing.lg, flexDirection: 'row', alignItems: 'center', gap: spacing.md }, addCopy: { flex: 1, gap: spacing.xs },
-  pressed: { opacity: 0.65 },
+  addTeams: { minHeight: dp(76), padding: spacing.lg, flexDirection: 'row', alignItems: 'center', gap: spacing.md }, addCopy: { flex: 1, gap: spacing.xs },
+  pressed: { transform: [{ scale: 0.95 }] },
   note: { textAlign: 'center', paddingHorizontal: spacing.lg },
 });

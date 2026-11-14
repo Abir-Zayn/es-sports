@@ -1,7 +1,7 @@
 import { StyleSheet, Switch, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useTheme, useThemedStyles, type Palette } from '@/theme';
+import { radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 export function SwitchRow({ title, detail, value, onChange }: {
   title: string; detail: string; value: boolean; onChange: (value: boolean) => void;
@@ -15,6 +15,6 @@ export function SwitchRow({ title, detail, value, onChange }: {
   </View>;
 }
 const styles = (c: Palette) => StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, borderWidth: 1, borderColor: c.border, backgroundColor: c.surface },
-  text: { flex: 1, gap: 3 }, title: { fontSize: 14, lineHeight: 19, fontWeight: '700' }, detail: { fontSize: 12, lineHeight: 17 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: sizes.cardPaddingTight, borderRadius: radius.lg, backgroundColor: c.surface, ...shadows.card },
+  text: { flex: 1, gap: spacing.xs }, title: typography.labelMd, detail: typography.bodySm,
 });

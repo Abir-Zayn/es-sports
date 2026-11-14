@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 type Props = { details: { label: string; value: string }[] };
 
@@ -29,9 +29,9 @@ export function MatchDetailsList({ details }: Props) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    card: { borderRadius: 20, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
-    row: { flexDirection: 'row', gap: 14, paddingVertical: 13, paddingHorizontal: 16 },
+    card: { borderRadius: radius.lg, backgroundColor: colors.surface, ...shadows.card },
+    row: { flexDirection: 'row', gap: spacing.md, paddingVertical: spacing.lg, paddingHorizontal: sizes.cardPaddingTight },
     divider: { borderBottomWidth: 1, borderBottomColor: colors.border },
-    label: { width: 92, fontSize: 13, lineHeight: 20 },
-    value: { flex: 1, fontSize: 14, lineHeight: 20, fontWeight: '600' },
+    label: { ...typography.bodyMd, width: dp(92) },
+    value: { ...typography.bodyMd, flex: 1, color: colors.text },
   });

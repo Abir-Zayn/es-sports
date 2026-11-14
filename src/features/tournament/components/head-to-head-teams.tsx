@@ -2,7 +2,7 @@ import ChevronDown from 'lucide-react-native/icons/chevron-down';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { InitialsAvatar, Text } from '@/components/ui';
-import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { TeamInfo } from '@/types/cricket';
 
 type Props = {
@@ -34,13 +34,13 @@ function TeamSlot({ team, slot, onPress }: { team: TeamInfo; slot: 'A' | 'B'; on
       onPress={onPress}
       style={({ pressed }) => [styles.slot, pressed && styles.pressed]}
     >
-      <InitialsAvatar label={team.short} tone={team.tone} imageUri={team.avatarUri} size={68} />
+      <InitialsAvatar label={team.short} tone={team.tone} imageUri={team.avatarUri} size={dp(68)} />
       <Text style={styles.name}>{team.name}</Text>
       <View style={styles.change}>
         <Text muted style={styles.changeText}>
           Change
         </Text>
-        <ChevronDown size={12} color={colors.textMuted} strokeWidth={2.4} />
+        <ChevronDown size={sizes.iconSmall} color={colors.textMuted} strokeWidth={2.4} />
       </View>
     </Pressable>
   );
@@ -51,17 +51,16 @@ const createStyles = (colors: Palette) =>
     card: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 20,
+      paddingVertical: sizes.cardPaddingTight,
       paddingHorizontal: spacing.lg,
-      borderRadius: 24,
+      borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
+      ...shadows.card,
     },
     slot: { flex: 1, minWidth: 0, alignItems: 'center', gap: spacing.sm },
-    pressed: { opacity: 0.7 },
-    name: { fontSize: 14, lineHeight: 18, fontWeight: '700', textAlign: 'center' },
-    change: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-    changeText: { fontSize: 12, lineHeight: 16 },
-    vs: { width: 48, fontSize: 24, lineHeight: 28, fontWeight: '800', fontStyle: 'italic', textAlign: 'center', color: colors.link },
+    pressed: { transform: [{ scale: 0.95 }] },
+    name: { ...typography.bodyMd, textAlign: 'center' },
+    change: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+    changeText: typography.labelSm,
+    vs: { width: dp(48), ...typography.headlineLg, fontStyle: 'italic', textAlign: 'center', color: colors.link },
   });

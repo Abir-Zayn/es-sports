@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ScrollView, Share, StyleSheet, View } from 'react-native';
 
 import { useOpenMatch } from '@/features/match/use-match-routes';
-import { spacing, useThemedStyles, type Palette } from '@/theme';
+import { sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { LiveMatchSummary } from './components/live-match-summary';
 import { SeasonProgressCard } from './components/season-progress-card';
@@ -63,5 +63,5 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.background },
     content: { paddingBottom: spacing.xxl + spacing.xl },
-    sections: { paddingHorizontal: spacing.lg, paddingTop: 20, gap: 24 },
+    sections: { paddingHorizontal: sizes.gutter, paddingTop: spacing.xl, gap: sizes.sectionGap },
   });

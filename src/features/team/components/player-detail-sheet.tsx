@@ -4,7 +4,7 @@ import { Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
 import { initialsOf } from '@/lib/initials';
-import { radius, sizes, spacing, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
 
 import type { SquadPlayer } from '../types';
 
@@ -23,6 +23,7 @@ export function PlayerDetailSheet({
   onClose,
   onSubstitute,
 }: Props) {
+  const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const router = useRouter();
 
@@ -52,7 +53,7 @@ export function PlayerDetailSheet({
               onPress={onClose}
               style={styles.closeBtn}
             >
-              <X size={18} color="#9AA6A1" />
+              <X size={dp(18)} color={colors.textMuted} />
             </Pressable>
           </View>
 
@@ -137,27 +138,26 @@ const createStyles = (colors: Palette) =>
     },
     sheet: {
       width: '100%',
-      maxWidth: 360,
-      backgroundColor: colors.surfaceRaised,
+      maxWidth: dp(360),
+      backgroundColor: colors.surface,
       borderRadius: radius.lg,
-      borderWidth: 1,
-      borderColor: colors.border,
-      padding: spacing.lg,
-      gap: spacing.md,
+      ...shadows.card,
+      padding: sizes.cardPadding,
+      gap: spacing.lg,
     },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
     },
-    titleCol: { gap: 2 },
-    sheetTitle: { fontSize: 16, lineHeight: 20, fontWeight: '700' },
-    sheetSubtitle: { fontSize: 12, lineHeight: 16 },
+    titleCol: { gap: spacing.xs / 2 },
+    sheetTitle: typography.headlineMd,
+    sheetSubtitle: typography.bodySm,
     closeBtn: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
-      backgroundColor: colors.surface,
+      width: dp(32),
+      height: dp(32),
+      borderRadius: radius.pill,
+      backgroundColor: colors.surfaceRaised,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -167,52 +167,41 @@ const createStyles = (colors: Palette) =>
       gap: spacing.md,
     },
     avatar: {
-      width: 48,
-      height: 48,
-      borderRadius: 24,
-      backgroundColor: colors.surface,
-      borderWidth: 2,
-      borderColor: colors.primary,
+      width: dp(48),
+      height: dp(48),
+      borderRadius: radius.pill,
+      backgroundColor: colors.surfaceRaised,
       alignItems: 'center',
       justifyContent: 'center',
     },
-    avatarText: { fontSize: 17, lineHeight: 21, fontWeight: '800', color: colors.text },
-    infoCol: { flex: 1, gap: 2 },
-    nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    playerName: { fontSize: 16, lineHeight: 20, fontWeight: '700', color: colors.text },
-    playerRole: { fontSize: 13, lineHeight: 17 },
+    avatarText: { ...typography.headlineMd, color: colors.text },
+    infoCol: { flex: 1, gap: spacing.xs / 2 },
+    nameRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+    playerName: { ...typography.headlineMd, color: colors.text },
+    playerRole: typography.bodySm,
     tagBadge: {
-      paddingHorizontal: 7,
-      paddingVertical: 2,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: dp(2),
       borderRadius: radius.pill,
       backgroundColor: colors.primarySoft,
     },
-    tagText: { fontSize: 10, lineHeight: 12, fontWeight: '700', color: colors.link },
-    statsSection: { gap: 6 },
-    statsSectionTitle: {
-      fontSize: 11,
-      lineHeight: 14,
-      fontWeight: '700',
-      color: colors.textMuted,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-    },
+    tagText: { ...typography.labelSm, color: colors.link },
+    statsSection: { gap: spacing.sm },
+    statsSectionTitle: { ...typography.labelUppercase, color: colors.textMuted },
     statsGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 8,
+      gap: spacing.sm,
     },
     statTile: {
       width: '48%',
-      backgroundColor: colors.surface,
+      backgroundColor: colors.surfaceRaised,
       borderRadius: radius.md,
-      borderWidth: 1,
-      borderColor: colors.border,
-      paddingVertical: 10,
-      paddingHorizontal: 12,
-      gap: 2,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.md,
+      gap: spacing.xs / 2,
     },
-    statLabel: { fontSize: 11, lineHeight: 14, fontWeight: '600', color: colors.textMuted },
-    statValue: { fontSize: 17, lineHeight: 21, fontWeight: '800', color: colors.text },
+    statLabel: { ...typography.bodySm, color: colors.textMuted },
+    statValue: { ...typography.headlineMd, fontVariant: ['tabular-nums'], color: colors.text },
     actions: { gap: spacing.sm, marginTop: spacing.xs },
   });

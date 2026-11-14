@@ -2,7 +2,7 @@ import ArrowLeftRight from 'lucide-react-native/icons/arrow-left-right';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { oversLabel } from '../engine/score-delivery';
 import type { ScoreState } from '../types';
@@ -28,7 +28,7 @@ export function CreaseSummary({ score, onSwap, disabled }: { score: ScoreState; 
       {batter(score.strikerId, true)}
       <Pressable accessibilityRole="button" accessibilityLabel="Swap striker and non-striker" disabled={disabled}
         accessibilityState={{ disabled }} onPress={onSwap} style={[s.swap, disabled && s.disabled]}>
-        <ArrowLeftRight size={18} color={colors.textMuted} />
+        <ArrowLeftRight size={sizes.iconSmall} color={colors.textMuted} />
       </Pressable>
       {batter(score.nonStrikerId, false)}
     </View>
@@ -37,13 +37,13 @@ export function CreaseSummary({ score, onSwap, disabled }: { score: ScoreState; 
   </View>;
 }
 const styles = (c: Palette) => StyleSheet.create({
-  wrap: { gap: 12 }, row: { flexDirection: 'row', gap: 6 },
-  batter: { flex: 1, padding: 12, gap: 4, backgroundColor: c.surface, borderRadius: 18, borderWidth: 1, borderColor: c.border },
+  wrap: { gap: spacing.md }, row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  batter: { flex: 1, alignSelf: 'stretch', padding: spacing.lg, gap: spacing.xs, backgroundColor: c.surface, borderRadius: radius.lg, borderWidth: 2, borderColor: 'transparent', ...shadows.card },
   active: { borderColor: c.primary, backgroundColor: c.primarySoft },
-  name: { fontSize: 13, lineHeight: 18, fontWeight: '700', flexShrink: 1 }, runs: { fontSize: 21, lineHeight: 26, fontWeight: '800' },
-  balls: { fontSize: 12, lineHeight: 17, fontWeight: '500' },
-  swap: { minWidth: 44, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: c.border, borderRadius: 16, backgroundColor: c.surface },
+  name: { ...typography.labelMd, flexShrink: 1 }, runs: { ...typography.headlineLg, fontVariant: ['tabular-nums'] },
+  balls: { ...typography.bodySm, fontVariant: ['tabular-nums'] },
+  swap: { width: dp(48), height: dp(48), alignItems: 'center', justifyContent: 'center', borderRadius: radius.pill, backgroundColor: c.surfaceRaised },
   disabled: { opacity: 0.4 },
-  bowler: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center', padding: 12, borderWidth: 1, borderColor: c.border, borderRadius: 16, backgroundColor: c.surface },
-  caption: { fontSize: 10, lineHeight: 14, letterSpacing: 0.7 }, figures: { flexGrow: 1, textAlign: 'right', fontSize: 12, lineHeight: 17 },
+  bowler: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, alignItems: 'center', padding: spacing.lg, borderRadius: radius.lg, backgroundColor: c.surface, ...shadows.card },
+  caption: typography.labelUppercase, figures: { ...typography.bodySm, flexGrow: 1, textAlign: 'right', fontVariant: ['tabular-nums'] },
 });

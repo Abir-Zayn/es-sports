@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { InitialsAvatar, Text } from '@/components/ui';
-import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { MatchResult } from '@/types/cricket';
 
 type Props = { result: MatchResult; onPress?: () => void };
@@ -23,7 +23,7 @@ export function ResultCard({ result, onPress }: Props) {
         const color = won ? colors.text : colors.textMuted;
         return (
           <View key={team.short} style={styles.row}>
-            <InitialsAvatar label={team.short} tone={team.tone} imageUri={team.avatarUri} size={28} />
+            <InitialsAvatar label={team.short} tone={team.tone} imageUri={team.avatarUri} size={dp(28)} />
             <Text style={[styles.name, { color }]} numberOfLines={1}>
               {team.name}
             </Text>
@@ -39,18 +39,16 @@ export function ResultCard({ result, onPress }: Props) {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     card: {
-      paddingVertical: 14,
-      paddingHorizontal: spacing.lg,
-      borderRadius: 20,
+      padding: sizes.cardPaddingTight,
+      borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      gap: 10,
+      ...shadows.card,
+      gap: spacing.md,
     },
-    pressed: { opacity: 0.85 },
-    label: { fontSize: 11, lineHeight: 14, fontWeight: '600', letterSpacing: 1, color: colors.textMuted },
-    row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-    name: { flex: 1, fontSize: 14, lineHeight: 18, fontWeight: '600' },
-    score: { fontSize: 18, lineHeight: 22, fontWeight: '800', fontVariant: ['tabular-nums'] },
-    outcome: { fontSize: 13, lineHeight: 18, fontWeight: '600', color: colors.link },
+    pressed: { transform: [{ scale: 0.95 }] },
+    label: { ...typography.labelUppercase, color: colors.textMuted },
+    row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+    name: { ...typography.bodyMd, flex: 1 },
+    score: { ...typography.headlineMd, fontVariant: ['tabular-nums'] },
+    outcome: { ...typography.bodyMd, color: colors.link },
   });

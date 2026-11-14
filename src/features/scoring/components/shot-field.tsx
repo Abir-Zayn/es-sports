@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, type GestureResponderEvent } from 'react-native';
 import Svg, { Circle, Line, Rect, Text as SvgText } from 'react-native-svg';
 
-import { useTheme } from '@/theme';
+import { dp, useTheme } from '@/theme';
 
 export const shotDirections = ['Cover · off side', 'Point · off side', 'Third man · off side', 'Fine leg · leg side',
   'Square leg · leg side', 'Midwicket · leg side', 'Straight', 'Extra cover · off side'];
@@ -37,4 +37,4 @@ export function ShotField({ runs, angle, onChange }: { runs: number; angle: numb
     </Svg>
   </Pressable>;
 }
-const s = StyleSheet.create({ field: { width: '100%', maxWidth: 340, alignSelf: 'center', aspectRatio: 1 } });
+const s = StyleSheet.create({ field: { width: '100%', maxWidth: dp(340), alignSelf: 'center', aspectRatio: 1 } });

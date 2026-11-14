@@ -157,5 +157,5 @@ const createStyles = (colors: Palette) =>
     form: { gap: spacing.lg },
     formError: { color: colors.danger },
     sent: { color: colors.link },
-    link: { color: colors.link, fontWeight: '600' },
+    link: { color: colors.link },
   });

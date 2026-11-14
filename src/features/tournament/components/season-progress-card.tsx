@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { radius, useThemedStyles, type Palette } from '@/theme';
+import { radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 type Props = {
   played: number;
@@ -47,15 +47,15 @@ export function SeasonProgressCard({ played, total, teamCount, finalDate }: Prop
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    card: { gap: 14 },
+    card: { gap: spacing.lg, padding: sizes.cardPadding, borderRadius: radius.lg, backgroundColor: colors.surface, ...shadows.card },
     top: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-    title: { fontSize: 16, lineHeight: 22, fontWeight: '700' },
-    count: { fontSize: 12, lineHeight: 16, fontWeight: '600', color: colors.textMuted, fontVariant: ['tabular-nums'] },
-    track: { height: 6, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised, overflow: 'hidden' },
+    title: typography.headlineMd,
+    count: { ...typography.labelSm, color: colors.textMuted, fontVariant: ['tabular-nums'] },
+    track: { height: sizes.progressBar, borderRadius: radius.pill, backgroundColor: colors.border, overflow: 'hidden' },
     fill: { height: '100%', borderRadius: radius.pill, backgroundColor: colors.primary },
     facts: { flexDirection: 'row' },
-    fact: { flex: 1, alignItems: 'center', gap: 2 },
+    fact: { flex: 1, alignItems: 'center', gap: spacing.xs },
     factDivider: { borderLeftWidth: 1, borderLeftColor: colors.border },
-    value: { fontSize: 18, lineHeight: 24, fontWeight: '800', fontVariant: ['tabular-nums'] },
-    label: { fontSize: 11, lineHeight: 14, fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase', color: colors.textMuted },
+    value: { ...typography.headlineMd, fontVariant: ['tabular-nums'] },
+    label: { ...typography.labelUppercase, color: colors.textMuted },
   });

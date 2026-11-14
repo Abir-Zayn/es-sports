@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppIconTile, Text } from '@/components/ui';
-import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 type Props = {
   title: string;
@@ -21,9 +21,8 @@ export function LegalDocumentScreen({ title, sections }: Props) {
       <View style={styles.header}>
         <AppIconTile
           icon={ChevronLeft}
-          size={44}
-          borderRadius={radius.md}
-          backgroundColor={colors.surfaceRaised}
+          backgroundColor={colors.surface}
+          elevated
           accessibilityLabel="Go back"
           onPress={() => router.back()}
         />
@@ -34,7 +33,7 @@ export function LegalDocumentScreen({ title, sections }: Props) {
       <ScrollView contentContainerStyle={styles.content}>
         {sections.map((section) => (
           <View key={section.title} style={styles.section}>
-            <Text variant="heading">{section.title}</Text>
+            <Text variant="headlineMd">{section.title}</Text>
             <Text muted>{section.body}</Text>
           </View>
         ))}
@@ -50,9 +49,9 @@ const createStyles = (colors: Palette) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.md,
-      paddingHorizontal: spacing.lg,
+      paddingHorizontal: sizes.gutter,
       paddingVertical: spacing.md,
     },
-    content: { paddingHorizontal: spacing.xl, paddingTop: spacing.md, paddingBottom: spacing.xxl, gap: spacing.xl },
+    content: { paddingHorizontal: sizes.gutter, paddingTop: spacing.md, paddingBottom: spacing.xxl, gap: spacing.xl },
     section: { gap: spacing.sm },
   });

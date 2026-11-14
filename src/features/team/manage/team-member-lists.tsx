@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
 import { PersonRow } from '@/features/tournament/roster';
-import { spacing, useThemedStyles } from '@/theme';
+import { spacing, typography, useThemedStyles } from '@/theme';
 
 import { availabilityLabel, canRemove, canSetAvailability, type SentPlayerInvite } from '../data/team-management';
 import type { TeamMemberRecord, TeamRole } from '../data/team-repository';
@@ -82,5 +82,5 @@ const createStyles = () =>
   StyleSheet.create({
     list: { gap: spacing.xs },
     actions: { flexDirection: 'row', gap: spacing.xs },
-    heading: { fontSize: 15, lineHeight: 20, fontWeight: '700' },
+    heading: typography.headlineMd,
   });

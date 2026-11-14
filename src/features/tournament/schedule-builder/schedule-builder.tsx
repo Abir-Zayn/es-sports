@@ -2,8 +2,8 @@ import { format, parseISO } from 'date-fns';
 import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
-import { Button, Text } from '@/components/ui';
-import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { Button, Card, Text } from '@/components/ui';
+import { dp, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { competitionFormats, oversLabel, type TournamentDraft } from '../create/draft';
 import { isUuid } from '@/features/scoring/data/uuid';
@@ -95,7 +95,7 @@ export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isS
           </>
         )}
         {isOwner && (matches.length > 0 || builder.dirty) ? (
-          <View style={styles.publish}>
+          <Card style={styles.publish}>
             <Text variant="caption" muted accessibilityLiveRegion="polite">
               {live ? 'Published. Moving or cancelling a match saves at once and tells both teams.' : 'Not published yet. Only the staff can see these changes.'}
             </Text>
@@ -105,7 +105,7 @@ export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isS
                 disabled={builder.outOfDate || matches.length === 0} onPress={() => publish.mutate()} />
             )}
             {published && builder.dirty ? <Button label="Discard changes" variant="secondary" disabled={publish.isPending} onPress={builder.discard} /> : null}
-          </View>
+          </Card>
         ) : null}
       </ScrollView>
       <EditMatchSheet
@@ -139,10 +139,10 @@ export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isS
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    content: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, gap: spacing.lg, maxWidth: 600, width: '100%', alignSelf: 'center' },
+    content: { paddingHorizontal: sizes.gutter, paddingTop: spacing.sm, gap: sizes.sectionGap, maxWidth: dp(600), width: '100%', alignSelf: 'center' },
     status: { paddingVertical: spacing.xxl },
     error: { color: colors.dangerSoftText },
     warning: { color: colors.accent },
     empty: { paddingVertical: spacing.md },
-    publish: { gap: spacing.sm, paddingTop: spacing.md },
+    publish: { gap: spacing.md },
   });

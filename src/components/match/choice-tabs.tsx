@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 export type ChoiceTab<T extends string> = {
   id: T;
@@ -19,7 +19,7 @@ type Props<T extends string> = {
   accessibilityLabel?: string;
 };
 
-/** Two side-by-side cards, each a tab with a title and a subtitle; the selected one is inverted. */
+/** Two side-by-side cards, each a tab with a title and a subtitle; the selected one is tinted coral. */
 export function ChoiceTabs<T extends string>({ tabs, selected, onSelect, accessibilityLabel }: Props<T>) {
   const styles = useThemedStyles(createStyles);
   return (
@@ -36,10 +36,10 @@ export function ChoiceTabs<T extends string>({ tabs, selected, onSelect, accessi
           >
             {tab.leading}
             <View style={styles.text}>
-              <Text style={[styles.title, on && styles.onInverse]} numberOfLines={1}>
+              <Text style={[styles.title, on && styles.titleOn]} numberOfLines={1}>
                 {tab.title}
               </Text>
-              <Text style={[styles.subtitle, on && styles.onInverse]} numberOfLines={1}>
+              <Text style={styles.subtitle} numberOfLines={1}>
                 {tab.subtitle}
               </Text>
             </View>
@@ -52,23 +52,23 @@ export function ChoiceTabs<T extends string>({ tabs, selected, onSelect, accessi
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    row: { flexDirection: 'row', gap: 8 },
+    row: { flexDirection: 'row', gap: spacing.sm },
     tab: {
       flex: 1,
       minWidth: 0,
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 10,
-      paddingVertical: 10,
-      paddingHorizontal: 12,
-      borderRadius: 16,
-      backgroundColor: colors.surface,
-      borderWidth: 1.5,
-      borderColor: colors.border,
+      gap: spacing.md,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.md,
+      borderRadius: radius.md,
+      backgroundColor: colors.surfaceRaised,
+      borderWidth: 2,
+      borderColor: 'transparent',
     },
-    tabOn: { backgroundColor: colors.text, borderColor: colors.text },
-    text: { flex: 1, minWidth: 0, gap: 2 },
-    title: { fontSize: 14, lineHeight: 20, fontWeight: '800' },
-    subtitle: { fontSize: 11, lineHeight: 15, color: colors.textMuted },
-    onInverse: { color: colors.background },
+    tabOn: { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+    text: { flex: 1, minWidth: 0, gap: dp(2) },
+    title: { ...typography.labelMd, color: colors.text },
+    titleOn: { color: colors.link },
+    subtitle: { ...typography.labelSm, color: colors.textMuted },
   });

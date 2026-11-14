@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { radius, shadows, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import type { TeamRecord } from '../types';
 
@@ -35,9 +35,9 @@ export function TeamRecordStrip({ record }: { record: TeamRecord }) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    strip: { flexDirection: 'row', borderRadius: 20, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-    cell: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: 14 },
+    strip: { flexDirection: 'row', borderRadius: radius.lg, backgroundColor: colors.surface, ...shadows.card },
+    cell: { flex: 1, alignItems: 'center', gap: spacing.xs, paddingVertical: spacing.lg },
     divider: { borderRightWidth: 1, borderRightColor: colors.border },
-    value: { fontSize: 26, lineHeight: 30, fontWeight: '800', fontVariant: ['tabular-nums'] },
-    label: { fontSize: 11, lineHeight: 14 },
+    value: typography.numeralStat,
+    label: typography.bodySm,
   });

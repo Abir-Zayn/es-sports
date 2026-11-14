@@ -2,12 +2,12 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { InitialsAvatar, Text } from '@/components/ui';
-import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import type { Tournament } from '../sample-data';
 
-export const TOURNAMENT_CARD_WIDTH = 250;
-const BANNER_HEIGHT = 96;
+export const TOURNAMENT_CARD_WIDTH = dp(250);
+const BANNER_HEIGHT = dp(96);
 
 type Props = { tournament: Tournament; onPress?: () => void };
 
@@ -26,17 +26,17 @@ export function TournamentCard({ tournament, onPress }: Props) {
           <Path d="M-10 80 C70 60 150 20 260 -6 L260 22 C160 44 80 82 -10 100 Z" fill={colors.primary} />
           <Path d="M-10 104 C80 86 166 50 260 28 L260 40 C170 62 86 96 -10 112 Z" fill={colors.primaryDeep} />
         </Svg>
-        <View style={styles.logo}>
-          <InitialsAvatar
-            label={tournament.short}
-            tone={tournament.tone}
-            imageUri={tournament.avatarUri}
-            size={48}
-            shape="square"
-            borderColor={colors.surface}
-            borderWidth={2}
-          />
-        </View>
+      </View>
+      <View style={styles.logo}>
+        <InitialsAvatar
+          label={tournament.short}
+          tone={tournament.tone}
+          imageUri={tournament.avatarUri}
+          size={dp(48)}
+          shape="square"
+          borderColor={colors.surface}
+          borderWidth={2}
+        />
       </View>
       <View style={styles.body}>
         <View style={styles.info}>
@@ -55,27 +55,25 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     card: {
       width: TOURNAMENT_CARD_WIDTH,
-      borderRadius: 22,
+      borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      overflow: 'hidden',
+      ...shadows.card,
     },
-    pressed: { opacity: 0.85 },
-    banner: { height: BANNER_HEIGHT, backgroundColor: colors.primarySoft },
+    pressed: { transform: [{ scale: 0.95 }] },
+    // The banner clips the artwork; the card itself stays unclipped so its shadow shows.
+    banner: { height: BANNER_HEIGHT, backgroundColor: colors.primarySoft, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, overflow: 'hidden' },
     art: { position: 'absolute', top: 0, left: 0 },
-    logo: { position: 'absolute', left: 14, bottom: -22 },
-    body: { paddingTop: 30, paddingHorizontal: 14, paddingBottom: 14, flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
+    logo: { position: 'absolute', left: spacing.lg, top: BANNER_HEIGHT - dp(26) },
+    body: { paddingTop: dp(30), paddingHorizontal: spacing.lg, paddingBottom: spacing.lg, flexDirection: 'row', alignItems: 'flex-end', gap: spacing.md },
     info: { flex: 1, minWidth: 0, gap: spacing.xs },
-    name: { fontSize: 15, lineHeight: 20, fontWeight: '700' },
-    meta: { fontSize: 12, lineHeight: 16, color: colors.textMuted },
+    name: { ...typography.headlineMd, color: colors.text },
+    meta: { ...typography.bodySm, color: colors.textMuted },
     view: {
-      height: 36,
-      paddingHorizontal: 14,
+      height: dp(36),
+      paddingHorizontal: spacing.lg,
       borderRadius: radius.pill,
-      borderWidth: 1.5,
-      borderColor: colors.primary,
+      backgroundColor: colors.primarySoft,
       justifyContent: 'center',
     },
-    viewText: { fontSize: 13, lineHeight: 16, fontWeight: '700', color: colors.link },
+    viewText: { ...typography.labelMd, color: colors.link },
   });

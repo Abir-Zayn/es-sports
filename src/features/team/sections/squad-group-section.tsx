@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
 import { chunk } from '@/lib/chunk';
-import { spacing, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
+import { spacing, typography, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
 
 import { SquadPlayerTile } from '../components/squad-player-tile';
 import type { SquadPlayer } from '../types';
@@ -55,13 +55,13 @@ export function SquadGroupSection({ title, count, players, tone, bench = false }
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    section: { gap: 14 },
+    section: { gap: spacing.md },
     header: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-    title: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
+    title: typography.headlineLg,
     titleBench: { color: colors.textMuted },
-    count: { fontSize: 12, lineHeight: 16, fontWeight: '700', color: colors.link },
+    count: { ...typography.labelSm, fontVariant: ['tabular-nums'], color: colors.link },
     countBench: { color: colors.textMuted },
     grid: { gap: spacing.lg },
-    row: { flexDirection: 'row', gap: 10 },
+    row: { flexDirection: 'row', gap: spacing.md },
     pad: { flex: 1 },
   });

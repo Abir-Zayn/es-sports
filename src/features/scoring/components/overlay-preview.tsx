@@ -3,7 +3,7 @@ import Svg, { Ellipse, Rect } from 'react-native-svg';
 
 import { Text } from '@/components/ui';
 import { leagueTable } from '@/features/tournament/sample-table';
-import { useThemedStyles, type Palette } from '@/theme';
+import { radius, useThemedStyles, type Palette } from '@/theme';
 
 import { oversLabel } from '../engine/score-delivery';
 import type { ScoreState } from '../types';
@@ -39,15 +39,15 @@ export function OverlayPreview({ score, graphic, accent }: { score: ScoreState; 
   </View>;
 }
 const styles = (_c: Palette) => StyleSheet.create({
-  preview: { width: '100%', aspectRatio: 1.65, borderRadius: 18, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
-  camera: { color: '#9AA6A1', opacity: 0.65, fontSize: 10, lineHeight: 14, fontWeight: '600', letterSpacing: 0.8, position: 'absolute', top: 38 },
+  preview: { width: '100%', aspectRatio: 1.65, borderRadius: radius.lg, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
+  camera: { color: '#9AA6A1', opacity: 0.65, fontSize: 10, lineHeight: 14, fontWeight: '500', letterSpacing: 0.8, position: 'absolute', top: 38 },
   graphic: { marginHorizontal: 16, marginBottom: 38, padding: 12, borderRadius: 12, backgroundColor: '#0A0E0DEB', alignSelf: 'stretch', gap: 6 },
-  graphicTitle: { color: '#FFFFFF', fontSize: 13, lineHeight: 18, fontWeight: '700' },
-  graphicBody: { color: '#F2F5F3', fontSize: 10, lineHeight: 15 }, player: { color: '#FFFFFF', fontSize: 20, lineHeight: 26, fontWeight: '800' },
+  graphicTitle: { color: '#FFFFFF', fontSize: 13, lineHeight: 18, fontWeight: '500' },
+  graphicBody: { color: '#F2F5F3', fontSize: 10, lineHeight: 15 }, player: { color: '#FFFFFF', fontSize: 20, lineHeight: 26, fontWeight: '500' },
   scorebug: { position: 'absolute', bottom: 9, left: 8, right: 8, borderRadius: 8, minHeight: 36, backgroundColor: '#0A0E0D', overflow: 'hidden', flexDirection: 'row', alignItems: 'stretch' },
-  brand: { paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center' }, brandText: { color: '#04121A', fontSize: 10, lineHeight: 14, fontWeight: '800', letterSpacing: 0.6 },
+  brand: { paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center' }, brandText: { color: '#04121A', fontSize: 10, lineHeight: 14, fontWeight: '500', letterSpacing: 0.6 },
   team: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 6 },
-  small: { color: '#F2F5F3', fontSize: 8, lineHeight: 12 }, score: { color: '#FFFFFF', fontSize: 13, lineHeight: 17, fontWeight: '800' },
+  small: { color: '#F2F5F3', fontSize: 8, lineHeight: 12 }, score: { color: '#FFFFFF', fontSize: 13, lineHeight: 17, fontWeight: '500' },
   batters: { flex: 1, borderLeftWidth: 1, borderColor: '#222B28', padding: 4, justifyContent: 'center' },
   bowler: { flex: 1, borderLeftWidth: 1, borderColor: '#222B28', padding: 4, justifyContent: 'center' },
 });

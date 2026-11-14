@@ -3,7 +3,7 @@ import Pencil from 'lucide-react-native/icons/pencil';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 type Props = { matchLabel: string; onPickMatch: () => void; onEdit: () => void };
 
@@ -27,7 +27,7 @@ export function SquadMatchPicker({ matchLabel, onPickMatch, onEdit }: Props) {
             {matchLabel}
           </Text>
         </View>
-        <ChevronDown size={16} color={colors.textMuted} strokeWidth={2.2} />
+        <ChevronDown size={sizes.iconSmall} color={colors.textMuted} strokeWidth={2.2} />
       </Pressable>
       <Pressable
         accessibilityRole="button"
@@ -35,7 +35,7 @@ export function SquadMatchPicker({ matchLabel, onPickMatch, onEdit }: Props) {
         onPress={onEdit}
         style={({ pressed }) => [styles.edit, pressed && styles.pressed]}
       >
-        <Pencil size={20} color={colors.link} />
+        <Pencil size={dp(20)} color={colors.link} />
       </Pressable>
     </View>
   );
@@ -43,30 +43,27 @@ export function SquadMatchPicker({ matchLabel, onPickMatch, onEdit }: Props) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    row: { flexDirection: 'row', gap: 10 },
+    row: { flexDirection: 'row', gap: spacing.md },
     picker: {
       flex: 1,
       minWidth: 0,
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 10,
-      paddingVertical: 10,
-      paddingHorizontal: 14,
-      borderRadius: 16,
+      gap: spacing.md,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
+      borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
+      ...shadows.card,
     },
-    pressed: { opacity: 0.8 },
-    text: { flex: 1, minWidth: 0, gap: 2 },
-    caption: { fontSize: 11, lineHeight: 14 },
-    match: { fontSize: 14, lineHeight: 19, fontWeight: '700' },
+    pressed: { transform: [{ scale: 0.95 }] },
+    text: { flex: 1, minWidth: 0, gap: spacing.xs / 2 },
+    caption: typography.bodySm,
+    match: typography.bodyMd,
     edit: {
-      width: 56,
-      borderRadius: 16,
+      width: dp(56),
+      borderRadius: radius.pill,
       backgroundColor: colors.primarySoft,
-      borderWidth: 1,
-      borderColor: colors.primaryDeep,
       alignItems: 'center',
       justifyContent: 'center',
     },

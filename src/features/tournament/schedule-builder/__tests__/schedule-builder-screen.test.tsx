@@ -38,6 +38,14 @@ async function show() {
   );
 }
 
+async function setSlider(label: string, steps: number) {
+  const action = steps >= 0 ? 'increment' : 'decrement';
+  for (let i = 0; i < Math.abs(steps); i++) {
+    const slider = screen.getByRole('adjustable', { name: label });
+    await fireEvent(slider, 'accessibilityAction', { nativeEvent: { actionName: action } });
+  }
+}
+
 describe('schedule builder', () => {
   beforeEach(async () => {
     resetRosters();
@@ -62,18 +70,28 @@ describe('schedule builder', () => {
     expect(screen.getAllByText('1:00 PM').length).toBe(3);
   });
 
-  it('moves a match, refusing a clash first, then publishes', async () => {
+  it('adjusts start time with hour and minute sliders and moves a match', async () => {
     await show();
-    await fireEvent.press(await screen.findByRole('button', { name: 'Draw schedule' }));
+    await screen.findByText('Round robin · 20 overs · 4 teams · 1 Nov – 10 Nov');
+    await setSlider('First match hour', 1);
+    await setSlider('First match minutes', 15);
+    expect(screen.getByText('10:15 AM')).toBeTruthy();
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Draw schedule' }));
+    expect(screen.getAllByText('10:15 AM').length).toBe(4);
+
     await fireEvent.press(await screen.findByRole('button', { name: /^Match 3,/ }));
-    // Match 3 is on day 2; putting it on day 1 at 9:00 AM collides with Match 1.
+    // Match 3 is on day 2 at 10:15 AM; putting it on day 1 at 10:15 AM collides with Match 1.
     await fireEvent.press(screen.getByRole('radio', { name: 'Sunday 1 November' }));
-    await fireEvent.press(screen.getByRole('radio', { name: 'Start at 9:00 AM' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Save' }));
     expect(screen.getByText('Another match is on the ground at that time.')).toBeTruthy();
     await fireEvent.press(screen.getByRole('radio', { name: 'Tuesday 10 November' }));
+    await setSlider('Start hour', 1);
+    await setSlider('Start minutes', 15);
+    expect(screen.getByText('11:30 AM')).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Save' }));
     expect(await screen.findByText('Tuesday, 10 Nov')).toBeTruthy();
+    expect(screen.getByText('11:30 AM')).toBeTruthy();
 
     await fireEvent.press(screen.getByRole('button', { name: 'Publish schedule' }));
     expect(await screen.findByText('Published. Moving or cancelling a match saves at once and tells both teams.')).toBeTruthy();
@@ -86,21 +104,25 @@ describe('schedule builder', () => {
     expect(await screen.findByText('This needs 3 days, but the tournament runs 1. Play more matches a day or move the end date.')).toBeTruthy();
   });
 
-  it('builds a schedule by hand, refusing a team playing twice in a day', async () => {
+  it('builds a schedule by hand, allowing 3 matches per team in a day and refusing a 4th', async () => {
     await show();
     await fireEvent.press(await screen.findByRole('tab', { name: 'Manual' }));
-    await fireEvent.press(screen.getByRole('button', { name: 'Add match' }));
-    await fireEvent.press(screen.getAllByRole('radio', { name: 'Strikers' })[0]);
-    await fireEvent.press(screen.getAllByRole('radio', { name: 'Kings' })[1]);
-    await fireEvent.press(screen.getAllByRole('button', { name: 'Add match' }).at(-1)!);
-    expect(await screen.findByText('1 matches over 1 days. Tap a match to change it.')).toBeTruthy();
-    // Strikers again on the same day, two slots later: the ground is free but the team is not.
-    await fireEvent.press(screen.getByRole('button', { name: 'Add match' }));
-    await fireEvent.press(screen.getAllByRole('radio', { name: 'Strikers' })[0]);
-    await fireEvent.press(screen.getAllByRole('radio', { name: 'Riders' })[1]);
-    await fireEvent.press(screen.getByRole('radio', { name: 'Start at 3:00 PM' }));
-    await fireEvent.press(screen.getAllByRole('button', { name: 'Add match' }).at(-1)!);
-    expect(await screen.findByText('A team in this match already plays Match 1 that day.')).toBeTruthy();
+    const addMatch = async (opponent: string, hourOffsetFrom9: number) => {
+      await fireEvent.press(screen.getByRole('button', { name: 'Add match' }));
+      await fireEvent.press(screen.getAllByRole('radio', { name: 'Strikers' })[0]);
+      await fireEvent.press(screen.getAllByRole('radio', { name: opponent })[1]);
+      await setSlider('Start hour', hourOffsetFrom9);
+      await fireEvent.press(screen.getAllByRole('button', { name: 'Add match' }).at(-1)!);
+    };
+
+    await addMatch('Kings', -2); // 7:00 AM (Strikers match 1)
+    await addMatch('Riders', 2); // 11:00 AM (Strikers match 2)
+    await addMatch('Hawks', 6); // 3:00 PM (Strikers match 3)
+    expect(await screen.findByText('3 matches over 1 days. Tap a match to change it.')).toBeTruthy();
+
+    // 4th match for Strikers on the same day at 7:00 PM: ground is free, but Strikers already played 3 times.
+    await addMatch('Kings', 10);
+    expect(await screen.findByText('A team in this match already plays 3 matches that day.')).toBeTruthy();
   });
 
   it('after publishing, cancels one match with a reason straight away', async () => {

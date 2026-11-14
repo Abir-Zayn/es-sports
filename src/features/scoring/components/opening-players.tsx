@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { otherTeam, playerName } from '../sample-data';
 import type { MatchSetup, TeamCode } from '../types';
@@ -31,7 +31,7 @@ export function OpeningPlayers({ setup, batting, onChange }: { setup: MatchSetup
       accessibilityRole="button" accessibilityLabel={`Choose ${labels[key]}: ${playerName(setup, setup[key])}`}
       style={s.row} onPress={() => setField(key)}>
       <Text muted style={s.label}>{labels[key]}</Text><Text style={s.name}>{playerName(setup, setup[key])}</Text>
-      <ChevronDown size={18} color={colors.textMuted} />
+      <ChevronDown size={sizes.iconSmall} color={colors.textMuted} />
     </Pressable>)}
     <ScorerSheet visible={field !== null} title={`Choose ${field ? labels[field].toLowerCase() : 'player'}`} onClose={() => setField(null)}>
       {setup.teams[team].players.filter((p) => setup.playingXi[team].includes(p.id) && p.id !== excluded).map((p) =>
@@ -41,6 +41,6 @@ export function OpeningPlayers({ setup, batting, onChange }: { setup: MatchSetup
   </ScorerSection>;
 }
 const styles = (c: Palette) => StyleSheet.create({
-  row: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 15, borderWidth: 1, borderColor: c.border, backgroundColor: c.surface },
-  label: { width: 88, fontSize: 12, lineHeight: 17 }, name: { flex: 1, fontSize: 14, lineHeight: 19, fontWeight: '700' },
+  row: { minHeight: dp(48), flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md, paddingHorizontal: sizes.cardPaddingTight, borderRadius: radius.md, backgroundColor: c.surfaceRaised },
+  label: { ...typography.bodySm, width: dp(88) }, name: { ...typography.labelMd, flex: 1 },
 });

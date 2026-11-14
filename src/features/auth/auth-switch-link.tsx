@@ -22,5 +22,5 @@ export function AuthSwitchLink({ prompt, action, href, replace }: Props) {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     line: { textAlign: 'center', paddingVertical: spacing.sm },
-    action: { color: colors.link, fontWeight: '700' },
+    action: { color: colors.link },
   });

@@ -2,7 +2,7 @@ import Svg, { Line } from 'react-native-svg';
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import type { KnockoutBracketDraw, KnockoutMatch } from '../types';
 import { BracketConnectorFork } from './bracket-connector-fork';
@@ -134,9 +134,7 @@ const createStyles = (colors: Palette) =>
       alignItems: 'center',
     },
     roundLabel: {
-      fontSize: 12,
-      lineHeight: 16,
-      fontWeight: '600',
+      ...typography.labelSm,
       color: colors.textMuted,
       marginBottom: spacing.xs,
       textAlign: 'center',

@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/ui';
-import { spacing } from '@/theme';
+import { sizes, spacing } from '@/theme';
 
 import { PersonRow } from '../../roster/components/person-row';
 import type { TournamentPlayer } from '../../roster/types';
@@ -41,5 +41,5 @@ export function SquadPlayerRow({ player, canManage, busy, onShare, onRemove }: P
 }
 
 const styles = StyleSheet.create({
-  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginLeft: 52, paddingBottom: spacing.sm },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginLeft: sizes.avatar + spacing.md, paddingBottom: spacing.sm },
 });

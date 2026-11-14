@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { TeamScoreRow } from '@/components/match/team-score-row';
 import { AppBadge, Text } from '@/components/ui';
-import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { LiveMatch } from '@/types/cricket';
 
 type Props = { match: LiveMatch; onPress?: () => void };
@@ -39,21 +39,18 @@ export function LiveMatchSummary({ match, onPress }: Props) {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     card: {
-      paddingTop: spacing.lg,
-      paddingHorizontal: 18,
-      paddingBottom: 18,
-      borderRadius: 24,
+      padding: sizes.cardPadding,
+      borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      gap: 14,
+      ...shadows.card,
+      gap: spacing.lg,
     },
-    pressed: { opacity: 0.85 },
+    pressed: { transform: [{ scale: 0.95 }] },
     top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    label: { fontSize: 11, lineHeight: 14, fontWeight: '600', letterSpacing: 1, color: colors.textMuted },
+    label: { ...typography.labelUppercase, color: colors.textMuted },
     teams: { gap: spacing.md },
     divider: { height: 1, backgroundColor: colors.border },
     footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
-    status: { flexShrink: 1, fontSize: 13, lineHeight: 18, fontWeight: '600', color: colors.link },
-    open: { fontSize: 13, lineHeight: 18, fontWeight: '700' },
+    status: { flexShrink: 1, ...typography.bodySm, color: colors.link },
+    open: typography.labelMd,
   });

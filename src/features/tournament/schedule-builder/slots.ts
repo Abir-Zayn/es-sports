@@ -13,9 +13,10 @@ export function slotMinutes(overs: number): number {
 }
 /** The last match of a day has to finish by 11:00 PM. */
 const DAY_END_MIN = 23 * 60;
+/** Maximum scheduled matches one team can play on the same day. */
+export const MAX_TEAM_MATCHES_PER_DAY = 3;
 
 export const perDayOptions = [1, 2, 3, 4] as const;
-export const firstStartOptions = [8 * 60, 9 * 60, 10 * 60, 13 * 60, 14 * 60, 15 * 60] as const;
 
 /** 540 becomes "9:00 AM". */
 export function timeLabel(minutes: number): string {
@@ -45,7 +46,7 @@ type Placement = { matches: ScheduledMatch[]; problem: null } | { matches: []; p
 
 /**
  * Puts the matches on days in order, up to `perDay` a day, starting at `firstStartMin` and one slot apart.
- * A team plays at most once a day, and a day never mixes knockout rounds, so a round's results are in before
+ * A team plays at most 3 times a day, and a day never mixes knockout rounds, so a round's results are in before
  * the next round is played. Fails with the number of days needed when the tournament dates are too few.
  */
 export function placeMatches(pairings: Pairing[], days: string[], settings: SlotSettings, overs: number): Placement {
@@ -57,13 +58,14 @@ export function placeMatches(pairings: Pairing[], days: string[], settings: Slot
 
   for (let dayIndex = 0; pending.length > 0; dayIndex++) {
     const round = Math.min(...pending.map((p) => p.round));
-    const busy = new Set<string>();
+    const dayCounts = new Map<string, number>();
+    const countOf = (side: SideRef) => dayCounts.get(sideKey(side)) ?? 0;
     let slotIndex = 0;
     for (let i = 0; i < pending.length && slotIndex < settings.perDay; ) {
       const p = pending[i];
-      if (p.round === round && !busy.has(sideKey(p.home)) && !busy.has(sideKey(p.away))) {
-        busy.add(sideKey(p.home));
-        busy.add(sideKey(p.away));
+      if (p.round === round && countOf(p.home) < MAX_TEAM_MATCHES_PER_DAY && countOf(p.away) < MAX_TEAM_MATCHES_PER_DAY) {
+        dayCounts.set(sideKey(p.home), countOf(p.home) + 1);
+        dayCounts.set(sideKey(p.away), countOf(p.away) + 1);
         placed.push({ pairing: p, dayIndex, slotIndex: slotIndex++ });
         pending.splice(i, 1);
       } else i++;
@@ -93,12 +95,17 @@ export function moveProblem(matches: ScheduledMatch[], id: string, date: string,
   const match = matches.find((m) => m.id === id);
   if (!match) return 'This match is no longer in the schedule.';
   const slot = slotMinutes(overs);
-  if (startMin + slot > DAY_END_MIN) return `A ${overs}-over match starting then would run past ${timeLabel(DAY_END_MIN)}.`;
+  if (startMin < 0 || startMin + slot > DAY_END_MIN) {
+    return `A ${overs}-over match starting then would run past ${timeLabel(DAY_END_MIN)}.`;
+  }
   const sameDay = matches.filter((m) => m.id !== id && m.date === date);
   if (sameDay.some((m) => Math.abs(m.startMin - startMin) < slot)) return 'Another match is on the ground at that time.';
-  const sides = new Set([sideKey(match.home), sideKey(match.away)]);
-  const clash = sameDay.find((m) => sides.has(sideKey(m.home)) || sides.has(sideKey(m.away)));
-  if (clash) return `A team in this match already plays Match ${clash.number} that day.`;
+  for (const key of [sideKey(match.home), sideKey(match.away)]) {
+    const count = sameDay.filter((m) => sideKey(m.home) === key || sideKey(m.away) === key).length;
+    if (count >= MAX_TEAM_MATCHES_PER_DAY) {
+      return `A team in this match already plays ${MAX_TEAM_MATCHES_PER_DAY} matches that day.`;
+    }
+  }
   return null;
 }
 

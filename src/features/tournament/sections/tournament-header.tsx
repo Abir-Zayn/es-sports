@@ -5,12 +5,12 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppBadge, AppIconTile, Button, InitialsAvatar, Text } from '@/components/ui';
-import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { TournamentOverview } from '@/types/cricket';
 
-const WASH_HEIGHT = 260;
-const LOGO_SIZE = 88;
-const FOLLOW_MIN_WIDTH = 140;
+const WASH_HEIGHT = dp(260);
+const LOGO_SIZE = dp(88);
+const FOLLOW_MIN_WIDTH = dp(140);
 
 type Props = {
   tournament: TournamentOverview;
@@ -36,7 +36,7 @@ export function TournamentHeader({ tournament, following, onToggleFollow, onBack
       <Svg width="100%" height={WASH_HEIGHT} style={styles.wash} accessibilityElementsHidden importantForAccessibility="no">
         <Defs>
           <LinearGradient id="wash" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={colors.primary} stopOpacity={0.35} />
+            <Stop offset="0" stopColor={colors.primarySoft} stopOpacity={1} />
             <Stop offset="1" stopColor={colors.background} stopOpacity={0} />
           </LinearGradient>
         </Defs>
@@ -44,8 +44,8 @@ export function TournamentHeader({ tournament, following, onToggleFollow, onBack
       </Svg>
 
       <View style={styles.actions}>
-        <AppIconTile icon={ChevronLeft} size={44} borderRadius={radius.pill} backgroundColor={colors.overlay} accessibilityLabel="Back" onPress={onBack} />
-        <AppIconTile icon={Share2} size={44} borderRadius={radius.pill} backgroundColor={colors.overlay} accessibilityLabel="Share tournament" onPress={onShare} />
+        <AppIconTile icon={ChevronLeft} size={sizes.iconButton} borderRadius={radius.pill} backgroundColor={colors.overlay} accessibilityLabel="Back" onPress={onBack} />
+        <AppIconTile icon={Share2} size={sizes.iconButton} borderRadius={radius.pill} backgroundColor={colors.overlay} accessibilityLabel="Share tournament" onPress={onShare} />
       </View>
 
       <View style={styles.identity}>
@@ -96,17 +96,15 @@ const createStyles = (colors: Palette) =>
     wash: { position: 'absolute', top: 0, left: 0 },
     actions: { paddingHorizontal: sizes.gutter, flexDirection: 'row', justifyContent: 'space-between' },
     identity: { paddingHorizontal: sizes.gutter, alignItems: 'center', gap: spacing.md },
-    name: { fontSize: 24, lineHeight: 30, fontWeight: '800', textAlign: 'center' },
+    name: { ...typography.displayMd, textAlign: 'center' },
     chips: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.sm },
     chip: {
-      paddingHorizontal: 10,
-      paddingVertical: 4,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
       borderRadius: radius.pill,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
+      backgroundColor: colors.surfaceRaised,
     },
-    chipText: { fontSize: 12, lineHeight: 16, fontWeight: '600', color: colors.textMuted },
+    chipText: { ...typography.labelSm, color: colors.textMuted },
     // The status sits just above the button, closer to it than to the chips, so the two read as one group.
     follow: { alignItems: 'center', gap: spacing.sm },
     followButton: { minWidth: FOLLOW_MIN_WIDTH },

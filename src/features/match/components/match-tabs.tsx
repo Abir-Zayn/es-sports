@@ -1,7 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { sizes, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import type { MatchTabId } from '../types';
 import { matchTabs, useMatchRoutes } from '../use-match-routes';
@@ -56,44 +56,33 @@ export function MatchTabs({ matchId, selected }: Props) {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     bar: {
-      borderTopWidth: 1,
       borderBottomWidth: 1,
       borderColor: colors.border,
       backgroundColor: colors.background,
     },
     row: {
       paddingHorizontal: sizes.gutter,
-      gap: 24,
+      gap: spacing.xl,
       alignItems: 'center',
     },
     tab: {
-      minHeight: 48,
+      minHeight: dp(48),
       justifyContent: 'center',
       alignItems: 'center',
       position: 'relative',
-      paddingVertical: 12,
+      paddingVertical: spacing.md,
     },
-    pressed: { opacity: 0.7 },
-    label: {
-      fontSize: 14,
-      lineHeight: 19,
-      fontWeight: '600',
-      color: colors.textMuted,
-    },
-    labelActive: {
-      fontWeight: '700',
-      color: colors.text,
-    },
+    pressed: { transform: [{ scale: 0.95 }] },
+    label: { ...typography.labelMd, color: colors.textMuted },
+    labelActive: { color: colors.link },
     indicator: {
       position: 'absolute',
       bottom: 0,
       left: 0,
       right: 0,
-      height: 3,
-      borderRadius: 2,
+      height: dp(3),
+      borderRadius: radius.pill,
       backgroundColor: 'transparent',
     },
-    indicatorActive: {
-      backgroundColor: colors.accent,
-    },
+    indicatorActive: { backgroundColor: colors.primary },
   });

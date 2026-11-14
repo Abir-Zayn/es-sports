@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
-import { spacing, useThemedStyles, type Palette } from '@/theme';
+import { dp, spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { signInWithGoogle } from './google-auth';
 
@@ -76,7 +76,7 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     wrap: { gap: spacing.md },
     or: { textAlign: 'center' },
-    logo: { width: 20, height: 20 },
+    logo: { width: dp(20), height: dp(20) },
     error: { color: colors.danger, textAlign: 'center' },
     noticeSlot: { position: 'absolute', left: 0, right: 0, top: '100%', marginTop: spacing.xs, alignItems: 'center' },
   });

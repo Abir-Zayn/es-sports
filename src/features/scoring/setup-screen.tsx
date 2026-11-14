@@ -1,7 +1,7 @@
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, InitialsAvatar, SegmentedControl, Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { OpeningPlayers, normalizeOpeners } from './components/opening-players';
 import { PlayingXiEditor } from './components/playing-xi-editor';
@@ -45,12 +45,12 @@ export function ScorerSetupScreen() {
         <View style={s.teams}>{teamCodes.map((code) => <Pressable key={code}
           accessibilityRole="button" accessibilityState={{ selected: setup.tossWinner === code }}
           onPress={() => configure({ ...setup, tossWinner: code })} style={[s.team, setup.tossWinner === code && s.selected]}>
-          <InitialsAvatar label={teams[code].team.short} tone={teams[code].team.tone} size={40} />
+          <InitialsAvatar label={teams[code].team.short} tone={teams[code].team.tone} size={sizes.avatar} />
           <Text style={s.teamName}>{teams[code].team.name}</Text>
         </Pressable>)}</View>
       </ScorerSection>
       <ScorerSection title="Chose to">
-        <SegmentedControl height={44} options={[{ id: 'bat', label: 'Bat first' }, { id: 'bowl', label: 'Bowl first' }]}
+        <SegmentedControl height={dp(48)} options={[{ id: 'bat', label: 'Bat first' }, { id: 'bowl', label: 'Bowl first' }]}
           selected={setup.decision} onSelect={(decision) => configure({ ...setup, decision })} />
         <Text style={s.batting}>{teams[batting].team.name} will bat first</Text>
       </ScorerSection>
@@ -66,9 +66,9 @@ export function ScorerSetupScreen() {
   </ScorerFrame>;
 }
 const styles = (c: Palette) => StyleSheet.create({
-  teams: { flexDirection: 'row', gap: 10 },
-  team: { flex: 1, minHeight: 100, padding: 12, gap: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, borderRadius: 20 },
+  teams: { flexDirection: 'row', gap: spacing.md },
+  team: { flex: 1, minHeight: dp(100), padding: spacing.md, gap: spacing.md, alignItems: 'center', justifyContent: 'center', backgroundColor: c.surface, borderWidth: 2, borderColor: 'transparent', borderRadius: radius.lg, ...shadows.card },
   selected: { borderColor: c.primary, backgroundColor: c.primarySoft },
-  teamName: { fontSize: 13, lineHeight: 18, fontWeight: '700', textAlign: 'center' },
-  batting: { fontSize: 13, lineHeight: 18, fontWeight: '600', color: c.link },
+  teamName: { ...typography.labelMd, textAlign: 'center' },
+  batting: { ...typography.bodyMd, color: c.link },
 });

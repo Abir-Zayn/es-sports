@@ -8,7 +8,7 @@ import { type LayoutChangeEvent, Pressable, StyleSheet, View, useWindowDimension
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
-import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { shadows, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { BallIcon } from './ball-icon';
 
@@ -29,7 +29,8 @@ type TabButtonProps = TabTriggerSlotProps & { label: string; icon: IconComponent
 function TabButton({ label, icon: Icon, isFocused, ref, ...props }: TabButtonProps) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
-  const color = isFocused ? colors.link : colors.textMuted;
+  // Active is coral; inactive is muted at 50%. Same icon in both states.
+  const color = isFocused ? colors.primary : colors.textMuted;
   return (
     // The router types `ref` against a different element type than Pressable's; they are the same host view.
     <Pressable
@@ -38,9 +39,9 @@ function TabButton({ label, icon: Icon, isFocused, ref, ...props }: TabButtonPro
       accessibilityRole="tab"
       accessibilityLabel={label}
       accessibilityState={{ selected: Boolean(isFocused) }}
-      style={styles.tab}
+      style={[styles.tab, !isFocused && styles.inactive]}
     >
-      <Icon size={22} color={color} strokeWidth={2} />
+      <Icon size={sizes.icon} color={color} strokeWidth={2.2} />
     </Pressable>
   );
 }
@@ -167,6 +168,7 @@ const createStyles = (colors: Palette) =>
       justifyContent: 'center',
       height: NAV_HEIGHT,
     },
+    inactive: { opacity: 0.5 },
     createSlot: {
       flex: 1,
       alignItems: 'center',
@@ -181,11 +183,7 @@ const createStyles = (colors: Palette) =>
       backgroundColor: colors.primary,
       alignItems: 'center',
       justifyContent: 'center',
-      shadowColor: colors.primary,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.35,
-      shadowRadius: 8,
-      elevation: 6,
+      ...shadows.primary,
     },
-    pressed: { opacity: 0.85 },
+    pressed: { transform: [{ scale: 0.95 }] },
   });

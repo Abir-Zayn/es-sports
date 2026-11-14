@@ -2,7 +2,7 @@ import Bell from 'lucide-react-native/icons/bell';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { UpcomingMatch } from '@/types/cricket';
 
 type Props = {
@@ -36,7 +36,7 @@ export function UpcomingMatchTile({ match, onRemind }: Props) {
         onPress={onRemind}
         style={({ pressed }) => [styles.remind, pressed && styles.pressed]}
       >
-        <Bell size={18} color={colors.textMuted} />
+        <Bell size={dp(18)} color={colors.textMuted} />
       </Pressable>
     </View>
   );
@@ -44,21 +44,20 @@ export function UpcomingMatchTile({ match, onRemind }: Props) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    card: { width: '100%', flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: spacing.md },
-    date: { width: 64, gap: 2 },
-    weekday: { fontSize: 12, lineHeight: 16, fontWeight: '600', color: colors.textMuted },
-    day: { fontSize: 16, lineHeight: 22, fontWeight: '700' },
-    info: { flex: 1, minWidth: 0, gap: 6 },
-    team: { fontSize: 14, lineHeight: 18, fontWeight: '600' },
-    meta: { fontSize: 12, lineHeight: 16, color: colors.textMuted },
+    card: { width: '100%', flexDirection: 'row', alignItems: 'center', gap: spacing.lg, paddingVertical: spacing.lg },
+    date: { width: dp(64), gap: dp(2) },
+    weekday: { ...typography.labelSm, color: colors.textMuted },
+    day: { ...typography.headlineMd, color: colors.text, fontVariant: ['tabular-nums'] },
+    info: { flex: 1, minWidth: 0, gap: spacing.xs },
+    team: { ...typography.bodyMd, color: colors.text },
+    meta: { ...typography.bodySm, color: colors.textMuted },
     remind: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
-      borderWidth: 1,
-      borderColor: colors.border,
+      width: sizes.iconButton,
+      height: sizes.iconButton,
+      borderRadius: radius.pill,
+      backgroundColor: colors.surfaceRaised,
       alignItems: 'center',
       justifyContent: 'center',
     },
-    pressed: { opacity: 0.7 },
+    pressed: { transform: [{ scale: 0.95 }] },
   });

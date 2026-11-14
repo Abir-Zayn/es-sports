@@ -1,6 +1,6 @@
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { NotificationFilterTab } from '../types';
 
 const tabs: { id: NotificationFilterTab; label: string }[] = [
@@ -17,6 +17,6 @@ export function NotificationTabs({ selected, onSelect }: { selected: Notificatio
   </ScrollView>;
 }
 const createStyles = (c: Palette) => StyleSheet.create({
-  list: { paddingHorizontal: 20, gap: 8, paddingBottom: 8 }, tab: { minHeight: 48, justifyContent: 'center', paddingHorizontal: 16, borderRadius: 24, backgroundColor: c.surface },
-  selected: { backgroundColor: c.primary }, label: { color: c.text, fontSize: 14, fontWeight: '600' }, selectedLabel: { color: c.primaryText },
+  list: { paddingHorizontal: sizes.gutter, gap: spacing.sm, paddingBottom: spacing.sm }, tab: { minHeight: dp(48), justifyContent: 'center', paddingHorizontal: spacing.lg, borderRadius: radius.pill, backgroundColor: c.surfaceRaised },
+  selected: { backgroundColor: c.primarySoft }, label: { ...typography.labelSm, color: c.textMuted }, selectedLabel: { color: c.link },
 });

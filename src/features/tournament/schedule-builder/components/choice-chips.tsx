@@ -2,14 +2,10 @@ import { format, parseISO } from 'date-fns';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { timeLabel } from '../slots';
-
-const TIME_STEP_MIN = 30;
-const EARLIEST_MIN = 7 * 60;
-const LATEST_MIN = 21 * 60;
-const times = Array.from({ length: (LATEST_MIN - EARLIEST_MIN) / TIME_STEP_MIN + 1 }, (_, i) => EARLIEST_MIN + i * TIME_STEP_MIN);
+import { StartTimeSliders } from './start-time-sliders';
 
 export type Choice<T> = { value: T; label: string; spoken: string };
 
@@ -30,7 +26,7 @@ export function ChoiceChips<T extends string | number>({ label, choices, value, 
         onPress={() => onChange(choice.value)}
         style={[styles.chip, on && styles.chipOn]}
       >
-        <Text style={[styles.chipText, on && { color: colors.primaryText }]}>{choice.label}</Text>
+        <Text style={[styles.chipText, on && { color: colors.link }]}>{choice.label}</Text>
       </Pressable>
     );
   });
@@ -50,32 +46,37 @@ export function ChoiceChips<T extends string | number>({ label, choices, value, 
 
 type WhenProps = { days: string[]; date: string; startMin: number; onDate: (date: string) => void; onStart: (startMin: number) => void };
 
-/** The tournament day and start time of one match. */
+/** The tournament day and start time (hour and minute sliders) of one match. */
 export function WhenChips({ days, date, startMin, onDate, onStart }: WhenProps) {
+  const styles = useThemedStyles(createStyles);
   return (
     <>
       <ChoiceChips label="Day" scroll value={date} onChange={onDate}
         choices={days.map((day) => ({ value: day, label: format(parseISO(day), 'EEE d MMM'), spoken: format(parseISO(day), 'EEEE d MMMM') }))} />
-      <ChoiceChips label="Start time" value={startMin} onChange={onStart}
-        choices={times.map((t) => ({ value: t, label: timeLabel(t), spoken: `Start at ${timeLabel(t)}` }))} />
+      <View style={styles.timeHeader}>
+        <Text style={styles.label}>Start time</Text>
+        <Text style={styles.timeValue}>{timeLabel(startMin)}</Text>
+      </View>
+      <StartTimeSliders value={startMin} labelPrefix="Start" onChange={onStart} />
     </>
   );
 }
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    label: { fontSize: 13, lineHeight: 18, fontWeight: '700' },
+    label: typography.labelMd,
     row: { gap: spacing.sm },
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+    timeHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    timeValue: { ...typography.labelMd, color: colors.link, fontVariant: ['tabular-nums'] },
     chip: {
-      minHeight: 40,
-      paddingHorizontal: spacing.md,
+      minHeight: dp(40),
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
       justifyContent: 'center',
       borderRadius: radius.pill,
-      borderWidth: 1,
-      borderColor: colors.border,
-      backgroundColor: colors.surface,
+      backgroundColor: colors.surfaceRaised,
     },
-    chipOn: { backgroundColor: colors.primary, borderColor: colors.primary },
-    chipText: { fontSize: 13, lineHeight: 18, fontWeight: '600' },
+    chipOn: { backgroundColor: colors.primarySoft },
+    chipText: { ...typography.labelSm, color: colors.textMuted },
   });

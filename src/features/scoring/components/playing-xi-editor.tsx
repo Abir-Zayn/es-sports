@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, InitialsAvatar, Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { teamCodes } from '../sample-data';
 import type { MatchSetup, TeamCode } from '../types';
@@ -19,7 +19,7 @@ export function PlayingXiEditor({ setup, onChange }: { setup: MatchSetup; onChan
   return <ScorerSection title="Playing XI">
     <View style={s.card}>
       {teamCodes.map((code) => <View key={code} style={s.row}>
-        <InitialsAvatar label={setup.teams[code].team.short} tone={setup.teams[code].team.tone} size={40} />
+        <InitialsAvatar label={setup.teams[code].team.short} tone={setup.teams[code].team.tone} size={sizes.avatar} />
         <View style={s.text}><Text style={s.name}>{setup.teams[code].team.name}</Text>
           <Text style={s.confirmed}>{setup.playingXi[code].length} selected · confirmed</Text></View>
         <Button label="Edit" size="compact" variant="ghost" accessibilityLabel={`Edit ${setup.teams[code].team.name} playing XI`} onPress={() => open(code)} />
@@ -37,8 +37,8 @@ export function PlayingXiEditor({ setup, onChange }: { setup: MatchSetup; onChan
   </ScorerSection>;
 }
 const styles = (c: Palette) => StyleSheet.create({
-  card: { borderRadius: 18, borderWidth: 1, borderColor: c.border, backgroundColor: c.surface, overflow: 'hidden' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12 },
-  text: { flex: 1, minWidth: 0, gap: 3 }, name: { fontSize: 14, lineHeight: 19, fontWeight: '700' },
-  confirmed: { color: c.link, fontSize: 12, lineHeight: 17 },
+  card: { borderRadius: radius.lg, backgroundColor: c.surface, ...shadows.card, paddingVertical: spacing.sm },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm, paddingHorizontal: sizes.cardPaddingTight },
+  text: { flex: 1, minWidth: 0, gap: spacing.xs }, name: typography.labelMd,
+  confirmed: { ...typography.bodySm, color: c.link },
 });

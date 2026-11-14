@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { Text } from '@/components/ui';
-import { palettes, spacing, useTheme } from '@/theme';
+import { palettes, shadows, spacing, typography, useTheme } from '@/theme';
 
 import { BallIcon } from './ball-icon';
 import { CREATE_CENTRE_FROM_BAR_BOTTOM, CREATE_SIZE } from './bottom-nav';
@@ -110,8 +110,8 @@ function RadialAction({ label, icon: Icon, angle, index, progress, onPress }: Ac
   return (
     <Animated.View style={[styles.action, style]}>
       <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress}
-        style={({ pressed }) => [styles.actionButton, { backgroundColor: colors.surfaceRaised, borderColor: colors.border }, pressed && styles.pressed]}>
-        <Icon size={26} color={colors.link} />
+        style={({ pressed }) => [styles.actionButton, { backgroundColor: colors.surface }, pressed && styles.pressed]}>
+        <Icon size={26} color={colors.primary} />
       </Pressable>
       <Text style={styles.label} numberOfLines={1}>{label}</Text>
     </Animated.View>
@@ -124,10 +124,10 @@ const styles = StyleSheet.create({
   close: {
     position: 'absolute', top: -CREATE_SIZE / 2, width: CREATE_SIZE, height: CREATE_SIZE, borderRadius: CREATE_SIZE / 2,
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.35, shadowRadius: 8, elevation: 6,
+    ...shadows.primary,
   },
   action: { position: 'absolute', top: -ACTION_SIZE / 2, width: 140, alignItems: 'center', gap: spacing.xs },
-  actionButton: { width: ACTION_SIZE, height: ACTION_SIZE, borderRadius: ACTION_SIZE / 2, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  label: { color: labelColor, fontSize: 13, lineHeight: 18, fontWeight: '700', textAlign: 'center' },
-  pressed: { opacity: 0.8 },
+  actionButton: { width: ACTION_SIZE, height: ACTION_SIZE, borderRadius: ACTION_SIZE / 2, alignItems: 'center', justifyContent: 'center', ...shadows.card },
+  label: { ...typography.labelMd, color: labelColor, textAlign: 'center' },
+  pressed: { transform: [{ scale: 0.95 }] },
 });

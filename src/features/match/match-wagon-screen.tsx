@@ -5,6 +5,7 @@ import { StyleSheet } from 'react-native';
 import { ChoiceTabs, type ChoiceTab } from '@/components/match/choice-tabs';
 import { AppTabs, Text } from '@/components/ui';
 import { quadrantSplit } from '@/lib/pitch-quadrant';
+import { typography } from '@/theme';
 
 import { MatchLoadState, StaleMatchNote } from './components/match-load-state';
 import { MatchScreenFrame } from './components/match-screen-frame';
@@ -72,5 +73,5 @@ function BatterWagon({ batters }: { batters: WagonBatter[] }) {
 }
 
 const styles = StyleSheet.create({
-  note: { fontSize: 12, lineHeight: 18 },
+  note: typography.bodySm,
 });

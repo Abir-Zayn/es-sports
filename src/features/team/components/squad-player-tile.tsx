@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/ui';
 import { useToneColors } from '@/features/tournament/use-tone-colors';
 import { initialsOf } from '@/lib/initials';
-import { useThemedStyles, type AvatarTone, type Palette } from '@/theme';
+import { dp, radius, spacing, sp, typography, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
 
 import type { SquadPlayer } from '../types';
 
@@ -52,32 +52,32 @@ export function SquadPlayerTile({ player, tone, bench = false, onPress }: Props)
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    tile: { flex: 1, minWidth: 0, alignItems: 'center', gap: 6 },
-    pressed: { opacity: 0.8 },
+    tile: { flex: 1, minWidth: 0, alignItems: 'center', gap: spacing.xs },
+    pressed: { transform: [{ scale: 0.95 }] },
     avatar: {
-      width: 60,
-      height: 60,
-      borderRadius: 30,
+      width: dp(60),
+      height: dp(60),
+      borderRadius: radius.pill,
       backgroundColor: colors.surfaceRaised,
       borderWidth: 2,
       alignItems: 'center',
       justifyContent: 'center',
     },
     avatarBench: { backgroundColor: colors.surface, borderStyle: 'dashed', borderColor: colors.outline },
-    initials: { fontSize: 16, lineHeight: 22, fontWeight: '700' },
+    initials: typography.labelMd,
     mutedInk: { color: colors.textMuted },
     tag: {
       position: 'absolute',
-      right: -6,
-      bottom: -4,
-      paddingVertical: 2,
-      paddingHorizontal: 5,
-      borderRadius: 6,
+      right: -dp(6),
+      bottom: -dp(4),
+      paddingVertical: dp(2),
+      paddingHorizontal: dp(5),
+      borderRadius: radius.pill,
       backgroundColor: colors.text,
       borderWidth: 2,
       borderColor: colors.background,
     },
-    tagText: { fontSize: 9, lineHeight: 11, fontWeight: '800', color: colors.background },
-    name: { fontSize: 13, lineHeight: 18, fontWeight: '600', textAlign: 'center' },
-    role: { fontSize: 11, lineHeight: 14, marginTop: -3 },
+    tagText: { fontSize: sp(9), lineHeight: sp(11), color: colors.background },
+    name: { ...typography.labelMd, textAlign: 'center' },
+    role: typography.labelSm,
   });

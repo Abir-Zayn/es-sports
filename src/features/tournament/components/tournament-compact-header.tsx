@@ -5,7 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, InitialsAvatar, Text } from '@/components/ui';
-import { radius, sizes, spacing, useTheme, useThemedStyles, type AvatarTone } from '@/theme';
+import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type AvatarTone } from '@/theme';
 
 type Props = {
   short: string;
@@ -37,15 +37,14 @@ export function TournamentCompactHeader({
     <View style={[styles.row, { paddingTop: insets.top + spacing.sm }]}>
       <AppIconTile
         icon={ChevronLeft}
-        size={44}
+        size={sizes.iconButton}
         borderRadius={radius.pill}
         backgroundColor={colors.surface}
-        borderColor={colors.border}
-        borderWidth={1}
+        elevated
         accessibilityLabel="Back"
         onPress={onBack}
       />
-      <InitialsAvatar label={short} tone={tone} imageUri={avatarUri} size={40} shape="square" borderColor={colors.primary} borderWidth={2} />
+      <InitialsAvatar label={short} tone={tone} imageUri={avatarUri} size={sizes.avatar} shape="square" borderColor={colors.primarySoft} borderWidth={2} />
       <View style={styles.titles}>
         <Text accessibilityRole="header" style={styles.name} numberOfLines={1}>
           {name}
@@ -57,11 +56,10 @@ export function TournamentCompactHeader({
       {rightAction ?? (
         <AppIconTile
           icon={Star}
-          size={44}
+          size={sizes.iconButton}
           borderRadius={radius.pill}
           backgroundColor={colors.surface}
-          borderColor={colors.border}
-          borderWidth={1}
+          elevated
           accessibilityLabel={favorite ? 'Unfavorite tournament' : 'Favorite tournament'}
           onPress={() => setFavorite((val) => !val)}
         />
@@ -73,7 +71,7 @@ export function TournamentCompactHeader({
 const createStyles = () =>
   StyleSheet.create({
     row: { paddingHorizontal: sizes.gutter, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-    titles: { flex: 1, minWidth: 0, gap: 2 },
-    name: { fontSize: 16, lineHeight: 22, fontWeight: '700' },
-    format: { fontSize: 12, lineHeight: 16 },
+    titles: { flex: 1, minWidth: 0, gap: spacing.xs / 2 },
+    name: typography.headlineMd,
+    format: typography.bodySm,
   });

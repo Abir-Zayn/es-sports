@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/ui';
 import { comingSoon } from '@/lib/coming-soon';
 import { useToneColors } from '@/features/tournament/use-tone-colors';
-import { useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import type { MatchInfoData } from '../types';
 
@@ -39,22 +39,20 @@ export function WatchLiveSection({ streams }: { streams: MatchInfoData['streams'
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    section: { gap: 10 },
-    title: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
-    row: { flexDirection: 'row', gap: 10 },
+    section: { gap: spacing.md },
+    title: typography.headlineLg,
+    row: { flexDirection: 'row', gap: spacing.md },
     button: {
       flex: 1,
-      height: 52,
+      minHeight: sizes.control,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 8,
-      borderRadius: 16,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
+      gap: spacing.sm,
+      borderRadius: radius.pill,
+      backgroundColor: colors.surfaceRaised,
     },
-    pressed: { opacity: 0.85 },
-    dot: { width: 10, height: 10, borderRadius: 5 },
-    label: { fontSize: 14, lineHeight: 19, fontWeight: '600' },
+    pressed: { transform: [{ scale: 0.95 }] },
+    dot: { width: dp(10), height: dp(10), borderRadius: radius.pill },
+    label: { ...typography.labelMd, color: colors.text },
   });

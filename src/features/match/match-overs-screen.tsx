@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AppTabs, Text } from '@/components/ui';
+import { sizes } from '@/theme';
 
 import { MatchLoadState, StaleMatchNote } from './components/match-load-state';
 import { MatchScreenFrame } from './components/match-screen-frame';
@@ -57,5 +58,5 @@ function InningsOvers({ innings }: { innings: OversData[] }) {
 }
 
 const styles = StyleSheet.create({
-  overs: { gap: 12 },
+  overs: { gap: sizes.sectionGap },
 });

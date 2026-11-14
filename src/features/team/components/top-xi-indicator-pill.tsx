@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 const TOTAL_SLOTS = 11;
 
@@ -50,39 +50,33 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     container: {
       alignItems: 'center',
-      gap: 6,
+      gap: spacing.sm,
     },
     label: {
-      fontSize: 12,
-      lineHeight: 16,
-      fontWeight: '700',
-      color: colors.text,
-      letterSpacing: 0.3,
+      ...typography.labelUppercase,
+      color: colors.textMuted,
     },
     pill: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 5,
-      paddingHorizontal: 12,
-      paddingVertical: 5,
-      borderRadius: 999,
-      backgroundColor: colors.surface,
-      borderWidth: 1.5,
-      borderColor: colors.border,
+      gap: dp(5),
+      paddingHorizontal: spacing.md,
+      paddingVertical: dp(6),
+      borderRadius: radius.pill,
+      backgroundColor: colors.surfaceRaised,
     },
     dot: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
+      width: dp(8),
+      height: dp(8),
+      borderRadius: radius.pill,
     },
     dotFilled: {
-      backgroundColor: colors.text,
+      backgroundColor: colors.primary,
     },
     dotEmpty: {
       backgroundColor: 'transparent',
       borderWidth: 1.5,
-      borderColor: colors.textMuted,
+      borderColor: colors.outline,
     },
   });
-

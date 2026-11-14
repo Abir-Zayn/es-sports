@@ -9,6 +9,8 @@ import { AddTeamsScreen } from '../add-teams-screen';
 
 const T = 'f5c00000-0000-4000-8000-000000000001';
 const mockPush = jest.fn();
+// These cover the invite flow, hidden in the app for now.
+jest.mock('../permissions', () => ({ ...jest.requireActual('../permissions'), INVITES_ENABLED: true }));
 jest.mock('@/lib/supabase', () => ({ supabase: jest.requireActual('../../__fixtures__/supabase-fake').fake }));
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),

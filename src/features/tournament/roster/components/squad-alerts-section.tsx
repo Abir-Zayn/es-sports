@@ -1,8 +1,8 @@
 import TriangleAlert from 'lucide-react-native/icons/triangle-alert';
 import { StyleSheet, View } from 'react-native';
 
-import { Text } from '@/components/ui';
-import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { Card, Text } from '@/components/ui';
+import { dp, radius, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import type { RosterAuditEvent } from '../types';
 
@@ -22,7 +22,7 @@ export function SquadAlertsSection({ events }: { events: RosterAuditEvent[] }) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   return (
-    <View style={styles.section}>
+    <Card style={styles.section}>
       <Text accessibilityRole="header" style={styles.title}>
         Squad alerts
       </Text>
@@ -33,7 +33,7 @@ export function SquadAlertsSection({ events }: { events: RosterAuditEvent[] }) {
       ) : (
         events.map((event) => (
           <View key={event.id} style={styles.card}>
-            <TriangleAlert size={18} color={colors.accent} />
+            <TriangleAlert size={dp(18)} color={colors.accent} />
             <View style={styles.copy}>
               <Text style={styles.headline}>{headline(event)}</Text>
               <Text variant="caption" muted>
@@ -46,15 +46,15 @@ export function SquadAlertsSection({ events }: { events: RosterAuditEvent[] }) {
           </View>
         ))
       )}
-    </View>
+    </Card>
   );
 }
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     section: { gap: spacing.sm },
-    title: { fontSize: 16, lineHeight: 22, fontWeight: '700' },
+    title: typography.headlineMd,
     card: { flexDirection: 'row', gap: spacing.md, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.accentSoft },
-    copy: { flex: 1, gap: 2 },
-    headline: { fontSize: 14, lineHeight: 20, fontWeight: '700' },
+    copy: { flex: 1, gap: spacing.xs / 2 },
+    headline: typography.bodyMd,
   });

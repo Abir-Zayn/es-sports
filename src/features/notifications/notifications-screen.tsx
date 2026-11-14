@@ -6,7 +6,7 @@ import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/ui';
-import { useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { InviteCard } from './components/invite-card';
 import { MatchUpdateCard } from './components/match-update-card';
@@ -88,7 +88,7 @@ export function NotificationsScreen() {
         accessibilityLabel={`Open notification: ${item.title}`}
         onPress={() => openItem(item)}
       >
-        <NotificationRow item={item} icon={<Bell size={24} color={colors.link} />} />
+        <NotificationRow item={item} icon={<Bell size={sizes.icon} color={colors.link} />} />
       </Pressable>
     );
   }
@@ -99,10 +99,10 @@ export function NotificationsScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Go back"
-          style={styles.back}
+          style={({ pressed }) => [styles.back, pressed && styles.pressed]}
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/home'))}
         >
-          <ArrowLeft color={colors.text} size={24} />
+          <ArrowLeft color={colors.text} size={sizes.icon} />
         </Pressable>
         <Pressable accessibilityRole="button" onPress={markAllRead} disabled={unreadCount === 0} style={styles.mark}>
           <Text style={[styles.markText, unreadCount === 0 ? styles.disabled : null]}>Mark all as read</Text>
@@ -124,7 +124,7 @@ export function NotificationsScreen() {
         data={filtered}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 24, flexGrow: 1 }}
+        contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + spacing.xl }]}
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={styles.emptyTitle}>All caught up</Text>
@@ -150,16 +150,18 @@ export function NotificationsScreen() {
 const createStyles = (c: Palette) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: c.background },
-    top: { paddingHorizontal: 20, paddingTop: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    back: { width: 48, height: 48, borderRadius: 24, backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center' },
-    mark: { minHeight: 48, justifyContent: 'center' },
-    markText: { color: c.link, fontSize: 14, fontWeight: '700' },
+    top: { paddingHorizontal: sizes.gutter, paddingTop: spacing.md, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    back: { width: sizes.iconButton, height: sizes.iconButton, borderRadius: radius.pill, backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center', ...shadows.iconButton },
+    pressed: { transform: [{ scale: 0.95 }] },
+    mark: { minHeight: dp(48), justifyContent: 'center' },
+    markText: { ...typography.labelMd, color: c.link },
     disabled: { color: c.textMuted },
-    titleRow: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 24, flexDirection: 'row', alignItems: 'center', gap: 12, flexWrap: 'wrap' },
-    title: { color: c.text, fontSize: 30, lineHeight: 38, fontWeight: '700' },
-    pill: { color: c.link, backgroundColor: c.primarySoft, paddingHorizontal: 10, paddingVertical: 5, overflow: 'hidden', borderRadius: 14, fontSize: 12, fontWeight: '700' },
-    errorBanner: { color: c.dangerSoftText, paddingHorizontal: 20, paddingBottom: 12, fontSize: 14 },
-    empty: { padding: 32, alignItems: 'center', gap: 6 },
-    emptyTitle: { color: c.text, fontSize: 17, fontWeight: '700' },
-    emptyText: { color: c.textMuted, textAlign: 'center' },
+    titleRow: { paddingHorizontal: sizes.gutter, paddingVertical: spacing.xl, flexDirection: 'row', alignItems: 'center', gap: spacing.md, flexWrap: 'wrap' },
+    title: { ...typography.displayMd, color: c.text },
+    pill: { ...typography.labelSm, color: c.link, backgroundColor: c.primarySoft, paddingHorizontal: spacing.md, paddingVertical: spacing.xs, overflow: 'hidden', borderRadius: radius.pill },
+    errorBanner: { ...typography.bodyMd, color: c.dangerSoftText, paddingHorizontal: sizes.gutter, paddingBottom: spacing.md },
+    list: { flexGrow: 1, paddingHorizontal: sizes.gutter, paddingTop: spacing.md, gap: spacing.md },
+    empty: { padding: spacing.xxl, alignItems: 'center', gap: spacing.sm },
+    emptyTitle: { ...typography.headlineMd, color: c.text },
+    emptyText: { ...typography.bodyMd, color: c.textMuted, textAlign: 'center' },
   });

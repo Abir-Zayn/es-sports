@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { InitialsAvatar, Text } from '@/components/ui';
 import { initialsOf } from '@/lib/initials';
-import { useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { PlayerCareer } from '../types';
 
 export function PlayerHeroCard({ player }: { player: PlayerCareer }) {
@@ -10,7 +10,7 @@ export function PlayerHeroCard({ player }: { player: PlayerCareer }) {
   const location = [bio.area, bio.district].filter(Boolean).join(', ');
   return <View style={styles.card}>
     <View style={styles.row}>
-      <InitialsAvatar label={initialsOf(bio.fullName)} imageUri={bio.avatarUri} size={76} />
+      <InitialsAvatar label={initialsOf(bio.fullName)} imageUri={bio.avatarUri} size={dp(76)} />
       <View style={styles.details}>
         <Text style={styles.eyebrow}>PLAYER PROFILE</Text>
         <Text style={styles.name}>{bio.fullName}</Text>
@@ -26,11 +26,11 @@ export function PlayerHeroCard({ player }: { player: PlayerCareer }) {
   </View>;
 }
 const createStyles = (c: Palette) => StyleSheet.create({
-  card: { backgroundColor: c.surface, borderRadius: 20, padding: 20, gap: 18, borderWidth: 1, borderColor: c.border },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 16 }, details: { flex: 1, gap: 4 },
-  eyebrow: { color: c.link, fontWeight: '700', fontSize: 11, letterSpacing: 1 },
-  name: { color: c.text, fontSize: 23, lineHeight: 29, fontWeight: '700' },
-  number: { color: c.link, fontSize: 14, fontWeight: '700' }, pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  pill: { backgroundColor: c.surfaceRaised, color: c.text, borderRadius: 16, overflow: 'hidden', paddingHorizontal: 10, paddingVertical: 6, fontSize: 12, textTransform: 'capitalize' },
-  note: { color: c.textMuted, fontSize: 12 },
+  card: { backgroundColor: c.surface, borderRadius: radius.lg, padding: sizes.cardPaddingTight, gap: spacing.lg, ...shadows.card },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg }, details: { flex: 1, gap: spacing.xs },
+  eyebrow: { ...typography.labelUppercase, color: c.link },
+  name: { ...typography.headlineLg, color: c.text },
+  number: { ...typography.labelMd, color: c.link, fontVariant: ['tabular-nums'] }, pills: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  pill: { ...typography.labelSm, backgroundColor: c.surfaceRaised, color: c.textMuted, borderRadius: radius.pill, overflow: 'hidden', paddingHorizontal: spacing.md, paddingVertical: dp(6), textTransform: 'capitalize' },
+  note: { ...typography.bodySm, color: c.textMuted },
 });

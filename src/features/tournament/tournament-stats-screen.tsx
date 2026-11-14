@@ -27,7 +27,7 @@ export function TournamentStatsScreen() {
 
   return (
     <TournamentScreenFrame tournamentId={id ?? 't1'} section="stats">
-      <SegmentedControl options={modeOptions} selected={mode} onSelect={setMode} height={40} accessibilityLabel="Stat type" />
+      <SegmentedControl options={modeOptions} selected={mode} onSelect={setMode} height={sizes.iconButton} accessibilityLabel="Stat type" />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} style={styles.chipScroll}>
         <AppTabs
           tabs={chips}

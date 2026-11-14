@@ -3,7 +3,7 @@ import type { ComponentType, ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui/text';
-import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 type IconComponent = ComponentType<{ size?: number; color?: string }>;
 
@@ -23,7 +23,7 @@ type Props = {
   destructive?: boolean;
 };
 
-const ROW_HEIGHT = 56;
+const ROW_HEIGHT = dp(56);
 
 /** One line in a `SettingsGroup`. */
 export function SettingsRow({ label, value, icon: Icon, leading, trailing, onPress, destructive = false }: Props) {
@@ -42,7 +42,7 @@ export function SettingsRow({ label, value, icon: Icon, leading, trailing, onPre
               {value}
             </Text>
           ) : null}
-          {onPress ? <ChevronRight size={18} color={colors.textMuted} /> : null}
+          {onPress ? <ChevronRight size={dp(18)} color={colors.textMuted} /> : null}
         </View>
       )}
     </>
@@ -64,10 +64,10 @@ export function SettingsRow({ label, value, icon: Icon, leading, trailing, onPre
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    row: { minHeight: ROW_HEIGHT, flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg },
-    label: { flex: 1, fontSize: 16, lineHeight: 22 },
+    row: { minHeight: ROW_HEIGHT, flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.cardPaddingTight },
+    label: { flex: 1, ...typography.bodyMd },
     destructive: { color: colors.danger },
     end: { flexShrink: 1, maxWidth: '55%', flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
-    value: { flexShrink: 1, fontSize: 14, lineHeight: 20 },
+    value: { flexShrink: 1, ...typography.bodySm },
     pressed: { opacity: 0.7 },
   });

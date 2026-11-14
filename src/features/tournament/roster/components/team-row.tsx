@@ -1,9 +1,9 @@
 import { StyleSheet, View } from 'react-native';
 
 import { AppBadge, Button, InitialsAvatar, Text } from '@/components/ui';
-import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import type { Capabilities } from '../permissions';
+import { INVITES_ENABLED, type Capabilities } from '../permissions';
 import type { RosterTeam } from '../types';
 
 type Props = {
@@ -32,7 +32,7 @@ const ownerBadge = (team: RosterTeam) => (!team.owner ? (team.ownedByMe ? 'Yours
 export function TeamRow({ team, maxSquad, caps, busy, onInviteOwner, onReinviteOwner, onCancelInvite, onShareInvite, onViewSquad, onDisband }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
-  const canInvite = caps.manageTeams && (!team.owner || team.owner.status === 'declined');
+  const canInvite = INVITES_ENABLED && caps.manageTeams && (!team.owner || team.owner.status === 'declined');
   const pending = caps.manageTeams && team.owner?.status === 'pending';
   // A server team's squad is read on its own screen, so only an in-memory team shows its size here.
   const squad = !fromServer(team);
@@ -40,7 +40,7 @@ export function TeamRow({ team, maxSquad, caps, busy, onInviteOwner, onReinviteO
   return (
     <View style={styles.row}>
       <View style={styles.top}>
-        <InitialsAvatar label={team.short} size={40} shape="square" />
+        <InitialsAvatar label={team.short} size={sizes.avatar} shape="square" />
         <View style={styles.names}>
           <View style={styles.nameLine}>
             <Text style={styles.name} numberOfLines={1}>
@@ -59,7 +59,7 @@ export function TeamRow({ team, maxSquad, caps, busy, onInviteOwner, onReinviteO
           <Button label={team.owner?.status === 'declined' ? 'Invite someone else' : 'Invite owner'} size="compact" disabled={busy} accessibilityLabel={`Invite owner for ${team.name}`} onPress={onInviteOwner} />
         ) : null}
         {canInvite && team.owner?.status === 'declined' ? <Button label="Re-invite" variant="secondary" size="compact" disabled={busy} accessibilityLabel={`Re-invite ${team.owner.user.name}`} onPress={onReinviteOwner} /> : null}
-        {pending ? (
+        {pending && INVITES_ENABLED ? (
           <Button label="Share invite" variant="secondary" size="compact" accessibilityLabel={`Share owner invite for ${team.name}`} onPress={onShareInvite} />
         ) : null}
         {pending && caps.settleInvites !== false ? (
@@ -77,10 +77,10 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     row: { gap: spacing.sm, paddingVertical: spacing.md },
     top: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-    names: { flex: 1, minWidth: 0, gap: 2 },
+    names: { flex: 1, minWidth: 0, gap: spacing.xs / 2 },
     nameLine: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-    name: { flexShrink: 1, fontSize: 15, lineHeight: 20, fontWeight: '700' },
-    owner: { fontSize: 12, lineHeight: 16, color: colors.textMuted },
-    ownerSet: { color: colors.link, fontWeight: '600' },
-    actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginLeft: 52 },
+    name: { flexShrink: 1, ...typography.bodyMd },
+    owner: { ...typography.bodySm, color: colors.textMuted },
+    ownerSet: { color: colors.link },
+    actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginLeft: sizes.avatar + spacing.md },
   });

@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, InitialsAvatar, SegmentedControl, Text, TextField } from '@/components/ui';
 import { useAuth } from '@/features/auth/auth-provider';
 import { initialsOf } from '@/lib/initials';
-import { sizes, useThemedStyles } from '@/theme';
+import { dp, sizes, useThemedStyles } from '@/theme';
 import type { BattingStyle, BloodGroup, PlayingRole } from '@/types/profile';
 
 import { BloodGroupChip } from './components/blood-group-chip';
@@ -118,7 +118,7 @@ export function EditProfileForm() {
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.photo}>
-            <InitialsAvatar label={initialsOf(fullName.trim() || profile.fullName)} imageUri={avatarUri} size={96} accessibilityLabel="Profile picture" />
+            <InitialsAvatar label={initialsOf(fullName.trim() || profile.fullName)} imageUri={avatarUri} size={dp(96)} accessibilityLabel="Profile picture" />
             <View style={styles.photoActions}>
               <Pressable accessibilityRole="button" hitSlop={sizes.hitSlop} onPress={pickPhoto} style={styles.photoButton}>
                 <Text style={styles.link}>{avatarUri ? 'Change photo' : 'Add photo'}</Text>
@@ -243,7 +243,7 @@ export function EditProfileForm() {
             <Text variant="caption" muted>
               Batting style
             </Text>
-            <SegmentedControl options={battingOptions} selected={battingStyle} onSelect={setBattingStyle} height={44} accessibilityLabel="Batting style" />
+            <SegmentedControl options={battingOptions} selected={battingStyle} onSelect={setBattingStyle} height={dp(44)} accessibilityLabel="Batting style" />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

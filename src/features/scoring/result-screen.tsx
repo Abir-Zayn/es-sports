@@ -11,7 +11,7 @@ import { WagonWheel } from '@/features/match/components/wagon-wheel';
 import { careerOf, useLedger } from '@/features/profile/career-ledger';
 import { addPerformances, emptyCareer } from '@/lib/career-stats';
 import { quadrantSplit } from '@/lib/pitch-quadrant';
-import { sizes, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { ScorerFrame, ScorerHeader, ScorerNotice } from './components/scorer-ui';
 import { computeResult } from './data/match-result';
@@ -80,7 +80,7 @@ export function MatchResultScreen() {
       <View style={s.topRow}>
         <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={routes.back}
           style={({ pressed }) => [s.backBtn, pressed && s.pressed]}>
-          <ChevronLeft size={22} color={colors.text} strokeWidth={2.2} />
+          <ChevronLeft size={sizes.icon} color={colors.text} strokeWidth={2.2} />
         </Pressable>
         <Text accessibilityRole="header" style={s.topTitle} numberOfLines={1}>Match summary</Text>
         <View style={s.topSpacer} />
@@ -96,7 +96,7 @@ export function MatchResultScreen() {
         <View style={s.section}>
           <View style={s.sectionHead}>
             <Text accessibilityRole="header" style={s.sectionTitle}>Innings breakdown</Text>
-            <Info size={15} color={colors.textMuted} strokeWidth={2} />
+            <Info size={sizes.iconSmall} color={colors.textMuted} strokeWidth={2} />
           </View>
           <View style={s.tableFlat}>
             <View style={[s.tableRow, s.tableHead]}>
@@ -112,7 +112,7 @@ export function MatchResultScreen() {
                 <View key={inn.code} style={[s.tableRow, s.rowBar]}>
                   <Text style={[s.cellMuted, s.colRank]}>{idx + 1}</Text>
                   <View style={[s.teamCell, s.colTeam]}>
-                    <InitialsAvatar label={team.short} tone={team.tone} imageUri={team.avatarUri} size={24} />
+                    <InitialsAvatar label={team.short} tone={team.tone} imageUri={team.avatarUri} size={dp(24)} />
                     <Text style={s.teamCellName} numberOfLines={1}>{team.name}</Text>
                   </View>
                   <Text style={[s.cellNum, s.colStat]}>{oversLabel(inn.balls)}</Text>
@@ -128,7 +128,7 @@ export function MatchResultScreen() {
         <View style={s.section}>
           <View style={s.sectionHead}>
             <Text accessibilityRole="header" style={s.sectionTitle}>Where the runs came from</Text>
-            <Info size={15} color={colors.textMuted} strokeWidth={2} />
+            <Info size={sizes.iconSmall} color={colors.textMuted} strokeWidth={2} />
           </View>
           {shots.length > 0 ? (
             <View style={s.wagonGroup}>
@@ -144,7 +144,7 @@ export function MatchResultScreen() {
         <View style={s.section}>
           <View style={s.sectionHead}>
             <Text accessibilityRole="header" style={s.sectionTitle}>Career updated</Text>
-            <Info size={15} color={colors.textMuted} strokeWidth={2} />
+            <Info size={sizes.iconSmall} color={colors.textMuted} strokeWidth={2} />
           </View>
           {careers.length > 0 ? (
             <View style={s.tableFlat}>
@@ -177,26 +177,26 @@ export function MatchResultScreen() {
 }
 
 const styles = (c: Palette) => StyleSheet.create({
-  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 44 },
-  backBtn: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center', marginLeft: -12 },
-  pressed: { opacity: 0.7 },
-  topTitle: { flex: 1, textAlign: 'center', fontSize: 15, lineHeight: 20, fontWeight: '600', color: c.text },
-  topSpacer: { width: 36 },
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: sizes.topBar },
+  backBtn: { width: dp(48), height: dp(48), borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', marginLeft: -spacing.md },
+  pressed: { transform: [{ scale: 0.95 }] },
+  topTitle: { ...typography.headlineLg, flex: 1, textAlign: 'center', color: c.text },
+  topSpacer: { width: dp(36) },
   bleedTabs: { marginHorizontal: -sizes.gutter },
-  section: { gap: 10 },
-  sectionHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionTitle: { fontSize: 17, lineHeight: 22, fontWeight: '700', color: c.text },
-  tableFlat: { borderTopWidth: 1, borderTopColor: c.border },
-  tableRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, gap: 6 },
-  tableHead: { paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: c.border },
+  section: { gap: spacing.md },
+  sectionHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  sectionTitle: { ...typography.headlineMd, color: c.text },
+  tableFlat: { backgroundColor: c.surface, borderRadius: radius.lg, paddingHorizontal: sizes.cardPaddingTight, ...shadows.card },
+  tableRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.md, gap: spacing.sm },
+  tableHead: { borderBottomWidth: 1, borderBottomColor: c.border },
   rowBar: { borderBottomWidth: 1, borderBottomColor: c.border },
-  headCell: { fontSize: 12, lineHeight: 16, fontWeight: '600', color: c.textMuted },
-  colRank: { width: 22 }, colTeam: { flex: 1, minWidth: 0 }, colStat: { width: 44, textAlign: 'right' }, colPts: { width: 48, textAlign: 'right' },
-  teamCell: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  teamCellName: { flexShrink: 1, fontSize: 14, lineHeight: 19, fontWeight: '600', color: c.text },
-  cellMuted: { fontSize: 13, lineHeight: 18, color: c.textMuted, fontVariant: ['tabular-nums'] },
-  cellNum: { fontSize: 13, lineHeight: 18, fontWeight: '600', color: c.text, fontVariant: ['tabular-nums'] },
-  cellStrong: { fontSize: 14, lineHeight: 19, fontWeight: '700', color: c.text, fontVariant: ['tabular-nums'] },
-  wagonGroup: { gap: 12 },
-  flatNote: { paddingVertical: 12, borderTopWidth: 1, borderBottomWidth: 1, borderColor: c.border },
+  headCell: { ...typography.labelSm, color: c.textMuted },
+  colRank: { width: dp(22) }, colTeam: { flex: 1, minWidth: 0 }, colStat: { width: dp(44), textAlign: 'right' }, colPts: { width: dp(48), textAlign: 'right' },
+  teamCell: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  teamCellName: { ...typography.labelMd, flexShrink: 1, color: c.text },
+  cellMuted: { ...typography.bodyMd, color: c.textMuted, fontVariant: ['tabular-nums'] },
+  cellNum: { ...typography.bodyMd, color: c.text, fontVariant: ['tabular-nums'] },
+  cellStrong: { ...typography.headlineMd, color: c.text, fontVariant: ['tabular-nums'] },
+  wagonGroup: { gap: spacing.md },
+  flatNote: { padding: sizes.cardPaddingTight, borderRadius: radius.lg, backgroundColor: c.surface, ...shadows.card },
 });

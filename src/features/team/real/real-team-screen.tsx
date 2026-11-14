@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppBadge, Button, InitialsAvatar, Text } from '@/components/ui';
-import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { TeamCompactHeader } from '../components/team-compact-header';
 import { TeamTabs } from '../components/team-tabs';
@@ -81,7 +81,7 @@ function Members({ members, loading, failed }: { members: TeamMemberRecord[] | u
     <View>
       {members.map((member) => (
         <View key={member.profileId} style={styles.member}>
-          <InitialsAvatar label={member.name.slice(0, 2).toUpperCase()} size={40} imageUri={member.avatarUrl ?? undefined} />
+          <InitialsAvatar label={member.name.slice(0, 2).toUpperCase()} size={sizes.avatar} imageUri={member.avatarUrl ?? undefined} />
           <Text style={styles.memberName} numberOfLines={1}>{member.name}</Text>
           {member.isCaptain ? <AppBadge label="Captain" /> : null}
           {member.availability === 'available' ? null : <AppBadge label={member.availability === 'injured' ? 'Injured' : 'Resting'} />}
@@ -96,13 +96,13 @@ function Members({ members, loading, failed }: { members: TeamMemberRecord[] | u
 const createStyles = (colors: Palette) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { paddingBottom: spacing.xxl + spacing.xl },
-  tabs: { marginTop: 4 },
-  body: { paddingHorizontal: sizes.gutter, paddingTop: 16, gap: spacing.lg },
+  tabs: { marginTop: spacing.xs },
+  body: { paddingHorizontal: sizes.gutter, paddingTop: spacing.lg, gap: sizes.sectionGap },
   gap: { gap: spacing.md },
-  card: { backgroundColor: colors.surface, borderRadius: 16, borderWidth: 1, borderColor: colors.border, paddingHorizontal: spacing.lg },
+  card: { backgroundColor: colors.surface, borderRadius: radius.lg, ...shadows.card, paddingHorizontal: sizes.cardPaddingTight },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md, paddingVertical: spacing.md },
-  value: { flexShrink: 1, fontWeight: '600', textAlign: 'right' },
+  value: { flexShrink: 1, ...typography.bodyMd, textAlign: 'right' },
   member: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm },
-  memberName: { flex: 1, minWidth: 0, fontWeight: '600' },
+  memberName: { flex: 1, minWidth: 0, ...typography.bodyMd },
   hint: { paddingTop: spacing.md },
 });

@@ -3,11 +3,11 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/ui';
 import { useToneColors } from '@/features/tournament/use-tone-colors';
 import { initialsOf } from '@/lib/initials';
-import { useThemedStyles, type AvatarTone, type Palette } from '@/theme';
+import { dp, radius, spacing, sp, typography, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
 
 import type { SquadPlayer } from '../types';
 
-export const DISC_SIZE = 72;
+export const DISC_SIZE = dp(72);
 
 type Props = {
   player: SquadPlayer;
@@ -74,53 +74,42 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     wrapper: {
       alignItems: 'center',
-      width: 94,
-      gap: 5,
+      width: dp(94),
+      gap: spacing.xs,
     },
     pressed: {
-      opacity: 0.82,
-      transform: [{ scale: 0.96 }],
+      transform: [{ scale: 0.95 }],
     },
     disc: {
       width: DISC_SIZE,
       height: DISC_SIZE,
-      borderRadius: DISC_SIZE / 2,
+      borderRadius: radius.pill,
       backgroundColor: colors.surfaceRaised,
       borderWidth: 2,
       alignItems: 'center',
       justifyContent: 'center',
-      shadowColor: '#000000',
-      shadowOffset: { width: 0, height: 3 },
-      shadowOpacity: 0.3,
-      shadowRadius: 5,
-      elevation: 4,
     },
     innerRing: {
-      width: DISC_SIZE - 12,
-      height: DISC_SIZE - 12,
-      borderRadius: (DISC_SIZE - 12) / 2,
-      borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.12)',
+      width: DISC_SIZE - dp(12),
+      height: DISC_SIZE - dp(12),
+      borderRadius: radius.pill,
       backgroundColor: colors.surface,
       alignItems: 'center',
       justifyContent: 'center',
     },
     initials: {
-      fontSize: 20,
-      lineHeight: 24,
-      fontWeight: '800',
+      ...typography.headlineMd,
       color: colors.text,
-      letterSpacing: 0.5,
     },
     badge: {
       position: 'absolute',
-      right: -2,
-      bottom: -2,
-      paddingHorizontal: 6,
-      paddingVertical: 2,
-      borderRadius: 6,
+      right: -dp(2),
+      bottom: -dp(2),
+      paddingHorizontal: dp(6),
+      paddingVertical: dp(2),
+      borderRadius: radius.pill,
       borderWidth: 1.5,
-      borderColor: colors.background,
+      borderColor: colors.surface,
     },
     badgeCaptain: {
       backgroundColor: colors.accent,
@@ -129,9 +118,8 @@ const createStyles = (colors: Palette) =>
       backgroundColor: colors.primary,
     },
     badgeText: {
-      fontSize: 9,
-      lineHeight: 11,
-      fontWeight: '900',
+      fontSize: sp(9),
+      lineHeight: sp(11),
       color: colors.primaryText,
     },
     meta: {
@@ -139,17 +127,13 @@ const createStyles = (colors: Palette) =>
       width: '100%',
     },
     name: {
-      fontSize: 12,
-      lineHeight: 15,
-      fontWeight: '700',
+      ...typography.labelSm,
       color: colors.text,
       textAlign: 'center',
     },
     role: {
-      fontSize: 10,
-      lineHeight: 13,
+      ...typography.tabLabel,
       color: colors.textMuted,
       textAlign: 'center',
     },
   });
-

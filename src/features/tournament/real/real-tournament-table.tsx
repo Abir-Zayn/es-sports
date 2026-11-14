@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
-import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { PointsTable } from '../components/points-table';
 import { fetchStandings, qualifyRule, standingsKey } from '../data/standings-repository';
@@ -53,5 +53,5 @@ const createStyles = (colors: Palette) =>
     gap: { gap: spacing.md },
     // The table runs edge to edge, like the sample table screen.
     flush: { marginHorizontal: -sizes.gutter },
-    rules: { fontSize: 12, lineHeight: 18, color: colors.textMuted },
+    rules: { ...typography.bodySm, color: colors.textMuted },
   });

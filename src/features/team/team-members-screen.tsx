@@ -3,8 +3,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { AppTabs, Button, Text } from '@/components/ui';
-import { sizes, useTheme, useThemedStyles } from '@/theme';
+import { AppTabs, Button, Card, Text } from '@/components/ui';
+import { sizes, typography, useTheme, useThemedStyles } from '@/theme';
 
 import { MemberRow } from './components/member-row';
 import { TeamScreenFrame } from './components/team-screen-frame';
@@ -44,14 +44,14 @@ export function TeamMembersScreen() {
         <Button
           size="compact"
           label="Invite player"
-          leading={<Plus size={16} color={colors.primaryText} strokeWidth={2.6} />}
+          leading={<Plus size={sizes.iconSmall} color={colors.primaryText} strokeWidth={2.6} />}
           onPress={() => router.push('/tournament/squad')}
         />
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll} contentContainerStyle={styles.chips}>
         <AppTabs tabs={filters} selected={filter} onSelect={setFilter} />
       </ScrollView>
-      <View>
+      <Card padding="none">
         {shown.map((member) => (
           <MemberRow
             key={member.name}
@@ -60,7 +60,7 @@ export function TeamMembersScreen() {
             onPress={() => router.push({ pathname: '/player/[id]', params: { id: member.name, name: member.name, role: member.detail } })}
           />
         ))}
-      </View>
+      </Card>
     </TeamScreenFrame>
   );
 }
@@ -68,8 +68,8 @@ export function TeamMembersScreen() {
 const createStyles = () =>
   StyleSheet.create({
     summary: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    counts: { fontSize: 13, lineHeight: 18 },
-    countValue: { fontSize: 13, lineHeight: 18, fontWeight: '700' },
+    counts: typography.bodyMd,
+    countValue: { ...typography.bodyMd, fontVariant: ['tabular-nums'] },
     // Lets the chips scroll edge to edge while the rest of the screen keeps its gutter.
     chipScroll: { marginHorizontal: -sizes.gutter, flexGrow: 0 },
     chips: { paddingHorizontal: sizes.gutter },

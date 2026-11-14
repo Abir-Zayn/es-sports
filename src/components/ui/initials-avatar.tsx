@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { View, type ColorValue } from 'react-native';
 
 import { AppAvatar } from '@/components/ui/app-avatar';
-import { useTheme, type AvatarTone, type Palette } from '@/theme';
+import { sizes, useTheme, type AvatarTone, type Palette } from '@/theme';
 
 type Props = {
   /** Initials shown when there is no picture, or it fails to load. */
@@ -34,7 +34,7 @@ export function InitialsAvatar({
   label,
   tone = 'blue',
   imageUri,
-  size = 36,
+  size = sizes.avatar,
   shape = 'circle',
   borderColor,
   borderWidth = 0,

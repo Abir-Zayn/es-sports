@@ -5,7 +5,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Button, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth/auth-provider';
 import { useLiveMatchData } from '@/features/match/use-live-match-data';
-import { useTheme } from '@/theme';
+import { spacing, typography, useTheme } from '@/theme';
 
 import { ScorerFrame, ScorerHeader, ScorerNotice, ScorerSection } from '../components/scorer-ui';
 import { handoverErrorText } from './handover-errors';
@@ -74,6 +74,6 @@ export function HandoverScreen() {
 }
 
 const styles = StyleSheet.create({
-  teams: { fontSize: 18, lineHeight: 24, fontWeight: '700' },
-  actions: { gap: 10 },
+  teams: typography.headlineMd,
+  actions: { gap: spacing.md },
 });

@@ -2,9 +2,9 @@ import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, sp, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-const PLOT_HEIGHT = 130;
+const PLOT_HEIGHT = dp(130);
 
 type Props = {
   title: string;
@@ -44,7 +44,7 @@ export function RunsPerOverChart({ title, caption, runsPerOver, wicketOvers, las
               <View
                 style={[
                   styles.bar,
-                  { height: Math.max(0, Math.round(((Number.isFinite(runs) ? runs : 0) / max) * (PLOT_HEIGHT - 16))) },
+                  { height: Math.max(0, Math.round(((Number.isFinite(runs) ? runs : 0) / max) * (PLOT_HEIGHT - dp(16)))) },
                   live && styles.barLive,
                 ]}
               />
@@ -86,33 +86,32 @@ function LegendItem({ swatch, label }: { swatch: ReactNode; label: string }) {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     card: {
-      padding: 16,
-      borderRadius: 20,
+      padding: sizes.cardPaddingTight,
+      borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      gap: 12,
+      ...shadows.card,
+      gap: spacing.md,
     },
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-    title: { fontSize: 14, lineHeight: 19, fontWeight: '700' },
-    caption: { fontSize: 12, lineHeight: 16 },
+    title: typography.headlineMd,
+    caption: typography.bodySm,
     plot: {
       height: PLOT_HEIGHT,
       flexDirection: 'row',
       alignItems: 'flex-end',
-      gap: 4,
+      gap: spacing.xs,
       borderBottomWidth: 1,
-      borderBottomColor: colors.outline,
+      borderBottomColor: colors.border,
     },
-    slot: { flex: 1, height: PLOT_HEIGHT, alignItems: 'center', justifyContent: 'flex-end', gap: 4 },
-    wicket: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.dangerSoftText },
-    bar: { width: '100%', borderTopLeftRadius: 4, borderTopRightRadius: 4, backgroundColor: colors.primaryDeep },
+    slot: { flex: 1, height: PLOT_HEIGHT, alignItems: 'center', justifyContent: 'flex-end', gap: spacing.xs },
+    wicket: { width: dp(8), height: dp(8), borderRadius: radius.pill, backgroundColor: colors.dangerSoftText },
+    bar: { width: '100%', borderTopLeftRadius: dp(4), borderTopRightRadius: dp(4), backgroundColor: colors.primaryDeep },
     barLive: { backgroundColor: 'transparent', borderWidth: 1.5, borderBottomWidth: 0, borderColor: colors.primary },
-    labels: { flexDirection: 'row', gap: 4 },
-    label: { flex: 1, textAlign: 'center', fontSize: 9, lineHeight: 12 },
-    legend: { flexDirection: 'row', gap: 14 },
-    legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    legendText: { fontSize: 11, lineHeight: 14 },
-    swatch: { width: 10, height: 10, borderRadius: 3 },
-    dotSwatch: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.dangerSoftText },
+    labels: { flexDirection: 'row', gap: spacing.xs },
+    label: { ...typography.tabLabel, flex: 1, textAlign: 'center', fontSize: sp(9), fontVariant: ['tabular-nums'] },
+    legend: { flexDirection: 'row', gap: spacing.lg },
+    legendItem: { flexDirection: 'row', alignItems: 'center', gap: dp(6) },
+    legendText: typography.labelSm,
+    swatch: { width: dp(10), height: dp(10), borderRadius: dp(3) },
+    dotSwatch: { width: dp(8), height: dp(8), borderRadius: radius.pill, backgroundColor: colors.dangerSoftText },
   });

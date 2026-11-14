@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppBadge, Button, Text } from '@/components/ui';
-import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { radius, shadows, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { fetchMyTournaments, myTournamentsKey } from '../data/tournament-repository';
 import { formatDate, oversLabel } from './draft';
@@ -44,8 +44,8 @@ export function MyTournamentsSection({ userId }: { userId: string }) {
 const createStyles = (colors: Palette) => StyleSheet.create({
   stack: { gap: spacing.lg },
   gap: { gap: spacing.md },
-  card: { backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, padding: spacing.xl, gap: spacing.xs },
-  pressed: { opacity: 0.75 },
+  card: { backgroundColor: colors.surface, borderRadius: radius.lg, padding: sizes.cardPadding, gap: spacing.xs, ...shadows.card },
+  pressed: { transform: [{ scale: 0.95 }] },
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
   name: { flex: 1, minWidth: 0 },
 });

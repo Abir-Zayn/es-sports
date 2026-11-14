@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { InitialsAvatar, Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { oversLabel } from '../engine/score-delivery';
 import type { ScoreState } from '../types';
@@ -19,7 +19,7 @@ export function ScoreSummary({ score }: { score: ScoreState }) {
   const remaining = score.oversLimit * 6 - score.balls;
   const rate = score.target !== null && remaining > 0 ? ((Math.max(0, score.target - score.runs) / remaining) * 6).toFixed(2) : '0.00';
   return <View style={s.card} accessibilityLiveRegion="polite">
-    <InitialsAvatar label={score.teams[score.battingTeam].short} tone={score.teams[score.battingTeam].tone} imageUri={score.teams[score.battingTeam].avatarUri} size={38} />
+    <InitialsAvatar label={score.teams[score.battingTeam].short} tone={score.teams[score.battingTeam].tone} imageUri={score.teams[score.battingTeam].avatarUri} size={sizes.avatar} />
     <View style={s.scoreRow}><Text style={s.score}>{score.runs}/{score.wickets}</Text><Text muted style={s.overs}>({oversLabel(score.balls)})</Text></View>
     <View style={s.chase}><Text style={s.target}>{chaseLabel(score)}</Text>
       {score.target !== null ? <Text muted style={s.caption}>Target {score.target} · RRR {rate}</Text> : null}
@@ -27,10 +27,10 @@ export function ScoreSummary({ score }: { score: ScoreState }) {
   </View>;
 }
 const styles = (c: Palette) => StyleSheet.create({
-  card: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, padding: 14, borderWidth: 1, borderColor: c.border, borderRadius: 20, backgroundColor: c.surface },
-  scoreRow: { flexDirection: 'row', alignItems: 'baseline', gap: 5 },
-  score: { fontSize: 30, lineHeight: 36, fontWeight: '800', fontVariant: ['tabular-nums'] },
-  overs: { fontSize: 12, lineHeight: 17 },
-  chase: { flexGrow: 1, alignItems: 'flex-end', gap: 3 },
-  target: { fontSize: 12, lineHeight: 17, fontWeight: '700', color: c.link }, caption: { fontSize: 11, lineHeight: 16 },
+  card: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.md, padding: sizes.cardPaddingTight, borderRadius: radius.lg, backgroundColor: c.surface, ...shadows.card },
+  scoreRow: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.xs },
+  score: { ...typography.displayLg, fontVariant: ['tabular-nums'] },
+  overs: { ...typography.bodySm, fontVariant: ['tabular-nums'] },
+  chase: { flexGrow: 1, alignItems: 'flex-end', gap: spacing.xs },
+  target: { ...typography.labelSm, color: c.link }, caption: { ...typography.bodySm, fontVariant: ['tabular-nums'] },
 });

@@ -4,10 +4,10 @@ import { KeyboardAvoidingView, Modal, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppIconTile, Text } from '@/components/ui';
-import { radius, spacing, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
 /** Room left above a full sheet, so the screen behind stays visible and the sheet reads as a sheet. */
-const FILL_TOP_GAP = 96;
+const FILL_TOP_GAP = dp(96);
 
 type Props = {
   visible: boolean;
@@ -36,7 +36,7 @@ export function Sheet({ visible, title, onClose, fill = false, children }: Props
             <Text variant="heading" accessibilityRole="header" style={styles.title}>
               {title}
             </Text>
-            <AppIconTile icon={X} size={44} borderRadius={radius.pill} accessibilityLabel={`Close ${title.toLowerCase()}`} onPress={onClose} />
+            <AppIconTile icon={X} size={sizes.iconButton} borderRadius={radius.pill} accessibilityLabel={`Close ${title.toLowerCase()}`} onPress={onClose} />
           </View>
           {children}
         </SafeAreaView>
@@ -49,10 +49,10 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: colors.overlay },
     sheet: {
-      backgroundColor: colors.background,
-      borderTopLeftRadius: radius.lg,
-      borderTopRightRadius: radius.lg,
-      padding: spacing.lg,
+      backgroundColor: colors.surface,
+      borderTopLeftRadius: radius.xl,
+      borderTopRightRadius: radius.xl,
+      padding: spacing.xl,
       gap: spacing.md,
       maxHeight: '85%',
     },

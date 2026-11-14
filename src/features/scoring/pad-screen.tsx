@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Alert, StyleSheet } from 'react-native';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { typography, useThemedStyles, type Palette } from '@/theme';
 
 import { CreaseSummary } from './components/crease-summary';
 import { ExtrasSheet, type ExtraKind } from './components/extras-sheet';
@@ -78,6 +78,6 @@ export function ScorerPadScreen() {
   </ScorerFrame>;
 }
 const styles = (c: Palette) => StyleSheet.create({
-  freeHit: { color: c.accent, fontSize: 13, lineHeight: 18, fontWeight: '700' },
-  result: { fontSize: 16, lineHeight: 22, fontWeight: '700', textAlign: 'center' },
+  freeHit: { ...typography.bodyMd, color: c.accent },
+  result: { ...typography.headlineMd, textAlign: 'center' },
 });

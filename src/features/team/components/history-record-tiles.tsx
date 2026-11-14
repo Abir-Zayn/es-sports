@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import type { TeamRecord } from '../types';
 
@@ -30,17 +30,16 @@ export function HistoryRecordTiles({ record }: { record: TeamRecord }) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    row: { flexDirection: 'row', gap: 10 },
+    row: { flexDirection: 'row', gap: spacing.md },
     tile: {
       flex: 1,
-      padding: 14,
-      borderRadius: 18,
+      padding: sizes.cardPaddingTight,
+      borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      gap: 4,
+      ...shadows.card,
+      gap: spacing.xs,
     },
-    value: { fontSize: 28, lineHeight: 32, fontWeight: '800', fontVariant: ['tabular-nums'] },
+    value: typography.numeralStat,
     highlight: { color: colors.link },
-    label: { fontSize: 12, lineHeight: 16 },
+    label: typography.bodySm,
   });

@@ -33,7 +33,7 @@ test('only staff may start an unstarted fixture with two real teams', () => {
 
 test('XI picker shows registered players and disables unavailable and excess choices', async () => {
   const squad: ServerSquad = {
-    tournamentName: 'Cup', teamName: 'Alpha', minSquad: 1, maxSquad: 4, registrationDeadline: '', myRole: null,
+    tournamentName: 'Cup', teamName: 'Alpha', minSquad: 1, maxSquad: 4, registrationDeadline: '', myRole: null, isOrganiser: false,
     selectedIds: ['one', 'two'], candidates: [
       { profileId: 'one', name: 'One', avatarUrl: null, role: 'player', availability: 'available', takenBy: null },
       { profileId: 'two', name: 'Two', avatarUrl: null, role: 'player', availability: 'injured', takenBy: null },

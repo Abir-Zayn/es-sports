@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, InitialsAvatar, Text } from '@/components/ui';
-import { radius, sizes, spacing, useTheme, useThemedStyles } from '@/theme';
+import { radius, sizes, spacing, typography, useTheme, useThemedStyles } from '@/theme';
 import type { TeamInfo } from '@/types/cricket';
 
 type Props = { team: TeamInfo; standing: string; onBack: () => void };
@@ -17,15 +17,14 @@ export function TeamCompactHeader({ team, standing, onBack }: Props) {
     <View style={[styles.row, { paddingTop: insets.top + spacing.sm }]}>
       <AppIconTile
         icon={ChevronLeft}
-        size={44}
+        size={sizes.iconButton}
         borderRadius={radius.pill}
         backgroundColor={colors.surface}
-        borderColor={colors.border}
-        borderWidth={1}
+        elevated
         accessibilityLabel="Back"
         onPress={onBack}
       />
-      <InitialsAvatar label={team.short} tone={team.tone} imageUri={team.avatarUri} size={40} />
+      <InitialsAvatar label={team.short} tone={team.tone} imageUri={team.avatarUri} size={sizes.avatar} />
       <View style={styles.titles}>
         <Text accessibilityRole="header" style={styles.name} numberOfLines={1}>
           {team.name}
@@ -41,7 +40,7 @@ export function TeamCompactHeader({ team, standing, onBack }: Props) {
 const createStyles = () =>
   StyleSheet.create({
     row: { paddingHorizontal: sizes.gutter, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-    titles: { flex: 1, minWidth: 0, gap: 2 },
-    name: { fontSize: 16, lineHeight: 22, fontWeight: '700' },
-    standing: { fontSize: 12, lineHeight: 16 },
+    titles: { flex: 1, minWidth: 0, gap: spacing.xs / 2 },
+    name: typography.headlineMd,
+    standing: typography.bodySm,
   });

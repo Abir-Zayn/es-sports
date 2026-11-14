@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { AppAvatar, Text } from '@/components/ui';
 import { initialsOf } from '@/lib/initials';
 import { useToneColors } from '@/features/tournament/use-tone-colors';
-import { useThemedStyles, type AvatarTone, type Palette } from '@/theme';
+import { radius, shadows, sizes, spacing, typography, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
 
 import type { KeyPlayer } from '../types';
 
@@ -28,7 +28,7 @@ export function KeyPlayersSection({ players, tone }: Props) {
           onPress={() => router.push({ pathname: '/player/[id]', params: { id: player.name, name: player.name } })}
           style={({ pressed }) => [styles.row, pressed && styles.pressed]}
         >
-          <AppAvatar label={initialsOf(player.name)} size={44} borderColor={ring} borderWidth={2} />
+          <AppAvatar label={initialsOf(player.name)} size={sizes.avatar} borderColor={ring} borderWidth={2} />
           <View style={styles.text}>
             <Text style={styles.name}>{player.name}</Text>
             <Text muted style={styles.label}>
@@ -49,24 +49,22 @@ export function KeyPlayersSection({ players, tone }: Props) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    section: { gap: 12 },
-    title: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
+    section: { gap: spacing.md },
+    title: typography.headlineLg,
     row: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 12,
-      paddingVertical: 12,
-      paddingHorizontal: 14,
-      borderRadius: 18,
+      gap: spacing.md,
+      padding: spacing.lg,
+      borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
+      ...shadows.card,
     },
-    pressed: { opacity: 0.85 },
-    text: { flex: 1, minWidth: 0, gap: 2 },
-    name: { fontSize: 15, lineHeight: 20, fontWeight: '700' },
-    label: { fontSize: 12, lineHeight: 16 },
+    pressed: { transform: [{ scale: 0.95 }] },
+    text: { flex: 1, minWidth: 0, gap: spacing.xs / 2 },
+    name: typography.bodyMd,
+    label: typography.bodySm,
     figure: { alignItems: 'flex-end' },
-    value: { fontSize: 24, lineHeight: 28, fontWeight: '800', fontVariant: ['tabular-nums'] },
-    unit: { fontSize: 11, lineHeight: 14 },
+    value: { ...typography.headlineLg, fontVariant: ['tabular-nums'] },
+    unit: typography.bodySm,
   });

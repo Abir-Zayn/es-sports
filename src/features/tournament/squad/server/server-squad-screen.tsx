@@ -5,14 +5,16 @@ import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AppIconTile, Button, Text } from '@/components/ui';
+import { AppIconTile, Button, Card, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth/auth-provider';
-import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { searchPlayers, suggestPlayers } from '@/features/match/friendly/search-players';
+import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { tournamentErrorText } from '../../data/tournament-errors';
+import { UserSearchSheet } from '../../roster/components/user-search-sheet';
 import { rosterKey } from '../../roster/use-roster';
 import { CandidateRow } from './candidate-row';
-import { canEditSquad, fetchServerSquad, saveServerSquad, serverSquadKey, squadSaveProblem, type ServerSquad } from './squad-server';
+import { addServerSquadPlayer, canEditSquad, fetchServerSquad, saveServerSquad, serverSquadKey, squadSaveProblem, type ServerSquad } from './squad-server';
 
 type Props = { tournamentId: string; teamId: string };
 
@@ -32,7 +34,7 @@ export function ServerSquadScreen({ tournamentId, teamId }: Props) {
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <AppIconTile icon={ChevronLeft} size={44} borderRadius={radius.pill} accessibilityLabel="Back" onPress={goBack} />
+        <AppIconTile icon={ChevronLeft} size={sizes.iconButton} borderRadius={radius.pill} accessibilityLabel="Back" onPress={goBack} />
         <View style={styles.titles}>
           <Text accessibilityRole="header" style={styles.title} numberOfLines={1}>{squad.data?.teamName ?? 'Squad'}</Text>
           {squad.data ? <Text muted numberOfLines={1} style={styles.subtitle}>{squad.data.tournamentName}</Text> : null}
@@ -59,7 +61,8 @@ function SquadPicker({ squad, tournamentId, teamId }: { squad: ServerSquad; tour
   // Null until the manager changes something; the saved squad shows until then.
   const [draft, setDraft] = useState<string[] | null>(null);
   const selected = draft ?? squad.selectedIds;
-  const editable = canEditSquad(squad.myRole);
+  const editable = canEditSquad(squad.myRole, squad.isOrganiser);
+  const [finding, setFinding] = useState(false);
   const dirty = draft !== null && !sameIds(draft, squad.selectedIds);
   const problem = squadSaveProblem(squad, selected);
   const save = useMutation({
@@ -68,6 +71,16 @@ function SquadPicker({ squad, tournamentId, teamId }: { squad: ServerSquad; tour
       await queryClient.invalidateQueries({ queryKey: serverSquadKey(tournamentId, teamId) });
       void queryClient.invalidateQueries({ queryKey: rosterKey(tournamentId) });
       setDraft(null);
+    },
+  });
+  // The organiser adds anyone on esSports straight to the team and squad; no invite is sent.
+  const add = useMutation({
+    mutationFn: (profileId: string) => addServerSquadPlayer(tournamentId, teamId, profileId),
+    onSuccess: async (_, profileId) => {
+      setDraft((current) => (current ? [...current, profileId] : null));
+      setFinding(false);
+      await queryClient.invalidateQueries({ queryKey: serverSquadKey(tournamentId, teamId) });
+      void queryClient.invalidateQueries({ queryKey: rosterKey(tournamentId) });
     },
   });
   const toggle = (id: string) => {
@@ -80,18 +93,21 @@ function SquadPicker({ squad, tournamentId, teamId }: { squad: ServerSquad; tour
 
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}>
-      <View style={styles.summary}>
+      <Card style={styles.summary}>
         <Text style={styles.count}>{`${selected.length}/${squad.maxSquad} players`}</Text>
         <Text variant="caption" muted>
           {short > 0 ? `Needs ${short} more to reach the minimum of ${squad.minSquad}.` : `At least ${squad.minSquad} players: ready.`}
         </Text>
         {editable && pastDeadline ? <Text variant="caption" muted>Registration has closed. Changes still save, and the organisers are told.</Text> : null}
         {editable ? null : <Text variant="caption" muted>Only the team owner or an admin can change the squad.</Text>}
-      </View>
+      </Card>
+      {squad.isOrganiser ? (
+        <Button label="Add player" disabled={full || save.isPending} onPress={() => { add.reset(); setFinding(true); }} />
+      ) : null}
       {squad.candidates.length === 0 ? (
-        <Text muted>This team has no players yet. Add members from Team management first.</Text>
+        <Text muted>{squad.isOrganiser ? 'This team has no players yet. Add one above.' : 'This team has no players yet. Add members from Team management first.'}</Text>
       ) : (
-        <View>
+        <Card padding="none" style={styles.list}>
           {squad.candidates.map((candidate) => {
             const inSquad = selected.includes(candidate.profileId);
             return (
@@ -100,7 +116,7 @@ function SquadPicker({ squad, tournamentId, teamId }: { squad: ServerSquad; tour
                 showAction={editable} onToggle={() => toggle(candidate.profileId)} />
             );
           })}
-        </View>
+        </Card>
       )}
       {problem && dirty ? <Text accessibilityRole="alert" style={styles.error}>{problem}</Text> : null}
       {save.isError ? <Text accessibilityRole="alert" style={styles.error}>{tournamentErrorText(save.error)}</Text> : null}
@@ -110,6 +126,19 @@ function SquadPicker({ squad, tournamentId, teamId }: { squad: ServerSquad; tour
           {dirty ? <Button label="Undo changes" variant="secondary" disabled={save.isPending} onPress={() => { save.reset(); setDraft(null); }} /> : null}
         </View>
       ) : null}
+      <UserSearchSheet
+        visible={finding}
+        title={`Add player to ${squad.teamName}`}
+        hint="They join the team and its squad straight away."
+        actionLabel="Add"
+        excludeIds={selected}
+        search={searchPlayers}
+        suggest={suggestPlayers}
+        inviting={add.isPending}
+        error={add.isError ? tournamentErrorText(add.error) : null}
+        onInvite={(user) => add.mutate(user.id)}
+        onClose={() => setFinding(false)}
+      />
     </ScrollView>
   );
 }
@@ -119,13 +148,14 @@ const createStyles = (colors: Palette) =>
     screen: { flex: 1, backgroundColor: colors.background },
     header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter, paddingVertical: spacing.md },
     titles: { flex: 1, minWidth: 0 },
-    title: { fontSize: 18, lineHeight: 24, fontWeight: '700' },
-    subtitle: { fontSize: 13, lineHeight: 18 },
-    content: { paddingHorizontal: sizes.gutter, paddingTop: spacing.sm, gap: spacing.lg, maxWidth: 600, width: '100%', alignSelf: 'center' },
+    title: typography.headlineLg,
+    subtitle: typography.bodySm,
+    content: { paddingHorizontal: sizes.gutter, paddingTop: spacing.sm, gap: sizes.sectionGap, maxWidth: dp(600), width: '100%', alignSelf: 'center' },
     status: { paddingVertical: spacing.xxl },
     failed: { alignItems: 'center', gap: spacing.md, padding: spacing.xl },
-    summary: { gap: spacing.xs },
-    count: { fontSize: 16, lineHeight: 22, fontWeight: '700', fontVariant: ['tabular-nums'] },
+    summary: { gap: spacing.sm },
+    list: { paddingHorizontal: sizes.cardPaddingTight },
+    count: { ...typography.headlineMd, fontVariant: ['tabular-nums'] },
     actions: { gap: spacing.sm },
     error: { color: colors.dangerSoftText },
   });

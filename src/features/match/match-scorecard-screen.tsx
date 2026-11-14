@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { ChoiceTabs, type ChoiceTab } from '@/components/match/choice-tabs';
 import { InitialsAvatar, Text } from '@/components/ui';
+import { dp } from '@/theme';
 
 import { BattingCard } from './components/batting-card';
 import { BowlingCard } from './components/bowling-card';
@@ -41,7 +42,7 @@ function InningsCards({ innings }: { innings: Innings[] }) {
     id: inn.id,
     title: inn.score,
     subtitle: inn.summary,
-    leading: <InitialsAvatar label={inn.team.short} tone={inn.team.tone} imageUri={inn.team.avatarUri} size={34} />,
+    leading: <InitialsAvatar label={inn.team.short} tone={inn.team.tone} imageUri={inn.team.avatarUri} size={dp(34)} />,
   }));
   return (
     <>

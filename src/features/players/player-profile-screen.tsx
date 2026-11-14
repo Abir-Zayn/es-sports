@@ -3,7 +3,7 @@ import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui';
-import { useTheme, useThemedStyles, type Palette } from '@/theme';
+import { radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import { CareerStatsGrid } from './components/career-stats-grid';
 import { PlayerHeroCard } from './components/player-hero-card';
 import { PlayerPitchZones } from './components/player-pitch-zones';
@@ -18,10 +18,10 @@ export function PlayerProfileScreen() {
   const styles = useThemedStyles(createStyles);
   const player = usePlayerProfile(params.id ?? '', params.name, params.role);
   return <View style={styles.screen}>
-    <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 32 }]}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + spacing.xxl }]}>
       <View style={styles.header}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back" style={styles.back} onPress={() => router.canGoBack() ? router.back() : router.replace('/home')}>
-          <ArrowLeft size={24} color={colors.text} />
+        <Pressable accessibilityRole="button" accessibilityLabel="Go back" style={({ pressed }) => [styles.back, pressed && styles.pressed]} onPress={() => router.canGoBack() ? router.back() : router.replace('/home')}>
+          <ArrowLeft size={sizes.icon} color={colors.text} />
         </Pressable>
         <Text style={styles.title}>Career profile</Text>
       </View>
@@ -33,8 +33,9 @@ export function PlayerProfileScreen() {
   </View>;
 }
 const createStyles = (c: Palette) => StyleSheet.create({
-  screen: { flex: 1, backgroundColor: c.background }, content: { paddingHorizontal: 20, gap: 26 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  back: { width: 48, height: 48, borderRadius: 24, backgroundColor: c.surface, justifyContent: 'center', alignItems: 'center' },
-  title: { color: c.text, fontSize: 22, fontWeight: '700', lineHeight: 28 },
+  screen: { flex: 1, backgroundColor: c.background }, content: { paddingHorizontal: sizes.gutter, gap: sizes.sectionGap },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
+  back: { width: sizes.iconButton, height: sizes.iconButton, borderRadius: radius.pill, backgroundColor: c.surface, justifyContent: 'center', alignItems: 'center', ...shadows.iconButton },
+  pressed: { transform: [{ scale: 0.95 }] },
+  title: { ...typography.headlineLg, color: c.text },
 });

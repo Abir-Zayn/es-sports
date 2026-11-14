@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { ScorerChips, ScorerChoice, ScorerFrame, ScorerHeader, ScorerNotice, ScorerSection } from './components/scorer-ui';
 import { FielderPicker } from './components/fielder-picker';
@@ -67,9 +67,9 @@ export function WicketScreen() {
   </ScorerFrame>;
 }
 const styles = (c: Palette) => StyleSheet.create({
-  batters: { flexDirection: 'row', gap: 8 }, batter: { flex: 1 },
-  preview: { padding: 14, borderRadius: 16, borderWidth: 1, borderColor: c.border, backgroundColor: c.surface },
-  previewText: { fontSize: 13, lineHeight: 19 }, bold: { fontWeight: '700' },
-  confirm: { minHeight: 54, borderRadius: 28, backgroundColor: c.dangerSoftText, alignItems: 'center', justifyContent: 'center' },
-  confirmText: { color: c.background, fontSize: 16, lineHeight: 22, fontWeight: '700' }, pressed: { opacity: 0.75 },
+  batters: { flexDirection: 'row', gap: spacing.sm }, batter: { flex: 1 },
+  preview: { padding: spacing.lg, borderRadius: radius.md, backgroundColor: c.surfaceRaised },
+  previewText: typography.bodyMd, bold: { color: c.text },
+  confirm: { minHeight: sizes.control, borderRadius: radius.pill, backgroundColor: c.danger, alignItems: 'center', justifyContent: 'center' },
+  confirmText: { ...typography.headlineMd, color: c.onLive }, pressed: { transform: [{ scale: 0.95 }] },
 });

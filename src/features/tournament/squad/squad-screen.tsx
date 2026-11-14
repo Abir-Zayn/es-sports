@@ -4,14 +4,14 @@ import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AppIconTile, Button, Text } from '@/components/ui';
+import { AppIconTile, Button, Card, Text } from '@/components/ui';
 import { isUuid } from '@/features/scoring/data/uuid';
-import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { UserSearchSheet } from '../roster/components/user-search-sheet';
 import { registrationStatus } from '../roster/registration';
 import { guestInviteMessage, shareText } from '../roster/share-invite';
-import { squadManagerId } from '../roster/squad-rules';
+import { canManageSquad } from '../roster/squad-rules';
 import type { PlayerRole, Roster, RosterTeam, TournamentPlayer } from '../roster/types';
 import { rosterErrorText, useMe, useRoster } from '../roster/use-roster';
 import { AddGuestSheet } from './components/add-guest-sheet';
@@ -44,7 +44,7 @@ function LocalSquadScreen() {
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <AppIconTile icon={ChevronLeft} size={44} borderRadius={radius.pill} accessibilityLabel="Back" onPress={goBack} />
+        <AppIconTile icon={ChevronLeft} size={sizes.iconButton} borderRadius={radius.pill} accessibilityLabel="Back" onPress={goBack} />
         <View style={styles.titles}>
           <Text accessibilityRole="header" style={styles.title} numberOfLines={1}>
             {team?.name ?? 'Squad'}
@@ -77,7 +77,7 @@ function SquadBody({ roster, team, meId }: { roster: Roster; team: RosterTeam; m
   const [sheet, setSheet] = useState<OpenSheet>(null);
   const [role, setRole] = useState<PlayerRole>('Batter');
   const [reason, setReason] = useState('');
-  const canManage = squadManagerId(team) === meId;
+  const canManage = canManageSquad(roster, team, meId);
   const status = registrationStatus(roster);
   const canAdd = canManage && (status === 'open' || status === 'locked') && team.players.length < roster.squadRules.maxSquad;
   const { addMember, addGuest, remove } = actions;
@@ -112,13 +112,13 @@ function SquadBody({ roster, team, meId }: { roster: Roster; team: RosterTeam; m
         {team.players.length === 0 ? (
           <Text muted>No players yet.</Text>
         ) : (
-          <View>
+          <Card padding="none" style={styles.list}>
             {team.players.map((player, i) => (
               <View key={player.id} style={i > 0 ? styles.divided : undefined}>
                 <SquadPlayerRow player={player} canManage={canManage} busy={actions.busy} onShare={() => share(player)} onRemove={() => open({ kind: 'remove', player })} />
               </View>
             ))}
-          </View>
+          </Card>
         )}
       </ScrollView>
       <UserSearchSheet
@@ -171,12 +171,13 @@ const createStyles = (colors: Palette) =>
     screen: { flex: 1, backgroundColor: colors.background },
     header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter, paddingVertical: spacing.md },
     titles: { flex: 1, minWidth: 0 },
-    title: { fontSize: 18, lineHeight: 24, fontWeight: '700' },
-    subtitle: { fontSize: 13, lineHeight: 18 },
-    content: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, gap: spacing.lg, maxWidth: 600, width: '100%', alignSelf: 'center' },
+    title: typography.headlineLg,
+    subtitle: typography.bodySm,
+    content: { paddingHorizontal: sizes.gutter, paddingTop: spacing.sm, gap: sizes.sectionGap, maxWidth: dp(600), width: '100%', alignSelf: 'center' },
     status: { paddingVertical: spacing.xxl },
     failed: { alignItems: 'center', gap: spacing.md, padding: spacing.xl },
     addRow: { flexDirection: 'row', gap: spacing.sm },
     flex: { flex: 1 },
+    list: { paddingHorizontal: sizes.cardPaddingTight },
     divided: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
   });

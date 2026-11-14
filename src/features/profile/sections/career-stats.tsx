@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, Section, SectionHeader, Text } from '@/components/ui';
-import { sizes, spacing, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { BattingStats, BowlingStats } from '@/types/profile';
 
 type Mode = 'bat' | 'bowl';
@@ -83,7 +83,7 @@ export function CareerStats({ batting, bowling, onFindTeam }: Props) {
               {cells.map(([label, value]) => (
                 <View key={label} accessible accessibilityLabel={`${label} ${value}`} style={styles.cell}>
                   <Text style={styles.value}>{value}</Text>
-                  <Text muted style={styles.label}>
+                  <Text variant="bodySm" muted>
                     {label}
                   </Text>
                 </View>
@@ -100,32 +100,37 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     body: { paddingHorizontal: sizes.gutter, gap: spacing.md },
     modes: { flexDirection: 'row', gap: spacing.sm },
-    mode: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-    modeSelected: { backgroundColor: colors.primary },
-    modeIcon: { width: 28, height: 28 },
+    mode: {
+      width: dp(48),
+      height: dp(48),
+      borderRadius: radius.pill,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.surfaceRaised,
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    modeSelected: { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+    modeIcon: { width: sizes.tabIcon, height: sizes.tabIcon },
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
     cell: {
       // Two per row: half the width minus half the gap.
       flexBasis: '48.5%',
       flexGrow: 1,
-      gap: 2,
-      paddingVertical: spacing.md,
-      paddingHorizontal: spacing.lg,
-      borderRadius: 12,
+      gap: spacing.xs,
+      padding: sizes.cardPaddingTight,
+      borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
+      ...shadows.card,
     },
-    value: { fontSize: 20, lineHeight: 26, fontWeight: '700', fontVariant: ['tabular-nums'] },
-    label: { fontSize: 12, lineHeight: 16 },
+    value: typography.numeralStat,
     empty: {
       gap: spacing.md,
       alignItems: 'flex-start',
-      padding: spacing.lg,
-      borderRadius: 20,
+      padding: sizes.cardPadding,
+      borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
+      ...shadows.card,
     },
-    emptyText: { fontSize: 14, lineHeight: 20 },
+    emptyText: typography.bodyMd,
   });

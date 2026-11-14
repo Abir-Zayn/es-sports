@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { sizes, spacing, useThemedStyles, type Palette } from '@/theme';
+import { dp, sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
 import type { MatchTabId } from '../types';
 import { useMatchRoutes } from '../use-match-routes';
@@ -36,6 +36,6 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.background },
     content: { paddingBottom: spacing.xxl + spacing.xl },
-    tabs: { marginTop: 2 },
-    body: { paddingHorizontal: sizes.gutter, paddingTop: 20, gap: 22 },
+    tabs: { marginTop: dp(2) },
+    body: { paddingHorizontal: sizes.gutter, paddingTop: spacing.xl, gap: sizes.sectionGap },
   });

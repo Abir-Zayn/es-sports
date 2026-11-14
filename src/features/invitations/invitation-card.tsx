@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { AppBadge, Button, Text } from '@/components/ui';
-import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { isOpen, type Invitation, type InvitationStatus } from './types';
 
@@ -108,9 +108,9 @@ export function InvitationCard({ invitation, busy, onAccept, onDecline, onCancel
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    row: { gap: spacing.xs, paddingVertical: spacing.lg },
+    row: { gap: spacing.xs, padding: sizes.cardPaddingTight, borderRadius: radius.lg, backgroundColor: colors.surface, ...shadows.card },
     top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
-    title: { flex: 1, fontSize: 15, lineHeight: 20, fontWeight: '700' },
-    meta: { fontSize: 12, lineHeight: 16, color: colors.textMuted },
+    title: { ...typography.headlineMd, flex: 1, color: colors.text },
+    meta: { ...typography.bodySm, color: colors.textMuted },
     actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
   });

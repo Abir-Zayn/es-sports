@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppAvatar, SegmentedControl, Text, type SegmentedOption } from '@/components/ui';
 import { initialsOf } from '@/lib/initials';
-import { useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import type { MatchInfoData } from '../types';
 
@@ -21,7 +21,7 @@ export function SquadsSection({ squads }: { squads: MatchInfoData['squads'] }) {
       <Text accessibilityRole="header" style={styles.title}>
         Squads
       </Text>
-      <SegmentedControl options={options} selected={selected} onSelect={setSelected} height={40} accessibilityLabel="Team" />
+      <SegmentedControl options={options} selected={selected} onSelect={setSelected} height={dp(40)} accessibilityLabel="Team" />
 
       <Text muted style={styles.heading}>
         PLAYING XI
@@ -35,7 +35,7 @@ export function SquadsSection({ squads }: { squads: MatchInfoData['squads'] }) {
             onPress={() => router.push({ pathname: '/player/[id]', params: { id: player.name, name: player.name, role: player.role } })}
             style={({ pressed }) => [styles.player, pressed && styles.pressed]}
           >
-            <AppAvatar label={initialsOf(player.name)} size={32} />
+            <AppAvatar label={initialsOf(player.name)} size={dp(32)} />
             <View style={styles.playerText}>
               <Text style={styles.playerName} numberOfLines={1}>
                 {player.name}
@@ -66,30 +66,28 @@ export function SquadsSection({ squads }: { squads: MatchInfoData['squads'] }) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    section: { gap: 12 },
-    title: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
-    heading: { fontSize: 12, lineHeight: 16, fontWeight: '700', letterSpacing: 1.5 },
-    benchHeading: { marginTop: 6 },
-    grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+    section: { gap: spacing.md },
+    title: typography.headlineLg,
+    heading: typography.labelUppercase,
+    benchHeading: { marginTop: dp(6) },
+    grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
     player: {
       width: '48.5%',
       flexGrow: 1,
       minWidth: 0,
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 10,
-      paddingVertical: 8,
-      paddingHorizontal: 10,
-      borderRadius: 14,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
+      gap: spacing.sm,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+      borderRadius: radius.md,
+      backgroundColor: colors.surfaceRaised,
     },
-    pressed: { opacity: 0.85 },
-    playerText: { flex: 1, minWidth: 0, gap: 1 },
-    playerName: { fontSize: 13, lineHeight: 18, fontWeight: '600' },
-    playerRole: { fontSize: 11, lineHeight: 14 },
-    bench: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-    chip: { paddingVertical: 7, paddingHorizontal: 12, borderRadius: 999, borderWidth: 1, borderColor: colors.border },
-    chipText: { fontSize: 13, lineHeight: 18 },
+    pressed: { transform: [{ scale: 0.95 }] },
+    playerText: { flex: 1, minWidth: 0, gap: dp(1) },
+    playerName: { ...typography.labelMd, color: colors.text },
+    playerRole: typography.labelSm,
+    bench: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+    chip: { paddingVertical: spacing.sm, paddingHorizontal: spacing.lg, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised },
+    chipText: typography.labelSm,
   });

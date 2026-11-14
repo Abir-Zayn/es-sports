@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, spacing, sp, typography, useThemedStyles, type Palette } from '@/theme';
 
 type Props = { disabled: boolean; canUndo: boolean; onRuns: (runs: number) => void; onExtra: (kind: string) => void; onUndo: () => void; onWicket: () => void };
 export function ScoringKeypad({ disabled, canUndo, onRuns, onExtra, onUndo, onWicket }: Props) {
@@ -27,12 +27,13 @@ export function ScoringKeypad({ disabled, canUndo, onRuns, onExtra, onUndo, onWi
   </View>;
 }
 const styles = (c: Palette) => StyleSheet.create({
-  pad: { gap: 8 }, row: { flexDirection: 'row', gap: 8 },
-  key: { flex: 1, minHeight: 60, justifyContent: 'center', alignItems: 'center', borderRadius: 18, borderWidth: 1, borderColor: c.border, backgroundColor: c.surfaceRaised },
-  boundary: { backgroundColor: c.primary, borderColor: c.primary }, extra: { backgroundColor: c.accentSoft, borderColor: c.accentSoft },
-  undo: { backgroundColor: c.background, borderColor: c.outline }, keyLabel: { fontSize: 27, lineHeight: 34, fontWeight: '800' },
-  small: { fontSize: 15, lineHeight: 21, letterSpacing: 0.8 }, boundaryLabel: { color: c.primaryText }, extraLabel: { color: c.accent },
-  out: { minHeight: 60, borderRadius: 18, borderWidth: 1, borderColor: c.dangerSoftText, backgroundColor: c.dangerSoft, justifyContent: 'center', alignItems: 'center', marginTop: 4 },
-  outLabel: { color: c.dangerSoftText, fontSize: 23, lineHeight: 28, fontWeight: '800', letterSpacing: 1.2 },
-  disabled: { opacity: 0.4 }, pressed: { opacity: 0.75 },
+  pad: { gap: spacing.sm }, row: { flexDirection: 'row', gap: spacing.sm },
+  key: { flex: 1, minHeight: dp(60), justifyContent: 'center', alignItems: 'center', borderRadius: radius.md, backgroundColor: c.surfaceRaised },
+  // Boundaries are the scorer's primary taps: peach selected-style tile, coral text, no full coral fill.
+  boundary: { backgroundColor: c.primarySoft }, extra: { backgroundColor: c.surfaceRaised },
+  undo: { backgroundColor: c.surface, borderWidth: 1, borderColor: c.border }, keyLabel: { ...typography.displayMd, fontVariant: ['tabular-nums'] },
+  small: { ...typography.labelMd, fontSize: sp(15) }, boundaryLabel: { color: c.link }, extraLabel: { color: c.textMuted },
+  out: { minHeight: dp(60), borderRadius: radius.md, backgroundColor: c.dangerSoft, justifyContent: 'center', alignItems: 'center', marginTop: spacing.xs },
+  outLabel: { ...typography.headlineLg, color: c.dangerSoftText, letterSpacing: sp(1.2) },
+  disabled: { opacity: 0.4 }, pressed: { transform: [{ scale: 0.95 }] },
 });

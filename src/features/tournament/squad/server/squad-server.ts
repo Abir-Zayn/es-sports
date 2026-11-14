@@ -22,6 +22,8 @@ export type ServerSquad = {
   candidates: SquadCandidate[];
   selectedIds: string[];
   myRole: TeamRole | null;
+  /** The tournament owner: may add any player straight to the team and squad. */
+  isOrganiser: boolean;
 };
 
 /** 16 teams of at most 16 players: one page always holds a whole tournament. */
@@ -62,6 +64,7 @@ export async function fetchServerSquad(tournamentId: string, teamId: string, meI
     })),
     selectedIds: rows.filter((row) => row.teamId === teamId).map((row) => row.profileId),
     myRole: members.find((member) => member.profileId === meId)?.role ?? null,
+    isOrganiser: tournament.ownerId === meId,
   };
 }
 
@@ -73,8 +76,16 @@ export async function saveServerSquad(tournamentId: string, teamId: string, prof
   if (error) throw toTournamentError(error);
 }
 
-/** Who may change the squad: the team owner or an admin (the server applies the same rule). */
-export const canEditSquad = (role: TeamRole | null): boolean => role === 'owner' || role === 'admin';
+/** Adds the person to the team (as a player) and straight into its squad. No invite is sent. */
+export async function addServerSquadPlayer(tournamentId: string, teamId: string, profileId: string): Promise<void> {
+  const { error } = await traceApi('squad.addPlayer', { tournamentId, teamId }, () => supabase.rpc('add_tournament_squad_player', {
+    p_tournament: tournamentId, p_team: teamId, p_profile: profileId,
+  }));
+  if (error) throw toTournamentError(error);
+}
+
+/** Who may change the squad: the tournament owner, the team owner or an admin (the server applies the same rule). */
+export const canEditSquad = (role: TeamRole | null, isOrganiser = false): boolean => isOrganiser || role === 'owner' || role === 'admin';
 
 /** Why the squad cannot be saved as it is, or null when it can. Below the minimum is allowed while building. */
 export function squadSaveProblem(squad: ServerSquad, selected: readonly string[]): string | null {

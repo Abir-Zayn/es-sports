@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
 
-import { palettes, type ColorScheme, type Palette } from './tokens';
+import { palettes, type ColorScheme, type Palette } from './palette';
 
 type ThemeValue = { scheme: ColorScheme; colors: Palette };
 const ThemeContext = createContext<ThemeValue | null>(null);

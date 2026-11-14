@@ -2,7 +2,7 @@ import Info from 'lucide-react-native/icons/info';
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import type { OverSummary } from '../types';
 import { LiveBallPill, spokenBall } from './live-ball-pill';
@@ -20,7 +20,7 @@ export function ThisOverCard({ current, previous }: Props) {
       <View style={styles.section}>
         <View style={styles.sectionHead}>
           <Text accessibilityRole="header" style={styles.sectionTitle}>Recent overs</Text>
-          <Info size={15} color={colors.textMuted} strokeWidth={2} />
+          <Info size={sizes.iconSmall} color={colors.textMuted} strokeWidth={2} />
         </View>
         <View style={styles.card}>
           <View style={styles.emptyRow}>
@@ -35,7 +35,7 @@ export function ThisOverCard({ current, previous }: Props) {
     <View style={styles.section}>
       <View style={styles.sectionHead}>
         <Text accessibilityRole="header" style={styles.sectionTitle}>Recent overs</Text>
-        <Info size={15} color={colors.textMuted} strokeWidth={2} />
+        <Info size={sizes.iconSmall} color={colors.textMuted} strokeWidth={2} />
       </View>
       <View style={styles.card}>
         <View style={styles.row}>
@@ -53,7 +53,7 @@ export function ThisOverCard({ current, previous }: Props) {
             accessibilityLabel={`Over ${current.number}: ${spokenOver(current) || 'no balls yet'}`}
           >
             {current.balls.map((ball, i) => (
-              <LiveBallPill key={i} value={ball} size={28} />
+              <LiveBallPill key={i} value={ball} size={dp(28)} />
             ))}
           </View>
         </View>
@@ -74,7 +74,7 @@ export function ThisOverCard({ current, previous }: Props) {
             </View>
             <View style={styles.balls}>
               {over.balls.map((ball, i) => (
-                <LiveBallPill key={i} value={ball} size={26} />
+                <LiveBallPill key={i} value={ball} size={dp(26)} />
               ))}
             </View>
           </View>
@@ -86,30 +86,24 @@ export function ThisOverCard({ current, previous }: Props) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    section: { gap: 10 },
-    sectionHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    sectionTitle: { fontSize: 17, lineHeight: 22, fontWeight: '700', color: colors.text },
-    card: {
-      borderRadius: 12,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      overflow: 'hidden',
-    },
-    emptyRow: { paddingVertical: 14, paddingHorizontal: 16, gap: 4 },
+    section: { gap: spacing.md },
+    sectionHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+    sectionTitle: { ...typography.headlineMd, color: colors.text },
+    card: { borderRadius: radius.lg, backgroundColor: colors.surface, ...shadows.card },
+    emptyRow: { paddingVertical: spacing.lg, paddingHorizontal: spacing.lg, gap: spacing.xs },
     row: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingVertical: 12,
-      paddingHorizontal: 14,
-      gap: 12,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
+      gap: spacing.md,
     },
     divider: { borderTopWidth: 1, borderTopColor: colors.border },
-    meta: { flex: 1, minWidth: 0, gap: 2 },
-    title: { fontSize: 14, lineHeight: 19, fontWeight: '700', color: colors.text },
-    previousLabel: { fontSize: 13, lineHeight: 18, fontWeight: '600', color: colors.text },
-    sub: { fontSize: 12, lineHeight: 16, fontVariant: ['tabular-nums'] },
-    runs: { fontSize: 13, lineHeight: 18 },
-    balls: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 6 },
+    meta: { flex: 1, minWidth: 0, gap: dp(2) },
+    title: { ...typography.headlineMd, color: colors.text },
+    previousLabel: { ...typography.labelMd, color: colors.text },
+    sub: { ...typography.bodySm, fontVariant: ['tabular-nums'] },
+    runs: typography.bodySm,
+    balls: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: dp(6) },
   });

@@ -5,7 +5,7 @@ import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-n
 
 import { Text } from '@/components/ui';
 import { comingSoon } from '@/lib/coming-soon';
-import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { LiveBattersCard, LiveBowlerCard } from './components/live-scoring-tables';
 import { LiveHero } from './components/live-hero';
@@ -61,7 +61,7 @@ function LiveBody({ view, matchId }: { view: LiveMatchViewData; matchId: string 
         <View style={styles.section}>
           <View style={styles.sectionHead}>
             <Text accessibilityRole="header" style={styles.sectionTitle}>At the crease</Text>
-            <Info size={15} color={colors.textMuted} strokeWidth={2} />
+            <Info size={sizes.iconSmall} color={colors.textMuted} strokeWidth={2} />
           </View>
           <LiveBattersCard batters={view.crease.batters} partnership={view.crease.partnership} />
           {view.crease.bowler ? <LiveBowlerCard bowler={view.crease.bowler} /> : null}
@@ -76,7 +76,7 @@ function LiveBody({ view, matchId }: { view: LiveMatchViewData; matchId: string 
           style={({ pressed }) => [styles.allOvers, pressed && styles.pressed]}
         >
           <Text style={styles.allOversText}>See all overs</Text>
-          <ChevronRight size={16} color={colors.text} strokeWidth={2.2} />
+          <ChevronRight size={sizes.iconSmall} color={colors.text} strokeWidth={2.2} />
         </Pressable>
       ) : null}
     </View>
@@ -88,22 +88,20 @@ const createStyles = (colors: Palette) =>
     screen: { flex: 1, backgroundColor: colors.background },
     stale: { paddingHorizontal: sizes.gutter },
     content: { paddingBottom: spacing.xxl + spacing.xl },
-    body: { paddingHorizontal: sizes.gutter, paddingTop: 20, gap: 22 },
-    section: { gap: 10 },
-    sectionHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    sectionTitle: { fontSize: 17, lineHeight: 22, fontWeight: '700', color: colors.text },
-    note: { fontSize: 13, lineHeight: 18 },
+    body: { paddingHorizontal: sizes.gutter, paddingTop: spacing.xl, gap: sizes.sectionGap },
+    section: { gap: spacing.md },
+    sectionHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+    sectionTitle: { ...typography.headlineMd, color: colors.text },
+    note: typography.bodySm,
     allOvers: {
-      height: 46,
+      minHeight: sizes.control,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 8,
-      borderRadius: 12,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
+      gap: spacing.sm,
+      borderRadius: radius.pill,
+      backgroundColor: colors.surfaceRaised,
     },
-    pressed: { opacity: 0.7 },
-    allOversText: { fontSize: 14, lineHeight: 19, fontWeight: '600' },
+    pressed: { transform: [{ scale: 0.95 }] },
+    allOversText: typography.labelMd,
   });

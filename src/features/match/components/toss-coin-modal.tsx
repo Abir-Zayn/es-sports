@@ -4,7 +4,7 @@ import { AccessibilityInfo, Animated, Easing, StyleSheet, View } from 'react-nat
 
 import { Button, SegmentedControl, Text } from '@/components/ui';
 import { Sheet } from '@/features/tournament/roster';
-import { spacing, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sp, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { decideToss, flipCoin, tossWinner } from '../friendly/toss';
 import type { FriendlySide, FriendlyTossResult, TossCall, TossDecision } from '../types';
@@ -70,7 +70,7 @@ function TossBody({ names, onStart, saving = false, error, random, spinMs = SPIN
     <View style={s.stage}>
       <Animated.View style={[s.coin, face === 'tails' ? s.tails : s.heads, { transform: [{ translateY: lift }, { rotateY }] }]}
         accessible accessibilityRole="image" accessibilityLabel={face ? `Coin landed ${face}` : 'Coin'}>
-        {face === 'tails' ? <Stumps /> : <Crown size={44} color={INK} strokeWidth={2.2} />}
+        {face === 'tails' ? <Stumps /> : <Crown size={dp(44)} color={INK} strokeWidth={2.2} />}
         <Text style={s.coinText}>{face ? face.toUpperCase() : phase === 'spinning' ? '' : 'HEADS · TAILS'}</Text>
       </Animated.View>
     </View>
@@ -110,17 +110,17 @@ function Stumps() {
 
 const styles = (c: Palette) => StyleSheet.create({
   body: { gap: spacing.md, paddingBottom: spacing.md },
-  stage: { height: 170, alignItems: 'center', justifyContent: 'flex-end' },
-  coin: { width: 132, height: 132, borderRadius: 66, borderWidth: 6, alignItems: 'center', justifyContent: 'center', gap: 4 },
+  stage: { height: dp(170), alignItems: 'center', justifyContent: 'flex-end' },
+  coin: { width: dp(132), height: dp(132), borderRadius: radius.pill, borderWidth: dp(6), alignItems: 'center', justifyContent: 'center', gap: spacing.xs },
   heads: { backgroundColor: GOLD, borderColor: GOLD_EDGE },
   tails: { backgroundColor: SILVER, borderColor: SILVER_EDGE },
-  coinText: { color: INK, fontSize: 11, lineHeight: 15, fontWeight: '800', letterSpacing: 1 },
+  coinText: { ...typography.labelUppercase, color: INK, fontSize: sp(11) },
   center: { textAlign: 'center' },
   choices: { flexDirection: 'row', gap: spacing.sm },
   choice: { flex: 1 },
-  banner: { textAlign: 'center', fontSize: 20, lineHeight: 26, fontWeight: '800', color: c.link },
-  stumps: { alignItems: 'center', gap: 2 },
-  bails: { width: 34, height: 4, borderRadius: 2, backgroundColor: INK },
-  stumpRow: { flexDirection: 'row', gap: 6 },
-  stump: { width: 5, height: 38, borderRadius: 2, backgroundColor: INK },
+  banner: { ...typography.headlineLg, textAlign: 'center', color: c.link },
+  stumps: { alignItems: 'center', gap: dp(2) },
+  bails: { width: dp(34), height: dp(4), borderRadius: dp(2), backgroundColor: INK },
+  stumpRow: { flexDirection: 'row', gap: dp(6) },
+  stump: { width: dp(5), height: dp(38), borderRadius: dp(2), backgroundColor: INK },
 });

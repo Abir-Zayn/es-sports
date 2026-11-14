@@ -1,6 +1,8 @@
 import type { NewTeam, Roster, TournamentRole } from './types';
 
 export const MAX_MODERATORS = 2;
+/** shortcut: invites are hidden for now and the tournament owner adds players from a team's squad; flip to true to bring them back. */
+export const INVITES_ENABLED = false;
 const TEAM_NAME = { min: 2, max: 40 };
 const SHORT_NAME = /^[A-Z]{2,4}$/;
 

@@ -6,7 +6,7 @@ import { useState, type ComponentType } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { SQUAD_MAX } from '../friendly/friendly-rules';
 import type { FriendlyPlayer, FriendlyTeamSquad } from '../types';
@@ -38,7 +38,7 @@ export function FriendlyTeamCard({ label, squad, playersPerSide, error, onAddMe,
   const full = squad.players.length >= SQUAD_MAX;
   const title = squad.name.trim() || label;
   return <View style={[s.card, error ? s.cardError : null]}>
-    <TeamImagePicker label={label} uri={squad.imageUri} size={72} onChange={onImage} />
+    <TeamImagePicker label={label} uri={squad.imageUri} size={dp(72)} onChange={onImage} />
     <TextInput value={squad.name} onChangeText={onRename} placeholder={`${label} name`} accessibilityLabel={`${label} name`}
       maxLength={30} autoCapitalize="words" placeholderTextColor={colors.textMuted} selectionColor={colors.primary}
       onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
@@ -64,26 +64,24 @@ function ActionTile({ icon: Icon, accessibilityLabel, disabled = false, onPress 
   const { colors } = useTheme();
   return <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel} accessibilityState={{ disabled }} disabled={disabled}
     onPress={onPress} style={({ pressed }) => [s.tile, disabled && s.disabled, pressed && s.pressed]}>
-    <Icon size={22} color={colors.text} />
+    <Icon size={sizes.icon} color={colors.text} />
   </Pressable>;
 }
 
 const styles = (c: Palette) => StyleSheet.create({
-  card: { alignItems: 'center', gap: spacing.md, padding: 20, borderRadius: radius.lg, borderWidth: 1, borderColor: c.border, backgroundColor: c.surface },
-  cardError: { borderColor: c.danger },
+  card: { alignItems: 'center', gap: spacing.md, padding: sizes.cardPaddingTight, borderRadius: radius.lg, backgroundColor: c.surface, ...shadows.card },
+  // Keeps the validation outline the card had before it lost its hairline border.
+  cardError: { borderWidth: 2, borderColor: c.danger },
   input: {
-    alignSelf: 'stretch', height: 52, paddingHorizontal: spacing.xl, borderRadius: radius.pill, borderWidth: 1, borderColor: c.border,
-    backgroundColor: c.background, color: c.text, fontSize: 16, fontWeight: '600', textAlign: 'center', paddingVertical: 0,
+    ...typography.labelMd, alignSelf: 'stretch', height: sizes.field, paddingHorizontal: dp(20), borderRadius: radius.md, borderWidth: 2,
+    borderColor: 'transparent', backgroundColor: c.surfaceRaised, color: c.text, textAlign: 'center', paddingVertical: 0, lineHeight: undefined,
   },
-  inputFocused: { borderColor: c.primary },
+  inputFocused: { borderColor: c.primaryTint },
   inputError: { borderColor: c.danger },
-  count: { fontSize: 13, lineHeight: 18, fontWeight: '600', textAlign: 'center', fontVariant: ['tabular-nums'] },
-  error: { fontSize: 13, lineHeight: 18, color: c.danger, textAlign: 'center' },
+  count: { ...typography.bodySm, textAlign: 'center', fontVariant: ['tabular-nums'] },
+  error: { ...typography.bodySm, color: c.danger, textAlign: 'center' },
   actions: { flexDirection: 'row', justifyContent: 'center', gap: spacing.md, paddingTop: spacing.xs },
-  tile: {
-    width: 52, height: 52, alignItems: 'center', justifyContent: 'center',
-    borderRadius: radius.md, borderWidth: 1, borderColor: c.border, backgroundColor: c.surfaceRaised,
-  },
+  tile: { width: sizes.control, height: sizes.control, alignItems: 'center', justifyContent: 'center', borderRadius: radius.pill, backgroundColor: c.surfaceRaised },
   disabled: { opacity: 0.45 },
-  pressed: { opacity: 0.7 },
+  pressed: { transform: [{ scale: 0.95 }] },
 });

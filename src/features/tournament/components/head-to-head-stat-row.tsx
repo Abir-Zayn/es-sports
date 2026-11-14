@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useThemedStyles, type AvatarTone, type Palette } from '@/theme';
+import { dp, radius, spacing, typography, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
 import type { HeadToHeadStat } from '@/types/cricket';
 
 import { useToneColors } from '../use-tone-colors';
@@ -38,13 +38,13 @@ export function HeadToHeadStatRow({ stat, toneA, toneB }: Props) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    row: { gap: 6 },
+    row: { gap: spacing.sm },
     figures: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-    figure: { fontSize: 18, lineHeight: 22, fontWeight: '800', color: colors.text, fontVariant: ['tabular-nums'] },
+    figure: { ...typography.headlineMd, color: colors.text, fontVariant: ['tabular-nums'] },
     behind: { color: colors.textMuted },
-    label: { fontSize: 12, lineHeight: 16 },
-    bars: { flexDirection: 'row', gap: 4 },
-    track: { flex: 1, height: 6, borderRadius: 3, backgroundColor: colors.surfaceRaised },
+    label: typography.bodySm,
+    bars: { flexDirection: 'row', gap: spacing.xs },
+    track: { flex: 1, height: dp(6), borderRadius: radius.pill, backgroundColor: colors.border },
     trackA: { alignItems: 'flex-end' },
-    fill: { height: 6, borderRadius: 3 },
+    fill: { height: dp(6), borderRadius: radius.pill },
   });

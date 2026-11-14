@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BrandMark } from '@/components/brand/brand-mark';
 import { Text } from '@/components/ui';
-import { spacing, useThemedStyles, type Palette } from '@/theme';
+import { dp, sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
 type Props = {
   title: string;
@@ -20,10 +20,10 @@ export function AuthLayout({ title, subtitle, children, scrollable = false }: Pr
   const body = (
     <>
       <View style={styles.logo}>
-        <BrandMark size={100} />
+        <BrandMark size={dp(100)} />
       </View>
       <View style={styles.heading}>
-        <Text variant="title" style={styles.title} accessibilityRole="header">
+        <Text variant="title" accessibilityRole="header">
           {title}
         </Text>
         <Text muted>{subtitle}</Text>
@@ -51,8 +51,7 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     safe: { flex: 1, backgroundColor: colors.background },
     flex: { flex: 1 },
-    content: { paddingHorizontal: spacing.xl, paddingTop: spacing.xl, paddingBottom: spacing.lg, gap: spacing.xl },
+    content: { paddingHorizontal: sizes.gutter, paddingTop: spacing.xl, paddingBottom: spacing.lg, gap: spacing.xl },
     logo: { paddingTop: spacing.xxl },
     heading: { gap: spacing.sm },
-    title: { fontWeight: '800' },
   });

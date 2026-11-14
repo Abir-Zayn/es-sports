@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppBadge, Text } from '@/components/ui';
 import { dateParts } from '@/lib/date-parts';
-import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, spacing, sp, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { Fixture, FixtureSide } from '@/types/cricket';
 
 type Props = { fixture: Fixture; onPress?: () => void; showBadge?: boolean; badgeLabel?: string };
@@ -18,8 +18,7 @@ const scoreText = ({ score, overs }: FixtureSide) => (score ? `${score}${overs ?
  * It has no card of its own, so stack several for a list.
  */
 export function FixtureTile({ fixture, onPress, showBadge = false, badgeLabel }: Props) {
-  const { colors, scheme } = useTheme();
-  const isDark = scheme === 'dark';
+  const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const { day, weekday } = dateParts(fixture.date);
   const [one, two] = fixture.sides;
@@ -35,8 +34,8 @@ export function FixtureTile({ fixture, onPress, showBadge = false, badgeLabel }:
     isResult ? (
       <AppBadge
         label={badgeLabel ?? 'Completed'}
-        backgroundColor={isDark ? 'rgba(34, 197, 94, 0.15)' : '#DCFCE7'}
-        color={isDark ? '#4ADE80' : '#15803D'}
+        backgroundColor={colors.successSoft}
+        color={colors.success}
       />
     ) : (
       <AppBadge
@@ -90,21 +89,21 @@ export function FixtureTile({ fixture, onPress, showBadge = false, badgeLabel }:
   );
 }
 
-const CIRCLE = 36;
+const CIRCLE = dp(36);
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     bar: {
       width: '100%',
-      minHeight: 64,
+      minHeight: dp(64),
       flexDirection: 'row',
       alignItems: 'center',
       paddingHorizontal: spacing.md,
-      paddingVertical: 14,
+      paddingVertical: spacing.lg,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
-    pressed: { opacity: 0.85 },
+    pressed: { transform: [{ scale: 0.95 }] },
     circle: {
       width: CIRCLE,
       height: CIRCLE,
@@ -113,8 +112,8 @@ const createStyles = (colors: Palette) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    day: { fontSize: 13, lineHeight: 15, fontWeight: '800', color: colors.text },
-    weekday: { fontSize: 8, lineHeight: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.3, color: colors.textMuted },
+    day: { ...typography.labelMd, fontSize: sp(13), color: colors.text, fontVariant: ['tabular-nums'] },
+    weekday: { ...typography.labelUppercase, fontSize: sp(8), lineHeight: sp(10), letterSpacing: sp(0.3), color: colors.textMuted },
     body: {
       flex: 1,
       minWidth: 0,
@@ -123,29 +122,28 @@ const createStyles = (colors: Palette) =>
       gap: spacing.sm,
       marginLeft: spacing.sm,
     },
-    main: { flex: 1, minWidth: 0, gap: 4 },
+    main: { flex: 1, minWidth: 0, gap: spacing.xs },
     line: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
     // The line box hugs the glyphs (no Android font padding), and a lowercase word with no ascenders sits low
     // in it, so a small bottom pad lifts "vs" to the optical middle of the block beside it.
     versus: {
-      width: 18,
-      fontSize: 12,
-      lineHeight: 12,
-      paddingBottom: 2,
-      fontWeight: '500',
+      ...typography.labelSm,
+      width: dp(18),
+      lineHeight: sp(12),
+      paddingBottom: dp(2),
       color: colors.textMuted,
       includeFontPadding: false,
       textAlignVertical: 'center',
     },
-    column: { flex: 1, minWidth: 0, gap: 1 },
+    column: { flex: 1, minWidth: 0, gap: dp(1) },
     nameLine: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
     shrink: { flexShrink: 1 },
-    first: { fontSize: 14, lineHeight: 18, fontWeight: '700', color: colors.text },
-    second: { fontSize: 12, lineHeight: 16, fontWeight: '500', color: colors.text },
-    scores: { gap: 1, alignItems: 'flex-end' },
+    first: { ...typography.labelMd, lineHeight: sp(18), fontWeight: typography.headlineMd.fontWeight, color: colors.text },
+    second: { ...typography.bodySm, color: colors.text },
+    scores: { gap: dp(1), alignItems: 'flex-end' },
     figure: { fontVariant: ['tabular-nums'] },
     dim: { color: colors.textMuted },
-    rule: { alignSelf: 'stretch', width: 1, marginVertical: 2, backgroundColor: colors.border },
-    time: { fontSize: 12, lineHeight: 16, fontWeight: '700', color: colors.text, textAlign: 'right' },
-    result: { paddingTop: spacing.xs, fontSize: 12, lineHeight: 16, fontWeight: '600', color: colors.link },
+    rule: { alignSelf: 'stretch', width: 1, marginVertical: dp(2), backgroundColor: colors.border },
+    time: { ...typography.bodySm, color: colors.text, textAlign: 'right', fontVariant: ['tabular-nums'] },
+    result: { ...typography.bodySm, paddingTop: spacing.xs, color: colors.link },
   });

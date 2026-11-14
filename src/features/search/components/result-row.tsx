@@ -2,7 +2,7 @@ import ChevronRight from 'lucide-react-native/icons/chevron-right';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { InitialsAvatar, Text } from '@/components/ui';
-import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import type { SearchRow } from '../sample-data';
 
@@ -24,7 +24,7 @@ export function ResultRow({ row, onPress }: Props) {
         label={row.short}
         tone={row.tone}
         shape={row.shape}
-        size={44}
+        size={sizes.avatar}
         borderColor={plain ? colors.outline : undefined}
         borderWidth={plain ? 1.5 : 0}
       />
@@ -33,7 +33,7 @@ export function ResultRow({ row, onPress }: Props) {
         {row.badge ? <Text style={styles.badge}>{row.badge}</Text> : null}
         <Text style={styles.meta}>{row.meta}</Text>
       </View>
-      <ChevronRight size={18} color={colors.outline} />
+      <ChevronRight size={dp(18)} color={colors.outline} />
     </Pressable>
   );
 }
@@ -44,14 +44,13 @@ const createStyles = (colors: Palette) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.md,
-      paddingVertical: 10,
-      paddingHorizontal: spacing.xs,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
+      padding: spacing.lg,
+      borderRadius: radius.md,
+      backgroundColor: colors.surfaceRaised,
     },
-    pressed: { opacity: 0.7 },
-    text: { flex: 1, minWidth: 0, gap: 3 },
-    name: { fontSize: 15, lineHeight: 20, fontWeight: '600' },
-    badge: { alignSelf: 'flex-start', overflow: 'hidden', borderRadius: 8, backgroundColor: colors.primarySoft, color: colors.link, paddingHorizontal: 8, paddingVertical: 2, fontSize: 11, lineHeight: 16, fontWeight: '600' },
-    meta: { fontSize: 12, lineHeight: 16, color: colors.textMuted },
+    pressed: { transform: [{ scale: 0.95 }] },
+    text: { flex: 1, minWidth: 0, gap: spacing.xs },
+    name: { ...typography.bodyMd, color: colors.text },
+    badge: { ...typography.labelSm, alignSelf: 'flex-start', overflow: 'hidden', borderRadius: radius.pill, backgroundColor: colors.primarySoft, color: colors.link, paddingHorizontal: spacing.sm, paddingVertical: dp(2) },
+    meta: { ...typography.bodySm, color: colors.textMuted },
   });

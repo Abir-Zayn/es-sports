@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
-import { AppBadge, Section, SectionHeader, Text } from '@/components/ui';
-import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { AppBadge, Card, Section, SectionHeader, Text } from '@/components/ui';
+import { dp, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { Performance } from '@/types/profile';
 
 /** The player's last few matches as flat rows: date, bat and bowl figures, and a win or loss badge. */
@@ -12,7 +12,7 @@ export function RecentPerformances({ performances }: { performances: Performance
   return (
     <Section>
       <SectionHeader title="Recent Performances" />
-      <View style={styles.list}>
+      <Card padding="none" style={styles.list}>
         {performances.map((p, i) => {
           const figures = [p.bat && `Bat ${p.bat}`, p.bowl && `Bowl ${p.bowl}`].filter(Boolean).join('  ·  ');
           return (
@@ -25,7 +25,7 @@ export function RecentPerformances({ performances }: { performances: Performance
               <Text style={styles.date}>{p.date}</Text>
               <View style={styles.info}>
                 <Text style={styles.figures}>{figures}</Text>
-                <Text muted style={styles.opponent}>
+                <Text variant="bodySm" muted>
                   {p.opponent}
                 </Text>
               </View>
@@ -37,18 +37,17 @@ export function RecentPerformances({ performances }: { performances: Performance
             </View>
           );
         })}
-      </View>
+      </Card>
     </Section>
   );
 }
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    list: { paddingHorizontal: sizes.gutter },
-    row: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: spacing.md },
-    divider: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
-    date: { width: 56, fontSize: 14, lineHeight: 20, fontWeight: '700' },
-    info: { flex: 1, minWidth: 0, gap: 4 },
-    figures: { fontSize: 14, lineHeight: 18, fontWeight: '600' },
-    opponent: { fontSize: 12, lineHeight: 16 },
+    list: { marginHorizontal: sizes.gutter, paddingHorizontal: sizes.cardPaddingTight },
+    row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md },
+    divider: { borderBottomWidth: 1, borderBottomColor: colors.border },
+    date: { ...typography.labelMd, width: dp(56), fontVariant: ['tabular-nums'] },
+    info: { flex: 1, minWidth: 0, gap: spacing.xs },
+    figures: { ...typography.bodyMd, fontVariant: ['tabular-nums'] },
   });

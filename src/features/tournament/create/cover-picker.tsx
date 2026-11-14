@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
-import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 type PhotoProps = { uri: string; onChange: (uri: string) => void; onBusyChange: (busy: boolean) => void; onError: (message: string) => void };
 
@@ -75,7 +75,7 @@ function TournamentPhotoPicker({ uri, onChange, onBusyChange, onError, kind }: P
       accessibilityState={{ busy, disabled: busy }} disabled={busy} onPress={handlePress}
       style={({ pressed }) => [profile ? styles.profile : styles.cover, pressed && styles.pressed]}>
       {uri && uri !== failedUri ? <Image source={{ uri }} style={StyleSheet.absoluteFill} contentFit="cover" accessibilityLabel={`Tournament ${kind}`}
-        onError={() => { setFailedUri(uri); onError(`This ${kind} is unavailable. Tap to choose another photo.`); }} /> : profile ? <Trophy size={28} color={colors.link} strokeWidth={1.5} /> : (
+        onError={() => { setFailedUri(uri); onError(`This ${kind} is unavailable. Tap to choose another photo.`); }} /> : profile ? <Trophy size={sizes.tabIcon} color={colors.link} strokeWidth={1.5} /> : (
         <Svg viewBox="0 0 360 200" width="100%" height="100%" style={StyleSheet.absoluteFill} pointerEvents="none">
           <Circle cx="65" cy="210" r="190" stroke={colors.primaryDeep} strokeWidth="1" fill="none" opacity="0.4" />
           <Circle cx="65" cy="210" r="135" stroke={colors.primaryDeep} strokeWidth="1" fill="none" opacity="0.4" />
@@ -90,8 +90,8 @@ function TournamentPhotoPicker({ uri, onChange, onBusyChange, onError, kind }: P
 }
 const createStyles = (colors: Palette) => StyleSheet.create({
   wrap: { gap: spacing.sm }, cover: { width: '100%', aspectRatio: 1.88, backgroundColor: colors.primarySoft, borderRadius: radius.lg, overflow: 'hidden', justifyContent: 'flex-end' },
-  profileWrap: { position: 'absolute', right: spacing.lg, bottom: 0, width: 88, height: 88, padding: 4, borderRadius: 44, backgroundColor: colors.background },
-  profile: { flex: 1, borderRadius: 40, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceRaised, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
+  profileWrap: { position: 'absolute', right: spacing.lg, bottom: 0, width: dp(88), height: dp(88), padding: spacing.xs, borderRadius: radius.pill, backgroundColor: colors.background },
+  profile: { flex: 1, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceRaised, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   loading: { position: 'absolute', alignSelf: 'center', top: '50%' },
-  pressed: { opacity: 0.8 },
+  pressed: { transform: [{ scale: 0.95 }] },
 });

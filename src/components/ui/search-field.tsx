@@ -3,7 +3,7 @@ import X from 'lucide-react-native/icons/x';
 import type { ComponentRef, Ref } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
-import { radius, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sp, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 type Props = {
   value: string;
@@ -17,7 +17,7 @@ type Props = {
   ref?: Ref<ComponentRef<typeof TextInput>>;
 };
 
-/** A pill-shaped search box with a cyan outline and a clear button that appears once there is text. */
+/** A muted pill search box with a clear button that appears once there is text. */
 export function SearchField({
   value,
   onChangeText,
@@ -31,7 +31,7 @@ export function SearchField({
   const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.field}>
-      <Search size={18} color={colors.textMuted} />
+      <Search size={dp(18)} color={colors.textMuted} />
       <TextInput
         ref={ref}
         value={value}
@@ -49,7 +49,7 @@ export function SearchField({
       />
       {value.length > 0 ? (
         <Pressable accessibilityRole="button" accessibilityLabel="Clear search" onPress={() => onChangeText('')} style={styles.clear}>
-          <X size={14} color={colors.text} strokeWidth={2.6} />
+          <X size={dp(14)} color={colors.text} strokeWidth={2.6} />
         </Pressable>
       ) : null}
     </View>
@@ -61,23 +61,21 @@ const createStyles = (colors: Palette) =>
     field: {
       flex: 1,
       minWidth: 0,
-      height: 48,
-      paddingLeft: spacing.lg,
+      height: dp(48),
+      paddingLeft: dp(20),
       paddingRight: spacing.sm,
       borderRadius: radius.pill,
-      backgroundColor: colors.surface,
-      borderWidth: 1.5,
-      borderColor: colors.primary,
+      backgroundColor: colors.surfaceRaised,
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 10,
+      gap: dp(10),
     },
-    input: { flex: 1, minWidth: 0, fontSize: 15, color: colors.text, paddingVertical: 0 },
+    input: { flex: 1, minWidth: 0, fontSize: sp(15), color: colors.text, paddingVertical: 0 },
     clear: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
-      backgroundColor: colors.surfaceRaised,
+      width: dp(32),
+      height: dp(32),
+      borderRadius: radius.pill,
+      backgroundColor: colors.surface,
       alignItems: 'center',
       justifyContent: 'center',
     },

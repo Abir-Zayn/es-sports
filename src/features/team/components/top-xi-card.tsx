@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
 import { chunk } from '@/lib/chunk';
-import { radius, sizes, spacing, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
 
 import type { SquadPlayer } from '../types';
 import { TopXiIndicatorPill } from './top-xi-indicator-pill';
@@ -92,29 +92,22 @@ export function TopXiCard({
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     card: {
-      backgroundColor: colors.surfaceRaised,
-      borderRadius: radius.lg + 4,
-      borderWidth: 1.5,
-      borderColor: colors.border,
-      paddingVertical: spacing.lg,
+      backgroundColor: colors.surface,
+      borderRadius: radius.lg,
+      ...shadows.card,
+      paddingVertical: sizes.cardPadding,
       paddingHorizontal: spacing.sm,
       gap: spacing.lg,
       position: 'relative',
       overflow: 'hidden',
-      shadowColor: '#000000',
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.35,
-      shadowRadius: 10,
-      elevation: 6,
     },
     header: {
       alignItems: 'center',
-      paddingTop: 4,
     },
     grid: {
       gap: spacing.md,
       alignItems: 'center',
-      paddingHorizontal: 4,
+      paddingHorizontal: spacing.xs,
     },
     row: {
       flexDirection: 'row',
@@ -133,38 +126,26 @@ const createStyles = (colors: Palette) =>
     },
     actionButton: {
       width: '100%',
-      maxWidth: 280,
-      height: 48,
+      maxWidth: dp(280),
+      minHeight: sizes.control,
       borderRadius: radius.pill,
-      backgroundColor: colors.surface,
-      borderWidth: 1.5,
-      borderColor: colors.outline,
+      backgroundColor: colors.surfaceRaised,
       alignItems: 'center',
       justifyContent: 'center',
-      shadowColor: '#000000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.25,
-      shadowRadius: 4,
-      elevation: 3,
     },
     actionButtonPressed: {
-      backgroundColor: colors.surfaceRaised,
-      transform: [{ scale: 0.98 }],
+      transform: [{ scale: 0.95 }],
     },
     actionButtonText: {
-      fontSize: 15,
-      lineHeight: 20,
-      fontWeight: '700',
+      ...typography.labelMd,
       color: colors.text,
     },
     benchLink: {
-      paddingVertical: 6,
-      paddingHorizontal: 12,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
     },
     benchLinkText: {
-      fontSize: 12,
-      lineHeight: 16,
-      fontWeight: '600',
+      ...typography.labelSm,
       color: colors.link,
       textDecorationLine: 'underline',
     },

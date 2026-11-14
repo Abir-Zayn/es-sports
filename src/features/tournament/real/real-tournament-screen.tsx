@@ -65,6 +65,6 @@ export function RealTournamentScreen({ id, section }: Props) {
 const createStyles = (colors: Palette) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { paddingBottom: spacing.xxl + spacing.xl },
-  body: { paddingHorizontal: sizes.gutter, paddingTop: spacing.lg, gap: spacing.lg },
+  body: { paddingHorizontal: sizes.gutter, paddingTop: spacing.xl, gap: sizes.sectionGap },
   gap: { gap: spacing.md },
 });

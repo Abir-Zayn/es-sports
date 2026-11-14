@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   text: {
-    fontWeight: '800',
+    fontWeight: '500',
     textAlign: 'center',
   },
 });

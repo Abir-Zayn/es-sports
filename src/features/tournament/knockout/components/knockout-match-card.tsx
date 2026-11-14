@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { radius, useThemedStyles, type Palette } from '@/theme';
+import { fontWeight, radius, shadows, sp, spacing, useThemedStyles, type Palette } from '@/theme';
 
 import type { KnockoutMatch } from '../types';
 import { KnockoutTeamBadge } from './knockout-team-badge';
@@ -75,33 +75,31 @@ const createStyles = (colors: Palette) =>
     card: {
       width: CARD_WIDTH,
       height: CARD_HEIGHT,
-      backgroundColor: colors.surfaceRaised,
+      backgroundColor: colors.surface,
       borderRadius: radius.md,
-      borderWidth: 1,
-      borderColor: colors.border,
+      ...shadows.card,
       paddingVertical: 5,
-      paddingHorizontal: 4,
+      paddingHorizontal: spacing.xs,
       justifyContent: 'space-between',
       alignItems: 'center',
     },
     pressed: {
-      opacity: 0.82,
-      transform: [{ scale: 0.98 }],
+      transform: [{ scale: 0.95 }],
     },
     teamsRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       width: '100%',
-      paddingHorizontal: 4,
+      paddingHorizontal: spacing.xs,
     },
     teamBadgeCol: {
       alignItems: 'center',
       gap: 1,
     },
     codeText: {
-      fontSize: 9,
-      lineHeight: 11,
-      fontWeight: '700',
+      fontSize: sp(9),
+      lineHeight: sp(11),
+      fontWeight: fontWeight.regular,
       color: colors.text,
       textTransform: 'uppercase',
     },
@@ -109,28 +107,29 @@ const createStyles = (colors: Palette) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 4,
+      gap: spacing.xs,
     },
     scoreText: {
-      fontSize: 14,
-      lineHeight: 16,
-      fontWeight: '700',
+      fontSize: sp(14),
+      lineHeight: sp(16),
+      fontWeight: fontWeight.regular,
       color: colors.textMuted,
+      fontVariant: ['tabular-nums'],
     },
     scoreWinner: {
       color: colors.text,
-      fontWeight: '800',
+      fontWeight: fontWeight.heading,
     },
     scoreDash: {
-      fontSize: 12,
-      lineHeight: 14,
+      fontSize: sp(12),
+      lineHeight: sp(14),
       color: colors.textMuted,
     },
     statusText: {
-      fontSize: 9,
-      lineHeight: 11,
+      fontSize: sp(9),
+      lineHeight: sp(11),
       color: colors.textMuted,
-      fontWeight: '600',
+      fontWeight: fontWeight.regular,
     },
   });
 

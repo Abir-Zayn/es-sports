@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { radius, spacing, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 type Props = { searches: readonly string[]; onPick: (search: string) => void; onClear: () => void };
 
@@ -17,7 +17,7 @@ export function RecentSearches({ searches, onPick, onClear }: Props) {
       {searches.length === 0 ? <Text muted>No recent searches yet.</Text> : null}
       <View style={styles.chips}>
         {searches.map((search) => (
-          <Pressable key={search} accessibilityRole="button" onPress={() => onPick(search)} style={styles.chip}>
+          <Pressable key={search} accessibilityRole="button" onPress={() => onPick(search)} style={({ pressed }) => [styles.chip, pressed && styles.pressed]}>
             <Text style={styles.chipText}>{search}</Text>
           </Pressable>
         ))}
@@ -30,19 +30,18 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     wrap: { gap: spacing.md },
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.sm },
-    clear: { minHeight: 48, justifyContent: 'center' },
-    clearText: { color: colors.link, fontSize: 13, fontWeight: '600' },
-    title: { fontSize: 12, lineHeight: 16, fontWeight: '700', letterSpacing: 1.5, color: colors.textMuted },
+    clear: { minHeight: dp(48), justifyContent: 'center' },
+    clearText: { ...typography.labelMd, color: colors.link },
+    title: { ...typography.labelUppercase, color: colors.textMuted },
     chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
     chip: {
       paddingVertical: spacing.sm,
-      minHeight: 48,
+      minHeight: dp(48),
       justifyContent: 'center',
-      paddingHorizontal: 14,
+      paddingHorizontal: spacing.lg,
       borderRadius: radius.pill,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
+      backgroundColor: colors.surfaceRaised,
     },
-    chipText: { fontSize: 13, lineHeight: 18 },
+    pressed: { transform: [{ scale: 0.95 }] },
+    chipText: { ...typography.labelSm, color: colors.textMuted },
   });

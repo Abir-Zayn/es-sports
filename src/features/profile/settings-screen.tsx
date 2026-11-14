@@ -16,7 +16,7 @@ import { Button, SettingsGroup, SettingsRow, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth/auth-provider';
 import { signOut } from '@/features/auth/sign-out';
 import { comingSoon } from '@/lib/coming-soon';
-import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { ScreenHeader } from './components/screen-header';
 import { useAccountRows } from './use-account-rows';
@@ -29,7 +29,7 @@ function GroupTitle({ children }: { children: string }) {
   );
 }
 
-const groupTitleStyle = { fontSize: 20, lineHeight: 26, fontWeight: '700' } as const;
+const groupTitleStyle = typography.headlineMd;
 
 /** One list of account, sign-in, notifications, legal and version tiles, then theme, log out and account deletion. */
 export function SettingsScreen() {
@@ -87,7 +87,7 @@ export function SettingsScreen() {
         </View>
 
         <View style={styles.actions}>
-          <Text muted>Appearance follows your device settings.</Text>
+          <Text variant="bodySm" muted>Appearance follows your device settings.</Text>
           {error ? (
             <Text variant="caption" style={styles.error} accessibilityLiveRegion="polite">
               {error}
@@ -101,7 +101,7 @@ export function SettingsScreen() {
             onPress={logOut}
           />
           <Pressable accessibilityRole="button" onPress={confirmDelete} hitSlop={sizes.hitSlop} style={styles.delete}>
-            <Trash size={18} color={colors.dangerSoftText} />
+            <Trash size={sizes.iconSmall} color={colors.dangerSoftText} />
             <Text style={styles.deleteLabel}>Delete account</Text>
           </Pressable>
         </View>
@@ -117,6 +117,6 @@ const createStyles = (colors: Palette) =>
     group: { gap: spacing.md },
     actions: { gap: spacing.lg },
     error: { color: colors.danger },
-    delete: { minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm },
-    deleteLabel: { fontSize: 14, lineHeight: 20, fontWeight: '600', color: colors.dangerSoftText },
+    delete: { minHeight: dp(48), flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm },
+    deleteLabel: { ...typography.labelMd, color: colors.dangerSoftText },
   });

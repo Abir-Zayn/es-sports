@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppIconTile, SegmentedControl, Text, type SegmentedOption } from '@/components/ui';
 import { useOpenMatch } from '@/features/match/use-match-routes';
 import { comingSoon } from '@/lib/coming-soon';
-import { radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { HeadToHeadScope } from '@/types/cricket';
 
 import { HeadToHeadRecord } from './components/head-to-head-record';
@@ -40,9 +40,10 @@ export function HeadToHeadScreen() {
       <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
         <AppIconTile
           icon={ChevronLeft}
-          size={44}
+          size={sizes.iconButton}
           borderRadius={radius.pill}
           backgroundColor={colors.surface}
+          elevated
           borderColor={colors.border}
           borderWidth={1}
           accessibilityLabel="Back"
@@ -96,9 +97,9 @@ const createStyles = (colors: Palette) =>
     screen: { flex: 1, backgroundColor: colors.background },
     content: { paddingBottom: spacing.xxl + spacing.xl },
     header: { paddingHorizontal: sizes.gutter, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-    title: { flex: 1, fontSize: 24, lineHeight: 30, fontWeight: '800' },
-    body: { paddingHorizontal: sizes.gutter, paddingTop: 22, gap: 22 },
+    title: { flex: 1, ...typography.headlineLg },
+    body: { paddingHorizontal: sizes.gutter, paddingTop: spacing.xl, gap: sizes.sectionGap },
     stats: { gap: spacing.lg },
-    meetings: { gap: 10 },
-    meetingsTitle: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
+    meetings: { gap: spacing.md },
+    meetingsTitle: typography.headlineMd,
   });

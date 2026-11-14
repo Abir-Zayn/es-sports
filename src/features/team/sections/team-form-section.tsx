@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import type { FormResult } from '../types';
 
@@ -16,7 +16,7 @@ export function TeamFormSection({ form, onAllMatches }: Props) {
         <Text accessibilityRole="header" style={styles.title}>
           Form
         </Text>
-        <Pressable accessibilityRole="link" hitSlop={12} onPress={onAllMatches}>
+        <Pressable accessibilityRole="link" hitSlop={sizes.hitSlop} onPress={onAllMatches}>
           <Text style={styles.link}>All matches</Text>
         </Pressable>
       </View>
@@ -44,29 +44,28 @@ export function TeamFormSection({ form, onAllMatches }: Props) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    section: { gap: 12 },
+    section: { gap: spacing.md },
     header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    title: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
-    link: { fontSize: 13, lineHeight: 18, fontWeight: '600', color: colors.link },
-    row: { flexDirection: 'row', gap: 8 },
+    title: typography.headlineLg,
+    link: { ...typography.labelMd, color: colors.link },
+    row: { flexDirection: 'row', gap: spacing.sm },
     tile: {
       flex: 1,
       minWidth: 0,
       alignItems: 'center',
-      gap: 6,
-      paddingVertical: 10,
-      paddingHorizontal: 4,
-      borderRadius: 14,
+      gap: spacing.sm,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.xs,
+      borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
+      ...shadows.card,
     },
-    badge: { width: 30, height: 30, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-    win: { backgroundColor: colors.primary },
+    badge: { width: dp(30), height: dp(30), borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
+    win: { backgroundColor: colors.primarySoft },
     loss: { backgroundColor: colors.dangerSoft },
-    badgeText: { fontSize: 13, lineHeight: 18, fontWeight: '800' },
-    winText: { color: colors.primaryText },
+    badgeText: typography.labelMd,
+    winText: { color: colors.link },
     lossText: { color: colors.dangerSoftText },
-    versus: { fontSize: 11, lineHeight: 14, fontWeight: '600' },
-    match: { fontSize: 10, lineHeight: 12 },
+    versus: typography.labelSm,
+    match: typography.tabLabel,
   });

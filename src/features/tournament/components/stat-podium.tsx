@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { AppAvatar, Text } from '@/components/ui';
-import { spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { StatLeader } from '@/types/cricket';
 
 /** Medal colours stay the same in both themes. */
@@ -11,8 +11,8 @@ const MEDAL_INK = '#0A0E0D';
 /** Left to right: second, first, third. */
 const PODIUM_ORDER = [1, 0, 2] as const;
 
-const AVATAR_SIZE = [76, 60, 60] as const;
-const BLOCK_HEIGHT = [96, 72, 58] as const;
+const AVATAR_SIZE = [dp(76), dp(60), dp(60)] as const;
+const BLOCK_HEIGHT = [dp(96), dp(72), dp(58)] as const;
 
 type Props = { leaders: StatLeader[]; unit: string };
 
@@ -71,32 +71,34 @@ const createStyles = (colors: Palette) =>
     place: { flex: 1, minWidth: 0, alignItems: 'center', gap: spacing.sm },
     medal: {
       position: 'absolute',
-      bottom: -8,
+      bottom: -spacing.sm,
       alignSelf: 'center',
-      width: 22,
-      height: 22,
-      borderRadius: 11,
+      width: dp(22),
+      height: dp(22),
+      borderRadius: radius.pill,
       borderWidth: 2,
       borderColor: colors.background,
       alignItems: 'center',
       justifyContent: 'center',
     },
-    medalText: { fontSize: 12, lineHeight: 16, fontWeight: '800', color: MEDAL_INK },
-    name: { fontSize: 13, lineHeight: 17, fontWeight: '700', textAlign: 'center' },
-    team: { fontSize: 11, lineHeight: 14, textAlign: 'center', marginTop: -4 },
+    medalText: { ...typography.labelSm, color: MEDAL_INK },
+    name: { ...typography.labelMd, textAlign: 'center' },
+    team: { ...typography.bodySm, textAlign: 'center', marginTop: -spacing.xs },
     block: {
       width: '100%',
-      borderTopLeftRadius: 16,
-      borderTopRightRadius: 16,
-      borderBottomLeftRadius: 6,
-      borderBottomRightRadius: 6,
+      borderTopLeftRadius: radius.md,
+      borderTopRightRadius: radius.md,
+      borderBottomLeftRadius: radius.sm,
+      borderBottomRightRadius: radius.sm,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
+      // Reserves the leader's selection border so the blocks line up.
+      borderWidth: 2,
+      borderColor: 'transparent',
+      ...shadows.card,
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 2,
+      gap: spacing.xs,
     },
-    value: { fontSize: 28, lineHeight: 32, fontWeight: '800', fontVariant: ['tabular-nums'] },
-    unit: { fontSize: 11, lineHeight: 14 },
+    value: typography.numeralStat,
+    unit: typography.bodySm,
   });

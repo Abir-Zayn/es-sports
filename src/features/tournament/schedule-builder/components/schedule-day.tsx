@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { FixtureTile } from '@/components/match/fixture-tile';
 import { Text } from '@/components/ui';
-import { spacing, useThemedStyles, type Palette } from '@/theme';
+import { spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { toFixture } from '../to-fixture';
 import type { ScheduledMatch } from '../types';
@@ -39,9 +39,9 @@ export function ScheduleDay({ date, matches, venue, onEdit }: Props) {
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    day: { gap: spacing.xs },
+    day: { gap: spacing.sm },
     heading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-    date: { fontSize: 14, lineHeight: 20, fontWeight: '700' },
-    count: { fontSize: 12, lineHeight: 16, fontWeight: '600', color: colors.textMuted },
-    list: { gap: 4 },
+    date: typography.headlineMd,
+    count: { ...typography.labelSm, color: colors.textMuted, fontVariant: ['tabular-nums'] },
+    list: { gap: spacing.md },
   });

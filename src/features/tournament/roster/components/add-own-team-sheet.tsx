@@ -3,7 +3,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Button, InitialsAvatar, Text } from '@/components/ui';
 import { fetchMyTeams, myTeamsKey } from '@/features/team';
-import { spacing, useTheme } from '@/theme';
+import { sizes, spacing, typography, useTheme } from '@/theme';
 
 import { addOwnTeam } from '../roster-source';
 import { rosterErrorText, rosterKey } from '../use-roster';
@@ -51,7 +51,7 @@ function OwnTeams({ tournamentId, userId, takenIds, onCreateTeam, onClose }: Omi
           : choices.length === 0 ? <Text muted>You have no other team to add.</Text>
           : choices.map((team) => (
             <View key={team.id} style={styles.row}>
-              <InitialsAvatar label={team.shortName} tone={team.tone} size={40} shape="square" />
+              <InitialsAvatar label={team.shortName} tone={team.tone} size={sizes.avatar} shape="square" />
               <Text style={styles.name} numberOfLines={1}>{team.name}</Text>
               <Button label="Add" size="compact" disabled={add.isPending} accessibilityLabel={`Add ${team.name}`} onPress={() => add.mutate(team.id)} />
             </View>
@@ -65,5 +65,5 @@ function OwnTeams({ tournamentId, userId, takenIds, onCreateTeam, onClose }: Omi
 const styles = StyleSheet.create({
   list: { flex: 1 },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm },
-  name: { flex: 1, minWidth: 0, fontWeight: '600' },
+  name: { flex: 1, minWidth: 0, ...typography.bodyMd },
 });

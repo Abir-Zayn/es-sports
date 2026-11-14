@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 /** Label and value rows about the team: captain, manager, home ground and so on. */
 export function TeamInfoCard({ info }: { info: { label: string; value: string }[] }) {
@@ -25,9 +25,9 @@ export function TeamInfoCard({ info }: { info: { label: string; value: string }[
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    card: { borderRadius: 20, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
-    heading: { paddingTop: 14, paddingBottom: 6, paddingHorizontal: 16, fontSize: 12, lineHeight: 16, fontWeight: '700', letterSpacing: 1.5 },
-    row: { flexDirection: 'row', gap: 14, paddingVertical: 11, paddingHorizontal: 16, borderTopWidth: 1, borderTopColor: colors.border },
-    label: { width: 100, fontSize: 13, lineHeight: 20 },
-    value: { flex: 1, fontSize: 14, lineHeight: 20, fontWeight: '600' },
+    card: { borderRadius: radius.lg, backgroundColor: colors.surface, ...shadows.card },
+    heading: { paddingTop: spacing.lg, paddingBottom: spacing.sm, paddingHorizontal: spacing.lg, ...typography.labelUppercase },
+    row: { flexDirection: 'row', gap: spacing.md, paddingVertical: spacing.md, paddingHorizontal: spacing.lg, borderTopWidth: 1, borderTopColor: colors.border },
+    label: { width: dp(100), ...typography.bodyMd },
+    value: { flex: 1, ...typography.bodyMd },
   });
