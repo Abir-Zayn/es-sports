@@ -6,7 +6,7 @@ import * as server from './server-roster';
 export type RosterRepo = Pick<
   typeof local,
   | 'fetchRoster' | 'inviteModerator' | 'removeModerator' | 'createTeam' | 'inviteTeamOwner' | 'cancelTeamOwnerInvite'
-  | 'disbandTeam' | 'setRegistrationDeadline' | 'closeRegistration' | 'reopenRegistration' | 'lockRosters'
+  | 'disbandTeam' | 'setTeamEliminated' | 'setRegistrationDeadline' | 'closeRegistration' | 'reopenRegistration' | 'lockRosters'
 >;
 
 /** A real (uuid) tournament lives on the server; the sample and the draft being set up stay in memory. */

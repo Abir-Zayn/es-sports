@@ -16,7 +16,7 @@ export type MyTournament = TournamentRecord & { myRole: TournamentRole };
 export type PersonRecord = { id: string; name: string; area: string | null; avatarUrl: string | null };
 export type StaffRecord = { user: PersonRecord; role: TournamentRole };
 /** A team in a tournament, with who owns it now. */
-export type EnteredTeam = { team: TeamRecord; owner: PersonRecord | null };
+export type EnteredTeam = { team: TeamRecord; owner: PersonRecord | null; eliminated: boolean };
 
 // One string literal, so the client can type the rows from it.
 const TOURNAMENT_COLUMNS = 'id, owner_id, name, city, venue, start_date, end_date, match_format, overs, competition, teams_planned, ball, side_format, players_per_side, min_squad, max_squad, registration_opens, registration_deadline, profile_url';
@@ -69,14 +69,15 @@ export async function fetchTournamentStaff(id: string): Promise<StaffRecord[]> {
 
 /** The teams entered, in the order they joined, each with its current owner. */
 export async function fetchTournamentTeams(id: string): Promise<EnteredTeam[]> {
-  const { data, error } = await traceApi('tournament.teams', { id }, () => supabase.from('tournament_teams').select(`team_id, added_at, teams(${TEAM_COLUMNS})`)
+  const { data, error } = await traceApi('tournament.teams', { id }, () => supabase.from('tournament_teams').select(`team_id, added_at, eliminated_at, teams(${TEAM_COLUMNS})`)
     .eq('tournament_id', id).order('added_at'));
   if (error) throw toTournamentError(error);
-  const teams = (data ?? []).flatMap((row) => (row.teams ? [toTeam(row.teams)] : []));
+  const rows = (data ?? []).flatMap((row) => (row.teams ? [{ team: toTeam(row.teams), eliminated: Boolean(row.eliminated_at) }] : []));
+  const teams = rows.map((row) => row.team);
   if (teams.length === 0) return [];
   const owners = await traceApi('tournament.teamOwners', { teams: teams.length }, () => supabase.from('team_members').select('team_id, profile_id, profiles(full_name, area, avatar_url)')
     .eq('role', 'owner').in('team_id', teams.map((team) => team.id)));
   if (owners.error) throw toTournamentError(owners.error);
   const ownerOf = new Map((owners.data ?? []).map((row) => [row.team_id, toPerson(row.profile_id, row.profiles)]));
-  return teams.map((team) => ({ team, owner: ownerOf.get(team.id) ?? null }));
+  return rows.map(({ team, eliminated }) => ({ team, owner: ownerOf.get(team.id) ?? null, eliminated }));
 }

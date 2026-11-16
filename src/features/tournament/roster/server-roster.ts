@@ -10,7 +10,7 @@ import {
   fetchTournament, fetchTournamentStaff, fetchTournamentTeams, toPerson, type PersonRecord, type StaffRecord,
 } from '../data/tournament-repository';
 import { tournamentErrorText } from '../data/tournament-errors';
-import { addTournamentTeam, createTournamentTeam, removeTournamentModerator, removeTournamentTeam } from '../data/tournament-writes';
+import { addTournamentTeam, createTournamentTeam, removeTournamentModerator, removeTournamentTeam, setTournamentTeamEliminated } from '../data/tournament-writes';
 import { RosterError } from './roster-store';
 import type { NewTeam, Roster, RosterTeam, StaffMember, TeamOwnerSlot, UserSummary } from './types';
 
@@ -48,11 +48,11 @@ export async function fetchRoster(tournamentId: string, me: UserSummary): Promis
       fetchTournament(tournamentId), fetchTournamentStaff(tournamentId), fetchTournamentTeams(tournamentId), pendingInvites(tournamentId, me.id),
     ]);
     if (!tournament) throw new RosterError('This tournament could not be found.');
-    const teams = entered.map(({ team, owner }): RosterTeam => {
+    const teams = entered.map(({ team, owner, eliminated }): RosterTeam => {
       const requests = pending.filter((item) => item.kind === 'team_owner' && item.teamId === team.id);
       const invite = requests.find((item) => item.status === 'pending') ?? requests.find((item) => item.status === 'declined');
       const slot: TeamOwnerSlot | null = owner ? { user: toUser(owner), status: 'accepted' } : invite ? { user: toUser(invite.person), status: invite.status === 'pending' ? 'pending' : 'declined', invitationId: invite.id } : null;
-      return { id: team.id, name: team.name, short: team.shortName, owner: slot, players: [], ownedByMe: owner?.id === me.id };
+      return { id: team.id, name: team.name, short: team.shortName, owner: slot, players: [], ownedByMe: owner?.id === me.id, eliminated };
     });
     return {
       tournamentId, tournamentName: tournament.name, maxTeams: tournament.teamsPlanned,
@@ -113,6 +113,9 @@ export const cancelTeamOwnerInvite = (tournamentId: string, actorId: string, tea
 /** Takes the team out of the tournament. A team made here that never got an owner is deleted with it. */
 export const disbandTeam = (tournamentId: string, actorId: string, teamId: string) =>
   change(tournamentId, actorId, () => removeTournamentTeam(tournamentId, teamId));
+/** Knocks the team out, or brings it back. The team stays entered. */
+export const setTeamEliminated = (tournamentId: string, actorId: string, teamId: string, eliminated: boolean) =>
+  change(tournamentId, actorId, () => setTournamentTeamEliminated(tournamentId, teamId, eliminated));
 export const setRegistrationDeadline = unavailable;
 export const closeRegistration = unavailable;
 export const reopenRegistration = unavailable;

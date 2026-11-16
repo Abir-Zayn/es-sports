@@ -11,11 +11,12 @@ export function useRosterActions(tournamentId: string, actorId: string, repo: Ro
   const inviteOwner = useRosterAction(tournamentId, (a: { teamId: string; user: UserSummary }) => repo.inviteTeamOwner(tournamentId, actorId, a.teamId, a.user));
   const cancelOwner = useRosterAction(tournamentId, (teamId: string) => repo.cancelTeamOwnerInvite(tournamentId, actorId, teamId));
   const disband = useRosterAction(tournamentId, (teamId: string) => repo.disbandTeam(tournamentId, actorId, teamId));
+  const eliminate = useRosterAction(tournamentId, (a: { teamId: string; eliminated: boolean }) => repo.setTeamEliminated(tournamentId, actorId, a.teamId, a.eliminated));
   const setDeadline = useRosterAction(tournamentId, (deadline: string) => repo.setRegistrationDeadline(tournamentId, actorId, deadline));
   const closeRegistration = useRosterAction(tournamentId, () => repo.closeRegistration(tournamentId, actorId));
   const reopenRegistration = useRosterAction(tournamentId, () => repo.reopenRegistration(tournamentId, actorId));
   const lock = useRosterAction(tournamentId, () => repo.lockRosters(tournamentId, actorId));
-  const all = [inviteModerator, removeModerator, createTeam, inviteOwner, cancelOwner, disband, setDeadline, closeRegistration, reopenRegistration, lock];
+  const all = [inviteModerator, removeModerator, createTeam, inviteOwner, cancelOwner, disband, eliminate, setDeadline, closeRegistration, reopenRegistration, lock];
   return {
     inviteModerator,
     removeModerator,
@@ -23,6 +24,7 @@ export function useRosterActions(tournamentId: string, actorId: string, repo: Ro
     inviteOwner,
     cancelOwner,
     disband,
+    eliminate,
     setDeadline,
     closeRegistration,
     reopenRegistration,
@@ -31,6 +33,6 @@ export function useRosterActions(tournamentId: string, actorId: string, repo: Ro
     reset: () => all.forEach((m) => m.reset()),
     /** The failure of a change made without a sheet, shown on the screen itself. */
     registrationError: [setDeadline, closeRegistration, reopenRegistration].find((m) => m.isError)?.error,
-    inlineError: [removeModerator, cancelOwner].find((m) => m.isError)?.error,
+    inlineError: [removeModerator, cancelOwner, eliminate].find((m) => m.isError)?.error,
   };
 }

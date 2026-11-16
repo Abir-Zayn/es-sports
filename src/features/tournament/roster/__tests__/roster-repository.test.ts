@@ -9,6 +9,7 @@ import {
   resetRosters,
   RosterError,
   searchUsers,
+  setTeamEliminated,
 } from '../roster-repository';
 import { parseSetup } from '../setup';
 import type { Roster, UserSummary } from '../types';
@@ -66,10 +67,20 @@ describe('roster repository (mock)', () => {
   });
 
   it('refuses a team past the tournament team count', async () => {
-    await fetchRoster(T, me, parseSetup({ teams: '4' }));
-    for (const [name, short] of [['Alpha', 'AL'], ['Bravo', 'BR'], ['Charlie', 'CH'], ['Delta', 'DE']]) {
+    await fetchRoster(T, me, parseSetup({ teams: '8' }));
+    for (const [name, short] of [['Alpha', 'AL'], ['Bravo', 'BR'], ['Charlie', 'CH'], ['Delta', 'DE'], ['Foxtrot', 'FO'], ['Golf', 'GO'], ['Hotel', 'HO'], ['India', 'IN']]) {
       await createTeam(T, 'me', { name, short });
     }
-    await expect(createTeam(T, 'me', { name: 'Echo', short: 'EC' })).rejects.toThrow('This tournament is set to 4 teams.');
+    await expect(createTeam(T, 'me', { name: 'Echo', short: 'EC' })).rejects.toThrow('This tournament is set to 8 teams.');
+  });
+
+  it('lets only the owner eliminate a team and bring it back', async () => {
+    await fetchRoster(T, me, parseSetup({ teams: '8' }));
+    await inviteModerator(T, 'me', rafi);
+    await asAcceptedModerator('u-rafi');
+    const teamId = (await createTeam(T, 'me', { name: 'Alpha', short: 'AL' })).teams[0].id;
+    await expect(setTeamEliminated(T, 'u-rafi', teamId, true)).rejects.toThrow('Only the tournament owner can eliminate a team.');
+    expect((await setTeamEliminated(T, 'me', teamId, true)).teams[0]).toMatchObject({ id: teamId, eliminated: true });
+    expect((await setTeamEliminated(T, 'me', teamId, false)).teams[0].eliminated).toBe(false);
   });
 });

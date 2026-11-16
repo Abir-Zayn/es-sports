@@ -83,6 +83,10 @@ export function disbandProblem(role: TournamentRole | null): string | null {
   return capabilitiesOf(role).disbandTeams ? null : 'Only the tournament owner can disband a team.';
 }
 
+export function eliminateProblem(role: TournamentRole | null): string | null {
+  return capabilitiesOf(role).disbandTeams ? null : 'Only the tournament owner can eliminate a team.';
+}
+
 /** "Chattogram Strikers" suggests "CS"; a one-word name gives its first three letters. */
 export function suggestShortName(name: string): string {
   const words = name.trim().toUpperCase().replace(/[^A-Z ]/g, '').split(/\s+/).filter(Boolean);

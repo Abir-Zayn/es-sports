@@ -4,6 +4,7 @@ import {
   capabilitiesOf,
   createTeamProblem,
   disbandProblem,
+  eliminateProblem,
   moderatorInviteProblem,
   roleIn,
   teamOwnerInviteProblem,
@@ -119,6 +120,14 @@ export async function disbandTeam(tournamentId: string, actorId: string, teamId:
   const roster = current(tournamentId);
   fail(disbandProblem(roleIn(roster, actorId)));
   return commit({ ...roster, teams: roster.teams.filter((t) => t.id !== teamId) });
+}
+
+/** Knocks the team out, or brings it back. Owner only. */
+export async function setTeamEliminated(tournamentId: string, actorId: string, teamId: string, eliminated: boolean): Promise<Roster> {
+  await wait();
+  const roster = current(tournamentId);
+  fail(eliminateProblem(roleIn(roster, actorId)));
+  return commit({ ...roster, teams: roster.teams.map((t) => (t.id === teamId ? { ...t, eliminated } : t)) });
 }
 
 /** Moves the registration deadline, earlier or later. */
