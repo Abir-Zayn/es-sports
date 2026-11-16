@@ -47,9 +47,13 @@ describe('create tournament form', () => {
     expect(screen.getByRole('button', { name: 'Add tournament profile photo' })).toBeTruthy();
     expect(screen.queryByText('Add tournament cover')).toBeNull();
     expect(screen.getByLabelText('Tournament name')).toBeTruthy();
-    for (const name of ['Start date, Choose a date', 'End date, Choose a date', 'Overs per side, 20 overs', 'Knockout type, League + knockout', 'Number of teams, 8 teams']) {
+    for (const name of ['Start date, Choose a date', 'End date, Choose a date']) {
       expect(screen.getByRole('button', { name })).toBeTruthy();
     }
+    // Overs and teams are set inline, and there is no knockout format to choose.
+    expect(screen.getByRole('radio', { name: '20 overs', checked: true })).toBeTruthy();
+    expect(screen.getByRole('radio', { name: '8 teams', checked: true })).toBeTruthy();
+    expect(screen.queryByText('Knockout type')).toBeNull();
     // Add teams publishes first, so an incomplete setup stops at the form instead of opening the teams screen.
     await fireEvent.press(screen.getByRole('button', { name: 'Add teams and staff' }));
     expect(screen.getByText('Enter a tournament name of at least 3 characters.')).toBeTruthy();
@@ -67,21 +71,13 @@ describe('create tournament form', () => {
       await fireEvent.press(screen.getByRole('button', { name: `${label}, Choose a date` }));
       await fireEvent.press(screen.getByRole('button', { name: formatDate(today) }));
     }
-    await fireEvent.press(screen.getByRole('button', { name: 'Overs per side, 20 overs' }));
     await fireEvent.press(screen.getByRole('radio', { name: '12 overs' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'More overs' }));
+    await fireEvent.press(screen.getByRole('radio', { name: '20 teams' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Fewer teams' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Save tournament draft' }));
-    await waitFor(() => expect(save).toHaveBeenCalledWith('organizer', { ...valid, overs: 12 }));
+    await waitFor(() => expect(save).toHaveBeenCalledWith('organizer', { ...valid, overs: 13, teams: 19 }));
     expect(mockReplace).toHaveBeenCalledWith({ pathname: '/tournaments', params: { saved: '1' } });
-  });
-  it('prevents an incomplete knockout bracket', async () => {
-    load.mockResolvedValue(valid); await show();
-    await fireEvent.press(await screen.findByRole('button', { name: 'Knockout type, League + knockout' }));
-    await fireEvent.press(screen.getByRole('radio', { name: 'Single elimination' }));
-    await fireEvent.press(screen.getByRole('button', { name: 'Number of teams, 8 teams' }));
-    await fireEvent.press(screen.getByRole('radio', { name: '6 teams' }));
-    await fireEvent.press(screen.getByRole('button', { name: 'Save tournament draft' }));
-    expect(screen.getByText('Choose 4, 8, or 16 teams for a knockout tournament.')).toBeTruthy();
-    expect(save).not.toHaveBeenCalled();
   });
   it('selects a cover and includes it in the saved draft', async () => {
     load.mockResolvedValue(valid);

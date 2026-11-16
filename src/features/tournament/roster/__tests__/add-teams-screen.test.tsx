@@ -13,7 +13,7 @@ jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
-  useLocalSearchParams: () => ({ teams: '4', name: 'Port City Cup' }),
+  useLocalSearchParams: () => ({ teams: '8', name: 'Port City Cup' }),
 }));
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
@@ -42,12 +42,12 @@ async function searchAndInvite(name: string) {
 describe('add teams screen', () => {
   beforeEach(resetRosters);
 
-  it('shows the organiser as owner with room for two moderators and four teams', async () => {
+  it('shows the organiser as owner with room for two moderators and eight teams', async () => {
     await show();
     expect(screen.getByText('Organiser Me')).toBeTruthy();
     expect(screen.getByText('Owner')).toBeTruthy();
     expect(screen.getByText('0/2 moderators')).toBeTruthy();
-    expect(screen.getByText('0/4 added')).toBeTruthy();
+    expect(screen.getByText('0/8 added')).toBeTruthy();
     expect(screen.getByText('Port City Cup')).toBeTruthy();
   });
 

@@ -41,6 +41,8 @@ export type TournamentPlayer = {
 export type RosterTeam = {
   id: string; name: string; short: string; owner: TeamOwnerSlot | null; players: TournamentPlayer[];
   ownedByMe?: boolean;
+  /** Knocked out by the tournament owner. The team stays listed so its results remain. */
+  eliminated?: boolean;
 };
 
 /** When team owners may add players. The organiser can move the deadline or close and re-open early. */

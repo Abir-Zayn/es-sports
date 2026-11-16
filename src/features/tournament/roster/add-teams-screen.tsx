@@ -27,7 +27,7 @@ import type { RosterTeam } from './types';
 import { rosterErrorText, useMe, useRoster } from './use-roster';
 import { useRosterActions } from './use-roster-actions';
 
-type OpenSheet = { kind: 'moderator' } | { kind: 'create-team' } | { kind: 'add-own' } | { kind: 'team-owner'; team: RosterTeam } | { kind: 'disband'; team: RosterTeam } | { kind: 'lock' } | null;
+type OpenSheet = { kind: 'moderator' } | { kind: 'create-team' } | { kind: 'add-own' } | { kind: 'team-owner'; team: RosterTeam } | { kind: 'disband'; team: RosterTeam } | { kind: 'eliminate'; team: RosterTeam } | { kind: 'lock' } | null;
 
 const suggestSamplePlayers = async (excludeIds: string[]) => sampleUsers.filter((user) => !excludeIds.includes(user.id)).slice(0, 20);
 
@@ -45,7 +45,7 @@ export function AddTeamsScreen() {
   const roster = useRoster(tournamentId, me, parseSetup(params), repo);
   const actions = useRosterActions(tournamentId, me.id, repo);
   const [sheet, setSheet] = useState<OpenSheet>(null);
-  const { busy, inviteModerator, inviteOwner, createTeam, disband, lock } = actions;
+  const { busy, inviteModerator, inviteOwner, createTeam, disband, eliminate, lock } = actions;
 
   function open(next: OpenSheet) {
     actions.reset();
@@ -122,6 +122,8 @@ export function AddTeamsScreen() {
             onShareInvite={shareInvite}
             onViewSquad={viewSquad}
             onDisband={(team) => open({ kind: 'disband', team })}
+            // Eliminating notifies the team's owner, so it is confirmed; bringing a team back is not.
+            onToggleEliminated={(team) => (team.eliminated ? eliminate.mutate({ teamId: team.id, eliminated: false }) : open({ kind: 'eliminate', team }))}
             onAddOwn={data.server ? () => open({ kind: 'add-own' }) : undefined}
           />
           <ScheduleSection caps={caps} busy={busy} teamCount={data.teams.length}
@@ -177,6 +179,16 @@ export function AddTeamsScreen() {
         busy={disband.isPending}
         error={disband.isError ? rosterErrorText(disband.error) : null}
         onConfirm={() => sheet?.kind === 'disband' && disband.mutate(sheet.team.id, { onSuccess: close })}
+        onClose={close}
+      />
+      <ConfirmSheet
+        visible={sheet?.kind === 'eliminate'}
+        title="Eliminate team?"
+        message={sheet?.kind === 'eliminate' ? `${sheet.team.name} is knocked out of the tournament. Its results and squad stay visible, and you can bring it back later.` : ''}
+        confirmLabel="Eliminate team"
+        busy={eliminate.isPending}
+        error={eliminate.isError ? rosterErrorText(eliminate.error) : null}
+        onConfirm={() => sheet?.kind === 'eliminate' && eliminate.mutate({ teamId: sheet.team.id, eliminated: true }, { onSuccess: close })}
         onClose={close}
       />
       <ConfirmSheet

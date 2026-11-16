@@ -18,12 +18,13 @@ type Props = {
   onShareInvite: (team: RosterTeam) => void;
   onViewSquad: (team: RosterTeam) => void;
   onDisband: (team: RosterTeam) => void;
+  onToggleEliminated: (team: RosterTeam) => void;
   /** Enters a team the viewer already owns or administers. Only published tournaments offer it. */
   onAddOwn?: () => void;
 };
 
 /** The tournament's teams, up to its team count, with hairlines between them and a button to add one. */
-export function TeamsSection({ roster, caps, busy, onCreate, onInviteOwner, onReinviteOwner, onCancelInvite, onShareInvite, onViewSquad, onDisband, onAddOwn }: Props) {
+export function TeamsSection({ roster, caps, busy, onCreate, onInviteOwner, onReinviteOwner, onCancelInvite, onShareInvite, onViewSquad, onDisband, onToggleEliminated, onAddOwn }: Props) {
   const styles = useThemedStyles(createStyles);
   const full = roster.teams.length >= roster.maxTeams;
   return (
@@ -60,6 +61,7 @@ export function TeamsSection({ roster, caps, busy, onCreate, onInviteOwner, onRe
                 onShareInvite={() => onShareInvite(team)}
                 onViewSquad={() => onViewSquad(team)}
                 onDisband={() => onDisband(team)}
+                onToggleEliminated={() => onToggleEliminated(team)}
               />
             </View>
           ))}

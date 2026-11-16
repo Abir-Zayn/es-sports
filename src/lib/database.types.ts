@@ -896,18 +896,21 @@ export type Database = {
         Row: {
           added_at: string
           added_by: string | null
+          eliminated_at: string | null
           team_id: string
           tournament_id: string
         }
         Insert: {
           added_at?: string
           added_by?: string | null
+          eliminated_at?: string | null
           team_id: string
           tournament_id: string
         }
         Update: {
           added_at?: string
           added_by?: string | null
+          eliminated_at?: string | null
           team_id?: string
           tournament_id?: string
         }
@@ -1230,6 +1233,10 @@ export type Database = {
       }
       remove_tournament_team: {
         Args: { p_team: string; p_tournament: string }
+        Returns: undefined
+      }
+      set_tournament_team_eliminated: {
+        Args: { p_eliminated: boolean; p_team: string; p_tournament: string }
         Returns: undefined
       }
       reopen_match: {

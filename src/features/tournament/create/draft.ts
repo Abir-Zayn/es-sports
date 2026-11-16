@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import { SQUAD_LIMITS, defaultSquadRules, sideFormats, squadRulesProblem } from './squad-formats';
 
+/** Labels for tournaments published before the format choice was removed. New tournaments are always round robin;
+ * the owner eliminates teams by hand from the teams screen. */
 export const competitionFormats = [
   { value: 'league-knockout', label: 'League + knockout', detail: 'A league stage, then the race to the final.' },
   { value: 'league', label: 'Round robin', detail: 'Every team plays every other team.' },
@@ -9,7 +11,9 @@ export const competitionFormats = [
 ] as const;
 /** Overs per side: any whole number in this range. 10, 20 and 50 are the T10, T20 and one-day formats. */
 export const OVERS = { min: 4, max: 50, default: 20 } as const;
-export const oversChoices = Array.from({ length: OVERS.max - OVERS.min + 1 }, (_, i) => OVERS.min + i);
+/** Quick picks: common local formats, plus T10, T20 and one-day. Anything else in range is set with the stepper. */
+export const oversPresets = [6, 8, 10, 12, 15, 20, 50] as const;
+export const oversFormatName = (overs: number): string | undefined => ({ 10: 'T10', 20: 'T20', 50: 'ODI' } as Record<number, string>)[overs];
 export const oversLabel = (overs: number): string => `${overs} overs`;
 /** Drafts saved before custom overs held one of three formats. */
 const legacyOvers: Record<string, number> = { T10: 10, T20: 20, ODI: 50 };
@@ -19,9 +23,19 @@ function upgradeLegacyDraft(raw: unknown): unknown {
   const { matchFormat, ...rest } = raw as Record<string, unknown>;
   return { ...rest, overs: typeof matchFormat === 'string' ? legacyOvers[matchFormat] ?? OVERS.default : OVERS.default };
 }
-export const teamCounts = [4, 6, 8, 12, 16] as const;
+/** Teams a new tournament plans for. Tournaments published earlier may have 4 or 6. */
+export const TEAMS = { min: 8, max: 24, default: 8 } as const;
+export const teamPresets = [8, 10, 12, 16, 20, 24] as const;
 
-export const draftSchema = z.preprocess(upgradeLegacyDraft, z.object({
+/** Older drafts may hold a knockout format or fewer than 8 teams; every draft is now a round robin of 8 to 24. */
+function upgradeDraft(raw: unknown): unknown {
+  const upgraded = upgradeLegacyDraft(raw);
+  if (typeof upgraded !== 'object' || upgraded === null) return upgraded;
+  const { teams } = upgraded as { teams?: unknown };
+  // Drafts saved with 4 or 6 teams move up to the new minimum.
+  return { ...upgraded, competition: 'league', ...(typeof teams === 'number' && teams < TEAMS.min ? { teams: TEAMS.min } : {}) };
+}
+export const draftSchema = z.preprocess(upgradeDraft, z.object({
   version: z.literal(1),
   name: z.string().max(80),
   city: z.string().max(60),
@@ -31,8 +45,8 @@ export const draftSchema = z.preprocess(upgradeLegacyDraft, z.object({
   coverUri: z.string().max(3_000_000).default(''),
   profileUri: z.string().max(3_000_000).default(''),
   overs: z.number().int().min(OVERS.min).max(OVERS.max).default(OVERS.default),
-  competition: z.enum(['league-knockout', 'league', 'knockout']),
-  teams: z.union([z.literal(4), z.literal(6), z.literal(8), z.literal(12), z.literal(16)]),
+  competition: z.enum(['league-knockout', 'league', 'knockout']).default('league'),
+  teams: z.number().int().min(TEAMS.min).max(TEAMS.max),
   ball: z.enum(['Tennis', 'Leather']),
   sideFormat: z.enum(sideFormats).default('standard_11'),
   playersPerSide: z.number().int().min(SQUAD_LIMITS.sideMin).max(SQUAD_LIMITS.sideMax).default(defaultSquadRules.playersPerSide),
@@ -46,7 +60,7 @@ export type TournamentDraft = z.output<typeof draftSchema>;
 export type DraftErrors = Partial<Record<keyof TournamentDraft, string>>;
 export const emptyDraft: TournamentDraft = {
   version: 1, name: '', city: '', venue: '', startDate: '', endDate: '', coverUri: '', profileUri: '',
-  overs: OVERS.default, competition: 'league-knockout', teams: 8, ball: 'Tennis',
+  overs: OVERS.default, competition: 'league', teams: 8, ball: 'Tennis',
   sideFormat: 'standard_11', ...defaultSquadRules, registrationOpens: '', registrationDeadline: '',
 };
 
@@ -73,9 +87,6 @@ export function validateDraft(draft: TournamentDraft, today = localDateKey(new D
   if (formatDate(draft.startDate) === 'Choose a date' || draft.startDate < today) errors.startDate = 'Choose today or a future start date.';
   if (formatDate(draft.endDate) === 'Choose a date') errors.endDate = 'Choose an end date.';
   else if (draft.endDate < draft.startDate) errors.endDate = 'End date must be on or after the start date.';
-  if (draft.competition === 'knockout' && ![4, 8, 16].includes(draft.teams)) {
-    errors.teams = 'Choose 4, 8, or 16 teams for a knockout tournament.';
-  }
   const squad = squadRulesProblem(draft);
   if (squad) errors.maxSquad = squad;
   return { ...errors, ...registrationErrors(draft) };

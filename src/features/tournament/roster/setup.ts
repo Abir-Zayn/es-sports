@@ -1,4 +1,4 @@
-import { isDateKey, teamCounts, type TournamentDraft } from '../create/draft';
+import { isDateKey, TEAMS, type TournamentDraft } from '../create/draft';
 import { defaultSquadRules, squadRulesProblem } from '../create/squad-formats';
 import type { RosterSetup } from './types';
 
@@ -29,7 +29,7 @@ export function parseSetup(params: SetupParams): RosterSetup {
   const startsOn = dateOrEmpty(params.starts);
   return {
     tournamentName: params.name?.trim() || 'Untitled tournament',
-    maxTeams: (teamCounts as readonly number[]).includes(count) ? count : 8,
+    maxTeams: Number.isInteger(count) && count >= TEAMS.min && count <= TEAMS.max ? count : TEAMS.default,
     squadRules: squadRulesProblem(rules) ? defaultSquadRules : rules,
     // An empty deadline means registration runs until the tournament starts.
     registration: { opensOn: dateOrEmpty(params.opens), deadline: dateOrEmpty(params.deadline) || startsOn },

@@ -61,3 +61,11 @@ export async function addTournamentTeam(tournamentId: string, teamId: string): P
   const { error } = await traceApi('tournament.addTeam', { tournamentId, teamId }, () => supabase.rpc('add_tournament_team', { p_tournament: tournamentId, p_team: teamId }));
   if (error) throw toTournamentError(error);
 }
+
+/** Knocks a team out, or brings it back. Owner only. The team stays entered so its results remain. A repeat is fine. */
+export async function setTournamentTeamEliminated(tournamentId: string, teamId: string, eliminated: boolean): Promise<void> {
+  const { error } = await traceApi('tournament.eliminateTeam', { tournamentId, teamId, eliminated }, () => supabase.rpc('set_tournament_team_eliminated', {
+    p_tournament: tournamentId, p_team: teamId, p_eliminated: eliminated,
+  }));
+  if (error) throw toTournamentError(error);
+}
