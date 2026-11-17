@@ -11,8 +11,9 @@ import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type Pal
 
 import { competitionFormats } from '../create/draft';
 import { draftQueryKey, loadDraft } from '../create/draft-storage';
-import { fetchTournament, tournamentKey } from '../data/tournament-repository';
+import { fetchTournament, fetchTournamentTeams, tournamentKey } from '../data/tournament-repository';
 import { capabilitiesOf, roleIn } from '../roster/permissions';
+import { splitIntoGroups } from '../teams/group-teams';
 import { repoFor } from '../roster/roster-source';
 import { useMe, useRoster } from '../roster/use-roster';
 import { ScheduleBuilder, type ScheduleSetup } from './schedule-builder';
@@ -23,6 +24,9 @@ function useSetup(tournamentId: string, meId: string): { setup: ScheduleSetup | 
   const server = isUuid(tournamentId);
   const draft = useQuery({ queryKey: draftQueryKey(meId), queryFn: () => loadDraft(meId), enabled: Boolean(meId) && !server });
   const record = useQuery({ queryKey: tournamentKey(tournamentId), queryFn: () => fetchTournament(tournamentId), enabled: server });
+  const grouped = server && (record.data?.groupsPlanned ?? 1) > 1;
+  // Same query as the Groups tab: who is in which group.
+  const entered = useQuery({ queryKey: [...tournamentKey(tournamentId), 'teams'], queryFn: () => fetchTournamentTeams(tournamentId), enabled: grouped });
   if (!server) {
     return { setup: draft.data ?? null, name: draft.data?.name ?? '', pending: draft.isPending, failed: draft.isError, retry: () => void draft.refetch() };
   }
@@ -31,8 +35,12 @@ function useSetup(tournamentId: string, meId: string): { setup: ScheduleSetup | 
     competition: competitionFormats.find((f) => f.value === t.competition)?.value ?? 'league',
     overs: t.overs,
     playersPerSide: t.playersPerSide, venue: t.venue, startDate: t.startDate, endDate: t.endDate,
+    groupIds: grouped ? splitIntoGroups(entered.data ?? [], t.groupsPlanned)?.map((g) => g.map((e) => e.team.id)) ?? null : undefined,
   } : null;
-  return { setup, name: t?.name ?? '', pending: record.isPending, failed: record.isError, retry: () => void record.refetch() };
+  return {
+    setup, name: t?.name ?? '', pending: record.isPending || (grouped && entered.isPending), failed: record.isError || entered.isError,
+    retry: () => { void record.refetch(); if (grouped) void entered.refetch(); },
+  };
 }
 
 /** Loads the setup and the teams (of a published tournament, or the draft being set up), then hands them to the builder. */

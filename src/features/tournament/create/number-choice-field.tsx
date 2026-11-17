@@ -15,11 +15,13 @@ type Props = {
   presets: readonly number[];
   /** Short name of a well-known value, e.g. "T20": shown on its chip and under the label. */
   describe?: (value: number) => string | undefined;
+  /** Gap between allowed values; the stepper moves by it. Default 1. */
+  step?: number;
   onChange: (value: number) => void;
 };
 
 /** A number chosen inline: tap a common value, or step to any other. No list to scroll through. */
-export function NumberChoiceField({ label, icon: Icon, value, min, max, unit, presets, describe, onChange }: Props) {
+export function NumberChoiceField({ label, icon: Icon, value, min, max, unit, presets, describe, step = 1, onChange }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const tag = describe?.(value);
@@ -29,14 +31,14 @@ export function NumberChoiceField({ label, icon: Icon, value, min, max, unit, pr
       <Icon size={dp(20)} color={colors.textMuted} strokeWidth={1.6} />
       <View style={styles.titles}>
         <Text>{label}</Text>
-        <Text variant="caption" muted>{tag ? `${tag} format` : `Any number from ${min} to ${max}`}</Text>
+        <Text variant="caption" muted>{tag ? `${tag} format` : step > 1 ? `${min} to ${max}, in steps of ${step}` : `Any number from ${min} to ${max}`}</Text>
       </View>
-      <AppIconTile icon={Minus} size={sizes.iconButton} accessibilityLabel={`Fewer ${unit}`} onPress={value > min ? () => set(value - 1) : undefined} />
+      <AppIconTile icon={Minus} size={sizes.iconButton} accessibilityLabel={`Fewer ${unit}`} onPress={value > min ? () => set(value - step) : undefined} />
       <Text style={styles.value} accessibilityRole="adjustable" accessibilityLabel={`${label}, ${value} ${unit}`}
         accessibilityValue={{ min, max, now: value }}
         accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
-        onAccessibilityAction={(e) => set(value + (e.nativeEvent.actionName === 'increment' ? 1 : -1))}>{value}</Text>
-      <AppIconTile icon={Plus} size={sizes.iconButton} accessibilityLabel={`More ${unit}`} onPress={value < max ? () => set(value + 1) : undefined} />
+        onAccessibilityAction={(e) => set(value + (e.nativeEvent.actionName === 'increment' ? step : -step))}>{value}</Text>
+      <AppIconTile icon={Plus} size={sizes.iconButton} accessibilityLabel={`More ${unit}`} onPress={value < max ? () => set(value + step) : undefined} />
     </View>
     <View style={styles.chips} accessibilityRole="radiogroup" accessibilityLabel={`Common ${unit}`}>
       {presets.map((preset) => {

@@ -1,6 +1,7 @@
 import MapPin from 'lucide-react-native/icons/map-pin';
 import Plus from 'lucide-react-native/icons/plus';
 import Users from 'lucide-react-native/icons/users';
+import UsersRound from 'lucide-react-native/icons/users-round';
 import Volleyball from 'lucide-react-native/icons/volleyball';
 import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
@@ -10,7 +11,7 @@ import { dp, sp, spacing, typography, useTheme, useThemedStyles, type Palette } 
 
 import { CoverPicker, ProfilePhotoPicker } from './cover-picker';
 import { DatePicker } from './date-picker';
-import { OVERS, oversFormatName, oversPresets, TEAMS, teamPresets, type DraftErrors, type TournamentDraft } from './draft';
+import { fitTeams, GROUPS, OVERS, oversFormatName, oversPresets, teamPresets, teamRange, type DraftErrors, type TournamentDraft } from './draft';
 import { NumberChoiceField } from './number-choice-field';
 import { CardDivider, SettingsCard } from './settings-card';
 import { SquadFormatFields } from './squad-format-fields';
@@ -56,8 +57,12 @@ export function TournamentFields({ draft, errors, onChange, onBusyChange, onAddT
       <NumberChoiceField label="Overs per side" icon={Volleyball} unit="overs" value={draft.overs} min={OVERS.min} max={OVERS.max}
         presets={oversPresets} describe={oversFormatName} onChange={(value) => onChange('overs', value)} />
       <CardDivider />
-      <NumberChoiceField label="Number of teams" icon={Users} unit="teams" value={draft.teams} min={TEAMS.min} max={TEAMS.max}
-        presets={teamPresets} onChange={(value) => onChange('teams', value)} />
+      <NumberChoiceField label="Number of groups" icon={UsersRound} unit="groups" value={draft.groups} min={GROUPS.min} max={GROUPS.max}
+        presets={[1, 2, 3, 4, 6, 8]}
+        onChange={(groups) => { onChange('groups', groups); onChange('teams', fitTeams(draft.teams, groups)); }} />
+      <CardDivider />
+      <NumberChoiceField label="Number of teams" icon={Users} unit="teams" value={draft.teams} {...teamRange(draft.groups)}
+        presets={teamPresets(draft.groups)} onChange={(value) => onChange('teams', value)} />
       {errors.teams ? <Text variant="caption" style={[styles.error, styles.locationError]} accessibilityLiveRegion="polite">{errors.teams}</Text> : null}
     </SettingsCard>
     <SquadFormatFields draft={draft} errors={errors} onChange={onChange} />

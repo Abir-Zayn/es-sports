@@ -897,6 +897,7 @@ export type Database = {
           added_at: string
           added_by: string | null
           eliminated_at: string | null
+          group_index: number | null
           team_id: string
           tournament_id: string
         }
@@ -904,6 +905,7 @@ export type Database = {
           added_at?: string
           added_by?: string | null
           eliminated_at?: string | null
+          group_index?: number | null
           team_id: string
           tournament_id: string
         }
@@ -911,6 +913,7 @@ export type Database = {
           added_at?: string
           added_by?: string | null
           eliminated_at?: string | null
+          group_index?: number | null
           team_id?: string
           tournament_id?: string
         }
@@ -966,6 +969,8 @@ export type Database = {
           slots_per_day: number | null
           start_date: string
           teams_planned: number
+          groups_planned: number
+          advance_per_group: number | null
           venue: string
         }
         Insert: {
@@ -995,6 +1000,8 @@ export type Database = {
           slots_per_day?: number | null
           start_date: string
           teams_planned: number
+          groups_planned?: number
+          advance_per_group?: number | null
           venue: string
         }
         Update: {
@@ -1024,6 +1031,8 @@ export type Database = {
           slots_per_day?: number | null
           start_date?: string
           teams_planned?: number
+          groups_planned?: number
+          advance_per_group?: number | null
           venue?: string
         }
         Relationships: [
@@ -1239,6 +1248,14 @@ export type Database = {
       }
       remove_tournament_team: {
         Args: { p_team: string; p_tournament: string }
+        Returns: undefined
+      }
+      draw_tournament_groups: {
+        Args: { p_advance: number; p_tournament: string }
+        Returns: undefined
+      }
+      swap_tournament_group_teams: {
+        Args: { p_team_a: string; p_team_b: string; p_tournament: string }
         Returns: undefined
       }
       set_tournament_team_eliminated: {

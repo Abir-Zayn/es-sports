@@ -19,6 +19,8 @@ type Input = {
   overs: number;
   days: string[];
   isOwner: boolean;
+  /** Team ids per group. Undefined for a single league; null while the groups are still to be drawn. */
+  groupIds?: string[][] | null;
 };
 
 /** A match the owner adds by hand. */
@@ -32,7 +34,7 @@ const playsIn = (m: ScheduledMatch, teamId: string) => [m.home, m.away].some((s)
  * until the owner decides. Once published and unchanged, the owner moves or cancels single matches straight away
  * (the owner panel), and the teams playing are told.
  */
-export function useScheduleBuilder({ tournamentId, teams, competition, overs, days, isOwner }: Input) {
+export function useScheduleBuilder({ tournamentId, teams, competition, overs, days, isOwner, groupIds }: Input) {
   const queryClient = useQueryClient();
   const saved = useQuery({ queryKey: scheduleKey(tournamentId), queryFn: () => fetchSchedule(tournamentId) });
   const [editedMode, setEditedMode] = useState<ScheduleMode | null>(null);
@@ -86,9 +88,9 @@ export function useScheduleBuilder({ tournamentId, teams, competition, overs, da
 
   /** Draws every match again from the teams and settings, replacing any hand-made changes. */
   function draw() {
-    const refused = pairingProblem(teams.length, competition);
+    const refused = groupIds === null ? 'Draw the groups on the Groups tab first.' : pairingProblem(teams.length, competition);
     if (refused) return setProblem(refused);
-    const placed = placeMatches(generatePairings(teams, competition), days, settings, overs);
+    const placed = placeMatches(generatePairings(teams, competition, groupIds ?? undefined), days, settings, overs);
     setProblem(placed.problem);
     if (!placed.problem) edit(placed.matches);
   }

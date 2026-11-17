@@ -17,10 +17,10 @@ describe('tournament form validation', () => {
     expect(validateDraft({ ...valid, endDate: '' }, '2030-11-02').endDate).toBeTruthy();
     expect(validateDraft({ ...valid, endDate: '2030-11-02' }, '2030-11-02').endDate).toBe('End date must be on or after the start date.');
   });
-  it('plans 8 to 24 teams and turns older knockout or small drafts into a round robin of 8', () => {
-    expect(draftSchema.parse({ ...valid, teams: 24 }).teams).toBe(24);
-    for (const teams of [25, 12.5]) expect(draftSchema.safeParse({ ...valid, teams }).success).toBe(false);
-    expect(draftSchema.parse({ ...valid, competition: 'knockout', teams: 6 })).toMatchObject({ competition: 'league', teams: 8 });
+  it('plans 6 to 48 teams and turns older knockout or small drafts into a round robin of 6', () => {
+    expect(draftSchema.parse({ ...valid, teams: 48 }).teams).toBe(48);
+    for (const teams of [49, 12.5]) expect(draftSchema.safeParse({ ...valid, teams }).success).toBe(false);
+    expect(draftSchema.parse({ ...valid, competition: 'knockout', teams: 4 })).toMatchObject({ competition: 'league', teams: 6, groups: 1 });
   });
   it('restores older drafts with empty cover and end date fields', () => {
     const { coverUri, endDate, profileUri, ...legacy } = emptyDraft;

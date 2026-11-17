@@ -8,7 +8,11 @@ export type TournamentRole = 'owner' | 'moderator';
 export type TournamentRecord = {
   id: string; ownerId: string | null; name: string; city: string; venue: string; startDate: string; endDate: string;
   /** A label kept by the server: T<overs>, or ODI for 50. Show `overs` instead. */
-  matchFormat: string; overs: number; competition: string; teamsPlanned: number; ball: string; sideFormat: string;
+  matchFormat: string; overs: number; competition: string; teamsPlanned: number;
+  /** 1 is a single round robin. */
+  groupsPlanned: number;
+  /** Teams of each group that go through, set with the group draw; null before it. */
+  advancePerGroup: number | null; ball: string; sideFormat: string;
   playersPerSide: number; minSquad: number; maxSquad: number; registrationOpens: string; registrationDeadline: string;
   profileUrl: string | null;
   coverUrl?: string | null;
@@ -21,14 +25,18 @@ export type MyTournament = TournamentRecord & { myRole: TournamentRole };
 export type PersonRecord = { id: string; name: string; area: string | null; avatarUrl: string | null };
 export type StaffRecord = { user: PersonRecord; role: TournamentRole };
 /** A team in a tournament, with who owns it now. */
-export type EnteredTeam = { team: TeamRecord; owner: PersonRecord | null; eliminated: boolean };
+export type EnteredTeam = {
+  team: TeamRecord; owner: PersonRecord | null; eliminated: boolean;
+  /** 0 = Group A; null before the group draw or in a single-group tournament. */
+  group: number | null;
+};
 
 // One string literal, so the client can type the rows from it.
-const TOURNAMENT_COLUMNS = 'id, owner_id, name, city, venue, start_date, end_date, match_format, overs, competition, teams_planned, ball, side_format, players_per_side, min_squad, max_squad, registration_opens, registration_deadline, profile_url, cover_url, deleted_at, closed_at';
+const TOURNAMENT_COLUMNS = 'id, owner_id, name, city, venue, start_date, end_date, match_format, overs, competition, teams_planned, groups_planned, advance_per_group, ball, side_format, players_per_side, min_squad, max_squad, registration_opens, registration_deadline, profile_url, cover_url, deleted_at, closed_at';
 const TEAM_COLUMNS = 'id, name, short_name, tone, logo_url, area, district';
 type TournamentRow = {
   id: string; owner_id: string | null; name: string; city: string; venue: string; start_date: string; end_date: string;
-  match_format: string; overs: number; competition: string; teams_planned: number; ball: string; side_format: string; players_per_side: number;
+  match_format: string; overs: number; competition: string; teams_planned: number; groups_planned: number; advance_per_group: number | null; ball: string; side_format: string; players_per_side: number;
   min_squad: number; max_squad: number; registration_opens: string | null; registration_deadline: string | null; profile_url: string | null; cover_url: string | null;
   deleted_at: string | null; closed_at: string | null;
 };
@@ -44,7 +52,7 @@ export function toTournament(row: TournamentRow): TournamentRecord {
   return {
     id: row.id, ownerId: row.owner_id, name: row.name, city: row.city, venue: row.venue, startDate: row.start_date, endDate: row.end_date,
     // The knockout format is retired: every tournament plays as a round robin and the owner eliminates teams by hand.
-    matchFormat: row.match_format, overs: row.overs, competition: 'league', teamsPlanned: row.teams_planned, ball: row.ball, sideFormat: row.side_format,
+    matchFormat: row.match_format, overs: row.overs, competition: 'league', teamsPlanned: row.teams_planned, groupsPlanned: row.groups_planned, advancePerGroup: row.advance_per_group, ball: row.ball, sideFormat: row.side_format,
     playersPerSide: row.players_per_side, minSquad: row.min_squad, maxSquad: row.max_squad, registrationOpens: row.registration_opens ?? '',
     registrationDeadline: row.registration_deadline ?? '', profileUrl: row.profile_url, coverUrl: row.cover_url,
     deletedAt: row.deleted_at, closedAt: row.closed_at,
@@ -97,15 +105,15 @@ export async function fetchTournamentStaff(id: string): Promise<StaffRecord[]> {
 
 /** The teams entered, in the order they joined, each with its current owner. */
 export async function fetchTournamentTeams(id: string): Promise<EnteredTeam[]> {
-  const { data, error } = await traceApi('tournament.teams', { id }, () => supabase.from('tournament_teams').select(`team_id, added_at, eliminated_at, teams(${TEAM_COLUMNS})`)
+  const { data, error } = await traceApi('tournament.teams', { id }, () => supabase.from('tournament_teams').select(`team_id, added_at, eliminated_at, group_index, teams(${TEAM_COLUMNS})`)
     .eq('tournament_id', id).order('added_at'));
   if (error) throw toTournamentError(error);
-  const rows = (data ?? []).flatMap((row) => (row.teams ? [{ team: toTeam(row.teams), eliminated: Boolean(row.eliminated_at) }] : []));
+  const rows = (data ?? []).flatMap((row) => (row.teams ? [{ team: toTeam(row.teams), eliminated: Boolean(row.eliminated_at), group: row.group_index }] : []));
   const teams = rows.map((row) => row.team);
   if (teams.length === 0) return [];
   const owners = await traceApi('tournament.teamOwners', { teams: teams.length }, () => supabase.from('team_members').select('team_id, profile_id, profiles(full_name, area, avatar_url)')
     .eq('role', 'owner').in('team_id', teams.map((team) => team.id)));
   if (owners.error) throw toTournamentError(owners.error);
   const ownerOf = new Map((owners.data ?? []).map((row) => [row.team_id, toPerson(row.profile_id, row.profiles)]));
-  return rows.map(({ team, eliminated }) => ({ team, owner: ownerOf.get(team.id) ?? null, eliminated }));
+  return rows.map((row) => ({ ...row, owner: ownerOf.get(row.team.id) ?? null }));
 }

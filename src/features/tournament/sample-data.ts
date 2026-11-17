@@ -10,7 +10,7 @@ export const tournamentSections = [
   { id: 'table', label: 'Table' },
   { id: 'knockout', label: 'Knockout' },
   { id: 'stats', label: 'Stats' },
-  { id: 'teams', label: 'Teams' },
+  { id: 'teams', label: 'Groups' },
 ] as const;
 
 export type TournamentSectionId = (typeof tournamentSections)[number]['id'];

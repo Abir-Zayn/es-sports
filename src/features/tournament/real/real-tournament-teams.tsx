@@ -8,13 +8,14 @@ import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type Pal
 
 import { fetchTournamentTeams, tournamentKey, type TournamentRecord } from '../data/tournament-repository';
 import { fillRatio, groupTeams, teamsSummary } from '../teams/group-teams';
+import { GroupsSection } from '../teams/groups-section';
 import { TeamsGroup } from '../teams/teams-group';
 import { TeamsSkeleton } from '../teams/teams-skeleton';
 
-type Props = { tournament: TournamentRecord; canManage: boolean; onManage: () => void };
+type Props = { tournament: TournamentRecord; canManage: boolean; isOwner: boolean; onManage: () => void };
 
-/** The teams that have joined: those still playing first, knocked-out teams in their own group below. */
-export function RealTournamentTeams({ tournament, canManage, onManage }: Props) {
+/** The teams that have joined: by group when the tournament has groups, else those still playing first and knocked-out teams below. */
+export function RealTournamentTeams({ tournament, canManage, isOwner, onManage }: Props) {
   const styles = useThemedStyles(createStyles);
   const { colors } = useTheme();
   const openTeam = useOpenTeam();
@@ -49,8 +50,12 @@ export function RealTournamentTeams({ tournament, canManage, onManage }: Props) 
           <Text muted style={styles.center}>{canManage ? 'Add teams to fill the line-up.' : 'Teams appear here once they join.'}</Text>
         </Card>
       ) : null}
-      <TeamsGroup title={eliminated.length > 0 ? 'Still in' : undefined} teams={active} onOpen={openTeam} />
-      <TeamsGroup title="Eliminated" teams={eliminated} onOpen={openTeam} />
+      {tournament.groupsPlanned > 1 ? <GroupsSection tournament={tournament} teams={teams.data} isOwner={isOwner} /> : (
+        <>
+          <TeamsGroup title={eliminated.length > 0 ? 'Still in' : undefined} teams={active} onOpen={openTeam} />
+          <TeamsGroup title="Eliminated" teams={eliminated} onOpen={openTeam} />
+        </>
+      )}
       {canManage ? <Button label="Add teams" variant="secondary" onPress={onManage} /> : null}
     </>
   );

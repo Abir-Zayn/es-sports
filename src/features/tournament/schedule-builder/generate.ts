@@ -36,6 +36,13 @@ export function roundRobin(teams: ScheduleTeam[]): [ScheduleTeam, ScheduleTeam][
   return rounds;
 }
 
+/** Each group's round robin, merged so round 1 of every group comes first, then round 2, and so on. */
+export function groupRoundRobin(teams: ScheduleTeam[], groupIds: string[][]): [ScheduleTeam, ScheduleTeam][][] {
+  const perGroup = groupIds.map((ids) => roundRobin(teams.filter((t) => ids.includes(t.id))));
+  const rounds = Math.max(0, ...perGroup.map((r) => r.length));
+  return Array.from({ length: rounds }, (_, r) => perGroup.flatMap((group) => group[r] ?? []));
+}
+
 /** Why no schedule can be drawn for these teams, or null when it can. */
 export function pairingProblem(teamCount: number, competition: Competition): string | null {
   if (teamCount < 2) return 'Add at least 2 teams to draw a schedule.';
@@ -46,10 +53,10 @@ export function pairingProblem(teamCount: number, competition: Competition): str
 }
 
 /**
- * Every match of the tournament in play order, numbered from 1. A knockout pairs the first team added with
+ * Every match of the tournament in play order, numbered from 1. `groupIds` (team ids per group) splits the league. A knockout pairs the first team added with
  * the last, the second with the second last, and so on. Later rounds name the matches that feed them.
  */
-export function generatePairings(teams: ScheduleTeam[], competition: Competition): Pairing[] {
+export function generatePairings(teams: ScheduleTeam[], competition: Competition, groupIds?: string[][]): Pairing[] {
   if (pairingProblem(teams.length, competition)) return [];
   const pairings: Pairing[] = [];
   const add = (stage: StageName, round: number, home: SideRef, away: SideRef) => {
@@ -72,7 +79,8 @@ export function generatePairings(teams: ScheduleTeam[], competition: Competition
     return pairings;
   }
 
-  for (const round of roundRobin(teams)) {
+  // With groups, teams only meet the others in their group.
+  for (const round of groupIds ? groupRoundRobin(teams, groupIds) : roundRobin(teams)) {
     for (const [home, away] of round) add('League', 0, team(home), team(away));
   }
   if (competition === 'league-knockout') {

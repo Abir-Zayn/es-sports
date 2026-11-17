@@ -50,7 +50,7 @@ export function RealTournamentScreen({ id, section }: Props) {
     );
   } else if (!record) body = <Text muted>This tournament could not be found.</Text>;
   else if (section === 'overview') body = <RealTournamentOverview tournament={record} staff={staff.data ?? []} canManage={role !== null} isOwner={staffRole === 'owner'} userId={session?.user.id ?? ''} onManage={manage} />;
-  else if (section === 'teams') body = <RealTournamentTeams tournament={record} canManage={role !== null} onManage={manage} />;
+  else if (section === 'teams') body = <RealTournamentTeams tournament={record} canManage={role !== null} isOwner={role === 'owner'} onManage={manage} />;
   else if (section === 'matches') body = <RealTournamentMatches tournament={record} canSchedule={role === 'owner'} canStart={role !== null} onSchedule={schedule} />;
   else if (section === 'table') body = <RealTournamentTable tournament={record} />;
   else if (section === 'stats') body = <RealTournamentStats tournament={record} />;

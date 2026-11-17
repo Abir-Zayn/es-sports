@@ -16,6 +16,8 @@ export function tournamentMessage(error: unknown): string {
     case 'ET004': return 'This match has started, so it can no longer be moved, cancelled or redrawn.';
     case 'ET005': return 'This team has scheduled matches. Cancel them or redraw the schedule first.';
     case 'ET007': return 'Both teams must be known before starting this match.';
+    case 'ET015': return 'Every team must join before the groups are drawn.';
+    case 'ET016': return 'A match has started, so the groups are locked.';
     case 'ET014': return 'This tournament is closed, so it can no longer be changed.';
     case 'ET013': return 'This tournament was deleted more than 3 days ago, so it can no longer be restored.';
     case 'ET012': return 'The scorer must be the tournament owner or a moderator who has the scoring duty.';

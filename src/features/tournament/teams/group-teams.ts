@@ -17,3 +17,12 @@ export function teamsSummary(joined: number, planned: number, eliminated: number
 export function fillRatio(joined: number, planned: number): number {
   return planned > 0 ? Math.min(1, Math.max(0, joined / planned)) : 0;
 }
+
+/** "Group A" for 0, "Group B" for 1, … */
+export const groupName = (index: number): string => `Group ${String.fromCharCode(65 + index)}`;
+
+/** The teams of each group in join order, or null while any team is still waiting for the draw. */
+export function splitIntoGroups<T extends { group: number | null }>(teams: T[], groups: number): T[][] | null {
+  if (teams.length === 0 || teams.some((t) => t.group == null || t.group >= groups)) return null;
+  return Array.from({ length: groups }, (_, g) => teams.filter((t) => t.group === g));
+}
