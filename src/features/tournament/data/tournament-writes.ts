@@ -81,3 +81,25 @@ export async function restoreTournament(tournamentId: string): Promise<void> {
   const { error } = await traceApi('tournament.restore', { tournamentId }, () => supabase.rpc('restore_tournament', { p_tournament: tournamentId }));
   if (error) throw toTournamentError(error);
 }
+
+/** Ends the tournament: no more team, squad or schedule changes. Owner only. A repeat is fine. */
+export async function closeTournament(tournamentId: string): Promise<void> {
+  const { error } = await traceApi('tournament.close', { tournamentId }, () => supabase.rpc('close_tournament', { p_tournament: tournamentId }));
+  if (error) throw toTournamentError(error);
+}
+
+/** What the owner can change after publishing. Empty registration dates and images are cleared. */
+export type TournamentEdit = {
+  overs: number; startDate: string; endDate: string; registrationOpens: string; registrationDeadline: string;
+  coverUrl: string | null; profileUrl: string | null;
+};
+
+/** Saves the owner's edit. The server refuses it (ET006) if the existing schedule no longer fits. */
+export async function updateTournament(tournamentId: string, edit: TournamentEdit): Promise<void> {
+  const { error } = await traceApi('tournament.update', { tournamentId }, () => supabase.rpc('update_tournament', {
+    p_tournament: tournamentId, p_overs: edit.overs, p_start_date: edit.startDate, p_end_date: edit.endDate,
+    p_registration_opens: edit.registrationOpens || null, p_registration_deadline: edit.registrationDeadline || null,
+    p_cover_url: edit.coverUrl, p_profile_url: edit.profileUrl,
+  }));
+  if (error) throw toTournamentError(error);
+}
