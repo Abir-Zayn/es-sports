@@ -10,7 +10,7 @@ import { StartMatchSheet } from './start-match-sheet';
 const mockPush = jest.fn();
 const mockStart = jest.fn();
 const mockFetchSquad = jest.fn();
-jest.mock('@/features/auth/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'me' } } }) }));
+jest.mock('@/features/auth/components/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'me' } } }) }));
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
 jest.mock('react-native-safe-area-context', () => ({ SafeAreaView: ({ children }: { children: ReactNode }) => children }));
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));

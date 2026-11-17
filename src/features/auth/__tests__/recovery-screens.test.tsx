@@ -5,8 +5,8 @@ import type { ReactElement, ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
 import { ThemeProvider } from '@/theme';
 
-import { ForgotPasswordScreen } from '../forgot-password-screen';
-import { ResetPasswordScreen } from '../reset-password-screen';
+import { ForgotPasswordScreen } from '../components/forgot-password-screen';
+import { ResetPasswordScreen } from '../components/reset-password-screen';
 
 jest.mock('@/lib/supabase', () => ({ supabase: { auth: {
   setSession: jest.fn(), getUser: jest.fn(), updateUser: jest.fn(), resetPasswordForEmail: jest.fn(),

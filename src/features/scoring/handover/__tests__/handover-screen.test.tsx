@@ -14,7 +14,7 @@ jest.mock('react-native-safe-area-context', () => {
   return { SafeAreaView: View, useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) };
 });
 jest.mock('expo-router', () => ({ useRouter: () => mockRouter, useLocalSearchParams: () => ({ id: 'h1' }) }));
-jest.mock('@/features/auth/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'u-sam' } } }) }));
+jest.mock('@/features/auth/components/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'u-sam' } } }) }));
 jest.mock('@/features/match/use-live-match-data', () => ({ useLiveMatchData: jest.fn() }));
 jest.mock('../handover-repository', () => ({ fetchIncomingOffers: jest.fn(), acceptHandover: jest.fn(), declineHandover: jest.fn() }));
 

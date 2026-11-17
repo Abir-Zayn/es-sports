@@ -1,10 +1,10 @@
 import { supabase } from '@/lib/supabase';
 
-import { resendConfirmation } from '../resend-confirmation';
-import { sendResetEmail } from '../send-reset-email';
-import { signInSchema, signInWithEmail } from '../sign-in';
-import { signOut } from '../sign-out';
-import { signUpSchema, signUpWithEmail } from '../sign-up';
+import { resendConfirmation } from '../utils/resend-confirmation';
+import { sendResetEmail } from '../utils/send-reset-email';
+import { signInSchema, signInWithEmail } from '../utils/sign-in';
+import { signOut } from '../utils/sign-out';
+import { signUpSchema, signUpWithEmail } from '../utils/sign-up';
 
 jest.mock('@/lib/supabase', () => ({
   supabase: {

@@ -19,7 +19,7 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({}), useFocusEffect: jest.fn(), Stack: { Screen: () => null },
 }));
 jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn() }));
-jest.mock('@/features/auth/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'organizer' } } }) }));
+jest.mock('@/features/auth/components/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'organizer' } } }) }));
 jest.mock('../draft-storage', () => ({ loadDraft: jest.fn(), saveDraft: jest.fn(), draftQueryKey: (id: string) => ['tournament-draft', id] }));
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),

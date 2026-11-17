@@ -24,7 +24,7 @@ jest.mock('react-native-safe-area-context', () => {
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn(), dismissTo: jest.fn(), canGoBack: () => true }),
 }));
-jest.mock('@/features/auth/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'user-1' } } }) }));
+jest.mock('@/features/auth/components/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'user-1' } } }) }));
 jest.mock('../data/match-repository', () => ({
   isUuid: (value: string) => /^[0-9a-f]{8}-/.test(value),
   findMatch: jest.fn().mockResolvedValue(null),

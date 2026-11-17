@@ -5,12 +5,11 @@ import { supabase } from '@/lib/supabase';
 
 import { authErrorMessage } from './auth-errors';
 import { signInSchema } from './sign-in';
+import type { SendResetResult } from '../types';
 
 export const resetRequestSchema = z.object({
   email: signInSchema.shape.email,
 });
-
-export type SendResetResult = { ok: true } | { ok: false; message: string };
 
 export async function sendResetEmail(email: string): Promise<SendResetResult> {
   const parsed = resetRequestSchema.shape.email.safeParse(email.trim());

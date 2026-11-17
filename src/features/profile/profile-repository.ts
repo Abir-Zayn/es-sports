@@ -1,4 +1,4 @@
-import { providerProfileFromMetadata } from '@/features/auth/provider-profile';
+import { providerProfileFromMetadata } from '@/features/auth';
 import { supabase } from '@/lib/supabase';
 import type { BattingStyle, BloodGroup, PlayingRole } from '@/types/profile';
 

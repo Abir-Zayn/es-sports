@@ -5,7 +5,7 @@ import { Button } from '@/components/ui';
 
 import { AuthLayout } from './auth-layout';
 import { RecoveredPasswordForm } from './recovered-password-form';
-import { useRecoverySession } from './use-recovery-session';
+import { useRecoverySession } from '../utils/use-recovery-session';
 
 export function ResetPasswordScreen() {
   const { '#': fragment } = useLocalSearchParams<{ '#': string }>();

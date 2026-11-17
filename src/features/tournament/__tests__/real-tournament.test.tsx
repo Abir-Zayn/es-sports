@@ -22,7 +22,7 @@ jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: ({ children }: { children: ReactNode }) => children,
 }));
 let mockUser = 'me';
-jest.mock('@/features/auth/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: mockUser } } }) }));
+jest.mock('@/features/auth/components/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: mockUser } } }) }));
 
 const profile = (name: string) => ({ full_name: name, area: null, avatar_url: null });
 const tournament = {

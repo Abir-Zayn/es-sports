@@ -3,7 +3,7 @@ import { useState, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
-import { useAuth } from '@/features/auth/auth-provider';
+import { useAuth } from '@/features/auth';
 import { useLiveMatchData } from '@/features/match/use-live-match-data';
 import { spacing, typography, useTheme } from '@/theme';
 

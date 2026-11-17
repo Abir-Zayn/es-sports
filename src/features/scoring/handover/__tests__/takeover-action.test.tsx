@@ -10,7 +10,7 @@ import type { TakeoverFacts } from '../types';
 const mockPush = jest.fn();
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
-jest.mock('@/features/auth/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'me' } } }) }));
+jest.mock('@/features/auth/components/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'me' } } }) }));
 jest.mock('../handover-repository', () => ({ fetchTakeoverFacts: jest.fn(), fetchNames: jest.fn(), takeOverScoring: jest.fn() }));
 
 const facts = (over: Partial<TakeoverFacts> = {}): TakeoverFacts => ({

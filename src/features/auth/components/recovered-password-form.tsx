@@ -6,7 +6,7 @@ import { Button, PasswordField, Text } from '@/components/ui';
 import { spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { AuthLayout } from './auth-layout';
-import { newPasswordSchema, saveRecoveredPassword } from './password-recovery';
+import { newPasswordSchema, saveRecoveredPassword } from '../utils/password-recovery';
 
 export function RecoveredPasswordForm({ userId }: { userId: string }) {
   const styles = useThemedStyles(createStyles);

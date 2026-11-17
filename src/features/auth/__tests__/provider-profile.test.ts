@@ -1,4 +1,4 @@
-import { providerProfileFromMetadata } from '../provider-profile';
+import { providerProfileFromMetadata } from '../utils/provider-profile';
 
 describe('providerProfileFromMetadata', () => {
   it('reads Google full_name and avatar_url', () => {

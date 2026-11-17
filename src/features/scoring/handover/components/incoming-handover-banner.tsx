@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
-import { useAuth } from '@/features/auth/auth-provider';
+import { useAuth } from '@/features/auth';
 import { radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { expiryText, isOpen } from '../handover-rules';

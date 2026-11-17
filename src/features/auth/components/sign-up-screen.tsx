@@ -7,8 +7,8 @@ import { spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { AuthLayout } from './auth-layout';
 import { AuthSwitchLink } from './auth-switch-link';
-import { resendConfirmation } from './resend-confirmation';
-import { signUpSchema, signUpWithEmail } from './sign-up';
+import { resendConfirmation } from '../utils/resend-confirmation';
+import { signUpSchema, signUpWithEmail } from '../utils/sign-up';
 
 type FieldErrors = { email?: string; password?: string; confirm?: string; accepted?: string };
 

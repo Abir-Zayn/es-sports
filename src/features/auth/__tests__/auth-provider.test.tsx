@@ -5,7 +5,7 @@ import { AppState, Text, type AppStateStatus } from 'react-native';
 import { queryClient } from '@/lib/query-client';
 import { supabase } from '@/lib/supabase';
 
-import { AuthProvider, useAuth } from '../auth-provider';
+import { AuthProvider, useAuth } from '../components/auth-provider';
 
 jest.mock('@/lib/supabase', () => ({
   supabase: { auth: { onAuthStateChange: jest.fn(), startAutoRefresh: jest.fn(), stopAutoRefresh: jest.fn() } },

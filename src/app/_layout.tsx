@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
 
 import { AnimatedSplash } from '@/components/splash/animated-splash';
-import { AuthProvider, useAuth } from '@/features/auth/auth-provider';
+import { AuthProvider, useAuth } from '@/features/auth';
 import { ProfileProvider } from '@/features/profile/profile-provider';
 import { useOutboxRecovery } from '@/features/scoring/use-outbox-recovery';
 import { watchAppFocus } from '@/lib/app-focus';

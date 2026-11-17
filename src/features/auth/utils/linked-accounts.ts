@@ -1,15 +1,7 @@
 import { supabase } from '@/lib/supabase';
 
-import { providerProfileFromMetadata, type ProviderProfile } from './provider-profile';
-
-export type LinkedAccounts = {
-  /** Signed up with an email and password. */
-  hasEmail: boolean;
-  /** The linked Google account's name and photo, or null when Google is not linked. */
-  google: ProviderProfile | null;
-};
-
-export type LinkedAccountsResult = { ok: true; accounts: LinkedAccounts } | { ok: false; message: string };
+import { providerProfileFromMetadata } from './provider-profile';
+import type { LinkedAccountsResult, ProviderProfile } from '../types';
 
 /** Which sign-in methods the current user has, and what Google shares if it is linked. */
 export async function loadLinkedAccounts(): Promise<LinkedAccountsResult> {

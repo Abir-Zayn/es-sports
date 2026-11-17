@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
-import { useAuth } from '@/features/auth/auth-provider';
+import { useAuth } from '@/features/auth';
 import { spacing, useTheme } from '@/theme';
 
 import { handoverErrorText } from '../handover-errors';

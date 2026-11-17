@@ -1,5 +1,6 @@
 module.exports = {
   preset: 'jest-expo',
+  setupFiles: ['<rootDir>/jest.setup-env.js'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     // The per-icon imports resolve to ES modules, which Jest cannot load. Use the CommonJS build in tests.
