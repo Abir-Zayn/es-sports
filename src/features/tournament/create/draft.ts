@@ -92,7 +92,7 @@ export function validateDraft(draft: TournamentDraft, today = localDateKey(new D
   return { ...errors, ...registrationErrors(draft) };
 }
 
-function registrationErrors({ registrationOpens: opens, registrationDeadline: deadline, startDate }: TournamentDraft): DraftErrors {
+export function registrationErrors({ registrationOpens: opens, registrationDeadline: deadline, startDate }: Pick<TournamentDraft, 'registrationOpens' | 'registrationDeadline' | 'startDate'>): DraftErrors {
   if (opens && !isDateKey(opens)) return { registrationOpens: 'Choose a valid opening date.' };
   if (!deadline) return {};
   if (!isDateKey(deadline)) return { registrationDeadline: 'Choose a valid deadline.' };
