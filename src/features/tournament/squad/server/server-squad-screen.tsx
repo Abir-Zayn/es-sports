@@ -94,6 +94,8 @@ function SquadPicker({ squad, tournamentId, teamId }: { squad: ServerSquad; tour
   const short = Math.max(0, squad.minSquad - selected.length);
   const pastDeadline = Boolean(squad.registrationDeadline) && squad.registrationDeadline < new Date().toISOString().slice(0, 10);
   const full = selected.length >= squad.maxSquad;
+  const squadMembers = squad.candidates.filter((candidate) => selected.includes(candidate.profileId));
+  const otherMembers = editable ? squad.candidates.filter((candidate) => !selected.includes(candidate.profileId)) : [];
 
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}>
@@ -108,18 +110,20 @@ function SquadPicker({ squad, tournamentId, teamId }: { squad: ServerSquad; tour
       {squad.isOrganiser ? (
         <Button label="Add players" disabled={full || save.isPending} onPress={() => { add.reset(); setFinding(true); }} />
       ) : null}
-      {squad.candidates.length === 0 ? (
-        <Text muted>{squad.isOrganiser ? 'This team has no players yet. Add one above.' : 'This team has no players yet. Add members from Team management first.'}</Text>
+      {squadMembers.length === 0 ? (
+        <Text muted>{squad.isOrganiser ? 'No players in the squad yet. Add players above.' : 'No players in the squad yet.'}</Text>
       ) : (
         <Card padding="none" style={styles.list}>
-          {squad.candidates.map((candidate) => {
-            const inSquad = selected.includes(candidate.profileId);
-            return (
-              <CandidateRow key={candidate.profileId} candidate={candidate} inSquad={inSquad}
-                disabled={!editable || save.isPending || (!inSquad && (full || Boolean(candidate.takenBy)))}
-                showAction={editable} onToggle={() => toggle(candidate.profileId)} />
-            );
-          })}
+          {squadMembers.map((candidate) => (
+            <CandidateRow
+              key={candidate.profileId}
+              candidate={candidate}
+              inSquad
+              disabled={!editable || save.isPending}
+              showAction={editable}
+              onToggle={() => toggle(candidate.profileId)}
+            />
+          ))}
         </Card>
       )}
       {problem && dirty ? <Text accessibilityRole="alert" style={styles.error}>{problem}</Text> : null}
@@ -128,6 +132,23 @@ function SquadPicker({ squad, tournamentId, teamId }: { squad: ServerSquad; tour
         <View style={styles.actions}>
           <Button label="Save squad" loading={save.isPending} disabled={!dirty || Boolean(problem)} onPress={() => save.mutate()} />
           {dirty ? <Button label="Undo changes" variant="secondary" disabled={save.isPending} onPress={() => { save.reset(); setDraft(null); }} /> : null}
+        </View>
+      ) : null}
+      {otherMembers.length > 0 ? (
+        <View style={styles.section}>
+          <Text variant="caption" muted>Other team members</Text>
+          <Card padding="none" style={styles.list}>
+            {otherMembers.map((candidate) => (
+              <CandidateRow
+                key={candidate.profileId}
+                candidate={candidate}
+                inSquad={false}
+                disabled={save.isPending || full || Boolean(candidate.takenBy)}
+                showAction
+                onToggle={() => toggle(candidate.profileId)}
+              />
+            ))}
+          </Card>
         </View>
       ) : null}
       <UserSearchSheet
@@ -163,5 +184,6 @@ const createStyles = (colors: Palette) =>
     list: { paddingHorizontal: sizes.cardPaddingTight },
     count: { ...typography.headlineMd, fontVariant: ['tabular-nums'] },
     actions: { gap: spacing.sm },
+    section: { gap: spacing.sm },
     error: { color: colors.dangerSoftText },
   });
