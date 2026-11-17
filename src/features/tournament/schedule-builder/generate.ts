@@ -43,6 +43,27 @@ export function groupRoundRobin(teams: ScheduleTeam[], groupIds: string[][]): [S
   return Array.from({ length: rounds }, (_, r) => perGroup.flatMap((group) => group[r] ?? []));
 }
 
+/**
+ * A fixed bracket from teams in slot order (slot 0 meets slot 1, 2 meets 3, …), numbered after `start`. Later rounds
+ * name the matches that feed them, e.g. "Winner of Match 9"; the owner's confirmed winner fills that side.
+ */
+export function knockoutPairings(slotted: ScheduleTeam[], start = 0): Pairing[] {
+  const pairings: Pairing[] = [];
+  const add = (stage: StageName, round: number, home: SideRef, away: SideRef) => {
+    pairings.push({ number: start + pairings.length + 1, stage, round, home, away });
+    return start + pairings.length;
+  };
+  let feeders: number[] = [];
+  for (let i = 0; i + 1 < slotted.length; i += 2) feeders.push(add(knockoutStage(slotted.length), 1, team(slotted[i]), team(slotted[i + 1])));
+  for (let round = 2; feeders.length > 1; round++) {
+    const stage = knockoutStage(feeders.length);
+    const next: number[] = [];
+    for (let i = 0; i < feeders.length; i += 2) next.push(add(stage, round, tbd(`Winner of Match ${feeders[i]}`), tbd(`Winner of Match ${feeders[i + 1]}`)));
+    feeders = next;
+  }
+  return pairings;
+}
+
 /** Why no schedule can be drawn for these teams, or null when it can. */
 export function pairingProblem(teamCount: number, competition: Competition): string | null {
   if (teamCount < 2) return 'Add at least 2 teams to draw a schedule.';

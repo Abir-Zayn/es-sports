@@ -7,8 +7,8 @@ import { toTournamentError } from '../data/tournament-errors';
 import type { Schedule, ScheduledMatch, ScheduleMode, SideRef, SlotSettings, StageName, LinkedMatch } from './types';
 
 const stages: readonly StageName[] = ['League', 'Round of 16', 'Quarter-final', 'Semi-final', 'Final'];
-/** 16 teams in a league with knockouts is 123 matches; the server allows 200. */
-const FIXTURE_LIMIT = 200;
+/** The server allows 1200 matches per tournament. */
+const FIXTURE_LIMIT = 1200;
 const DEFAULT_SETTINGS: SlotSettings = { perDay: 2, firstStartMin: 9 * 60 };
 
 type TeamRow = { id: string; name: string; short_name: string } | null;
@@ -68,10 +68,18 @@ export function schedulePayload(mode: ScheduleMode, settings: SlotSettings, matc
   };
 }
 
-/** Replaces the schedule and returns it as the server now has it. Owner only; refused once a match has started. */
+/**
+ * Replaces the schedule and returns it as the server now has it. Owner only. Once a match has started the schedule
+ * can no longer be replaced, so only the matches not yet on the server (a new round) are added after the others.
+ */
 export async function publishServerSchedule(tournamentId: string, mode: ScheduleMode, settings: SlotSettings, matches: ScheduledMatch[]): Promise<Schedule> {
-  const p = schedulePayload(mode, settings, matches);
-  const { error } = await traceApi('schedule.publish', { tournamentId, matches: p.matches.length }, () => supabase.rpc('publish_tournament_schedule', { p_tournament: tournamentId, p }));
+  const before = await fetchServerSchedule(tournamentId);
+  const onServer = new Set((before?.matches ?? []).map((m) => m.id));
+  const append = Boolean(before?.matches.some((m) => m.started));
+  const p = schedulePayload(mode, settings, append ? matches.filter((m) => !onServer.has(m.id)) : matches);
+  const { error } = await traceApi('schedule.publish', { tournamentId, matches: p.matches.length, append }, () => (append
+    ? supabase.rpc('add_tournament_fixtures', { p_tournament: tournamentId, p })
+    : supabase.rpc('publish_tournament_schedule', { p_tournament: tournamentId, p })));
   if (error) throw toTournamentError(error);
   const saved = await fetchServerSchedule(tournamentId);
   if (!saved) throw toTournamentError(null);

@@ -2,10 +2,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { tournamentErrorText } from '../data/tournament-errors';
-import { generatePairings, pairingProblem } from './generate';
+import { drawSchedule } from './round-draw';
 import { cancelPublishedMatch, fetchSchedule, movePublishedMatch, publishSchedule, ScheduleError } from './schedule-repository';
-import { byKickoff, moveProblem, placeMatches } from './slots';
-import type { Competition, Schedule, ScheduledMatch, ScheduleMode, ScheduleTeam, SlotSettings, StageName } from './types';
+import { byKickoff, moveProblem } from './slots';
+import type { Competition, RoundPlan, Schedule, ScheduledMatch, ScheduleMode, ScheduleTeam, SlotSettings, StageName } from './types';
 
 export const scheduleKey = (tournamentId: string) => ['tournament-schedule', tournamentId] as const;
 const DEFAULT_SETTINGS: SlotSettings = { perDay: 2, firstStartMin: 9 * 60 };
@@ -19,8 +19,8 @@ type Input = {
   overs: number;
   days: string[];
   isOwner: boolean;
-  /** Team ids per group. Undefined for a single league; null while the groups are still to be drawn. */
-  groupIds?: string[][] | null;
+  /** The round to draw in a published tournament; without one, the whole schedule is drawn. */
+  plan?: RoundPlan;
 };
 
 /** A match the owner adds by hand. */
@@ -34,7 +34,7 @@ const playsIn = (m: ScheduledMatch, teamId: string) => [m.home, m.away].some((s)
  * until the owner decides. Once published and unchanged, the owner moves or cancels single matches straight away
  * (the owner panel), and the teams playing are told.
  */
-export function useScheduleBuilder({ tournamentId, teams, competition, overs, days, isOwner, groupIds }: Input) {
+export function useScheduleBuilder({ tournamentId, teams, competition, overs, days, isOwner, plan }: Input) {
   const queryClient = useQueryClient();
   const saved = useQuery({ queryKey: scheduleKey(tournamentId), queryFn: () => fetchSchedule(tournamentId) });
   const [editedMode, setEditedMode] = useState<ScheduleMode | null>(null);
@@ -86,13 +86,11 @@ export function useScheduleBuilder({ tournamentId, teams, competition, overs, da
     setProblem(null);
   }
 
-  /** Draws every match again from the teams and settings, replacing any hand-made changes. */
+  /** Draws every match (or, with a plan, this round's matches) again from the teams and settings, replacing hand-made changes. */
   function draw() {
-    const refused = groupIds === null ? 'Draw the groups on the Groups tab first.' : pairingProblem(teams.length, competition);
-    if (refused) return setProblem(refused);
-    const placed = placeMatches(generatePairings(teams, competition, groupIds ?? undefined), days, settings, overs);
-    setProblem(placed.problem);
-    if (!placed.problem) edit(placed.matches);
+    const drawn = drawSchedule(plan, teams, competition, matches, days, settings, overs);
+    setProblem(drawn.problem);
+    if (drawn.matches) edit(drawn.matches);
   }
 
   /** Adds one match by hand, or returns why it cannot go there. */

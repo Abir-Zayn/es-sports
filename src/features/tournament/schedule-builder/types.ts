@@ -52,3 +52,9 @@ export type Schedule = {
   /** When it was last published, or null while it is a draft only the organisers see. */
   publishedAt: string | null;
 };
+
+/**
+ * The round being scheduled in a tournament with rounds. Matches of earlier rounds are kept; this round's matches are
+ * drawn after them. `groupIds` (team ids per group) is null until the groups are drawn; `slots` is the bracket order.
+ */
+export type RoundPlan = { round: number; kind: 'groups' | 'knockout'; groupIds: string[][] | null; slots: string[] };
