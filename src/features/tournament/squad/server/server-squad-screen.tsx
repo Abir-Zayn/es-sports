@@ -14,7 +14,7 @@ import { tournamentErrorText } from '../../data/tournament-errors';
 import { UserSearchSheet } from '../../roster/components/user-search-sheet';
 import { rosterKey } from '../../roster/use-roster';
 import { CandidateRow } from './candidate-row';
-import { addServerSquadPlayer, canEditSquad, fetchServerSquad, saveServerSquad, serverSquadKey, squadSaveProblem, type ServerSquad } from './squad-server';
+import { addServerSquadPlayers, canEditSquad, fetchServerSquad, saveServerSquad, serverSquadKey, squadSaveProblem, type ServerSquad } from './squad-server';
 
 type Props = { tournamentId: string; teamId: string };
 
@@ -75,10 +75,14 @@ function SquadPicker({ squad, tournamentId, teamId }: { squad: ServerSquad; tour
   });
   // The organiser adds anyone on esSports straight to the team and squad; no invite is sent.
   const add = useMutation({
-    mutationFn: (profileId: string) => addServerSquadPlayer(tournamentId, teamId, profileId),
-    onSuccess: async (_, profileId) => {
-      setDraft((current) => (current ? [...current, profileId] : null));
+    mutationFn: (profileIds: string[]) => addServerSquadPlayers(tournamentId, teamId, profileIds),
+    onSuccess: async (_, profileIds) => {
+      setDraft((current) => (current ? [...current, ...profileIds.filter((id) => !current.includes(id))] : null));
       setFinding(false);
+      await queryClient.invalidateQueries({ queryKey: serverSquadKey(tournamentId, teamId) });
+      void queryClient.invalidateQueries({ queryKey: rosterKey(tournamentId) });
+    },
+    onError: async () => {
       await queryClient.invalidateQueries({ queryKey: serverSquadKey(tournamentId, teamId) });
       void queryClient.invalidateQueries({ queryKey: rosterKey(tournamentId) });
     },
@@ -90,6 +94,7 @@ function SquadPicker({ squad, tournamentId, teamId }: { squad: ServerSquad; tour
   const short = Math.max(0, squad.minSquad - selected.length);
   const pastDeadline = Boolean(squad.registrationDeadline) && squad.registrationDeadline < new Date().toISOString().slice(0, 10);
   const full = selected.length >= squad.maxSquad;
+  const squadMembers = squad.candidates.filter((candidate) => selected.includes(candidate.profileId));
 
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}>
@@ -102,20 +107,22 @@ function SquadPicker({ squad, tournamentId, teamId }: { squad: ServerSquad; tour
         {editable ? null : <Text variant="caption" muted>Only the team owner or an admin can change the squad.</Text>}
       </Card>
       {squad.isOrganiser ? (
-        <Button label="Add player" disabled={full || save.isPending} onPress={() => { add.reset(); setFinding(true); }} />
+        <Button label="Add players" disabled={full || save.isPending} onPress={() => { add.reset(); setFinding(true); }} />
       ) : null}
-      {squad.candidates.length === 0 ? (
-        <Text muted>{squad.isOrganiser ? 'This team has no players yet. Add one above.' : 'This team has no players yet. Add members from Team management first.'}</Text>
+      {squadMembers.length === 0 ? (
+        <Text muted>{squad.isOrganiser ? 'No players in the squad yet. Add players above.' : 'No players in the squad yet.'}</Text>
       ) : (
         <Card padding="none" style={styles.list}>
-          {squad.candidates.map((candidate) => {
-            const inSquad = selected.includes(candidate.profileId);
-            return (
-              <CandidateRow key={candidate.profileId} candidate={candidate} inSquad={inSquad}
-                disabled={!editable || save.isPending || (!inSquad && (full || Boolean(candidate.takenBy)))}
-                showAction={editable} onToggle={() => toggle(candidate.profileId)} />
-            );
-          })}
+          {squadMembers.map((candidate) => (
+            <CandidateRow
+              key={candidate.profileId}
+              candidate={candidate}
+              inSquad
+              disabled={!editable || save.isPending}
+              showAction={editable}
+              onToggle={() => toggle(candidate.profileId)}
+            />
+          ))}
         </Card>
       )}
       {problem && dirty ? <Text accessibilityRole="alert" style={styles.error}>{problem}</Text> : null}
@@ -128,15 +135,17 @@ function SquadPicker({ squad, tournamentId, teamId }: { squad: ServerSquad; tour
       ) : null}
       <UserSearchSheet
         visible={finding}
-        title={`Add player to ${squad.teamName}`}
+        title={`Add players to ${squad.teamName}`}
         hint="They join the team and its squad straight away."
         actionLabel="Add"
         excludeIds={selected}
+        bookedBy={squad.bookedBy}
+        maxSelect={Math.max(0, squad.maxSquad - selected.length)}
         search={searchPlayers}
         suggest={suggestPlayers}
         inviting={add.isPending}
         error={add.isError ? tournamentErrorText(add.error) : null}
-        onInvite={(user) => add.mutate(user.id)}
+        onInviteMany={(users) => add.mutate(users.map((u) => u.id))}
         onClose={() => setFinding(false)}
       />
     </ScrollView>

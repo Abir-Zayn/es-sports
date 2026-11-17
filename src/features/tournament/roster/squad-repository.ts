@@ -22,12 +22,16 @@ function actorName(roster: Roster, teamId: string): string {
 }
 
 /** Adds the player and, once the rosters are locked, the alert that goes with it. */
-function addToSquad(roster: Roster, teamId: string, player: Omit<TournamentPlayer, 'addedAt' | 'addedDuringTournament'>, reason: string): Roster {
+function appendToSquad(roster: Roster, teamId: string, player: Omit<TournamentPlayer, 'addedAt' | 'addedDuringTournament'>, reason: string): Roster {
   const late = registrationStatus(roster) === 'locked';
   const added: TournamentPlayer = { ...player, addedAt: new Date().toISOString(), addedDuringTournament: late };
   const teams = roster.teams.map((t) => (t.id === teamId ? { ...t, players: [...t.players, added] } : t));
   const audit = late ? [auditEvent(roster, teamId, 'player_added', player.name, reason), ...roster.audit] : roster.audit;
-  return commit({ ...roster, teams, audit });
+  return { ...roster, teams, audit };
+}
+
+function addToSquad(roster: Roster, teamId: string, player: Omit<TournamentPlayer, 'addedAt' | 'addedDuringTournament'>, reason: string): Roster {
+  return commit(appendToSquad(roster, teamId, player, reason));
 }
 
 function auditEvent(roster: Roster, teamId: string, action: RosterAuditEvent['action'], playerName: string, reason: string): RosterAuditEvent {
@@ -40,6 +44,17 @@ export async function addMemberPlayer(tournamentId: string, actorId: string, tea
   const roster = current(tournamentId);
   fail(addPlayerProblem(roster, teamId, actorId, { name: user.name, userId: user.id, phone: null }, reason));
   return addToSquad(roster, teamId, { id: newId('player'), name: user.name, role, userId: user.id, phone: null, claimToken: null }, reason);
+}
+
+/** Adds multiple people who already have accounts. */
+export async function addMemberPlayers(tournamentId: string, actorId: string, teamId: string, users: UserSummary[], role: PlayerRole, reason = ''): Promise<Roster> {
+  await wait();
+  let roster = current(tournamentId);
+  for (const user of users) {
+    fail(addPlayerProblem(roster, teamId, actorId, { name: user.name, userId: user.id, phone: null }, reason));
+    roster = appendToSquad(roster, teamId, { id: newId('player'), name: user.name, role, userId: user.id, phone: null, claimToken: null }, reason);
+  }
+  return commit(roster);
 }
 
 /** Adds a guest by name, with a phone if known, and a claim link they can use once they join. */

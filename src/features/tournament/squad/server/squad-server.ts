@@ -21,6 +21,8 @@ export type ServerSquad = {
   registrationDeadline: string;
   candidates: SquadCandidate[];
   selectedIds: string[];
+  /** Every player in another team's squad in this tournament (`profileId -> teamName`). */
+  bookedBy?: Record<string, string>;
   myRole: TeamRole | null;
   /** The tournament owner: may add any player straight to the team and squad. */
   isOrganiser: boolean;
@@ -63,6 +65,7 @@ export async function fetchServerSquad(tournamentId: string, teamId: string, meI
       availability: member.availability, takenBy: takenBy.get(member.profileId) ?? null,
     })),
     selectedIds: rows.filter((row) => row.teamId === teamId).map((row) => row.profileId),
+    bookedBy: Object.fromEntries(takenBy),
     myRole: members.find((member) => member.profileId === meId)?.role ?? null,
     isOrganiser: tournament.ownerId === meId,
   };
@@ -82,6 +85,13 @@ export async function addServerSquadPlayer(tournamentId: string, teamId: string,
     p_tournament: tournamentId, p_team: teamId, p_profile: profileId,
   }));
   if (error) throw toTournamentError(error);
+}
+
+/** Adds multiple people to the team (as players) and straight into its squad. */
+export async function addServerSquadPlayers(tournamentId: string, teamId: string, profileIds: string[]): Promise<void> {
+  for (const profileId of profileIds) {
+    await addServerSquadPlayer(tournamentId, teamId, profileId);
+  }
 }
 
 /** Who may change the squad: the tournament owner, the team owner or an admin (the server applies the same rule). */

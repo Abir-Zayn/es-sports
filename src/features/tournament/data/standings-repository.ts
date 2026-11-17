@@ -14,8 +14,8 @@ type StandingRow = {
 };
 
 const tones: readonly AvatarTone[] = ['blue', 'yellow', 'neutral'];
-/** 16 teams is the most a tournament can have. */
-const ROW_LIMIT = 16;
+/** 24 teams is the most a tournament can have. */
+const ROW_LIMIT = 24;
 
 export const standingsKey = (tournamentId: string) => ['tournament-standings', tournamentId] as const;
 
