@@ -85,6 +85,20 @@ describe('squad builder', () => {
     await waitFor(() => expect(screen.queryByText('Sumon Das')).toBeNull());
   });
 
+  it('lets the team owner select and add multiple players at once', async () => {
+    await show();
+    await screen.findByText('0/12 players');
+    await fireEvent.press(screen.getByRole('button', { name: 'Find player' }));
+    await fireEvent.changeText(screen.getByLabelText('Search players by name'), 'an');
+    await fireEvent.press(await screen.findByRole('button', { name: 'Select Sabbir Rahman' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Select Farhan Kabir' }));
+    expect(screen.getByText('2 of 12 selected')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Add 2 players' }));
+    expect(await screen.findByText('2/12 players')).toBeTruthy();
+    expect(screen.getByText('Sabbir Rahman')).toBeTruthy();
+    expect(screen.getByText('Farhan Kabir')).toBeTruthy();
+  });
+
   it('shows another team read-only', async () => {
     mockParams = { tournamentId: 'hsf-2026', teamId: 'hsf-hs' };
     await show();

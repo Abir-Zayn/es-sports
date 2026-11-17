@@ -7,12 +7,15 @@ export function useSquadActions(tournamentId: string, teamId: string, actorId: s
   const addMember = useRosterAction(tournamentId, (a: { user: UserSummary; role: PlayerRole; reason: string }) =>
     squads.addMemberPlayer(tournamentId, actorId, teamId, a.user, a.role, a.reason),
   );
+  const addMembers = useRosterAction(tournamentId, (a: { users: UserSummary[]; role: PlayerRole; reason: string }) =>
+    squads.addMemberPlayers(tournamentId, actorId, teamId, a.users, a.role, a.reason),
+  );
   const addGuest = useRosterAction(tournamentId, (a: { input: GuestPlayerInput; reason: string }) =>
     squads.addGuestPlayer(tournamentId, actorId, teamId, a.input, a.reason),
   );
   const remove = useRosterAction(tournamentId, (a: { playerId: string; reason: string }) =>
     squads.removePlayer(tournamentId, actorId, teamId, a.playerId, a.reason),
   );
-  const all = [addMember, addGuest, remove];
-  return { addMember, addGuest, remove, busy: all.some((m) => m.isPending), reset: () => all.forEach((m) => m.reset()) };
+  const all = [addMember, addMembers, addGuest, remove];
+  return { addMember, addMembers, addGuest, remove, busy: all.some((m) => m.isPending), reset: () => all.forEach((m) => m.reset()) };
 }

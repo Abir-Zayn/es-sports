@@ -22,7 +22,11 @@ type Props = {
   /** Sending an invite. The sheet closes once it succeeds. */
   inviting: boolean;
   error: string | null;
-  onInvite: (user: UserSummary) => void;
+  onInvite?: (user: UserSummary) => void;
+  /** When provided, lets the user select multiple people before confirming. */
+  onInviteMany?: (users: UserSummary[]) => void;
+  /** Maximum number of people that can be selected in multi-select mode. */
+  maxSelect?: number;
   onClose: () => void;
   /** The button on each result. */
   actionLabel?: string;
@@ -42,10 +46,22 @@ export function UserSearchSheet({ visible, title, onClose, ...body }: Props) {
   );
 }
 
-function SearchBody({ hint, excludeIds, inviting, error, onInvite, actionLabel = 'Invite', children, suggest, search: findUsers = searchUsers }: Omit<Props, 'visible' | 'title' | 'onClose'>) {
+function SearchBody({ hint, excludeIds, inviting, error, onInvite, onInviteMany, maxSelect, actionLabel = 'Invite', children, suggest, search: findUsers = searchUsers }: Omit<Props, 'visible' | 'title' | 'onClose'>) {
   const { colors } = useTheme();
   const [text, setText] = useState('');
   const [query, setQuery] = useState('');
+  const [picked, setPicked] = useState<UserSummary[]>([]);
+  const multi = Boolean(onInviteMany);
+  const pickedIds = new Set(picked.map((u) => u.id));
+  const atLimit = maxSelect !== undefined && picked.length >= maxSelect;
+
+  function togglePick(user: UserSummary) {
+    setPicked((prev) => {
+      if (prev.some((u) => u.id === user.id)) return prev.filter((u) => u.id !== user.id);
+      if (maxSelect !== undefined && prev.length >= maxSelect) return prev;
+      return [...prev, user];
+    });
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => setQuery(text.trim()), DEBOUNCE_MS);
@@ -100,26 +116,53 @@ function SearchBody({ hint, excludeIds, inviting, error, onInvite, actionLabel =
             {showingSuggestions ? 'No suggestions available. Search for a player by name.' : `No one found for “${query}”.`}
           </Text>
         ) : (
-          results.map((user) => (
-            <PersonRow
-              key={user.id}
-              user={user}
-              detail={user.area}
-              trailing={
-                <View>
-                  <Button
-                    label={actionLabel}
-                    size="compact"
-                    disabled={inviting}
-                    accessibilityLabel={`${actionLabel} ${user.name}`}
-                    onPress={() => onInvite(user)}
-                  />
-                </View>
-              }
-            />
-          ))
+          results.map((user) => {
+            const isSelected = multi && pickedIds.has(user.id);
+            return (
+              <PersonRow
+                key={user.id}
+                user={user}
+                detail={user.area}
+                trailing={
+                  <View>
+                    {multi ? (
+                      <Button
+                        label={isSelected ? 'Selected' : 'Select'}
+                        variant={isSelected ? 'primary' : 'secondary'}
+                        size="compact"
+                        disabled={inviting || (!isSelected && atLimit)}
+                        accessibilityLabel={isSelected ? `Deselect ${user.name}` : `Select ${user.name}`}
+                        onPress={() => togglePick(user)}
+                      />
+                    ) : (
+                      <Button
+                        label={actionLabel}
+                        size="compact"
+                        disabled={inviting}
+                        accessibilityLabel={`${actionLabel} ${user.name}`}
+                        onPress={() => onInvite?.(user)}
+                      />
+                    )}
+                  </View>
+                }
+              />
+            );
+          })
         )}
       </ScrollView>
+      {multi ? (
+        <View style={styles.footer}>
+          <Text variant="caption" muted>
+            {maxSelect !== undefined ? `${picked.length} of ${maxSelect} selected` : `${picked.length} selected`}
+          </Text>
+          <Button
+            label={picked.length === 0 ? `${actionLabel} players` : `${actionLabel} ${picked.length} ${picked.length === 1 ? 'player' : 'players'}`}
+            loading={inviting}
+            disabled={picked.length === 0 || inviting}
+            onPress={() => onInviteMany?.(picked)}
+          />
+        </View>
+      ) : null}
     </>
   );
 }
@@ -130,4 +173,5 @@ const styles = StyleSheet.create({
   list: { flex: 1 },
   results: { paddingBottom: spacing.lg },
   status: { paddingVertical: spacing.lg },
+  footer: { gap: spacing.sm, paddingTop: spacing.sm },
 });
