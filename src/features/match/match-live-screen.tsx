@@ -1,5 +1,4 @@
 import ChevronRight from 'lucide-react-native/icons/chevron-right';
-import Info from 'lucide-react-native/icons/info';
 import { useLocalSearchParams } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -56,12 +55,10 @@ function LiveBody({ view, matchId }: { view: LiveMatchViewData; matchId: string 
       {view.stream ? (
         <StreamLinkCard label={view.stream.label} source={view.stream.source} onPress={() => comingSoon('Live stream')} />
       ) : null}
-      {view.header.status === 'scheduled' ? null : <ThisOverCard current={current} previous={earlier.slice(0, 2)} />}
       {view.crease ? (
         <View style={styles.section}>
           <View style={styles.sectionHead}>
             <Text accessibilityRole="header" style={styles.sectionTitle}>At the crease</Text>
-            <Info size={sizes.iconSmall} color={colors.textMuted} strokeWidth={2} />
           </View>
           <LiveBattersCard batters={view.crease.batters} partnership={view.crease.partnership} />
           {view.crease.bowler ? <LiveBowlerCard bowler={view.crease.bowler} /> : null}
@@ -69,6 +66,7 @@ function LiveBody({ view, matchId }: { view: LiveMatchViewData; matchId: string 
       ) : (
         <Text muted style={styles.note}>The crease and the over appear here once the first ball is bowled.</Text>
       )}
+      {view.header.status === 'scheduled' ? null : <ThisOverCard current={current} previous={earlier.slice(0, 2)} />}
       {view.recentOvers.length > 0 ? (
         <Pressable
           accessibilityRole="button"

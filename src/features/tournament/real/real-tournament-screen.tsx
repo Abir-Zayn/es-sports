@@ -34,7 +34,9 @@ export function RealTournamentScreen({ id, section }: Props) {
   const tournament = useQuery({ queryKey: tournamentKey(id), queryFn: () => fetchTournament(id) });
   const staff = useQuery({ queryKey: [...tournamentKey(id), 'staff'], queryFn: () => fetchTournamentStaff(id), enabled: tournament.data != null });
   const record = tournament.data;
-  const role = staff.data?.find((member) => member.user.id === session?.user.id)?.role ?? null;
+  // A closed tournament is read-only, so staff lose their change buttons.
+  const staffRole = staff.data?.find((member) => member.user.id === session?.user.id)?.role ?? null;
+  const role = record?.closedAt ? null : staffRole;
   const manage = () => router.push({ pathname: '/tournament/add-teams', params: { tournamentId: id } });
   const schedule = () => router.push({ pathname: '/tournament/schedule', params: { tournamentId: id } });
   let body;
@@ -47,16 +49,16 @@ export function RealTournamentScreen({ id, section }: Props) {
       </View>
     );
   } else if (!record) body = <Text muted>This tournament could not be found.</Text>;
-  else if (section === 'overview') body = <RealTournamentOverview tournament={record} staff={staff.data ?? []} canManage={role !== null} onManage={manage} />;
+  else if (section === 'overview') body = <RealTournamentOverview tournament={record} staff={staff.data ?? []} canManage={role !== null} isOwner={staffRole === 'owner'} userId={session?.user.id ?? ''} onManage={manage} />;
   else if (section === 'teams') body = <RealTournamentTeams tournament={record} canManage={role !== null} onManage={manage} />;
   else if (section === 'matches') body = <RealTournamentMatches tournament={record} canSchedule={role === 'owner'} canStart={role !== null} onSchedule={schedule} />;
   else if (section === 'table') body = <RealTournamentTable tournament={record} />;
   else if (section === 'stats') body = <RealTournamentStats tournament={record} />;
   else body = <RealKnockout tournament={record} />;
-  const format = record ? oversLabel(record.overs) : '';
+  const format = record ? `${oversLabel(record.overs)}${record.closedAt ? ' · Completed' : ''}` : '';
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <TournamentCompactHeader short={initials(record?.name ?? '')} name={record?.name ?? 'Tournament'} tone="blue" format={format} onBack={goBack} />
+      <TournamentCompactHeader short={initials(record?.name ?? '')} name={record?.name ?? 'Tournament'} tone="blue" avatarUri={record?.profileUrl ?? undefined} format={format} onBack={goBack} />
       <TournamentSectionTabs tournamentId={id} selected={section} />
       <View style={styles.body}>{body}</View>
     </ScrollView>

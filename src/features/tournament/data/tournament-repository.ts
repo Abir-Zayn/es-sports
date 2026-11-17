@@ -11,8 +11,11 @@ export type TournamentRecord = {
   matchFormat: string; overs: number; competition: string; teamsPlanned: number; ball: string; sideFormat: string;
   playersPerSide: number; minSquad: number; maxSquad: number; registrationOpens: string; registrationDeadline: string;
   profileUrl: string | null;
+  coverUrl?: string | null;
   /** ISO time it was deleted, or null. A deleted tournament can be restored for 3 days. */
   deletedAt?: string | null;
+  /** ISO time the owner closed it, or null while it is running. A closed tournament refuses changes. */
+  closedAt?: string | null;
 };
 export type MyTournament = TournamentRecord & { myRole: TournamentRole };
 export type PersonRecord = { id: string; name: string; area: string | null; avatarUrl: string | null };
@@ -21,13 +24,13 @@ export type StaffRecord = { user: PersonRecord; role: TournamentRole };
 export type EnteredTeam = { team: TeamRecord; owner: PersonRecord | null; eliminated: boolean };
 
 // One string literal, so the client can type the rows from it.
-const TOURNAMENT_COLUMNS = 'id, owner_id, name, city, venue, start_date, end_date, match_format, overs, competition, teams_planned, ball, side_format, players_per_side, min_squad, max_squad, registration_opens, registration_deadline, profile_url, deleted_at';
+const TOURNAMENT_COLUMNS = 'id, owner_id, name, city, venue, start_date, end_date, match_format, overs, competition, teams_planned, ball, side_format, players_per_side, min_squad, max_squad, registration_opens, registration_deadline, profile_url, cover_url, deleted_at, closed_at';
 const TEAM_COLUMNS = 'id, name, short_name, tone, logo_url, area, district';
 type TournamentRow = {
   id: string; owner_id: string | null; name: string; city: string; venue: string; start_date: string; end_date: string;
   match_format: string; overs: number; competition: string; teams_planned: number; ball: string; side_format: string; players_per_side: number;
-  min_squad: number; max_squad: number; registration_opens: string | null; registration_deadline: string | null; profile_url: string | null;
-  deleted_at: string | null;
+  min_squad: number; max_squad: number; registration_opens: string | null; registration_deadline: string | null; profile_url: string | null; cover_url: string | null;
+  deleted_at: string | null; closed_at: string | null;
 };
 type ProfileRow = { full_name: string | null; area: string | null; avatar_url: string | null } | null;
 
@@ -43,8 +46,8 @@ export function toTournament(row: TournamentRow): TournamentRecord {
     // The knockout format is retired: every tournament plays as a round robin and the owner eliminates teams by hand.
     matchFormat: row.match_format, overs: row.overs, competition: 'league', teamsPlanned: row.teams_planned, ball: row.ball, sideFormat: row.side_format,
     playersPerSide: row.players_per_side, minSquad: row.min_squad, maxSquad: row.max_squad, registrationOpens: row.registration_opens ?? '',
-    registrationDeadline: row.registration_deadline ?? '', profileUrl: row.profile_url,
-    deletedAt: row.deleted_at,
+    registrationDeadline: row.registration_deadline ?? '', profileUrl: row.profile_url, coverUrl: row.cover_url,
+    deletedAt: row.deleted_at, closedAt: row.closed_at,
   };
 }
 

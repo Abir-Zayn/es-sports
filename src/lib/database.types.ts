@@ -945,6 +945,7 @@ export type Database = {
           competition: string
           cover_url: string | null
           created_at: string
+          closed_at: string | null
           deleted_at: string | null
           end_date: string
           first_start_min: number | null
@@ -973,6 +974,7 @@ export type Database = {
           competition: string
           cover_url?: string | null
           created_at?: string
+          closed_at?: string | null
           deleted_at?: string | null
           end_date: string
           first_start_min?: number | null
@@ -1001,6 +1003,7 @@ export type Database = {
           competition?: string
           cover_url?: string | null
           created_at?: string
+          closed_at?: string | null
           deleted_at?: string | null
           end_date?: string
           first_start_min?: number | null
@@ -1240,6 +1243,20 @@ export type Database = {
       }
       set_tournament_team_eliminated: {
         Args: { p_eliminated: boolean; p_team: string; p_tournament: string }
+        Returns: undefined
+      }
+      close_tournament: { Args: { p_tournament: string }; Returns: undefined }
+      update_tournament: {
+        Args: {
+          p_cover_url: string | null
+          p_end_date: string
+          p_overs: number
+          p_profile_url: string | null
+          p_registration_deadline: string | null
+          p_registration_opens: string | null
+          p_start_date: string
+          p_tournament: string
+        }
         Returns: undefined
       }
       delete_tournament: { Args: { p_tournament: string }; Returns: undefined }
