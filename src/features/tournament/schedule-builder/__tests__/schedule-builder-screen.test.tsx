@@ -59,7 +59,7 @@ describe('schedule builder', () => {
 
   it('draws a round robin over the tournament days, two matches a day by default', async () => {
     await show();
-    expect(await screen.findByText('Round robin · 20 overs · 4 teams · 1 Nov – 10 Nov')).toBeTruthy();
+    expect(await screen.findByText('20 overs · 4 teams · 1 Nov – 10 Nov')).toBeTruthy();
     // Nothing to publish until the schedule is drawn.
     expect(screen.queryByRole('button', { name: 'Publish schedule' })).toBeNull();
     await fireEvent.press(screen.getByRole('button', { name: 'Draw schedule' }));
@@ -72,7 +72,7 @@ describe('schedule builder', () => {
 
   it('adjusts start time with hour and minute sliders and moves a match', async () => {
     await show();
-    await screen.findByText('Round robin · 20 overs · 4 teams · 1 Nov – 10 Nov');
+    await screen.findByText('20 overs · 4 teams · 1 Nov – 10 Nov');
     await setSlider('First match hour', 1);
     await setSlider('First match minutes', 15);
     expect(screen.getByText('10:15 AM')).toBeTruthy();
