@@ -119,4 +119,24 @@ describe('a real tournament', () => {
     expect(await screen.findByText(/Could not reach the server/)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Try again' })).toBeTruthy();
   });
+
+  it('lets the owner close the tournament after confirming, then shows it completed with the winner', async () => {
+    await show(<RealTournamentScreen id={T} section="overview" />);
+    await fireEvent.press(await screen.findByRole('button', { name: 'Close tournament' }));
+    await fireEvent.press(screen.getAllByRole('button', { name: 'Close tournament' }).at(-1)!);
+    expect(fake.rpc).toHaveBeenCalledWith('close_tournament', { p_tournament: T });
+  });
+
+  it('shows a closed tournament as completed, names the winner and drops the change buttons', async () => {
+    fake.results.tournaments = { data: { ...tournament, closed_at: '2026-11-12T18:00:00Z' }, error: null };
+    fake.results.tournament_standings = {
+      data: [{ team_id: 'a', name: 'Alpha XI', short_name: 'ALP', tone: 'blue', played: 3, won: 3, lost: 0, tied: 0, points: 6, nrr: 1.2 }],
+      error: null,
+    };
+    await show(<RealTournamentScreen id={T} section="overview" />);
+    expect(await screen.findByText('Winner: Alpha XI · 6 pts')).toBeTruthy();
+    expect(screen.getByText('20 overs · Completed')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Close tournament' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Manage teams and staff' })).toBeNull();
+  });
 });
