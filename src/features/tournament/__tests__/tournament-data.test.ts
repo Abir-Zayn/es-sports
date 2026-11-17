@@ -1,8 +1,8 @@
 import { fake } from '../__fixtures__/supabase-fake';
 import { emptyDraft } from '../create/draft';
 import { TournamentError } from '../data/tournament-errors';
-import { fetchMyTournaments, fetchTournament, fetchTournamentStaff, fetchTournamentTeams } from '../data/tournament-repository';
-import { addTournamentTeam, createTournament, createTournamentTeam, draftToPayload } from '../data/tournament-writes';
+import { fetchDeletedTournaments, fetchMyTournaments, fetchTournament, fetchTournamentStaff, fetchTournamentTeams, restoreDaysLeft } from '../data/tournament-repository';
+import { addTournamentTeam, createTournament, createTournamentTeam, deleteTournament, draftToPayload, restoreTournament } from '../data/tournament-writes';
 
 jest.mock('@/lib/supabase', () => ({ supabase: jest.requireActual('../__fixtures__/supabase-fake').fake }));
 
@@ -83,6 +83,33 @@ describe('reading tournaments', () => {
     const list = await fetchMyTournaments('me');
     expect(list.map((t) => `${t.id}:${t.myRole}`)).toEqual(['new:owner', 'old:moderator']);
     expect(fake.calls('tournament_staff', 'eq')).toContainEqual(['user_id', 'me']);
+  });
+
+  it('keeps deleted tournaments out of my list and shows only the owner\'s ones still restorable in Recently deleted', async () => {
+    const now = Date.parse('2026-11-17T12:00:00Z');
+    fake.results.tournament_staff = {
+      data: [
+        { role: 'owner', tournaments: { ...row, id: 'live', deleted_at: null } },
+        { role: 'owner', tournaments: { ...row, id: 'yesterday', deleted_at: '2026-11-16T12:00:00Z' } },
+        { role: 'owner', tournaments: { ...row, id: 'expired', deleted_at: '2026-11-13T11:00:00Z' } },
+        { role: 'moderator', tournaments: { ...row, id: 'theirs', deleted_at: '2026-11-16T12:00:00Z' } },
+      ],
+      error: null,
+    };
+    expect((await fetchMyTournaments('me')).map((t) => t.id)).toEqual(['live']);
+    expect((await fetchDeletedTournaments('me', now)).map((t) => t.id)).toEqual(['yesterday']);
+    expect(restoreDaysLeft('2026-11-16T12:00:00Z', now)).toBe(2);
+    expect(restoreDaysLeft('2026-11-14T13:00:00Z', now)).toBe(1);
+    expect(restoreDaysLeft('2026-11-13T11:00:00Z', now)).toBe(0);
+    expect(restoreDaysLeft('not a date', now)).toBe(0);
+  });
+
+  it('deletes and restores through the server, with a clear message once the restore window is over', async () => {
+    await deleteTournament('t');
+    expect(fake.rpc).toHaveBeenLastCalledWith('delete_tournament', { p_tournament: 't' });
+    fake.rpcResult = { data: null, error: { code: 'ET013', message: 'too late' } } as never;
+    await expect(restoreTournament('t')).rejects.toThrow('deleted more than 3 days ago');
+    expect(fake.rpc).toHaveBeenLastCalledWith('restore_tournament', { p_tournament: 't' });
   });
 
   it('lists the staff with the owner role kept apart from moderators', async () => {

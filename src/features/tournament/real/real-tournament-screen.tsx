@@ -12,6 +12,7 @@ import { competitionFormats, oversLabel } from '../create/draft';
 import { tournamentErrorText } from '../data/tournament-errors';
 import { fetchTournament, fetchTournamentStaff, tournamentKey } from '../data/tournament-repository';
 import type { TournamentSectionId } from '../sample-data';
+import { RealKnockout } from '../knockout/real-knockout';
 import { useTournamentRoutes } from '../use-tournament-routes';
 import { RealTournamentMatches } from './real-tournament-matches';
 import { RealTournamentOverview } from './real-tournament-overview';
@@ -51,7 +52,7 @@ export function RealTournamentScreen({ id, section }: Props) {
   else if (section === 'matches') body = <RealTournamentMatches tournament={record} canSchedule={role === 'owner'} canStart={role !== null} onSchedule={schedule} />;
   else if (section === 'table') body = <RealTournamentTable tournament={record} />;
   else if (section === 'stats') body = <RealTournamentStats tournament={record} />;
-  else body = <Text muted>The knockout appears once matches are played.</Text>;
+  else body = <RealKnockout tournament={record} />;
   const format = record ? `${competitionFormats.find((item) => item.value === record.competition)?.label ?? ''} · ${oversLabel(record.overs)}` : '';
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>

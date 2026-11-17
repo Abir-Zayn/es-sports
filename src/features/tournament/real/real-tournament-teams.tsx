@@ -1,57 +1,67 @@
 import { useQuery } from '@tanstack/react-query';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import Users from 'lucide-react-native/icons/users';
+import { StyleSheet, View } from 'react-native';
 
-import { Button, Card, InitialsAvatar, Text } from '@/components/ui';
+import { Button, Card, Text } from '@/components/ui';
 import { useOpenTeam } from '@/features/team';
-import { sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
+import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { fetchTournamentTeams, tournamentKey, type TournamentRecord } from '../data/tournament-repository';
+import { fillRatio, groupTeams, teamsSummary } from '../teams/group-teams';
+import { TeamsGroup } from '../teams/teams-group';
+import { TeamsSkeleton } from '../teams/teams-skeleton';
 
 type Props = { tournament: TournamentRecord; canManage: boolean; onManage: () => void };
 
-/** The teams that have joined, in the order they joined, each with its owner. */
+/** The teams that have joined: those still playing first, knocked-out teams in their own group below. */
 export function RealTournamentTeams({ tournament, canManage, onManage }: Props) {
   const styles = useThemedStyles(createStyles);
+  const { colors } = useTheme();
   const openTeam = useOpenTeam();
   const teams = useQuery({ queryKey: [...tournamentKey(tournament.id), 'teams'], queryFn: () => fetchTournamentTeams(tournament.id) });
-  if (teams.isPending) return <ActivityIndicator accessibilityLabel="Loading teams" />;
+  if (teams.isPending) return <TeamsSkeleton />;
   if (teams.isError || !teams.data) {
     return (
-      <View style={styles.gap}>
-        <Text muted>Could not load the teams.</Text>
+      <Card style={styles.gap}>
+        <Text accessibilityRole="alert" style={styles.name}>Could not load the teams</Text>
+        <Text muted>Check your connection and try again.</Text>
         <Button label="Try again" variant="secondary" onPress={() => void teams.refetch()} />
-      </View>
+      </Card>
     );
   }
+  const planned = tournament.teamsPlanned;
+  const joined = teams.data.length;
+  const { active, eliminated } = groupTeams(teams.data);
   return (
     <>
-      <Text accessibilityRole="header" style={styles.title}>{`${teams.data.length} of ${tournament.teamsPlanned} teams`}</Text>
-      {teams.data.length === 0 ? <Text muted>No teams have joined yet.</Text> : null}
-      {teams.data.length > 0 ? (
-      <Card padding="none" style={styles.list}>
-        {teams.data.map(({ team, owner }) => (
-          <Pressable key={team.id} accessibilityRole="button" accessibilityLabel={`Open ${team.name}`} onPress={() => openTeam(team.id)}
-            style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
-            <InitialsAvatar label={team.shortName} tone={team.tone} imageUri={team.logoUrl ?? undefined} size={sizes.avatar} shape="square" />
-            <View style={styles.names}>
-              <Text style={styles.name} numberOfLines={1}>{team.name}</Text>
-              {owner ? <Text muted variant="caption" numberOfLines={1}>{`Owner: ${owner.name}`}</Text> : null}
-            </View>
-          </Pressable>
-        ))}
-      </Card>
+      <View style={styles.gap}>
+        <Text accessibilityRole="header" style={styles.title}>{`${joined} of ${planned} teams`}</Text>
+        <Text muted>{teamsSummary(joined, planned, eliminated.length)}</Text>
+        <View style={styles.track} accessible accessibilityRole="progressbar" accessibilityLabel="Places filled"
+          accessibilityValue={{ min: 0, max: planned, now: joined }}>
+          <View style={[styles.fill, { width: `${fillRatio(joined, planned) * 100}%` }]} />
+        </View>
+      </View>
+      {joined === 0 ? (
+        <Card style={styles.empty}>
+          <Users size={sizes.icon} color={colors.textMuted} />
+          <Text style={styles.name}>No teams yet</Text>
+          <Text muted style={styles.center}>{canManage ? 'Add teams to fill the line-up.' : 'Teams appear here once they join.'}</Text>
+        </Card>
       ) : null}
+      <TeamsGroup title={eliminated.length > 0 ? 'Still in' : undefined} teams={active} onOpen={openTeam} />
+      <TeamsGroup title="Eliminated" teams={eliminated} onOpen={openTeam} />
       {canManage ? <Button label="Add teams" variant="secondary" onPress={onManage} /> : null}
     </>
   );
 }
 
 const createStyles = (colors: Palette) => StyleSheet.create({
-  gap: { gap: spacing.md },
+  gap: { gap: spacing.sm },
   title: typography.headlineLg,
-  list: { paddingHorizontal: sizes.cardPaddingTight },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
-  pressed: { transform: [{ scale: 0.95 }] },
-  names: { flex: 1, minWidth: 0, gap: spacing.xs / 2 },
-  name: typography.bodyMd,
+  name: typography.headlineMd,
+  track: { height: sizes.progressBar, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised, overflow: 'hidden', marginTop: spacing.xs },
+  fill: { height: '100%', borderRadius: radius.pill, backgroundColor: colors.primary },
+  empty: { alignItems: 'center', gap: spacing.sm },
+  center: { textAlign: 'center' },
 });

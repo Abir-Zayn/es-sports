@@ -69,3 +69,15 @@ export async function setTournamentTeamEliminated(tournamentId: string, teamId: 
   }));
   if (error) throw toTournamentError(error);
 }
+
+/** Moves the tournament to Recently deleted. Owner only; it can be restored for 3 days. A repeat is fine. */
+export async function deleteTournament(tournamentId: string): Promise<void> {
+  const { error } = await traceApi('tournament.delete', { tournamentId }, () => supabase.rpc('delete_tournament', { p_tournament: tournamentId }));
+  if (error) throw toTournamentError(error);
+}
+
+/** Brings a deleted tournament back. Owner only, within 3 days of deleting it. A repeat is fine. */
+export async function restoreTournament(tournamentId: string): Promise<void> {
+  const { error } = await traceApi('tournament.restore', { tournamentId }, () => supabase.rpc('restore_tournament', { p_tournament: tournamentId }));
+  if (error) throw toTournamentError(error);
+}

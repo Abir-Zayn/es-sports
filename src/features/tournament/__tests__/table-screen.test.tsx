@@ -44,9 +44,12 @@ describe('league table screen', () => {
 
   it('shows the column headings, every team with its figures, and the qualify legend', async () => {
     await show();
+    // The heading strip is visual only: each row reads its own headings aloud, so it is hidden from screen readers.
     for (const heading of ['#', 'Team', 'P', 'W', 'L', 'NR', 'NRR', 'PTS']) {
-      expect(screen.getAllByText(heading).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(heading, { includeHiddenElements: true }).length).toBeGreaterThan(0);
     }
+    expect(screen.queryByText('Team')).toBeNull();
+    expect(screen.getByLabelText('Columns: played, won, lost, no result, net run rate, points')).toBeTruthy();
     for (const { team } of leagueTable.rows) expect(screen.getByText(team.name)).toBeTruthy();
     expect(screen.getByText('+1.245')).toBeTruthy();
     expect(screen.getByText('-1.180')).toBeTruthy();
