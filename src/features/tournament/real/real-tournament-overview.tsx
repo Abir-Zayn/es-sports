@@ -43,10 +43,10 @@ export function RealTournamentOverview({ tournament: t, staff, canManage, isOwne
           </View>
         ))}
       </View>
+      {canManage && !t.closedAt ? <Button label="Manage teams and staff" onPress={onManage} /> : null}
       {isOwner && !t.closedAt ? (
         <Button label="Edit tournament" variant="secondary" onPress={() => router.push({ pathname: '/tournament/edit', params: { tournamentId: t.id } })} />
       ) : null}
-      {canManage && !t.closedAt ? <Button label="Manage teams and staff" onPress={onManage} /> : null}
       {isOwner ? <CloseTournamentButton tournament={t} userId={userId} /> : null}
     </>
   );
