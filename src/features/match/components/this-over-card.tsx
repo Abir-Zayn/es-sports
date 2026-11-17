@@ -1,8 +1,7 @@
-import Info from 'lucide-react-native/icons/info';
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import type { OverSummary } from '../types';
 import { LiveBallPill, spokenBall } from './live-ball-pill';
@@ -13,14 +12,12 @@ const spokenOver = (over: OverSummary) => over.balls.filter((b) => b !== '').map
 
 /** The over being bowled ball by ball as circular badges in a DAZN-style Form card, with recent overs below. */
 export function ThisOverCard({ current, previous }: Props) {
-  const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   if (!current) {
     return (
       <View style={styles.section}>
         <View style={styles.sectionHead}>
           <Text accessibilityRole="header" style={styles.sectionTitle}>Recent overs</Text>
-          <Info size={sizes.iconSmall} color={colors.textMuted} strokeWidth={2} />
         </View>
         <View style={styles.card}>
           <View style={styles.emptyRow}>
@@ -35,7 +32,6 @@ export function ThisOverCard({ current, previous }: Props) {
     <View style={styles.section}>
       <View style={styles.sectionHead}>
         <Text accessibilityRole="header" style={styles.sectionTitle}>Recent overs</Text>
-        <Info size={sizes.iconSmall} color={colors.textMuted} strokeWidth={2} />
       </View>
       <View style={styles.card}>
         <View style={styles.row}>
