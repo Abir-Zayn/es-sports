@@ -72,22 +72,22 @@ describe('reading a server squad', () => {
 });
 
 describe('the squad screen', () => {
-  it('adds players, shows the shortfall and saves the whole list in one call', async () => {
+  it('shows the shortfall, hides unselected members, and saves the updated squad in one call', async () => {
     await show();
+    expect(screen.getByText('1/3 players')).toBeTruthy();
     expect(screen.getByText('Needs 2 more to reach the minimum of 3.')).toBeTruthy();
-    expect(screen.getByText('Injured')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Add Nayeem to the squad' })).toBeDisabled();
-    await fireEvent.press(screen.getByRole('button', { name: 'Add Abir to the squad' }));
-    await fireEvent.press(screen.getByRole('button', { name: 'Add Rafi to the squad' }));
-    expect(screen.getByText('3/3 players')).toBeTruthy();
+    expect(screen.queryByText('Abir')).toBeNull();
+    expect(screen.queryByText('Other team members')).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Take Lonicav out of the squad' }));
+    expect(screen.getByText('0/3 players')).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Save squad' }));
-    await waitFor(() => expect(fake.rpc).toHaveBeenCalledWith('set_tournament_squad', { p_tournament: T, p_team: 'a', p_players: ['me', 'p1', 'p2'] }));
+    await waitFor(() => expect(fake.rpc).toHaveBeenCalledWith('set_tournament_squad', { p_tournament: T, p_team: 'a', p_players: [] }));
   });
 
   it('says plainly when the server finds a clash', async () => {
     fake.rpcResult = { data: null, error: { code: 'ET002', message: 'raw' } };
     await show();
-    await fireEvent.press(screen.getByRole('button', { name: 'Add Rafi to the squad' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Take Lonicav out of the squad' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Save squad' }));
     expect(await screen.findByText(/already plays for another team/)).toBeTruthy();
   });
@@ -126,6 +126,16 @@ describe('the squad screen', () => {
       expect(fake.rpc).toHaveBeenCalledWith('add_tournament_squad_player', { p_tournament: T, p_team: 'a', p_profile: 'u9' });
       expect(fake.rpc).toHaveBeenCalledWith('add_tournament_squad_player', { p_tournament: T, p_team: 'a', p_profile: 'u10' });
     });
+  });
+
+  it('removes a player from the squad list when removed and saved', async () => {
+    await show();
+    expect(screen.getByText('1/3 players')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Take Lonicav out of the squad' }));
+    expect(screen.getByText('0/3 players')).toBeTruthy();
+    expect(screen.getByText('No players in the squad yet.')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Save squad' }));
+    await waitFor(() => expect(fake.rpc).toHaveBeenCalledWith('set_tournament_squad', { p_tournament: T, p_team: 'a', p_players: [] }));
   });
 
   it('shows no add button to a team owner who does not run the tournament', async () => {
