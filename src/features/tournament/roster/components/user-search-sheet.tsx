@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
+import Lock from 'lucide-react-native/icons/lock';
 import { useEffect, useState, type ReactNode } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Button, SearchField, Text } from '@/components/ui';
-import { spacing, useTheme } from '@/theme';
+import { dp, radius, spacing, useTheme } from '@/theme';
 
 import { searchUsers } from '../roster-repository';
 import type { UserSummary } from '../types';
@@ -19,6 +20,8 @@ type Props = {
   hint: string;
   /** People already in the roster, left out of the results. */
   excludeIds: string[];
+  /** Players already assigned to another team in this tournament (`userId -> teamName`), shown as booked. */
+  bookedBy?: Record<string, string>;
   /** Sending an invite. The sheet closes once it succeeds. */
   inviting: boolean;
   error: string | null;
@@ -46,7 +49,7 @@ export function UserSearchSheet({ visible, title, onClose, ...body }: Props) {
   );
 }
 
-function SearchBody({ hint, excludeIds, inviting, error, onInvite, onInviteMany, maxSelect, actionLabel = 'Invite', children, suggest, search: findUsers = searchUsers }: Omit<Props, 'visible' | 'title' | 'onClose'>) {
+function SearchBody({ hint, excludeIds, bookedBy, inviting, error, onInvite, onInviteMany, maxSelect, actionLabel = 'Invite', children, suggest, search: findUsers = searchUsers }: Omit<Props, 'visible' | 'title' | 'onClose'>) {
   const { colors } = useTheme();
   const [text, setText] = useState('');
   const [query, setQuery] = useState('');
@@ -117,15 +120,28 @@ function SearchBody({ hint, excludeIds, inviting, error, onInvite, onInviteMany,
           </Text>
         ) : (
           results.map((user) => {
-            const isSelected = multi && pickedIds.has(user.id);
+            const bookedTeam = bookedBy?.[user.id];
+            const isBooked = Boolean(bookedTeam);
+            const isSelected = multi && !isBooked && pickedIds.has(user.id);
+            const detail = bookedTeam ? (user.area ? `${user.area} · In ${bookedTeam}` : `In ${bookedTeam}`) : user.area;
             return (
               <PersonRow
                 key={user.id}
                 user={user}
-                detail={user.area}
+                detail={detail}
                 trailing={
                   <View>
-                    {multi ? (
+                    {isBooked ? (
+                      <View
+                        accessibilityLabel={`${user.name} is booked in ${bookedTeam}`}
+                        style={[styles.bookedPill, { backgroundColor: colors.surfaceRaised, borderColor: colors.border }]}
+                      >
+                        <Lock size={dp(14)} color={colors.textMuted} />
+                        <Text variant="caption" muted>
+                          Booked
+                        </Text>
+                      </View>
+                    ) : multi ? (
                       <Button
                         label={isSelected ? 'Selected' : 'Select'}
                         variant={isSelected ? 'primary' : 'secondary'}
@@ -173,5 +189,14 @@ const styles = StyleSheet.create({
   list: { flex: 1 },
   results: { paddingBottom: spacing.lg },
   status: { paddingVertical: spacing.lg },
+  bookedPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+  },
   footer: { gap: spacing.sm, paddingTop: spacing.sm },
 });

@@ -136,6 +136,7 @@ function SquadPicker({ squad, tournamentId, teamId }: { squad: ServerSquad; tour
         hint="They join the team and its squad straight away."
         actionLabel="Add"
         excludeIds={selected}
+        bookedBy={squad.bookedBy}
         maxSelect={Math.max(0, squad.maxSquad - selected.length)}
         search={searchPlayers}
         suggest={suggestPlayers}

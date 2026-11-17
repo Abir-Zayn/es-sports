@@ -108,12 +108,16 @@ describe('the squad screen', () => {
         { id: 'u9', full_name: 'Mehedi', area: null, avatar_url: null },
         { id: 'u10', full_name: 'Tariq', area: null, avatar_url: null },
         { id: 'u11', full_name: 'Sabbir', area: null, avatar_url: null },
+        { id: 'p3', full_name: 'Nayeem', area: null, avatar_url: null },
       ],
       error: null,
     };
     await show();
     await fireEvent.press(screen.getByRole('button', { name: 'Add players' }));
-    await fireEvent.press(await screen.findByRole('button', { name: 'Select Mehedi' }));
+    expect(await screen.findByLabelText('Nayeem is booked in Bravo')).toBeTruthy();
+    expect(screen.getByText('In Bravo')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Select Nayeem' })).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Select Mehedi' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Select Tariq' }));
     expect(screen.getByText('2 of 2 selected')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Select Sabbir' })).toBeDisabled();
