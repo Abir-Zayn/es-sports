@@ -95,7 +95,6 @@ function SquadPicker({ squad, tournamentId, teamId }: { squad: ServerSquad; tour
   const pastDeadline = Boolean(squad.registrationDeadline) && squad.registrationDeadline < new Date().toISOString().slice(0, 10);
   const full = selected.length >= squad.maxSquad;
   const squadMembers = squad.candidates.filter((candidate) => selected.includes(candidate.profileId));
-  const otherMembers = editable ? squad.candidates.filter((candidate) => !selected.includes(candidate.profileId)) : [];
 
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}>
@@ -134,23 +133,6 @@ function SquadPicker({ squad, tournamentId, teamId }: { squad: ServerSquad; tour
           {dirty ? <Button label="Undo changes" variant="secondary" disabled={save.isPending} onPress={() => { save.reset(); setDraft(null); }} /> : null}
         </View>
       ) : null}
-      {otherMembers.length > 0 ? (
-        <View style={styles.section}>
-          <Text variant="caption" muted>Other team members</Text>
-          <Card padding="none" style={styles.list}>
-            {otherMembers.map((candidate) => (
-              <CandidateRow
-                key={candidate.profileId}
-                candidate={candidate}
-                inSquad={false}
-                disabled={save.isPending || full || Boolean(candidate.takenBy)}
-                showAction
-                onToggle={() => toggle(candidate.profileId)}
-              />
-            ))}
-          </Card>
-        </View>
-      ) : null}
       <UserSearchSheet
         visible={finding}
         title={`Add players to ${squad.teamName}`}
@@ -184,6 +166,5 @@ const createStyles = (colors: Palette) =>
     list: { paddingHorizontal: sizes.cardPaddingTight },
     count: { ...typography.headlineMd, fontVariant: ['tabular-nums'] },
     actions: { gap: spacing.sm },
-    section: { gap: spacing.sm },
     error: { color: colors.dangerSoftText },
   });
