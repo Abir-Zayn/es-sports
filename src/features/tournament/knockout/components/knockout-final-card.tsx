@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/ui';
 import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
+import { matchLabel, statusShort, winnerOf } from '../match-label';
 import type { KnockoutMatch } from '../types';
 import { KnockoutTeamBadge } from './knockout-team-badge';
 import { KnockoutTrophy } from './knockout-trophy';
@@ -17,16 +18,19 @@ export function KnockoutFinalCard({ match, onPress }: Props) {
   const styles = useThemedStyles(createStyles);
   const homeWon = match.home.won ?? false;
   const awayWon = match.away.won ?? false;
+  const champion = winnerOf(match);
+  const Shell = onPress ? Pressable : View;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.roundLabel}>Final</Text>
+      <Text accessibilityRole="header" style={styles.roundLabel}>Final</Text>
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`Final: ${match.home.name} vs ${match.away.name}`}
-        onPress={() => onPress?.(match)}
-        style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+      <Shell
+        accessible
+        accessibilityRole={onPress ? 'button' : undefined}
+        accessibilityLabel={matchLabel(match)}
+        onPress={onPress ? () => onPress(match) : undefined}
+        style={[styles.card, champion ? styles.cardDecided : null]}
       >
         <View style={styles.teamCol}>
           <KnockoutTeamBadge
@@ -45,7 +49,7 @@ export function KnockoutFinalCard({ match, onPress }: Props) {
 
         <View style={styles.trophyCol}>
           <KnockoutTrophy size={dp(50)} />
-          <Text style={styles.statusLabel}>{match.status}</Text>
+          <Text style={styles.statusLabel}>{statusShort(match.status)}</Text>
         </View>
 
         <View style={styles.teamCol}>
@@ -62,7 +66,8 @@ export function KnockoutFinalCard({ match, onPress }: Props) {
             {match.away.score}
           </Text>
         </View>
-      </Pressable>
+      </Shell>
+      {champion ? <Text style={styles.champion} importantForAccessibility="no">{`Champion: ${champion.name}`}</Text> : null}
     </View>
   );
 }
@@ -75,9 +80,16 @@ const createStyles = (colors: Palette) =>
       width: '100%',
     },
     roundLabel: {
-      ...typography.labelSm,
+      ...typography.labelUppercase,
       color: colors.textMuted,
-      textTransform: 'capitalize',
+    },
+    cardDecided: {
+      borderWidth: 1,
+      borderColor: colors.link,
+    },
+    champion: {
+      ...typography.labelMd,
+      color: colors.link,
     },
     card: {
       flexDirection: 'row',
@@ -90,9 +102,6 @@ const createStyles = (colors: Palette) =>
       paddingHorizontal: spacing.lg,
       width: '100%',
       maxWidth: dp(390),
-    },
-    pressed: {
-      transform: [{ scale: 0.95 }],
     },
     teamCol: {
       flex: 1,

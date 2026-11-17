@@ -65,6 +65,25 @@ describe('the table tab of a published tournament', () => {
     expect(screen.queryByText(/No league match has finished yet/)).toBeNull();
   });
 
+  it('explains the column headings under the table', async () => {
+    fake.results.tournament_standings = { data: [row('A', 2, 1, 1, 0, -0.707)], error: null };
+    await show();
+    expect(await screen.findByLabelText('Columns: played, won, lost, no result, net run rate, points')).toBeTruthy();
+    expect(screen.getByText('Qualify for the semi-finals')).toBeTruthy();
+  });
+
+  it('dims a team the organiser knocked out and says so to a screen reader', async () => {
+    fake.results.tournament_standings = { data: [row('A', 2, 2, 0, 0, 1.2), row('B', 2, 0, 2, 0, -1.2)], error: null };
+    fake.results.tournament_teams = { data: [
+      { team_id: 'A', eliminated_at: null, teams: { id: 'A', name: 'A XI', short_name: 'A', tone: 'blue', logo_url: null, area: null, district: null } },
+      { team_id: 'B', eliminated_at: '2999-11-11', teams: { id: 'B', name: 'B XI', short_name: 'B', tone: 'blue', logo_url: null, area: null, district: null } },
+    ], error: null };
+    await show();
+    expect(await screen.findByLabelText(/^2\. B XI\. .*0 points\. Eliminated$/)).toBeTruthy();
+    expect(screen.getByLabelText(/^1\. A XI\. .*4 points\. Qualify for the semi-finals$/)).toBeTruthy();
+    expect(screen.getByText('Eliminated by the organiser')).toBeTruthy();
+  });
+
   it('lists every team with zeros before any match has finished', async () => {
     fake.results.tournament_standings = { data: [row('A', 0, 0, 0, 0, null), row('B', 0, 0, 0, 0, null)], error: null };
     await show();

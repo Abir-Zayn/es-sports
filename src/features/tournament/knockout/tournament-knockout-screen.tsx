@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
-import { useRef, useState, type ElementRef } from 'react';
+import { useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -14,7 +14,6 @@ import { TournamentScreenFrame } from '../components/tournament-screen-frame';
 import { KnockoutBracketSide } from './components/knockout-bracket-side';
 import { KnockoutFinalCard } from './components/knockout-final-card';
 import { getKnockoutData } from './sample-knockout-data';
-import type { KnockoutMatch } from './types';
 
 type DrawTab = 'full' | 'draw-a' | 'draw-b';
 
@@ -31,26 +30,21 @@ export function TournamentKnockoutScreen() {
   const data = getKnockoutData(tournamentId);
   const styles = useThemedStyles(createStyles);
   const [selectedTab, setSelectedTab] = useState<DrawTab>('full');
-  const scrollRef = useRef<ElementRef<typeof ScrollView>>(null);
 
   function handleTabSelect(tab: DrawTab) {
     setSelectedTab(tab);
   }
 
-  function handleMatchPress(_match: KnockoutMatch) {
-    // Interactive match tap feedback
-  }
-
   return (
     <TournamentScreenFrame tournamentId={tournamentId} section="knockout" flush>
       {/* Draw filter pills */}
-      <View style={styles.filterRow}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow} accessibilityRole="tablist">
         {DRAW_TABS.map((tab) => {
           const active = tab.id === selectedTab;
           return (
             <Pressable
               key={tab.id}
-              accessibilityRole="button"
+              accessibilityRole="tab"
               accessibilityLabel={tab.label}
               accessibilityState={{ selected: active }}
               onPress={() => handleTabSelect(tab.id)}
@@ -67,13 +61,13 @@ export function TournamentKnockoutScreen() {
             </Pressable>
           );
         })}
-      </View>
+      </ScrollView>
+      {selectedTab === 'full' ? <Text muted variant="caption" style={styles.hint}>Swipe sideways to see both draws</Text> : null}
 
       {/* Horizontally scrollable tournament canvas */}
       <ScrollView
-        ref={scrollRef}
         horizontal
-        showsHorizontalScrollIndicator={false}
+        showsHorizontalScrollIndicator={selectedTab === 'full'}
         contentContainerStyle={styles.scrollCanvas}
         nestedScrollEnabled
       >
@@ -82,7 +76,6 @@ export function TournamentKnockoutScreen() {
             <View style={styles.singleSideWrapper}>
               <KnockoutBracketSide
                 draw={data.drawA}
-                onMatchPress={handleMatchPress}
                 showDropLineToFinal
               />
             </View>
@@ -90,7 +83,6 @@ export function TournamentKnockoutScreen() {
             <View style={styles.singleSideWrapper}>
               <KnockoutBracketSide
                 draw={data.drawB}
-                onMatchPress={handleMatchPress}
                 showDropLineToFinal
               />
             </View>
@@ -98,13 +90,11 @@ export function TournamentKnockoutScreen() {
             <View style={styles.bothSidesRow}>
               <KnockoutBracketSide
                 draw={data.drawA}
-                onMatchPress={handleMatchPress}
                 showDropLineToFinal
               />
               <View style={styles.bracketDivider} />
               <KnockoutBracketSide
                 draw={data.drawB}
-                onMatchPress={handleMatchPress}
                 showDropLineToFinal
               />
             </View>
@@ -114,7 +104,6 @@ export function TournamentKnockoutScreen() {
           <View style={styles.finalSection}>
             <KnockoutFinalCard
               match={data.finalMatch}
-              onPress={handleMatchPress}
             />
           </View>
         </View>
@@ -126,6 +115,7 @@ export function TournamentKnockoutScreen() {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     filterRow: {
+      flexGrow: 1,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
@@ -134,7 +124,13 @@ const createStyles = (colors: Palette) =>
       paddingTop: spacing.sm,
       paddingBottom: spacing.md,
     },
+    hint: {
+      textAlign: 'center',
+      paddingBottom: spacing.sm,
+    },
     filterPill: {
+      minHeight: 44,
+      justifyContent: 'center',
       paddingHorizontal: spacing.lg,
       paddingVertical: spacing.sm,
       borderRadius: radius.pill,

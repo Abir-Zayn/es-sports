@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { InitialsAvatar, Text } from '@/components/ui';
-import { dp, radius, shadows, spacing, typography, useThemedStyles, type Palette } from '@/theme';
+import { AppBadge, InitialsAvatar, Text } from '@/components/ui';
+import { dp, radius, shadows, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { TournamentTeam } from '@/types/cricket';
 
 import { useToneColors } from '../use-tone-colors';
@@ -17,32 +17,30 @@ type Props = {
 export function TeamCard({ entry, qualifyCount, onPress }: Props) {
   const styles = useThemedStyles(createStyles);
   const toneColors = useToneColors();
+  const { colors } = useTheme();
   const { team } = entry;
   const stripe = toneColors(team.tone).fill;
   const qualifies = entry.pos <= qualifyCount;
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${team.name}. Position ${entry.pos}. Captain ${entry.captain}. ${entry.players} players, ${entry.points} points`}
+      accessibilityLabel={`${team.name}. Position ${entry.pos}${qualifies ? ', qualifying' : ''}. Captain ${entry.captain}. ${entry.players} players, ${entry.points} points`}
       onPress={onPress}
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
       <View style={[styles.stripe, { backgroundColor: stripe }]} />
       <View style={styles.top}>
         <InitialsAvatar label={team.short} tone={team.tone} imageUri={team.avatarUri} size={dp(48)} />
-        <Text style={[styles.pos, qualifies && styles.posQualified]}>#{entry.pos}</Text>
+        <Text style={[styles.pos, qualifies && styles.posQualified]}>{`#${entry.pos}`}</Text>
       </View>
       <View style={styles.names}>
-        <Text style={styles.name}>{team.name}</Text>
-        <Text muted style={styles.captain}>
-          Capt. {entry.captain}
-        </Text>
+        <Text style={styles.name} numberOfLines={2}>{team.name}</Text>
+        <Text muted style={styles.captain} numberOfLines={1}>{`Capt. ${entry.captain}`}</Text>
       </View>
+      {qualifies ? <AppBadge label="Qualifying" backgroundColor={colors.successSoft} color={colors.success} /> : null}
       <View style={styles.foot}>
-        <Text muted style={styles.footText}>
-          {entry.players} players
-        </Text>
-        <Text style={styles.points}>{entry.points} pts</Text>
+        <Text muted style={styles.footText}>{`${entry.players} players`}</Text>
+        <Text style={styles.points}>{`${entry.points} pts`}</Text>
       </View>
     </Pressable>
   );

@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet } from 'react-native';
 import { Section, SectionHeader } from '@/components/ui';
 import { sizes, spacing } from '@/theme';
 
+import { HomeEmptyState } from '../components/home-empty-state';
 import { TOURNAMENT_CARD_WIDTH, TournamentCard } from '../components/tournament-card';
 import type { Tournament } from '../sample-data';
 
@@ -17,18 +18,22 @@ type Props = {
 export function TournamentsToFollow({ tournaments, onTournamentPress }: Props) {
   return (
     <Section>
-      <SectionHeader title="Tournaments to Follow" />
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        snapToInterval={TOURNAMENT_CARD_WIDTH + CARD_GAP}
-        decelerationRate="fast"
-        contentContainerStyle={styles.cards}
-      >
-        {tournaments.map((tournament) => (
-          <TournamentCard key={tournament.id} tournament={tournament} onPress={() => onTournamentPress(tournament)} />
-        ))}
-      </ScrollView>
+      <SectionHeader title="Tournaments to follow" />
+      {tournaments.length > 0 ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          snapToInterval={TOURNAMENT_CARD_WIDTH + CARD_GAP}
+          decelerationRate="fast"
+          contentContainerStyle={styles.cards}
+        >
+          {tournaments.map((tournament) => (
+            <TournamentCard key={tournament.id} tournament={tournament} onPress={() => onTournamentPress(tournament)} />
+          ))}
+        </ScrollView>
+      ) : (
+        <HomeEmptyState title="No tournaments yet" message="New tournaments near you will appear here." />
+      )}
     </Section>
   );
 }
