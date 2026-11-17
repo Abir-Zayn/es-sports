@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { useAuth } from '@/features/auth/auth-provider';
+import { useAuth } from '@/features/auth';
 import { useProfile } from '@/features/profile/profile-provider';
 
 import * as localRepo from './roster-repository';

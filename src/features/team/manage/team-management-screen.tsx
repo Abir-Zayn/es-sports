@@ -6,7 +6,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'reac
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppBadge, AppIconTile, Button, InitialsAvatar, Text } from '@/components/ui';
-import { useAuth } from '@/features/auth/auth-provider';
+import { useAuth } from '@/features/auth';
 import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { teamErrorText } from '../data/team-errors';

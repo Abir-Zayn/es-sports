@@ -4,10 +4,9 @@ import { env } from '@/lib/env';
 import { supabase } from '@/lib/supabase';
 
 import { authErrorMessage } from './auth-errors';
+import type { GoogleAuthResult } from '../types';
 
 /** `cancelled` means the user dismissed the account picker; show no error for it. */
-export type GoogleAuthResult = { ok: true } | { ok: false; cancelled?: boolean; message: string };
-
 type TokenResult = { ok: true; idToken: string } | { ok: false; cancelled?: boolean; message: string };
 
 type GoogleSigninModule = typeof import('@react-native-google-signin/google-signin');

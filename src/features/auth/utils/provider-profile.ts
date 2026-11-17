@@ -1,5 +1,4 @@
-/** The name and photo a sign-in provider such as Google shares. Both are optional. */
-export type ProviderProfile = { fullName?: string; avatarUrl?: string };
+import type { ProviderProfile } from '../types';
 
 const MAX_NAME_LENGTH = 40;
 

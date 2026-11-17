@@ -17,7 +17,7 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({}), useFocusEffect: jest.fn(), Stack: { Screen: () => null },
 }));
 jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn() }));
-jest.mock('@/features/auth/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'organizer' } } }) }));
+jest.mock('@/features/auth/components/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'organizer' } } }) }));
 jest.mock('../draft-storage', () => ({ loadDraft: jest.fn(), saveDraft: jest.fn(), draftQueryKey: (id: string) => ['tournament-draft', id] }));
 jest.mock('../use-publish-tournament', () => {
   const { useMutation } = jest.requireActual('@tanstack/react-query');

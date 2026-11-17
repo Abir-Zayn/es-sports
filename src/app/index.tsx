@@ -1,6 +1,6 @@
 import { Redirect } from 'expo-router';
 
-import { useAuth } from '@/features/auth/auth-provider';
+import { useAuth } from '@/features/auth';
 
 export default function Index() {
   const { session, isLoading } = useAuth();

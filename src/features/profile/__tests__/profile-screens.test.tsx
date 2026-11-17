@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
 
-import { loadLinkedAccounts } from '@/features/auth/linked-accounts';
+import { loadLinkedAccounts } from '@/features/auth';
 import { ThemeProvider } from '@/theme';
 
 import { EditProfileScreen } from '../edit-profile-screen';
@@ -24,10 +24,10 @@ jest.mock('react-native-safe-area-context', () => {
   return { SafeAreaView: View, useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) };
 });
 jest.mock('@/components/navigation/bottom-nav', () => ({ BOTTOM_NAV_CLEARANCE: 100 }));
-jest.mock('@/features/auth/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'u1', email: 'player@example.com' } } }) }));
-jest.mock('@/features/auth/sign-out', () => ({ signOut: jest.fn() }));
-jest.mock('@/features/auth/google-auth', () => ({ linkGoogleAccount: jest.fn(), signInWithGoogle: jest.fn() }));
-jest.mock('@/features/auth/linked-accounts', () => ({ loadLinkedAccounts: jest.fn() }));
+jest.mock('@/features/auth/components/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'u1', email: 'player@example.com' } } }) }));
+jest.mock('@/features/auth/utils/sign-out', () => ({ signOut: jest.fn() }));
+jest.mock('@/features/auth/utils/google-auth', () => ({ linkGoogleAccount: jest.fn(), signInWithGoogle: jest.fn() }));
+jest.mock('@/features/auth/utils/linked-accounts', () => ({ loadLinkedAccounts: jest.fn() }));
 jest.mock('@/features/profile/profile-provider', () => ({
   useProfile: () => ({
     ...jest.requireActual('../sample-data').sampleProfile,

@@ -5,7 +5,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppBadge, Button, Text } from '@/components/ui';
-import { useAuth } from '@/features/auth/auth-provider';
+import { useAuth } from '@/features/auth';
 import { ScreenHeader } from '@/features/profile/components/screen-header';
 import { dp, radius, shadows, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 

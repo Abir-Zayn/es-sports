@@ -10,8 +10,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BOTTOM_NAV_CLEARANCE } from '@/components/navigation/bottom-nav';
 import { Button, SettingsGroup, SettingsRow, Text } from '@/components/ui';
-import { useAuth } from '@/features/auth/auth-provider';
-import { signOut } from '@/features/auth/sign-out';
+import { useAuth } from '@/features/auth';
+import { signOut } from '@/features/auth';
 import { ContractedTeams } from '@/features/home/sections/contracted-teams';
 import { useOpenTeam } from '@/features/team/use-team-routes';
 import { comingSoon } from '@/lib/coming-soon';

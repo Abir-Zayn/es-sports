@@ -6,7 +6,7 @@ import { spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { AuthLayout } from './auth-layout';
 import { AuthSwitchLink } from './auth-switch-link';
-import { resetRequestSchema, sendResetEmail } from './send-reset-email';
+import { resetRequestSchema, sendResetEmail } from '../utils/send-reset-email';
 
 type FieldErrors = { email?: string };
 

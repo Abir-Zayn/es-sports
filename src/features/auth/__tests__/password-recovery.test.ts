@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 
-import { INVALID_RECOVERY_LINK, newPasswordSchema, openRecoverySession, saveRecoveredPassword } from '../password-recovery';
+import { INVALID_RECOVERY_LINK, newPasswordSchema, openRecoverySession, saveRecoveredPassword } from '../utils/password-recovery';
 
 jest.mock('@/lib/supabase', () => ({
   supabase: { auth: { setSession: jest.fn(), getUser: jest.fn(), updateUser: jest.fn() } },

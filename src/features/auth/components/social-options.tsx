@@ -5,10 +5,10 @@ import { StyleSheet, View } from 'react-native';
 import { Button, Text } from '@/components/ui';
 import { dp, spacing, useThemedStyles, type Palette } from '@/theme';
 
-import { signInWithGoogle } from './google-auth';
+import { signInWithGoogle } from '../utils/google-auth';
 
-const googleG = require('../../../assets/images/google-g.png');
-const phoneIcon = require('../../../assets/images/phone.png');
+const googleG = require('../../../../assets/images/google-g.png');
+const phoneIcon = require('../../../../assets/images/phone.png');
 
 /** Google works for both sign-in and first-time sign-up. Phone is a placeholder until an SMS provider is set up. */
 export function SocialOptions() {

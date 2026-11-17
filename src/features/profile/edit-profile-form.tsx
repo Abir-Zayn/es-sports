@@ -5,7 +5,7 @@ import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, InitialsAvatar, SegmentedControl, Text, TextField } from '@/components/ui';
-import { useAuth } from '@/features/auth/auth-provider';
+import { useAuth } from '@/features/auth';
 import { initialsOf } from '@/lib/initials';
 import { dp, sizes, useThemedStyles } from '@/theme';
 import type { BattingStyle, BloodGroup, PlayingRole } from '@/types/profile';

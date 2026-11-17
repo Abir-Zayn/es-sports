@@ -1,8 +1,8 @@
 import { createContext, use, useCallback, useEffect, useEffectEvent, useMemo, useState, type ReactNode } from 'react';
 import { AppState } from 'react-native';
 
-import { useAuth } from '@/features/auth/auth-provider';
-import type { ProviderProfile } from '@/features/auth/provider-profile';
+import { useAuth } from '@/features/auth';
+import type { ProviderProfile } from '@/features/auth';
 import { addPerformances, toBattingStats, toBowlingStats } from '@/lib/career-stats';
 import type { PlayerProfile, ProfileData } from '@/types/profile';
 

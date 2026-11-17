@@ -7,7 +7,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
-import { useAuth } from '@/features/auth/auth-provider';
+import { useAuth } from '@/features/auth';
 import { cancelInvitation, invitationErrorText, sendTeamPlayerInvite } from '@/features/invitations';
 import { searchPlayers } from '@/features/match/friendly/search-players';
 import { UserSearchSheet } from '@/features/tournament/roster';

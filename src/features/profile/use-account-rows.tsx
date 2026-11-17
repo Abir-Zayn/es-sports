@@ -5,8 +5,8 @@ import { useCallback, useEffect, useRef, useState, type ReactElement } from 'rea
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { SettingsRow, Text } from '@/components/ui';
-import { linkGoogleAccount } from '@/features/auth/google-auth';
-import { loadLinkedAccounts, type LinkedAccounts } from '@/features/auth/linked-accounts';
+import { linkGoogleAccount } from '@/features/auth';
+import { loadLinkedAccounts, type LinkedAccounts } from '@/features/auth';
 import { dp, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { useProfile } from './profile-provider';

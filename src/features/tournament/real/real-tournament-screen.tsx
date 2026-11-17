@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
-import { useAuth } from '@/features/auth/auth-provider';
+import { useAuth } from '@/features/auth';
 import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { TournamentCompactHeader } from '../components/tournament-compact-header';

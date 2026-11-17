@@ -11,7 +11,7 @@ jest.mock('expo-router', () => ({
   // Runs on mount, as the real hook does when the screen is focused.
   useFocusEffect: (effect: () => void) => { jest.requireActual('react').useEffect(effect, [effect]); },
 }));
-jest.mock('@/features/auth/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'u-sam' } } }) }));
+jest.mock('@/features/auth/components/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'u-sam' } } }) }));
 jest.mock('../handover-repository', () => ({ fetchIncomingOffers: jest.fn() }));
 
 const incoming = jest.mocked(fetchIncomingOffers);

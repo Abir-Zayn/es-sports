@@ -6,7 +6,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 're
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, AppTabs, Button, Text, TextField } from '@/components/ui';
-import { useAuth } from '@/features/auth/auth-provider';
+import { useAuth } from '@/features/auth';
 import { localEventId } from '@/features/scoring/local-id';
 import { dp, radius, sizes, spacing, typography, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
 

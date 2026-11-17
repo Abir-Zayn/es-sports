@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { supabase } from '@/lib/supabase';
 
 import { authErrorMessage } from './auth-errors';
+import type { SignUpInput, SignUpResult } from '../types';
 
 export const signUpSchema = z
   .object({
@@ -12,9 +13,6 @@ export const signUpSchema = z
     accepted: z.boolean().refine((v) => v, 'Accept the terms to create an account.'),
   })
   .refine((v) => v.password === v.confirm, { path: ['confirm'], message: "Passwords don't match." });
-
-export type SignUpInput = z.infer<typeof signUpSchema>;
-export type SignUpResult = { ok: true; signedIn: boolean } | { ok: false; message: string };
 
 export async function signUpWithEmail({ email, password }: SignUpInput): Promise<SignUpResult> {
   try {

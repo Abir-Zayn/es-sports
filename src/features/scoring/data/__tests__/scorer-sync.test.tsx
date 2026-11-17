@@ -19,7 +19,7 @@ jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual('react-native');
   return { SafeAreaView: View, useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) };
 });
-jest.mock('@/features/auth/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'user-1' } } }) }));
+jest.mock('@/features/auth/components/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'user-1' } } }) }));
 jest.mock('../match-repository', () => ({
   isUuid: (value: string) => /^[0-9a-f]{8}-/.test(value),
   findMatch: jest.fn().mockResolvedValue(null),

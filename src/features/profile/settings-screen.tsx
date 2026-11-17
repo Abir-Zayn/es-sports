@@ -13,8 +13,8 @@ import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, SettingsGroup, SettingsRow, Text } from '@/components/ui';
-import { useAuth } from '@/features/auth/auth-provider';
-import { signOut } from '@/features/auth/sign-out';
+import { useAuth } from '@/features/auth';
+import { signOut } from '@/features/auth';
 import { comingSoon } from '@/lib/coming-soon';
 import { dp, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
