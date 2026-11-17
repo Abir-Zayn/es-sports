@@ -13,20 +13,29 @@ import { competitionFormats } from '../create/draft';
 import { draftQueryKey, loadDraft } from '../create/draft-storage';
 import { fetchTournament, fetchTournamentTeams, tournamentKey } from '../data/tournament-repository';
 import { capabilitiesOf, roleIn } from '../roster/permissions';
-import { splitIntoGroups } from '../teams/group-teams';
+import { fetchTournamentRounds, isDrawn, roundsKey, roundsView, type RoundView } from '../data/rounds-repository';
 import { repoFor } from '../roster/roster-source';
 import { useMe, useRoster } from '../roster/use-roster';
 import { ScheduleBuilder, type ScheduleSetup } from './schedule-builder';
 import { tournamentDays } from './slots';
+import type { RoundPlan } from './types';
+
+/** What the builder draws for the latest round: its groups (once drawn) or its bracket. */
+function planOf(round: RoundView | undefined): RoundPlan | undefined {
+  if (!round) return undefined;
+  const groupIds = isDrawn(round)
+    ? Array.from({ length: round.groups }, (_, g) => round.teamIds.filter((id) => round.groupOf.get(id) === g)) : null;
+  return { round: round.round, kind: round.kind, groupIds, slots: round.slots };
+}
 
 /** A published tournament's setup, read from the server, or the draft's from the device. Null when there is none. */
 function useSetup(tournamentId: string, meId: string): { setup: ScheduleSetup | null; name: string; pending: boolean; failed: boolean; retry: () => void } {
   const server = isUuid(tournamentId);
   const draft = useQuery({ queryKey: draftQueryKey(meId), queryFn: () => loadDraft(meId), enabled: Boolean(meId) && !server });
   const record = useQuery({ queryKey: tournamentKey(tournamentId), queryFn: () => fetchTournament(tournamentId), enabled: server });
-  const grouped = server && (record.data?.groupsPlanned ?? 1) > 1;
-  // Same query as the Groups tab: who is in which group.
-  const entered = useQuery({ queryKey: [...tournamentKey(tournamentId), 'teams'], queryFn: () => fetchTournamentTeams(tournamentId), enabled: grouped });
+  // Same queries as the Groups tab: who is in which group, and which round is being played.
+  const entered = useQuery({ queryKey: [...tournamentKey(tournamentId), 'teams'], queryFn: () => fetchTournamentTeams(tournamentId), enabled: server });
+  const rounds = useQuery({ queryKey: roundsKey(tournamentId), queryFn: () => fetchTournamentRounds(tournamentId), enabled: server });
   if (!server) {
     return { setup: draft.data ?? null, name: draft.data?.name ?? '', pending: draft.isPending, failed: draft.isError, retry: () => void draft.refetch() };
   }
@@ -35,11 +44,12 @@ function useSetup(tournamentId: string, meId: string): { setup: ScheduleSetup | 
     competition: competitionFormats.find((f) => f.value === t.competition)?.value ?? 'league',
     overs: t.overs,
     playersPerSide: t.playersPerSide, venue: t.venue, startDate: t.startDate, endDate: t.endDate,
-    groupIds: grouped ? splitIntoGroups(entered.data ?? [], t.groupsPlanned)?.map((g) => g.map((e) => e.team.id)) ?? null : undefined,
+    plan: planOf(roundsView(t, entered.data ?? [], rounds.data).at(-1)),
   } : null;
   return {
-    setup, name: t?.name ?? '', pending: record.isPending || (grouped && entered.isPending), failed: record.isError || entered.isError,
-    retry: () => { void record.refetch(); if (grouped) void entered.refetch(); },
+    setup, name: t?.name ?? '', pending: record.isPending || entered.isPending || rounds.isPending,
+    failed: record.isError || entered.isError || rounds.isError,
+    retry: () => { void record.refetch(); void entered.refetch(); void rounds.refetch(); },
   };
 }
 

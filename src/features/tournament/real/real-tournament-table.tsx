@@ -1,10 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
 import { sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { PointsTable } from '../components/points-table';
+import { fetchTournamentRounds, isDrawn, roundsKey, roundsView, roundTitle } from '../data/rounds-repository';
+import { ChoiceChips } from '../schedule-builder/components/choice-chips';
 import { fetchStandings, qualifyRule, standingsKey } from '../data/standings-repository';
 import { tournamentErrorText } from '../data/tournament-errors';
 import { fetchTournamentTeams, tournamentKey, type TournamentRecord } from '../data/tournament-repository';
@@ -21,12 +24,16 @@ export function RealTournamentTable({ tournament }: Props) {
   const styles = useThemedStyles(createStyles);
   useTournamentMatchUpdates(tournament.id, 'table');
   const qualify = qualifyRule(tournament.competition, tournament.teamsPlanned);
-  const standings = useQuery({
-    queryKey: standingsKey(tournament.id), queryFn: () => fetchStandings(tournament.id), enabled: qualify !== null, staleTime: 30_000,
-  });
-  // Same query as the Teams tab, so the cache is shared. Only used to mark eliminated teams; a failure just leaves them unmarked.
+  // Same queries as the Groups tab, so the cache is shared: who is in which group of which round, and who is out.
   const teams = useQuery({
     queryKey: [...tournamentKey(tournament.id), 'teams'], queryFn: () => fetchTournamentTeams(tournament.id), enabled: qualify !== null,
+  });
+  const rounds = useQuery({ queryKey: roundsKey(tournament.id), queryFn: () => fetchTournamentRounds(tournament.id), enabled: qualify !== null });
+  const groupRounds = roundsView(tournament, teams.data ?? [], rounds.data).filter((r) => r.kind === 'groups');
+  const [picked, setPicked] = useState<number | null>(null);
+  const view = groupRounds.find((r) => r.round === picked) ?? groupRounds[groupRounds.length - 1];
+  const standings = useQuery({
+    queryKey: [...standingsKey(tournament.id), view.round], queryFn: () => fetchStandings(tournament.id, view.round), enabled: qualify !== null, staleTime: 30_000,
   });
   const outTeams = new Set((teams.data ?? []).filter((entry) => entry.eliminated).map((entry) => entry.team.name));
 
@@ -44,18 +51,22 @@ export function RealTournamentTable({ tournament }: Props) {
   if (rows.length === 0) return <Text muted>No teams have joined yet. The table appears once the organiser adds teams.</Text>;
   const played = rows.some((row) => row.played > 0);
   // With drawn groups, one table per group, numbered from 1 within it. Before the draw, one table of everyone.
-  const groupOf = new Map((teams.data ?? []).map((entry) => [entry.team.id, entry.group]));
-  const grouped = tournament.groupsPlanned > 1 && rows.every((row) => row.teamId != null && groupOf.get(row.teamId) != null);
+  const grouped = view.groups > 1 && isDrawn(view);
   const tables = grouped
-    ? Array.from({ length: tournament.groupsPlanned }, (_, g) => ({
+    ? Array.from({ length: view.groups }, (_, g) => ({
       title: groupName(g),
-      rows: rows.filter((row) => groupOf.get(row.teamId ?? '') === g).map((row, i) => ({ ...row, pos: i + 1 })),
+      rows: rows.filter((row) => view.groupOf.get(row.teamId ?? '') === g).map((row, i) => ({ ...row, pos: i + 1 })),
     }))
     : [{ title: undefined, rows }];
-  const count = grouped ? tournament.advancePerGroup ?? 0 : qualify.count;
-  const note = grouped ? 'Go through to the next stage' : qualify.note;
+  const later = grouped || view.round > 0 || groupRounds.length > 1;
+  const count = later ? view.advance ?? 0 : qualify.count;
+  const note = later ? 'Go through to the next stage' : qualify.note;
   return (
     <View style={styles.gap}>
+      {groupRounds.length > 1 ? (
+        <ChoiceChips label="Round" value={view.round} onChange={setPicked}
+          choices={groupRounds.map((r) => ({ value: r.round, label: roundTitle(r), spoken: roundTitle(r) }))} />
+      ) : null}
       {tables.map((table) => (
         <View key={table.title ?? 'all'} style={styles.gap}>
           {table.title ? <Text accessibilityRole="header" style={styles.title}>{table.title}</Text> : null}

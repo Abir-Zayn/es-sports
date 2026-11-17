@@ -5,12 +5,13 @@ import { Button, Card, Text } from '@/components/ui';
 import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { fetchTournamentTeams, tournamentKey, type EnteredTeam, type TournamentRecord } from '../data/tournament-repository';
+import { KnockoutBracket } from '../rounds/knockout-bracket';
 import { RealKnockoutTeamRow } from './real-knockout-team-row';
 
-type Props = { tournament: TournamentRecord };
+type Props = { tournament: TournamentRecord; isOwner?: boolean };
 
-/** Who is still in the running and who the organiser has knocked out. Read-only. */
-export function RealKnockout({ tournament }: Props) {
+/** The rounds and bracket (the owner settles knockout matches here), then who is still in and who is out. */
+export function RealKnockout({ tournament, isOwner = false }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const teams = useQuery({ queryKey: [...tournamentKey(tournament.id), 'teams'], queryFn: () => fetchTournamentTeams(tournament.id) });
@@ -38,6 +39,7 @@ export function RealKnockout({ tournament }: Props) {
   const share = all.length > 0 ? alive.length / all.length : 0;
   return (
     <>
+      <KnockoutBracket tournament={tournament} teams={all} isOwner={isOwner} />
       <Card style={styles.gap}>
         <Text accessibilityRole="header" style={styles.title}>
           {champion ? `${alive[0]?.team.name ?? 'One team'} won` : `${alive.length} of ${all.length} teams still in`}
@@ -46,7 +48,7 @@ export function RealKnockout({ tournament }: Props) {
           accessibilityValue={{ min: 0, max: all.length, now: alive.length }}>
           <View style={[styles.fill, { width: `${Math.round(share * 100)}%` }]} />
         </View>
-        <Text muted variant="caption">The organiser knocks teams out as the league is played.</Text>
+        <Text muted variant="caption">Teams go out as the rounds are played. The organiser can also knock a team out by hand.</Text>
       </Card>
       <Group title={champion ? 'Champion' : 'Still in'} entries={alive} champion={champion} empty="Every team is out." />
       {out.length > 0 ? <Group title="Eliminated" entries={out} /> : null}

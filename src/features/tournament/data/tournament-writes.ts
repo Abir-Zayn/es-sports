@@ -71,22 +71,6 @@ export async function setTournamentTeamEliminated(tournamentId: string, teamId: 
   if (error) throw toTournamentError(error);
 }
 
-/** Splits the teams into groups at random (again, if drawn before) and sets how many of each group go through. Owner only. */
-export async function drawTournamentGroups(tournamentId: string, advancePerGroup: number): Promise<void> {
-  const { error } = await traceApi('tournament.drawGroups', { tournamentId, advancePerGroup }, () => supabase.rpc('draw_tournament_groups', {
-    p_tournament: tournamentId, p_advance: advancePerGroup,
-  }));
-  if (error) throw toTournamentError(error);
-}
-
-/** Swaps two teams in different groups. Owner only, until a match starts. */
-export async function swapTournamentGroupTeams(tournamentId: string, teamA: string, teamB: string): Promise<void> {
-  const { error } = await traceApi('tournament.swapGroups', { tournamentId, teamA, teamB }, () => supabase.rpc('swap_tournament_group_teams', {
-    p_tournament: tournamentId, p_team_a: teamA, p_team_b: teamB,
-  }));
-  if (error) throw toTournamentError(error);
-}
-
 /** Moves the tournament to Recently deleted. Owner only; it can be restored for 3 days. A repeat is fine. */
 export async function deleteTournament(tournamentId: string): Promise<void> {
   const { error } = await traceApi('tournament.delete', { tournamentId }, () => supabase.rpc('delete_tournament', { p_tournament: tournamentId }));

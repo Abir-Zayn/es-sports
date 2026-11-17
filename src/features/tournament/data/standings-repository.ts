@@ -57,10 +57,10 @@ export function toPointsRow(row: StandingRow, index: number): PointsRow {
 
 export type StandingsRow = PointsRow & { teamId: string | null };
 
-/** One row per entered team, in table order. */
-export async function fetchStandings(tournamentId: string): Promise<StandingsRow[]> {
+/** One row per team of the group round (round 0 holds every entered team), in table order. */
+export async function fetchStandings(tournamentId: string, round = 0): Promise<StandingsRow[]> {
   const { data, error } = await traceApi('tournament.standings', { tournamentId }, () => supabase.from('tournament_standings')
-    .select('team_id, name, short_name, tone, played, won, lost, tied, points, nrr').eq('tournament_id', tournamentId).limit(ROW_LIMIT));
+    .select('team_id, name, short_name, tone, played, won, lost, tied, points, nrr').eq('tournament_id', tournamentId).eq('round', round).limit(ROW_LIMIT));
   if (error) throw toTournamentError(error);
   return orderStandings(data ?? []).map((row, i) => ({ ...toPointsRow(row, i), teamId: row.team_id }));
 }

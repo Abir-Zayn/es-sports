@@ -892,6 +892,18 @@ export type Database = {
           },
         ]
       }
+      tournament_rounds: {
+        Row: { advance: number | null; created_at: string; groups: number; kind: string; round: number; tournament_id: string }
+        Insert: { advance?: number | null; created_at?: string; groups?: number; kind: string; round: number; tournament_id: string }
+        Update: { advance?: number | null; created_at?: string; groups?: number; kind?: string; round?: number; tournament_id?: string }
+        Relationships: []
+      }
+      tournament_round_teams: {
+        Row: { group_index: number | null; round: number; slot: number | null; team_id: string; tournament_id: string }
+        Insert: { group_index?: number | null; round: number; slot?: number | null; team_id: string; tournament_id: string }
+        Update: { group_index?: number | null; round?: number; slot?: number | null; team_id?: string; tournament_id?: string }
+        Relationships: []
+      }
       tournament_teams: {
         Row: {
           added_at: string
@@ -1056,6 +1068,7 @@ export type Database = {
           nrr: number | null
           played: number | null
           points: number | null
+          round: number | null
           runs_against: number | null
           runs_for: number | null
           short_name: string | null
@@ -1250,12 +1263,24 @@ export type Database = {
         Args: { p_team: string; p_tournament: string }
         Returns: undefined
       }
-      draw_tournament_groups: {
-        Args: { p_advance: number; p_tournament: string }
+      draw_tournament_round: {
+        Args: { p_advance: number; p_round: number; p_tournament: string }
         Returns: undefined
       }
-      swap_tournament_group_teams: {
-        Args: { p_team_a: string; p_team_b: string; p_tournament: string }
+      swap_tournament_round_teams: {
+        Args: { p_round: number; p_team_a: string; p_team_b: string; p_tournament: string }
+        Returns: undefined
+      }
+      advance_tournament_round: {
+        Args: { p_from: number; p_groups: number; p_teams: string[]; p_tournament: string }
+        Returns: undefined
+      }
+      confirm_knockout_winner: {
+        Args: { p_fixture: string; p_winner: string }
+        Returns: undefined
+      }
+      add_tournament_fixtures: {
+        Args: { p: Json; p_tournament: string }
         Returns: undefined
       }
       set_tournament_team_eliminated: {

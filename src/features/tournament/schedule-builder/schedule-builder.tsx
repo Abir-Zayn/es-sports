@@ -15,13 +15,13 @@ import { AddMatchSheet } from './components/add-match-sheet';
 import { EditMatchSheet } from './components/edit-match-sheet';
 import { ScheduleControls } from './components/schedule-controls';
 import { ScheduleDay } from './components/schedule-day';
-import type { ScheduledMatch, ScheduleTeam } from './types';
+import type { RoundPlan, ScheduledMatch, ScheduleTeam } from './types';
 import { useScheduleBuilder } from './use-schedule-builder';
 
 /** What the builder needs from the tournament: a draft's setup or a published tournament's. */
 export type ScheduleSetup = Pick<TournamentDraft, 'competition' | 'overs' | 'venue' | 'startDate' | 'endDate' | 'playersPerSide'> & {
-  /** Team ids per group. Undefined for a single league; null while the groups are still to be drawn. */
-  groupIds?: string[][] | null;
+  /** The round to draw in a published tournament with rounds. */
+  plan?: RoundPlan;
 };
 
 type Props = {
@@ -43,7 +43,7 @@ const shortDate = (date: string) => format(parseISO(date), 'd MMM');
 export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isStaff = false, bottomInset }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
-  const builder = useScheduleBuilder({ tournamentId, teams, competition: setup.competition, overs: setup.overs, days, isOwner, groupIds: setup.groupIds });
+  const builder = useScheduleBuilder({ tournamentId, teams, competition: setup.competition, overs: setup.overs, days, isOwner, plan: setup.plan });
   const [starting, setStarting] = useState<ScheduledMatch | null>(null);
   const [editing, setEditing] = useState<ScheduledMatch | null>(null);
   const [adding, setAdding] = useState(false);

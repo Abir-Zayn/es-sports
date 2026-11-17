@@ -52,7 +52,7 @@ export function toTournament(row: TournamentRow): TournamentRecord {
   return {
     id: row.id, ownerId: row.owner_id, name: row.name, city: row.city, venue: row.venue, startDate: row.start_date, endDate: row.end_date,
     // The knockout format is retired: every tournament plays as a round robin and the owner eliminates teams by hand.
-    matchFormat: row.match_format, overs: row.overs, competition: 'league', teamsPlanned: row.teams_planned, groupsPlanned: row.groups_planned, advancePerGroup: row.advance_per_group, ball: row.ball, sideFormat: row.side_format,
+    matchFormat: row.match_format, overs: row.overs, competition: 'league', teamsPlanned: row.teams_planned, groupsPlanned: row.groups_planned ?? 1, advancePerGroup: row.advance_per_group ?? null, ball: row.ball, sideFormat: row.side_format,
     playersPerSide: row.players_per_side, minSquad: row.min_squad, maxSquad: row.max_squad, registrationOpens: row.registration_opens ?? '',
     registrationDeadline: row.registration_deadline ?? '', profileUrl: row.profile_url, coverUrl: row.cover_url,
     deletedAt: row.deleted_at, closedAt: row.closed_at,
