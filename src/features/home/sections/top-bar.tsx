@@ -7,6 +7,9 @@ import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedSty
 
 import type { HomeUser } from '../sample-data';
 
+// Lifts the 40dp round buttons to a 48dp touch target without changing their look.
+const ICON_HIT_SLOP = dp(4);
+
 type Props = {
   user: HomeUser;
   onProfile: () => void;
@@ -18,9 +21,11 @@ type Props = {
 export function TopBar({ user, onProfile, onSearch, onNotifications }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
+  const unread = user.unreadNotifications ?? 0;
+  const name = user.name?.trim();
   return (
     <View style={styles.row}>
-      <Pressable accessibilityRole="button" accessibilityLabel="My profile" onPress={onProfile}>
+      <Pressable accessibilityRole="button" accessibilityLabel="My profile" hitSlop={ICON_HIT_SLOP} onPress={onProfile}>
         <InitialsAvatar
           label={user.initials}
           tone={user.tone}
@@ -30,21 +35,32 @@ export function TopBar({ user, onProfile, onSearch, onNotifications }: Props) {
           borderWidth={2}
         />
       </Pressable>
-      <View style={styles.greeting}>
+      <View style={styles.greeting} accessible accessibilityRole="header" accessibilityLabel={name ? `Welcome back, ${name}` : 'Welcome back'}>
         <Text style={styles.welcome}>Welcome back</Text>
-        <Text style={styles.name}>{user.name}</Text>
+        {name ? (
+          <Text style={styles.name} numberOfLines={1}>
+            {name}
+          </Text>
+        ) : null}
       </View>
-      <Pressable accessibilityRole="button" accessibilityLabel="Search" onPress={onSearch} style={({ pressed }) => [styles.roundButton, pressed && styles.pressed]}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Search"
+        hitSlop={ICON_HIT_SLOP}
+        onPress={onSearch}
+        style={({ pressed }) => [styles.roundButton, pressed && styles.pressed]}
+      >
         <Search size={dp(20)} color={colors.text} />
       </Pressable>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Notifications, ${user.unreadNotifications} unread`}
+        accessibilityLabel={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
+        hitSlop={ICON_HIT_SLOP}
         onPress={onNotifications}
         style={({ pressed }) => [styles.roundButton, pressed && styles.pressed]}
       >
         <Bell size={dp(20)} color={colors.text} />
-        {user.unreadNotifications > 0 ? <View style={styles.unreadDot} /> : null}
+        {unread > 0 ? <View style={styles.unreadDot} /> : null}
       </Pressable>
     </View>
   );
@@ -53,7 +69,7 @@ export function TopBar({ user, onProfile, onSearch, onNotifications }: Props) {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     row: { paddingHorizontal: sizes.gutter, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-    greeting: { flex: 1, gap: dp(2) },
+    greeting: { flex: 1, minWidth: 0, gap: dp(2) },
     welcome: { ...typography.bodySm, color: colors.textMuted },
     name: { ...typography.headlineLg, color: colors.text },
     roundButton: {

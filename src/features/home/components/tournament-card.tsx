@@ -18,6 +18,7 @@ export function TournamentCard({ tournament, onPress }: Props) {
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${tournament.name}, ${tournament.meta}`}
+      accessibilityHint="Opens the tournament"
       onPress={onPress}
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
@@ -40,8 +41,12 @@ export function TournamentCard({ tournament, onPress }: Props) {
       </View>
       <View style={styles.body}>
         <View style={styles.info}>
-          <Text style={styles.name}>{tournament.name}</Text>
-          <Text style={styles.meta}>{tournament.meta}</Text>
+          <Text style={styles.name} numberOfLines={1}>
+            {tournament.name}
+          </Text>
+          <Text style={styles.meta} numberOfLines={1}>
+            {tournament.meta}
+          </Text>
         </View>
         <View style={styles.view}>
           <Text style={styles.viewText}>View</Text>

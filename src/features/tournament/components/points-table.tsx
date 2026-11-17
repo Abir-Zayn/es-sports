@@ -1,8 +1,11 @@
 import { StyleSheet, View } from 'react-native';
 
-import { InitialsAvatar, Text } from '@/components/ui';
-import { dp, fontWeight, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
+import { Text } from '@/components/ui';
+import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { PointsRow } from '@/types/cricket';
+
+import { PointsTableKey } from '../table/points-table-key';
+import { COLUMN_WIDTH, COUNT_COLUMNS, EDGE_BAR, PointsTableRow } from '../table/points-table-row';
 
 type Props = {
   rows: PointsRow[];
@@ -10,117 +13,68 @@ type Props = {
   qualifyCount: number;
   /** What the edge bar means, shown in the legend under the table. */
   qualifyNote: string;
+  /** Names of teams the organiser has knocked out. Their rows are dimmed and tagged "Out". */
+  outTeams?: ReadonlySet<string>;
 };
-
-/** Column headings and the count each row shows under them. */
-const COLUMNS = [
-  { key: 'P', value: (row: PointsRow) => row.played },
-  { key: 'W', value: (row: PointsRow) => row.won },
-  { key: 'L', value: (row: PointsRow) => row.lost },
-  { key: 'NR', value: (row: PointsRow) => row.noResult },
-] as const;
-
-/** Positive NRR reads green, negative red, zero stays neutral. */
-const nrrTone = (nrr: string) => (nrr.startsWith('-') ? 'down' : parseFloat(nrr) > 0 ? 'up' : 'flat');
 
 /**
  * The league table as one card: a tinted heading strip, a position badge per row, NRR coloured by sign and a
  * tinted points column. Qualifying teams get a coloured left bar, and a coral cut line sits under the last one.
+ * A key under the card explains the markers and every column heading.
  */
-export function PointsTable({ rows, qualifyCount, qualifyNote }: Props) {
+export function PointsTable({ rows, qualifyCount, qualifyNote, outTeams }: Props) {
   const styles = useThemedStyles(createStyles);
+  const isOut = (row: PointsRow) => outTeams?.has(row.team.name) ?? false;
   return (
     <View style={styles.wrap}>
       <View style={styles.card}>
-        <View style={[styles.row, styles.head]}>
+        {/* Each row reads its own headings aloud, so the heading strip is hidden from screen readers. */}
+        <View style={styles.head} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
           <Text style={[styles.headText, styles.pos]}>#</Text>
           <Text style={[styles.headText, styles.team]}>Team</Text>
-          {COLUMNS.map((column) => (
+          {COUNT_COLUMNS.map((column) => (
             <Text key={column.key} style={[styles.headText, styles.count]}>
               {column.key}
             </Text>
           ))}
           <Text style={[styles.headText, styles.nrr]}>NRR</Text>
-          <View style={[styles.points, styles.pointsHead]}>
-            <Text style={[styles.headText, styles.pointsHeadText]}>PTS</Text>
+          <View style={styles.points}>
+            <Text style={[styles.headText, styles.pointsText]}>PTS</Text>
           </View>
         </View>
-        {rows.map((row, i) => {
-          const qualifies = i < qualifyCount;
-          const isCut = i === qualifyCount - 1 && i < rows.length - 1;
-          const tone = nrrTone(row.nrr);
-          return (
-            <View
-              key={row.team.short}
-              accessible
-              accessibilityLabel={`${row.pos}. ${row.team.name}. Played ${row.played}, won ${row.won}, lost ${row.lost}, no result ${row.noResult}, net run rate ${row.nrr}, ${row.points} points${qualifies ? `. ${qualifyNote}` : ''}`}
-              style={[styles.row, styles.zone, qualifies && styles.qualifies, i < rows.length - 1 && (isCut ? styles.cut : styles.divider)]}
-            >
-              <View style={styles.pos}>
-                <View style={[styles.badge, qualifies && styles.badgeOn]}>
-                  <Text style={[styles.posText, qualifies && styles.posTextOn]}>{row.pos}</Text>
-                </View>
-              </View>
-              <View style={[styles.team, styles.teamCell]}>
-                <InitialsAvatar label={row.team.short} tone={row.team.tone} imageUri={row.team.avatarUri} size={dp(30)} />
-                <Text style={styles.teamName} numberOfLines={2}>
-                  {row.team.name}
-                </Text>
-              </View>
-              {COLUMNS.map((column) => (
-                <Text key={column.key} style={[styles.cell, styles.count]}>
-                  {column.value(row)}
-                </Text>
-              ))}
-              <Text style={[styles.cell, styles.nrr, tone === 'up' && styles.up, tone === 'down' && styles.down]}>{row.nrr}</Text>
-              <View style={[styles.points, styles.pointsCell]}>
-                <Text style={styles.pointsText}>{row.points}</Text>
-              </View>
-            </View>
-          );
-        })}
+        {rows.map((row, i) => (
+          <PointsTableRow
+            key={`${row.team.short}-${row.team.name}`}
+            row={row}
+            qualifies={i < qualifyCount && !isOut(row)}
+            qualifyNote={qualifyNote}
+            out={isOut(row)}
+            cut={i === qualifyCount - 1}
+            last={i === rows.length - 1}
+          />
+        ))}
       </View>
-      <View style={styles.legend}>
-        <View style={styles.swatch} />
-        <Text style={styles.legendText}>{qualifyNote}</Text>
-      </View>
+      <PointsTableKey qualifyNote={qualifyCount > 0 ? qualifyNote : null} showOut={rows.some(isOut)} />
     </View>
   );
 }
-
-const BAR = dp(4);
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     wrap: { gap: spacing.lg },
     card: { marginHorizontal: sizes.gutter, borderRadius: radius.lg, backgroundColor: colors.surface, overflow: 'hidden', ...shadows.card },
-    row: { flexDirection: 'row', alignItems: 'center', gap: dp(2), paddingRight: spacing.sm, minHeight: dp(56) },
-    zone: { borderLeftWidth: BAR, borderLeftColor: 'transparent', paddingLeft: spacing.sm },
-    qualifies: { borderLeftColor: colors.primary },
-    head: { minHeight: dp(40), paddingLeft: spacing.sm + BAR, backgroundColor: colors.surfaceRaised },
-    divider: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
-    // The qualification cut line, like the zone breaks in league apps.
-    cut: { borderBottomWidth: dp(1.5), borderBottomColor: colors.primaryTint },
+    head: {
+      flexDirection: 'row', alignItems: 'center', gap: dp(2), minHeight: dp(40), paddingLeft: spacing.sm + EDGE_BAR, paddingRight: spacing.sm,
+      backgroundColor: colors.surfaceRaised,
+    },
     headText: { ...typography.labelSm, color: colors.textMuted },
-    pos: { width: dp(30) },
-    badge: { width: dp(24), height: dp(24), borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
-    badgeOn: { backgroundColor: colors.primarySoft },
-    posText: { ...typography.labelMd, color: colors.textMuted, fontVariant: ['tabular-nums'] },
-    posTextOn: { color: colors.link, fontWeight: fontWeight.heading },
+    pos: { width: COLUMN_WIDTH.pos },
     team: { flex: 1, minWidth: 0 },
-    teamCell: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-    teamName: { flex: 1, ...typography.bodySm, fontWeight: fontWeight.heading, color: colors.text },
-    count: { width: dp(22), textAlign: 'center' },
-    nrr: { width: dp(52), textAlign: 'right' },
-    up: { color: colors.success },
-    down: { color: colors.danger },
-    points: { width: dp(38), alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center', marginLeft: spacing.xs },
-    pointsHead: { backgroundColor: colors.primarySoft },
-    pointsHeadText: { color: colors.link },
-    pointsCell: { backgroundColor: colors.primarySoft },
-    cell: { ...typography.labelMd, color: colors.text, fontVariant: ['tabular-nums'] },
-    pointsText: { ...typography.labelMd, fontWeight: fontWeight.heading, color: colors.text, fontVariant: ['tabular-nums'] },
-    legend: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter },
-    swatch: { width: dp(12), height: dp(12), borderRadius: radius.pill, backgroundColor: colors.primary },
-    legendText: { ...typography.bodyMd, color: colors.text },
+    count: { width: COLUMN_WIDTH.count, textAlign: 'center' },
+    nrr: { width: COLUMN_WIDTH.nrr, textAlign: 'right' },
+    points: {
+      width: COLUMN_WIDTH.points, alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center', marginLeft: spacing.xs,
+      backgroundColor: colors.primarySoft,
+    },
+    pointsText: { color: colors.link },
   });

@@ -101,9 +101,10 @@ describe('a real tournament', () => {
     expect(screen.getByText('Owner: Rafi')).toBeTruthy();
   });
 
-  it('says the knockout waits for played matches rather than showing sample numbers', async () => {
+  it('shows which real teams are still in on the knockout rather than sample numbers', async () => {
     await show(<RealTournamentScreen id={T} section="knockout" />);
-    expect(await screen.findByText(/knockout appears once matches are played/)).toBeTruthy();
+    expect(await screen.findByText('1 of 1 teams still in')).toBeTruthy();
+    expect(screen.getByLabelText('Alpha XI, still in')).toBeTruthy();
   });
 
   it('says so when the tournament does not exist', async () => {

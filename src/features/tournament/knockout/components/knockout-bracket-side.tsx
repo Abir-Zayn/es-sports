@@ -43,7 +43,7 @@ export function KnockoutBracketSide({
   return (
     <View style={styles.container}>
       {/* Round of 16 */}
-      <Text style={styles.roundLabel}>Round of 16</Text>
+      <Text accessibilityRole="header" style={styles.roundLabel}>Round of 16</Text>
       <View style={styles.r16Row}>
         <View style={{ position: 'absolute', left: R16_X0 }}>
           <KnockoutMatchCard match={draw.r16[0]} onPress={onMatchPress} />
@@ -80,7 +80,7 @@ export function KnockoutBracketSide({
       </View>
 
       {/* Quarter final */}
-      <Text style={styles.roundLabel}>Quarter final</Text>
+      <Text accessibilityRole="header" style={styles.roundLabel}>Quarter final</Text>
       <View style={styles.qfRow}>
         <View style={{ position: 'absolute', left: QF_X0 }}>
           <KnockoutMatchCard match={draw.qf[0]} onPress={onMatchPress} />
@@ -101,7 +101,7 @@ export function KnockoutBracketSide({
       </View>
 
       {/* Semi final */}
-      <Text style={styles.roundLabel}>Semi final</Text>
+      <Text accessibilityRole="header" style={styles.roundLabel}>Semi final</Text>
       <View style={styles.sfRow}>
         <View style={{ position: 'absolute', left: SF_X }}>
           <KnockoutMatchCard match={draw.sf} onPress={onMatchPress} />
@@ -109,7 +109,7 @@ export function KnockoutBracketSide({
       </View>
 
       {/* Connector line down towards Final */}
-      {showDropLineToFinal && (
+      {showDropLineToFinal ? (
         <View style={styles.finalDropWrapper}>
           <Svg width={CANVAS_WIDTH} height={34} viewBox={`0 0 ${CANVAS_WIDTH} 34`}>
             <Line
@@ -122,7 +122,7 @@ export function KnockoutBracketSide({
             />
           </Svg>
         </View>
-      )}
+      ) : null}
     </View>
   );
 }
@@ -134,9 +134,9 @@ const createStyles = (colors: Palette) =>
       alignItems: 'center',
     },
     roundLabel: {
-      ...typography.labelSm,
+      ...typography.labelUppercase,
       color: colors.textMuted,
-      marginBottom: spacing.xs,
+      marginBottom: spacing.sm,
       textAlign: 'center',
     },
     r16Row: {

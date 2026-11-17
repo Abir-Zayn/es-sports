@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import Bell from 'lucide-react-native/icons/bell';
 import Settings from 'lucide-react-native/icons/settings';
+import Trash from 'lucide-react-native/icons/trash';
 import Trophy from 'lucide-react-native/icons/trophy';
 import Users from 'lucide-react-native/icons/users';
 import { useRef, useState } from 'react';
@@ -93,6 +94,11 @@ export function ProfileScreen() {
             label="Drafted tournaments"
             leading={<Trophy size={sizes.icon} color={colors.textMuted} />}
             onPress={() => router.push('/tournaments')}
+          />
+          <SettingsRow
+            label="Recently deleted"
+            leading={<Trash size={sizes.icon} color={colors.textMuted} />}
+            onPress={() => router.push('/profile/deleted-tournaments')}
           />
           <SettingsRow
             label="Team management"

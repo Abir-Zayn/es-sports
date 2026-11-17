@@ -1,12 +1,18 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react-native';
 
 import { ThemeProvider } from '@/theme';
 
+import { fake } from '../__fixtures__/supabase-fake';
+import type { TournamentRecord } from '../data/tournament-repository';
+import { RealKnockout } from '../knockout/real-knockout';
 import { tournamentSections } from '../sample-data';
 import { sampleKnockoutData } from '../knockout/sample-knockout-data';
 import { TournamentKnockoutScreen } from '../knockout/tournament-knockout-screen';
 
 afterEach(cleanup);
+
+jest.mock('@/lib/supabase', () => ({ supabase: jest.requireActual('../__fixtures__/supabase-fake').fake }));
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ id: 'ucl' }),
@@ -102,5 +108,61 @@ describe('tournament knockout screen', () => {
     const fullDrawTab = screen.getByLabelText('Full Draw');
     await fireEvent.press(fullDrawTab);
     expect(screen.getAllByText('Round of 16').length).toBe(2);
+  });
+});
+
+describe('sample bracket accessibility', () => {
+  it('reads each match card as round, score, status and winner', async () => {
+    await render(<ThemeProvider><TournamentKnockoutScreen /></ThemeProvider>);
+    expect(screen.getAllByLabelText('Round of 16: Arsenal 9, PSV Eindhoven 3, full time. Arsenal won').length).toBeGreaterThan(0);
+    expect(screen.getByLabelText('Final: Paris Saint-Germain 2, Inter Milan 1, full time. Paris Saint-Germain won')).toBeTruthy();
+    expect(screen.getByText('Champion: Paris Saint-Germain')).toBeTruthy();
+  });
+});
+
+describe('real tournament knockout', () => {
+  const team = (id: string, name: string, eliminated: boolean) => ({
+    team_id: id, eliminated_at: eliminated ? '2026-11-12T10:00:00Z' : null,
+    teams: { id, name, short_name: name.slice(0, 3).toUpperCase(), tone: 'blue', logo_url: null, area: null, district: null },
+  });
+  const show = async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
+    await render(
+      <ThemeProvider><QueryClientProvider client={client}><RealKnockout tournament={{ id: 'k1' } as TournamentRecord} /></QueryClientProvider></ThemeProvider>
+    );
+  };
+  beforeEach(() => {
+    fake.reset();
+    fake.results.team_members = { data: [], error: null };
+  });
+
+  it('splits teams into still in and eliminated, in words not only colour', async () => {
+    fake.results.tournament_teams = { data: [team('a', 'Alpha XI', false), team('b', 'Bravo XI', false), team('c', 'Charlie XI', true)], error: null };
+    await show();
+    expect(await screen.findByText('2 of 3 teams still in')).toBeTruthy();
+    expect(screen.getByText('Still in · 2')).toBeTruthy();
+    expect(screen.getByText('Eliminated · 1')).toBeTruthy();
+    expect(screen.getByLabelText('Charlie XI, eliminated')).toBeTruthy();
+    expect(screen.getByLabelText('Alpha XI, still in')).toBeTruthy();
+  });
+
+  it('names the champion when one team is left', async () => {
+    fake.results.tournament_teams = { data: [team('a', 'Alpha XI', false), team('b', 'Bravo XI', true)], error: null };
+    await show();
+    expect(await screen.findByText('Alpha XI won')).toBeTruthy();
+    expect(screen.getByLabelText('Alpha XI, champion')).toBeTruthy();
+  });
+
+  it('explains the empty state before any team joins', async () => {
+    fake.results.tournament_teams = { data: [], error: null };
+    await show();
+    expect(await screen.findByText('No teams yet')).toBeTruthy();
+  });
+
+  it('offers a retry when the teams cannot be loaded', async () => {
+    fake.results.tournament_teams = { data: null, error: { message: 'down', code: '500' } };
+    await show();
+    expect(await screen.findByText('Could not load the teams.')).toBeTruthy();
+    expect(screen.getByText('Try again')).toBeTruthy();
   });
 });

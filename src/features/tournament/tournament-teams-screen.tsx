@@ -30,9 +30,10 @@ export function TournamentTeamsScreen() {
   return (
     <TournamentScreenFrame tournamentId={tournamentId} section="teams">
       <View style={styles.heading}>
-        <Text accessibilityRole="header" style={styles.title}>
-          {tournamentTeams.length} Teams
-        </Text>
+        <View style={styles.titles}>
+          <Text accessibilityRole="header" style={styles.title}>{`${tournamentTeams.length} teams`}</Text>
+          <Text muted style={styles.sub}>{`Top ${leagueTable.qualifyCount} qualify`}</Text>
+        </View>
         <Pressable accessibilityRole="link" hitSlop={sizes.hitSlop} onPress={openHeadToHead}>
           <Text style={styles.link}>Head to head</Text>
         </Pressable>
@@ -59,7 +60,9 @@ export function TournamentTeamsScreen() {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     heading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
+    titles: { flexShrink: 1, gap: spacing.xs / 2 },
     title: typography.headlineLg,
+    sub: typography.bodySm,
     link: { ...typography.labelMd, color: colors.link },
     grid: { gap: spacing.md },
     gridRow: { flexDirection: 'row', gap: spacing.md },

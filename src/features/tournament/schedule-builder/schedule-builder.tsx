@@ -5,7 +5,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Text } from '@/components/ui';
 import { dp, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import { competitionFormats, oversLabel, type TournamentDraft } from '../create/draft';
+import { oversLabel, type TournamentDraft } from '../create/draft';
 import { isUuid } from '@/features/scoring/data/uuid';
 
 import { StartMatchSheet } from '../fixture-match/start-match-sheet';
@@ -47,7 +47,6 @@ export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isS
   const [confirmRedraw, setConfirmRedraw] = useState(false);
   const { matches, saved, publish, live } = builder;
   const playingDays = [...new Set(matches.map((m) => m.date))];
-  const formatLabel = competitionFormats.find((f) => f.value === setup.competition)?.label ?? '';
   const locked = live && matches.some((m) => m.started);
   const published = Boolean(saved.data?.publishedAt);
 
@@ -65,7 +64,7 @@ export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isS
     <>
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomInset + spacing.xxl }]}>
         <Text muted>
-          {formatLabel} · {oversLabel(setup.overs)} · {teams.length} teams · {shortDate(setup.startDate)} – {shortDate(setup.endDate)}
+          {oversLabel(setup.overs)} · {teams.length} teams · {shortDate(setup.startDate)} – {shortDate(setup.endDate)}
         </Text>
         {isOwner ? (
           <ScheduleControls mode={builder.mode} settings={builder.settings} hasMatches={matches.length > 0} locked={locked}

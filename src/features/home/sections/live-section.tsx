@@ -5,6 +5,8 @@ import { Section, SectionHeader } from '@/components/ui';
 import { sizes, spacing } from '@/theme';
 import type { LiveMatch } from '@/types/cricket';
 
+import { HomeEmptyState } from '../components/home-empty-state';
+
 const CARD_GAP = spacing.md;
 
 type Props = {
@@ -15,20 +17,31 @@ type Props = {
 
 /** Matches being played now, as a sideways scroller of score cards. */
 export function LiveSection({ matches, onSeeAll, onMatchPress }: Props) {
+  const isLive = matches.length > 0;
   return (
     <Section>
-      <SectionHeader live title="Live Now" action="See all" onAction={onSeeAll} />
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        snapToInterval={LIVE_MATCH_CARD_WIDTH + CARD_GAP}
-        decelerationRate="fast"
-        contentContainerStyle={styles.cards}
-      >
-        {matches.map((match) => (
-          <LiveMatchCard key={match.id} match={match} onPress={() => onMatchPress(match)} />
-        ))}
-      </ScrollView>
+      {/* The red dot only pulses for real: no live games, no dot. */}
+      <SectionHeader live={isLive} title="Live now" action="See all" onAction={onSeeAll} />
+      {isLive ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          snapToInterval={LIVE_MATCH_CARD_WIDTH + CARD_GAP}
+          decelerationRate="fast"
+          contentContainerStyle={styles.cards}
+        >
+          {matches.map((match) => (
+            <LiveMatchCard key={match.id} match={match} onPress={() => onMatchPress(match)} />
+          ))}
+        </ScrollView>
+      ) : (
+        <HomeEmptyState
+          title="No matches live right now"
+          message="Scores show up here as soon as a game starts."
+          action="Browse matches"
+          onAction={onSeeAll}
+        />
+      )}
     </Section>
   );
 }
