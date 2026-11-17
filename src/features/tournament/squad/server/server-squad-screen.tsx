@@ -14,7 +14,7 @@ import { tournamentErrorText } from '../../data/tournament-errors';
 import { UserSearchSheet } from '../../roster/components/user-search-sheet';
 import { rosterKey } from '../../roster/use-roster';
 import { CandidateRow } from './candidate-row';
-import { addServerSquadPlayer, canEditSquad, fetchServerSquad, saveServerSquad, serverSquadKey, squadSaveProblem, type ServerSquad } from './squad-server';
+import { addServerSquadPlayers, canEditSquad, fetchServerSquad, saveServerSquad, serverSquadKey, squadSaveProblem, type ServerSquad } from './squad-server';
 
 type Props = { tournamentId: string; teamId: string };
 
@@ -75,10 +75,14 @@ function SquadPicker({ squad, tournamentId, teamId }: { squad: ServerSquad; tour
   });
   // The organiser adds anyone on esSports straight to the team and squad; no invite is sent.
   const add = useMutation({
-    mutationFn: (profileId: string) => addServerSquadPlayer(tournamentId, teamId, profileId),
-    onSuccess: async (_, profileId) => {
-      setDraft((current) => (current ? [...current, profileId] : null));
+    mutationFn: (profileIds: string[]) => addServerSquadPlayers(tournamentId, teamId, profileIds),
+    onSuccess: async (_, profileIds) => {
+      setDraft((current) => (current ? [...current, ...profileIds.filter((id) => !current.includes(id))] : null));
       setFinding(false);
+      await queryClient.invalidateQueries({ queryKey: serverSquadKey(tournamentId, teamId) });
+      void queryClient.invalidateQueries({ queryKey: rosterKey(tournamentId) });
+    },
+    onError: async () => {
       await queryClient.invalidateQueries({ queryKey: serverSquadKey(tournamentId, teamId) });
       void queryClient.invalidateQueries({ queryKey: rosterKey(tournamentId) });
     },
@@ -102,7 +106,7 @@ function SquadPicker({ squad, tournamentId, teamId }: { squad: ServerSquad; tour
         {editable ? null : <Text variant="caption" muted>Only the team owner or an admin can change the squad.</Text>}
       </Card>
       {squad.isOrganiser ? (
-        <Button label="Add player" disabled={full || save.isPending} onPress={() => { add.reset(); setFinding(true); }} />
+        <Button label="Add players" disabled={full || save.isPending} onPress={() => { add.reset(); setFinding(true); }} />
       ) : null}
       {squad.candidates.length === 0 ? (
         <Text muted>{squad.isOrganiser ? 'This team has no players yet. Add one above.' : 'This team has no players yet. Add members from Team management first.'}</Text>
@@ -128,15 +132,16 @@ function SquadPicker({ squad, tournamentId, teamId }: { squad: ServerSquad; tour
       ) : null}
       <UserSearchSheet
         visible={finding}
-        title={`Add player to ${squad.teamName}`}
+        title={`Add players to ${squad.teamName}`}
         hint="They join the team and its squad straight away."
         actionLabel="Add"
         excludeIds={selected}
+        maxSelect={Math.max(0, squad.maxSquad - selected.length)}
         search={searchPlayers}
         suggest={suggestPlayers}
         inviting={add.isPending}
         error={add.isError ? tournamentErrorText(add.error) : null}
-        onInvite={(user) => add.mutate(user.id)}
+        onInviteMany={(users) => add.mutate(users.map((u) => u.id))}
         onClose={() => setFinding(false)}
       />
     </ScrollView>

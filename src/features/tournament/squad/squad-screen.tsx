@@ -80,7 +80,7 @@ function SquadBody({ roster, team, meId }: { roster: Roster; team: RosterTeam; m
   const canManage = canManageSquad(roster, team, meId);
   const status = registrationStatus(roster);
   const canAdd = canManage && (status === 'open' || status === 'locked') && team.players.length < roster.squadRules.maxSquad;
-  const { addMember, addGuest, remove } = actions;
+  const { addMembers, addGuest, remove } = actions;
 
   function open(next: OpenSheet) {
     actions.reset();
@@ -123,13 +123,14 @@ function SquadBody({ roster, team, meId }: { roster: Roster; team: RosterTeam; m
       </ScrollView>
       <UserSearchSheet
         visible={sheet?.kind === 'member'}
-        title="Find player"
+        title="Find players"
         hint="Players already on esSports. Their matches count on their career straight away."
         actionLabel="Add"
         excludeIds={roster.teams.flatMap((t) => t.players.flatMap((p) => (p.userId ? [p.userId] : [])))}
-        inviting={addMember.isPending}
-        error={addMember.isError ? rosterErrorText(addMember.error) : null}
-        onInvite={(user) => addMember.mutate({ user, role, reason }, { onSuccess: close })}
+        maxSelect={Math.max(0, roster.squadRules.maxSquad - team.players.length)}
+        inviting={addMembers.isPending}
+        error={addMembers.isError ? rosterErrorText(addMembers.error) : null}
+        onInviteMany={(users) => addMembers.mutate({ users, role, reason }, { onSuccess: close })}
         onClose={close}
       >
         <PlayerChangeFields role={role} onRole={setRole} locked={roster.locked} reason={reason} onReason={setReason} />

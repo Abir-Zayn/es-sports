@@ -84,6 +84,13 @@ export async function addServerSquadPlayer(tournamentId: string, teamId: string,
   if (error) throw toTournamentError(error);
 }
 
+/** Adds multiple people to the team (as players) and straight into its squad. */
+export async function addServerSquadPlayers(tournamentId: string, teamId: string, profileIds: string[]): Promise<void> {
+  for (const profileId of profileIds) {
+    await addServerSquadPlayer(tournamentId, teamId, profileId);
+  }
+}
+
 /** Who may change the squad: the tournament owner, the team owner or an admin (the server applies the same rule). */
 export const canEditSquad = (role: TeamRole | null, isOrganiser = false): boolean => isOrganiser || role === 'owner' || role === 'admin';
 
