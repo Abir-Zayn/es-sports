@@ -9,9 +9,10 @@ import type { ScheduledMatch, SideRef } from './types';
 const teamInfo = (side: SideRef): TeamInfo =>
   side.kind === 'team' ? { short: side.team.short, name: side.team.name, tone: 'neutral' } : { short: 'TBD', name: side.label, tone: 'neutral' };
 
-/** A scheduled match as the shared match tile shows it: number and stage, date, time and venue (or why it is off). */
-export function toFixture(match: ScheduledMatch, venue: string): Fixture {
-  const title = match.stage === 'League' ? `Match ${match.number}` : `Match ${match.number}, ${match.stage}`;
+/** A scheduled match as the shared match tile shows it: number and stage (or group), date, time and venue (or why it is off). */
+export function toFixture(match: ScheduledMatch, venue: string, group?: string): Fixture {
+  const stage = match.stage === 'League' ? group : match.stage;
+  const title = stage ? `Match ${match.number}, ${stage}` : `Match ${match.number}`;
   const linked = match.match;
   const state = linked?.status === 'live' ? 'live' : linked?.status === 'completed' ? 'result' : 'upcoming';
   const displaySide = (side: SideRef, runs: number | null | undefined, wickets: number | null | undefined,

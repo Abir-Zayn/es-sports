@@ -14,8 +14,8 @@ type StandingRow = {
 };
 
 const tones: readonly AvatarTone[] = ['blue', 'yellow', 'neutral'];
-/** 24 teams is the most a tournament can have. */
-const ROW_LIMIT = 24;
+/** 48 teams is the most a tournament can have. */
+const ROW_LIMIT = 48;
 
 export const standingsKey = (tournamentId: string) => ['tournament-standings', tournamentId] as const;
 
@@ -55,10 +55,12 @@ export function toPointsRow(row: StandingRow, index: number): PointsRow {
   };
 }
 
+export type StandingsRow = PointsRow & { teamId: string | null };
+
 /** One row per entered team, in table order. */
-export async function fetchStandings(tournamentId: string): Promise<PointsRow[]> {
+export async function fetchStandings(tournamentId: string): Promise<StandingsRow[]> {
   const { data, error } = await traceApi('tournament.standings', { tournamentId }, () => supabase.from('tournament_standings')
     .select('team_id, name, short_name, tone, played, won, lost, tied, points, nrr').eq('tournament_id', tournamentId).limit(ROW_LIMIT));
   if (error) throw toTournamentError(error);
-  return orderStandings(data ?? []).map(toPointsRow);
+  return orderStandings(data ?? []).map((row, i) => ({ ...toPointsRow(row, i), teamId: row.team_id }));
 }

@@ -23,7 +23,7 @@ describe('publishing a draft', () => {
   it('sends snake_case columns, trimmed text, null for empty registration dates, and no local image paths', () => {
     expect(draftToPayload('tid', draft)).toEqual({
       id: 'tid', name: 'Port City Cup', city: 'Chattogram', venue: 'Main Ground', start_date: '2026-11-10', end_date: '2026-11-12',
-      overs: 20, competition: 'league', teams_planned: 8, ball: 'Tennis', side_format: 'standard_11',
+      overs: 20, competition: 'league', teams_planned: 8, groups_planned: 1, ball: 'Tennis', side_format: 'standard_11',
       players_per_side: 11, min_squad: 14, max_squad: 16, registration_opens: null, registration_deadline: null,
     });
   });

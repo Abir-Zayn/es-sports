@@ -17,6 +17,7 @@ export function draftToPayload(id: string, draft: TournamentDraft) {
     overs: draft.overs,
     competition: draft.competition,
     teams_planned: draft.teams,
+    groups_planned: draft.groups,
     ball: draft.ball,
     side_format: draft.sideFormat,
     players_per_side: draft.playersPerSide,
@@ -66,6 +67,22 @@ export async function addTournamentTeam(tournamentId: string, teamId: string): P
 export async function setTournamentTeamEliminated(tournamentId: string, teamId: string, eliminated: boolean): Promise<void> {
   const { error } = await traceApi('tournament.eliminateTeam', { tournamentId, teamId, eliminated }, () => supabase.rpc('set_tournament_team_eliminated', {
     p_tournament: tournamentId, p_team: teamId, p_eliminated: eliminated,
+  }));
+  if (error) throw toTournamentError(error);
+}
+
+/** Splits the teams into groups at random (again, if drawn before) and sets how many of each group go through. Owner only. */
+export async function drawTournamentGroups(tournamentId: string, advancePerGroup: number): Promise<void> {
+  const { error } = await traceApi('tournament.drawGroups', { tournamentId, advancePerGroup }, () => supabase.rpc('draw_tournament_groups', {
+    p_tournament: tournamentId, p_advance: advancePerGroup,
+  }));
+  if (error) throw toTournamentError(error);
+}
+
+/** Swaps two teams in different groups. Owner only, until a match starts. */
+export async function swapTournamentGroupTeams(tournamentId: string, teamA: string, teamB: string): Promise<void> {
+  const { error } = await traceApi('tournament.swapGroups', { tournamentId, teamA, teamB }, () => supabase.rpc('swap_tournament_group_teams', {
+    p_tournament: tournamentId, p_team_a: teamA, p_team_b: teamB,
   }));
   if (error) throw toTournamentError(error);
 }

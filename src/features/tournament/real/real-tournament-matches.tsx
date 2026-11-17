@@ -10,12 +10,13 @@ import { StartMatchSheet } from '../fixture-match/start-match-sheet';
 import { canStartFixture } from '../fixture-match/start-fixture';
 import type { ScheduledMatch } from '../schedule-builder/types';
 import { tournamentErrorText } from '../data/tournament-errors';
-import type { TournamentRecord } from '../data/tournament-repository';
+import { fetchTournamentTeams, tournamentKey, type TournamentRecord } from '../data/tournament-repository';
 import { buildSchedule, emptyScheduleText, scheduleTabs, type ScheduleFilter } from '../schedule';
 import { fetchSchedule } from '../schedule-builder/schedule-repository';
 import { toFixture } from '../schedule-builder/to-fixture';
 import { scheduleKey } from '../schedule-builder/use-schedule-builder';
 import { ScheduleGroupSection } from '../sections/schedule-group-section';
+import { groupName } from '../teams/group-teams';
 import { useTournamentMatchUpdates } from './use-tournament-match-updates';
 
 type Props = { tournament: TournamentRecord; canSchedule: boolean; canStart?: boolean; onSchedule: () => void };
@@ -27,10 +28,18 @@ export function RealTournamentMatches({ tournament, canSchedule, canStart = fals
   const [starting, setStarting] = useState<ScheduledMatch | null>(null);
   const [filter, setFilter] = useState<ScheduleFilter>('all');
   const schedule = useQuery({ queryKey: scheduleKey(tournament.id), queryFn: () => fetchSchedule(tournament.id) });
-  const groups = useMemo(
-    () => buildSchedule((schedule.data?.matches ?? []).map((m) => toFixture(m, tournament.venue)), filter),
-    [schedule.data, tournament.venue, filter],
-  );
+  // Same query as the Groups tab; a league match is labelled with its home team's group.
+  const teams = useQuery({
+    queryKey: [...tournamentKey(tournament.id), 'teams'], queryFn: () => fetchTournamentTeams(tournament.id), enabled: tournament.groupsPlanned > 1,
+  });
+  const groups = useMemo(() => {
+    const groupOf = new Map((teams.data ?? []).map((e) => [e.team.id, e.group]));
+    const label = (m: ScheduledMatch) => {
+      const g = m.home.kind === 'team' ? groupOf.get(m.home.team.id) : null;
+      return g == null ? undefined : groupName(g);
+    };
+    return buildSchedule((schedule.data?.matches ?? []).map((m) => toFixture(m, tournament.venue, label(m))), filter);
+  }, [schedule.data, teams.data, tournament.venue, filter]);
   const linkedIds = new Map((schedule.data?.matches ?? []).filter((m) => m.match && !m.cancelled).map((m) => [m.id, m.match!.id]));
   const cancelledIds = new Set((schedule.data?.matches ?? []).filter((m) => m.cancelled).map((m) => m.id));
   const manage = canSchedule ? (

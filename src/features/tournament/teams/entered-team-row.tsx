@@ -6,17 +6,17 @@ import { sizes, spacing, typography, useTheme, useThemedStyles, type Palette } f
 
 import type { EnteredTeam } from '../data/tournament-repository';
 
-type Props = { entry: EnteredTeam; last: boolean; onPress: () => void };
+type Props = { entry: EnteredTeam; last: boolean; selected?: boolean; onPress: () => void };
 
 /** One team: logo, name and owner. A knocked-out team is dimmed and tagged so it reads as out without relying on colour. */
-export function EnteredTeamRow({ entry, last, onPress }: Props) {
+export function EnteredTeamRow({ entry, last, selected = false, onPress }: Props) {
   const styles = useThemedStyles(createStyles);
   const { colors } = useTheme();
   const { team, owner, eliminated } = entry;
   const label = `${team.name}${owner ? `, owner ${owner.name}` : ''}${eliminated ? ', eliminated' : ''}`;
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityHint="Opens the team" onPress={onPress}
-      style={({ pressed }) => [styles.row, !last && styles.divider, pressed && styles.pressed]}>
+    <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityHint="Opens the team" accessibilityState={{ selected }} onPress={onPress}
+      style={({ pressed }) => [styles.row, !last && styles.divider, selected && styles.selected, pressed && styles.pressed]}>
       <View style={eliminated ? styles.dim : undefined}>
         <InitialsAvatar label={team.shortName} tone={team.tone} imageUri={team.logoUrl ?? undefined} size={sizes.iconButton + spacing.sm} shape="square" />
       </View>
@@ -34,6 +34,7 @@ const createStyles = (colors: Palette) => StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md, minHeight: sizes.control },
   divider: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   pressed: { opacity: 0.6 },
+  selected: { backgroundColor: colors.primarySoft },
   dim: { opacity: 0.45 },
   names: { flex: 1, minWidth: 0, gap: spacing.xs / 2 },
   name: typography.labelMd,
