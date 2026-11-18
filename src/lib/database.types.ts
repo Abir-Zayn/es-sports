@@ -483,6 +483,7 @@ export type Database = {
           id: string
           kind: string
           message: string
+          pushed_at: string | null
           read_at: string | null
           title: string
           user_id: string
@@ -493,6 +494,7 @@ export type Database = {
           id?: string
           kind: string
           message: string
+          pushed_at?: string | null
           read_at?: string | null
           title: string
           user_id: string
@@ -503,6 +505,7 @@ export type Database = {
           id?: string
           kind?: string
           message?: string
+          pushed_at?: string | null
           read_at?: string | null
           title?: string
           user_id?: string
@@ -584,6 +587,26 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      push_tickets: {
+        Row: { created_at: string; id: string; token: string }
+        Insert: { created_at?: string; id: string; token: string }
+        Update: { created_at?: string; id?: string; token?: string }
+        Relationships: []
+      }
+      push_tokens: {
+        Row: { created_at: string; id: string; platform: string; token: string; updated_at: string; user_id: string }
+        Insert: { created_at?: string; id?: string; platform: string; token: string; updated_at?: string; user_id: string }
+        Update: { created_at?: string; id?: string; platform?: string; token?: string; updated_at?: string; user_id?: string }
+        Relationships: [
+          {
+            foreignKeyName: "push_tokens_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scorer_handover: {
         Row: {
@@ -1157,6 +1180,10 @@ export type Database = {
         Args: { p_fixture: string; p_reason: string }
         Returns: undefined
       }
+      claim_push_batch: {
+        Args: { p_limit?: number }
+        Returns: { data: Json; message: string; notification_id: string; title: string; token: string }[]
+      }
       claim_score_head: {
         Args: { p_expected_head: string; p_match: string; p_op: string }
         Returns: boolean
@@ -1236,6 +1263,10 @@ export type Database = {
       }
       refresh_tournament_match_totals: {
         Args: { p_match: string }
+        Returns: undefined
+      }
+      register_push_token: {
+        Args: { p_platform: string; p_token: string }
         Returns: undefined
       }
       remove_team_member: {

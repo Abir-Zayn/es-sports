@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { AnimatedSplash } from '@/components/splash/animated-splash';
 import { AuthProvider, useAuth } from '@/features/auth';
+import { usePushNotifications } from '@/features/notifications';
 import { ProfileProvider } from '@/features/profile/profile-provider';
 import { useOutboxRecovery } from '@/features/scoring/use-outbox-recovery';
 import { useTeamMembershipUpdates } from '@/features/team/data/use-team-membership-updates';
@@ -21,6 +22,7 @@ function AppShell() {
   const [splashDone, setSplashDone] = useState(false);
   useOutboxRecovery(session?.user.id);
   useTeamMembershipUpdates(session?.user.id);
+  usePushNotifications(session?.user.id, !isLoading && !!session);
   useEffect(() => watchAppFocus(), []);
 
   // The animated splash starts on the same frame as the native one, so the native one can go.
