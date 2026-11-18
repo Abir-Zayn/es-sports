@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from '@/features/auth';
 import { ProfileProvider } from '@/features/profile/profile-provider';
 import { useOutboxRecovery } from '@/features/scoring/use-outbox-recovery';
 import { useTeamMembershipUpdates } from '@/features/team/data/use-team-membership-updates';
+import { AutoOpenWhatsNew } from '@/features/whats-new';
 import { watchAppFocus } from '@/lib/app-focus';
 import { queryClient } from '@/lib/query-client';
 import { ThemeProvider, useTheme } from '@/theme';
@@ -69,7 +70,7 @@ function AppShell() {
             <Stack.Screen name="tournament/schedule" />
             <Stack.Screen name="invitations" />
             <Stack.Screen name="notifications" />
-            <Stack.Screen name="whats-new" />
+            <Stack.Screen name="whats-new" options={{ presentation: 'transparentModal', animation: 'fade', contentStyle: { backgroundColor: 'transparent' } }} />
             <Stack.Screen name="calendar" />
             <Stack.Screen name="leaderboards" />
             <Stack.Screen name="hall-of-fame" />
@@ -88,6 +89,7 @@ function AppShell() {
       {!splashDone && (
         <AnimatedSplash ready={!isLoading} onShown={hideNativeSplash} onDone={endSplash} />
       )}
+      {splashDone && !isLoading && session ? <AutoOpenWhatsNew /> : null}
     </>
   );
 }

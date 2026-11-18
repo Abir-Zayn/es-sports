@@ -39,6 +39,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_release_notes: {
+        Row: {
+          highlights: Json
+          published_at: string
+          title: string
+          update_id: string
+        }
+        Insert: {
+          highlights: Json
+          published_at?: string
+          title: string
+          update_id: string
+        }
+        Update: {
+          highlights?: Json
+          published_at?: string
+          title?: string
+          update_id?: string
+        }
+        Relationships: []
+      }
       ball_events: {
         Row: {
           angle: number | null
