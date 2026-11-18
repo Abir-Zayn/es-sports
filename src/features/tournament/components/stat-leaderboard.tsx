@@ -1,13 +1,17 @@
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppAvatar, Text } from '@/components/ui';
 import { dp, radius, shadows, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { StatLeader } from '@/types/cricket';
 
-type Props = { leaders: StatLeader[]; valueHeading: string; secondaryHeading: string };
+type Props = {
+  leaders: StatLeader[]; valueHeading: string; secondaryHeading: string;
+  /** Opens a player; rows without a profile id stay plain. */
+  onPressPlayer?: (leader: StatLeader) => void;
+};
 
 /** Ranked list of players below the podium: rank, player and team, the supporting figure, then the ranked figure. */
-export function StatLeaderboard({ leaders, valueHeading, secondaryHeading }: Props) {
+export function StatLeaderboard({ leaders, valueHeading, secondaryHeading, onPressPlayer }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   return (
@@ -19,11 +23,14 @@ export function StatLeaderboard({ leaders, valueHeading, secondaryHeading }: Pro
         <Text style={[styles.headText, styles.value]}>{valueHeading}</Text>
       </View>
       {leaders.map((leader, i) => (
-        <View
-          key={leader.rank}
+        <Pressable
+          key={leader.id ?? `${leader.rank}-${leader.name}`}
+          disabled={!onPressPlayer || !leader.id}
+          onPress={() => onPressPlayer?.(leader)}
+          accessibilityRole={onPressPlayer && leader.id ? 'button' : undefined}
           accessible
           accessibilityLabel={`${leader.rank}. ${leader.name}, ${leader.team}. ${valueHeading} ${leader.value}, ${secondaryHeading} ${leader.secondary}`}
-          style={[styles.row, i < leaders.length - 1 && styles.divider]}
+          style={({ pressed }) => [styles.row, i < leaders.length - 1 && styles.divider, pressed && styles.pressed]}
         >
           <Text style={[styles.rankText, styles.rank]}>{leader.rank}</Text>
           <View style={[styles.player, styles.playerCell]}>
@@ -39,7 +46,7 @@ export function StatLeaderboard({ leaders, valueHeading, secondaryHeading }: Pro
           </View>
           <Text style={[styles.secondaryText, styles.secondary]}>{leader.secondary}</Text>
           <Text style={[styles.valueText, styles.value]}>{leader.value}</Text>
-        </View>
+        </Pressable>
       ))}
     </View>
   );
@@ -50,6 +57,7 @@ const createStyles = (colors: Palette) =>
     table: { borderRadius: radius.lg, backgroundColor: colors.surface, ...shadows.card },
     row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.md, paddingHorizontal: spacing.lg },
     head: { borderBottomWidth: 1, borderBottomColor: colors.border },
+    pressed: { opacity: 0.6 },
     divider: { borderBottomWidth: 1, borderBottomColor: colors.border },
     headText: { ...typography.labelUppercase, color: colors.textMuted },
     rank: { width: dp(28) },
