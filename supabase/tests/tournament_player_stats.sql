@@ -4,7 +4,7 @@
 --   4 | dot | wide (1) | 6 | bye (1) | A1 bowled
 -- Innings 2, B1 facing A2 with B2 at the other end: 1 | B2 run out (0)
 -- A second match on a cancelled fixture gives A1 100 more runs and must not count.
--- Expected:
+-- Expected (every match is 20 overs):
 --   A1 bat 10 off 5, 1 four, 1 six, out, high 10;     no bowling
 --   A2 bat 0 off 0, not out (at the crease);          bowl 2 balls, 1 run, 0 wkts, 1 dot (run out is no wicket)
 --   B1 bat 1 off 2, not out;                          bowl 5 balls, 11 runs (wide yes, bye no), 1 wkt, 2 dots, best 1/11
@@ -72,17 +72,32 @@ begin
     or not has_function_privilege('authenticated', 'public.tournament_player_stats(uuid)', 'execute') then
     raise exception 'FAIL grants: signed-in users only';
   end if;
-  select string_agg(format('%s[%s] m%s i%s %s/%s 4s%s 6s%s out%s hi%s%s | b%s r%s w%s d%s best %s/%s',
+  select string_agg(format('%s[%s] m%s i%s %s/%s 4s%s 6s%s out%s hi%s%s(%sb %sov) | b%s r%s w%s d%s best %s/%s(%sov)',
       name, team_short, matches, innings, runs, balls_faced, fours, sixes, outs, coalesce(highest::text, '-'),
-      case when highest_not_out then '*' else '' end, balls_bowled, runs_conceded, wickets, dots,
-      coalesce(best_wickets::text, '-'), coalesce(best_runs::text, '-')), '; ' order by name)
+      case when highest_not_out then '*' else '' end, coalesce(highest_balls::text, '-'), coalesce(highest_overs::text, '-'),
+      balls_bowled, runs_conceded, wickets, dots,
+      coalesce(best_wickets::text, '-'), coalesce(best_runs::text, '-'), coalesce(best_overs::text, '-')), '; ' order by name)
     into got from public.tournament_player_stats('fec00000-0000-4000-8000-000000000001');
   if got is distinct from
-    'A1[ALP] m1 i1 10/5 4s1 6s1 out1 hi10 | b0 r0 w0 d0 best -/-; '
-    || 'A2[ALP] m1 i1 0/0 4s0 6s0 out0 hi0* | b2 r1 w0 d1 best 0/1; '
-    || 'B1[BRV] m1 i1 1/2 4s0 6s0 out0 hi1* | b5 r11 w1 d2 best 1/11; '
-    || 'B2[BRV] m1 i1 0/0 4s0 6s0 out1 hi0 | b0 r0 w0 d0 best -/-' then
+    'A1[ALP] m1 i1 10/5 4s1 6s1 out1 hi10(5b 20ov) | b0 r0 w0 d0 best -/-(-ov); '
+    || 'A2[ALP] m1 i1 0/0 4s0 6s0 out0 hi0*(0b 20ov) | b2 r1 w0 d1 best 0/1(20ov); '
+    || 'B1[BRV] m1 i1 1/2 4s0 6s0 out0 hi1*(2b 20ov) | b5 r11 w1 d2 best 1/11(20ov); '
+    || 'B2[BRV] m1 i1 0/0 4s0 6s0 out1 hi0(0b 20ov) | b0 r0 w0 d0 best -/-(-ov)' then
     raise exception 'FAIL stats: %', got;
+  end if;
+  -- No tournament given: every tournament, the same four players.
+  select string_agg(format('%s %s/%s', name, runs, wickets), '; ' order by name) into got
+    from public.tournament_player_stats() where profile_id::text like 'fea00000-%';
+  if got is distinct from 'A1 10/0; A2 0/0; B1 1/1; B2 0/0' then
+    raise exception 'FAIL global: %', got;
+  end if;
+  -- A deleted tournament drops out of the global board but still answers for itself.
+  update public.tournaments set deleted_at = now() where id = 'fec00000-0000-4000-8000-000000000001';
+  if exists (select 1 from public.tournament_player_stats() where profile_id::text like 'fea00000-%') then
+    raise exception 'FAIL global: deleted tournament still counted';
+  end if;
+  if (select count(*) from public.tournament_player_stats('fec00000-0000-4000-8000-000000000001')) <> 4 then
+    raise exception 'FAIL: a deleted tournament lost its own stats';
   end if;
 end $$;
 

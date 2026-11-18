@@ -141,6 +141,8 @@ export type PointsTableData = {
 export type StatMode = 'bat' | 'bowl';
 
 export type StatLeader = {
+  /** Profile id, when the player has one; opens their profile. */
+  id?: string;
   rank: number;
   initials: string;
   name: string;
