@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, type GestureResponderEvent } from 'react-native';
+import { StyleSheet, View, type GestureResponderEvent } from 'react-native';
 import Svg, { Circle, Line, Rect, Text as SvgText } from 'react-native-svg';
 
 import { dp, useTheme } from '@/theme';
@@ -14,13 +14,16 @@ export function ShotField({ runs, angle, onChange }: { runs: number; angle: numb
   const reach = runs === 4 || runs === 6 ? 145 : runs === 3 ? 115 : runs === 2 ? 95 : 75;
   const x = 160 + Math.cos(angle * Math.PI / 180) * reach;
   const y = 160 + Math.sin(angle * Math.PI / 180) * reach;
-  const tap = (event: GestureResponderEvent) => {
+  // Tap places the mark; dragging slides it around the batter. The SVG ignores touches, so locationX/Y stay relative to the field.
+  const place = (event: GestureResponderEvent) => {
     const { locationX, locationY } = event.nativeEvent;
     onChange(Math.atan2(locationY / width * 320 - 160, locationX / width * 320 - 160) * 180 / Math.PI);
   };
-  return <Pressable style={s.field} onLayout={(e) => setWidth(e.nativeEvent.layout.width)} onPress={tap}
+  return <View style={s.field} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+    onStartShouldSetResponder={() => true} onMoveShouldSetResponder={() => true}
+    onResponderGrant={place} onResponderMove={place} onResponderTerminationRequest={() => false}
     accessibilityRole="adjustable" accessibilityLabel="Shot direction" accessibilityValue={{ text: directionLabel(angle) }}
-    accessibilityHint="Tap the field, or swipe up and down to change direction."
+    accessibilityHint="Tap or drag on the field, or swipe up and down to change direction."
     accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
     onAccessibilityAction={(e) => onChange(angle + (e.nativeEvent.actionName === 'increment' ? 45 : -45))}>
     <Svg width="100%" height="100%" viewBox="0 0 320 320" pointerEvents="none">
@@ -35,6 +38,6 @@ export function ShotField({ runs, angle, onChange }: { runs: number; angle: numb
       <Line x1={160} y1={160} x2={x} y2={y} stroke={c.primary} strokeWidth={3} />
       <Circle cx={x} cy={y} r={8} fill={c.primary} stroke={c.background} strokeWidth={3} />
     </Svg>
-  </Pressable>;
+  </View>;
 }
 const s = StyleSheet.create({ field: { width: '100%', maxWidth: dp(340), alignSelf: 'center', aspectRatio: 1 } });
