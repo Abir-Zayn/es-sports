@@ -1,5 +1,14 @@
-import { ComingSoonScreen } from '@/components/coming-soon-screen';
+import { router } from 'expo-router';
 
-export default function Screen() {
-  return <ComingSoonScreen title="What’s new" />;
+import { WhatsNewSheet } from '@/features/whats-new';
+
+export { ErrorBoundary } from 'expo-router';
+
+export default function WhatsNewRoute() {
+  return (
+    <WhatsNewSheet onClose={() => {
+      if (router.canGoBack()) router.back();
+      else router.replace('/home');
+    }} />
+  );
 }
