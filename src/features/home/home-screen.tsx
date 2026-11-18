@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -13,6 +14,7 @@ import { sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { liveMatches, myTeams, sampleUser, tournaments, upcoming } from './sample-data';
 import { ContractedTeams } from './sections/contracted-teams';
+import { HomeSideNav } from './sections/home-side-nav';
 import { LiveSection } from './sections/live-section';
 import { TopBar } from './sections/top-bar';
 import { TournamentsToFollow } from './sections/tournaments-to-follow';
@@ -27,6 +29,7 @@ export function HomeScreen() {
   const styles = useThemedStyles(createStyles);
   const { profile } = useProfile();
   const { unreadCount } = useNotifications();
+  const [menuOpen, setMenuOpen] = useState(false);
   // The greeting and avatar come from the player's own profile, not from Google.
   const user = {
     ...sampleUser,
@@ -43,7 +46,7 @@ export function HomeScreen() {
     >
       <TopBar
         user={user}
-        onProfile={() => router.navigate('/profile')}
+        onProfile={() => setMenuOpen(true)}
         onSearch={() => router.push('/search')}
         onNotifications={() => router.push('/notifications')}
       />
@@ -56,6 +59,12 @@ export function HomeScreen() {
       />
       <UpcomingFixtures fixtures={upcoming} onAllFixtures={() => router.navigate('/matches')} onRemind={() => comingSoon('Reminders')} />
       <TournamentsToFollow tournaments={tournaments} onTournamentPress={(t) => router.push({ pathname: '/tournament/[id]', params: { id: t.id } })} />
+      <HomeSideNav
+        open={menuOpen}
+        user={{ ...user, name: profile.fullName }}
+        onClose={() => setMenuOpen(false)}
+        onNavigate={(href) => (href === '/profile' ? router.navigate(href) : router.push(href))}
+      />
     </ScrollView>
   );
 }

@@ -25,7 +25,7 @@ export function TopBar({ user, onProfile, onSearch, onNotifications }: Props) {
   const name = user.name?.trim();
   return (
     <View style={styles.row}>
-      <Pressable accessibilityRole="button" accessibilityLabel="My profile" hitSlop={ICON_HIT_SLOP} onPress={onProfile}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Open menu" hitSlop={ICON_HIT_SLOP} onPress={onProfile}>
         <InitialsAvatar
           label={user.initials}
           tone={user.tone}
