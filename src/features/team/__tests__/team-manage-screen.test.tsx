@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
+import { Alert } from 'react-native';
 
 import { ThemeProvider } from '@/theme';
 
@@ -126,5 +127,23 @@ describe('team manage screen', () => {
     await show();
     expect(await screen.findByText('Only the owner or an admin can add members.')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Add member' })).toBeNull();
+  });
+  it('lets a player leave the team after confirming, and the owner never', async () => {
+    const alert = jest.spyOn(Alert, 'alert');
+    jest.mocked(fetchTeamMembers).mockResolvedValue([{ ...members[0], role: 'player' }, { ...members[1], role: 'owner' }]);
+    await show();
+    await fireEvent.press(await screen.findByRole('button', { name: 'Leave team' }));
+    expect(alert.mock.calls[0][0]).toBe('Leave Alpha XI?');
+    expect(removeTeamMember).not.toHaveBeenCalled();
+    const buttons = alert.mock.calls[0][2] ?? [];
+    buttons.find((b) => b.text === 'Leave team')?.onPress?.();
+    await waitFor(() => expect(removeTeamMember).toHaveBeenCalledWith('team-1', 'me'));
+    alert.mockRestore();
+  });
+
+  it('gives the owner no leave button', async () => {
+    await show();
+    expect(await screen.findByText('The owner can’t leave the team.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Leave team' })).toBeNull();
   });
 });

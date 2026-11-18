@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import ChevronLeft from 'lucide-react-native/icons/chevron-left';
+import LogOut from 'lucide-react-native/icons/log-out';
 import UserPlus from 'lucide-react-native/icons/user-plus';
 import { useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
@@ -56,8 +57,19 @@ export function TeamManageScreen() {
     mutationFn: (a: { profileId: string; value: Availability }) => setMemberAvailability(id, a.profileId, a.value),
     onSuccess: () => { setStatusFor(null); refresh(); },
   });
-  const busy = invite.isPending || remove.isPending || cancel.isPending || availability.isPending;
+  // The server cascades the player out of every tournament squad of this team.
+  const leave = useMutation({
+    mutationFn: () => removeTeamMember(id, meId),
+    onSuccess: () => { refresh(); router.replace('/team/manage'); },
+  });
+  const busy = invite.isPending || remove.isPending || cancel.isPending || availability.isPending || leave.isPending;
   const actionError = remove.error ? teamErrorText(remove.error) : cancel.error ? invitationErrorText(cancel.error) : null;
+  const teamName = team.data?.name ?? 'this team';
+  const confirmLeave = () => Alert.alert(`Leave ${teamName}?`,
+    'You’ll also be taken out of its squads in every tournament. To come back, the owner or an admin has to invite you again.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Leave team', style: 'destructive', onPress: () => leave.mutate() },
+    ]);
   // Members and people already invited are left out of the search; so are you.
   const excludeIds = [meId, ...(members.data ?? []).map((m) => m.profileId), ...(invites.data ?? []).map((i) => i.profileId)];
 
@@ -91,6 +103,15 @@ export function TeamManageScreen() {
           <MemberList members={members.data} myRole={myRole} meId={meId} busy={busy} onRemove={(m) => remove.mutate(m.profileId)}
             onSetAvailability={(m) => { availability.reset(); setStatusFor(m); }} />
           {manager ? <PendingInviteList invites={invites.data ?? []} busy={busy} onCancel={(i) => cancel.mutate(i.id)} /> : null}
+          {myRole === 'owner' ? (
+            <Text muted variant="caption">The owner can’t leave the team.</Text>
+          ) : myRole ? (
+            <View style={styles.leave}>
+              {leave.isError ? <Text accessibilityRole="alert" style={styles.error}>{teamErrorText(leave.error)}</Text> : null}
+              <Button label="Leave team" variant="secondary" loading={leave.isPending} disabled={busy}
+                leading={<LogOut size={dp(18)} color={colors.danger} />} onPress={confirmLeave} />
+            </View>
+          ) : null}
         </ScrollView>
       )}
       <AvailabilitySheet
@@ -127,4 +148,5 @@ const createStyles = (colors: Palette) =>
     failed: { alignItems: 'center', gap: spacing.md, padding: spacing.xl },
     heading: typography.headlineMd,
     error: { color: colors.dangerSoftText },
+    leave: { gap: spacing.sm, marginTop: spacing.lg },
   });

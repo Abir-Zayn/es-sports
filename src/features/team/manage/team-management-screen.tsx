@@ -58,7 +58,7 @@ export function TeamManagementScreen() {
               <InitialsAvatar label={team.shortName} imageUri={team.logoUrl} size={sizes.avatar} />
               <View style={styles.names}>
                 <Text style={styles.name} numberOfLines={1}>{team.name}</Text>
-                <Text variant="caption" muted>{canManage(team.myRole) ? 'Add and remove members' : 'View members'}</Text>
+                <Text variant="caption" muted>{canManage(team.myRole) ? 'Add and remove members' : 'View members or leave'}</Text>
               </View>
               <AppBadge label={roleLabel[team.myRole]}
                 backgroundColor={canManage(team.myRole) ? colors.primarySoft : colors.surfaceRaised}
