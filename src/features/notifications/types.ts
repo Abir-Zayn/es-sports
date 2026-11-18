@@ -3,7 +3,8 @@ import type { Tables } from '@/lib/database.types';
 export type NotificationKind = 'invite' | 'invite_response' | 'system' | 'squad_alert' | 'match_update';
 export type NotificationFilterTab = 'all' | 'invites' | 'squad_alerts' | 'match_updates';
 
-export type NotificationRow = Tables<'notifications'>;
+/** The columns the app reads; `pushed_at` is server-only bookkeeping for `send-push`. */
+export type NotificationRow = Omit<Tables<'notifications'>, 'pushed_at'>;
 
 export type SquadAlertMeta = {
   tournamentId: string;
