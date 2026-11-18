@@ -70,6 +70,7 @@ function AppShell() {
             <Stack.Screen name="invitations" />
             <Stack.Screen name="notifications" />
             <Stack.Screen name="whats-new" />
+            <Stack.Screen name="calendar" />
             <Stack.Screen name="leaderboards" />
             <Stack.Screen name="hall-of-fame" />
             <Stack.Screen name="grounds" />
