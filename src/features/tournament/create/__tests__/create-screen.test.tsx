@@ -1,16 +1,20 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import * as ImagePicker from 'expo-image-picker';
 import type { ReactNode } from 'react';
 
 import CreateTournamentScreen from '@/app/tournament/create';
 import { ThemeProvider } from '@/theme';
 
+import { fetchMyTournaments, type MyTournament } from '../../data/tournament-repository';
 import { emptyDraft, formatDate, localDateKey } from '../draft';
 import { loadDraft, saveDraft } from '../draft-storage';
 import { TournamentDraftsScreen } from '../tournament-drafts-screen';
 
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
+jest.mock('../../data/tournament-repository', () => ({
+  ...jest.requireActual('../../data/tournament-repository'), fetchMyTournaments: jest.fn(),
+}));
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockBack = jest.fn();
@@ -28,6 +32,7 @@ jest.mock('react-native-safe-area-context', () => ({
 const load = jest.mocked(loadDraft);
 const save = jest.mocked(saveDraft);
 const pick = jest.mocked(ImagePicker.launchImageLibraryAsync);
+const fetchMine = jest.mocked(fetchMyTournaments);
 const today = localDateKey(new Date());
 const valid = { ...emptyDraft, name: 'Port City Cup', city: 'Chattogram', venue: 'Main Ground', startDate: today, endDate: today };
 async function show(children: ReactNode = <CreateTournamentScreen />) {
@@ -39,6 +44,7 @@ async function show(children: ReactNode = <CreateTournamentScreen />) {
 describe('create tournament form', () => {
   beforeEach(() => {
     jest.clearAllMocks(); load.mockResolvedValue(null); save.mockImplementation(async (_id, draft) => draft);
+    fetchMine.mockResolvedValue([]);
     pick.mockResolvedValue({ canceled: true, assets: null });
   });
   it('shows all requested fields together, with Add teams checking the setup first', async () => {
@@ -125,5 +131,20 @@ describe('create tournament form', () => {
     load.mockResolvedValue(valid); await show(<TournamentDraftsScreen />);
     await fireEvent.press(await screen.findByRole('button', { name: `Continue setup for ${valid.name}` }));
     expect(mockPush).toHaveBeenCalledWith('/tournament/create');
+  });
+  it('keeps tournament navigation separate from the owner’s delete action', async () => {
+    fetchMine.mockResolvedValue([{
+      id: 'cup', name: valid.name, city: valid.city, startDate: today, overs: valid.overs,
+      teamsPlanned: valid.teams, myRole: 'owner', profileUrl: null,
+    } as MyTournament]);
+    await show(<TournamentDraftsScreen />);
+    const open = await screen.findByRole('button', { name: `Open ${valid.name}` });
+    expect(within(open).queryByRole('button', { name: `Delete ${valid.name}` })).toBeNull();
+    await fireEvent.press(open);
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/tournament/[id]', params: { id: 'cup' } });
+    mockPush.mockClear();
+    await fireEvent.press(screen.getByRole('button', { name: `Delete ${valid.name}` }));
+    expect(await screen.findByText('Delete tournament?')).toBeTruthy();
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });
