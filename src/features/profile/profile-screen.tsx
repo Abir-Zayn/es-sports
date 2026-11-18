@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router';
 import Bell from 'lucide-react-native/icons/bell';
-import Settings from 'lucide-react-native/icons/settings';
 import Trash from 'lucide-react-native/icons/trash';
 import Trophy from 'lucide-react-native/icons/trophy';
+import User from 'lucide-react-native/icons/user';
 import Users from 'lucide-react-native/icons/users';
 import { useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
@@ -10,21 +10,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BOTTOM_NAV_CLEARANCE } from '@/components/navigation/bottom-nav';
 import { Button, SettingsGroup, SettingsRow, Text } from '@/components/ui';
-import { useAuth } from '@/features/auth';
-import { signOut } from '@/features/auth';
-import { ContractedTeams } from '@/features/home/sections/contracted-teams';
+import { signOut, useAuth } from '@/features/auth';
 import { useOpenTeam } from '@/features/team/use-team-routes';
-import { comingSoon } from '@/lib/coming-soon';
 import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { useCareer } from './career/use-career';
 import { useProfile } from './profile-provider';
 import { CareerStats } from './sections/career-stats';
-import { PersonalInfo } from './sections/personal-info';
-import { PlayingStyle } from './sections/playing-style';
 import { ProfileHeader } from './sections/profile-header';
 import { RecentPerformances } from './sections/recent-performances';
 import { StatStrip } from './sections/stat-strip';
+import { YourTeams } from './sections/your-teams';
 
 /** Lays out the Profile sections top to bottom. Each section owns its own look; this owns order and actions. */
 export function ProfileScreen() {
@@ -74,22 +70,25 @@ export function ProfileScreen() {
           <Button label="Try again" variant="secondary" size="compact" onPress={career.reload} />
         </View>
       ) : null}
-      <StatStrip batting={career.batting} bowling={career.bowling} teams={career.allTeams} />
+      {/* Zeros while loading, or above "No matches yet", would say the same thing twice or say it wrong. */}
+      {career.status === 'ready' && (career.batting.matches > 0 || career.bowling.matches > 0) ? (
+        <StatStrip batting={career.batting} bowling={career.bowling} teams={career.allTeams} />
+      ) : null}
       <CareerStats batting={career.batting} bowling={career.bowling} onFindTeam={() => router.push('/search')} />
-      <ContractedTeams
-        teams={career.memberTeams.map((team) => ({ short: team.shortName, name: team.name, tone: team.tone, avatarUri: team.logoUrl ?? undefined }))}
+      <YourTeams
+        teams={career.memberTeams}
         onManage={() => router.push('/team/manage')}
-        onTeamPress={(team) => {
-          const real = career.memberTeams.find((item) => item.name === team.name && item.shortName === team.short);
-          if (real) openTeam(real.id);
-        }}
+        onTeamPress={(teamId) => openTeam(teamId)}
         onJoin={() => router.push('/search')}
       />
       <RecentPerformances performances={career.recent} />
-      <PlayingStyle profile={profile} />
-      <PersonalInfo profile={profile} email={session?.user.email} onEdit={() => router.push('/profile/edit')} />
       <View style={styles.links}>
         <SettingsGroup>
+          <SettingsRow
+            label="Personal Information"
+            leading={<User size={sizes.icon} color={colors.textMuted} />}
+            onPress={() => router.push('/profile/edit')}
+          />
           <SettingsRow
             label="Drafted tournaments"
             leading={<Trophy size={sizes.icon} color={colors.textMuted} />}
@@ -106,14 +105,9 @@ export function ProfileScreen() {
             onPress={() => router.push('/team/manage')}
           />
           <SettingsRow
-            label="Settings"
-            leading={<Settings size={sizes.icon} color={colors.textMuted} />}
-            onPress={() => router.push('/settings')}
-          />
-          <SettingsRow
             label="Notifications"
             leading={<Bell size={sizes.icon} color={colors.textMuted} />}
-            onPress={() => comingSoon('Notifications')}
+            onPress={() => router.push('/notifications')}
           />
         </SettingsGroup>
         {error ? (

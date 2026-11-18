@@ -11,7 +11,7 @@ export function RecentPerformances({ performances }: { performances: Performance
   if (performances.length === 0) return null;
   return (
     <Section>
-      <SectionHeader title="Recent Performances" />
+      <SectionHeader title="Recent performances" />
       <Card padding="none" style={styles.list}>
         {performances.map((p, i) => {
           const figures = [p.bat && `Bat ${p.bat}`, p.bowl && `Bowl ${p.bowl}`].filter(Boolean).join('  ·  ');
