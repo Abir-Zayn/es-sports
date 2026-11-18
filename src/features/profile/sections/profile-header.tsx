@@ -4,11 +4,11 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppIconTile, InitialsAvatar, Text } from '@/components/ui';
 import { initialsOf } from '@/lib/initials';
-import { dp, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { PlayerProfile } from '@/types/profile';
 
 import { CopyIdButton } from '../components/copy-id-button';
-import { roleLabels } from '../labels';
+import { battingLabels, roleLabels } from '../labels';
 
 type Props = {
   profile: PlayerProfile;
@@ -23,7 +23,7 @@ export function ProfileHeader({ profile, userId, onSettings, onEdit }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const place = [profile.area, profile.district].filter(Boolean).join(', ');
-  const meta = [roleLabels[profile.role], place].filter(Boolean).join(' · ');
+  const pills = [roleLabels[profile.role], battingLabels[profile.battingStyle]].filter(Boolean);
   return (
     <View style={styles.wrap}>
       <View style={styles.bar}>
@@ -59,7 +59,14 @@ export function ProfileHeader({ profile, userId, onSettings, onEdit }: Props) {
             <Text style={styles.name}>{profile.fullName}</Text>
             {userId ? <CopyIdButton userId={userId} /> : null}
           </View>
-          <Text variant="bodySm" muted>{meta}</Text>
+          {place ? <Text variant="bodySm" muted>{place}</Text> : null}
+          <View style={styles.pills} accessible accessibilityLabel={`Playing style: ${pills.join(', ')}`}>
+            {pills.map((label) => (
+              <View key={label} style={styles.pill}>
+                <Text style={styles.pillLabel}>{label}</Text>
+              </View>
+            ))}
+          </View>
         </View>
       </View>
     </View>
@@ -75,4 +82,7 @@ const createStyles = (colors: Palette) =>
     names: { flex: 1, gap: spacing.xs },
     nameRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
     name: { ...typography.headlineLg, flexShrink: 1, color: colors.text },
+    pills: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginTop: spacing.xs },
+    pill: { paddingVertical: spacing.xs, paddingHorizontal: spacing.md, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised },
+    pillLabel: { ...typography.labelSm, color: colors.textMuted },
   });

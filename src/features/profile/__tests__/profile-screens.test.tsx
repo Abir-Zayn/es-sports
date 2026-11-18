@@ -19,6 +19,7 @@ jest.mock('expo-secure-store', () => ({
   deleteItemAsync: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn() }));
+jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn().mockResolvedValue(undefined) }));
 jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual('react-native');
   return { SafeAreaView: View, useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) };
@@ -92,7 +93,9 @@ describe('profile screens render without errors', () => {
   it('Profile tab', async () => {
     await withTheme(<ProfileScreen />);
     expect(screen.getByText(sampleProfile.profile.fullName)).toBeTruthy();
-    expect(screen.getByText('Personal Info')).toBeTruthy();
+    expect(screen.getByText('Personal info')).toBeTruthy();
+    expect(screen.queryByText('Playing Style')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Notifications' })).toBeTruthy();
   });
 
   it('Profile tab shows the real matches, runs, wickets and teams', async () => {
