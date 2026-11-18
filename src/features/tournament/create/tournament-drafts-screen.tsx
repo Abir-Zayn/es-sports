@@ -1,16 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import ArrowUpRight from 'lucide-react-native/icons/arrow-up-right';
+import ArrowRight from 'lucide-react-native/icons/arrow-right';
+import FileText from 'lucide-react-native/icons/file-text';
 import Plus from 'lucide-react-native/icons/plus';
-import Trophy from 'lucide-react-native/icons/trophy';
 import { useCallback } from 'react';
 import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BOTTOM_NAV_CLEARANCE } from '@/components/navigation/bottom-nav';
-import { Button, Text } from '@/components/ui';
+import { AppIconTile, Button, Card, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth';
-import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { oversLabel } from './draft';
 import { clearDraft, draftQueryKey, loadDraft } from './draft-storage';
@@ -39,49 +39,78 @@ export function TournamentDraftsScreen() {
       { text: 'Delete', style: 'destructive', onPress: () => deletion.mutate() },
     ]);
   };
-  return <ScrollView style={styles.screen} contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.xl, paddingBottom: BOTTOM_NAV_CLEARANCE + insets.bottom }]}>
-    <View style={styles.header}>
-      <View style={styles.flex}><Text style={styles.kicker}>ORGANIZER DESK</Text><Text variant="title" accessibilityRole="header">Tournaments</Text></View>
-      <View style={styles.icon}><Trophy size={sizes.icon} color={colors.link} /></View>
-    </View>
-    {saved === '1' && Boolean(draft) ? <View style={styles.notice}><Text accessibilityLiveRegion="polite">Draft saved on this device.</Text></View> : null}
-    {isPending ? <ActivityIndicator color={colors.link} accessibilityLabel="Loading tournaments" /> : isError ? <View style={styles.panel}>
-      <Text variant="heading">Could not load your draft</Text><Text muted>Your saved setup has not been changed.</Text>
-      <Button label="Try again" onPress={() => { void refetch(); }} />
-    </View> : draft ? <View style={styles.stack}>
-      <Text variant="heading" accessibilityRole="header">Your draft</Text>
-      <Pressable accessibilityRole="button" accessibilityLabel={`Continue setup for ${draft.name || 'Untitled tournament'}`} onPress={openSetup}
-        style={({ pressed }) => [styles.panel, pressed && styles.pressed]}>
-        <View style={styles.cardTop}><View style={styles.badge}><Text variant="caption" style={styles.badgeText}>SETUP DRAFT</Text></View><ArrowUpRight size={sizes.icon} color={colors.link} /></View>
-        <Text variant="heading">{draft.name || 'Untitled tournament'}</Text>
-        <Text muted>{draft.city || 'Location to be added'}</Text>
-        <Text variant="caption" muted>{`${oversLabel(draft.overs)} · ${draft.teams} teams`}</Text>
-        <Text style={styles.link}>Continue setup</Text>
-      </Pressable>
-      <Button label="Delete draft" variant="secondary" loading={deletion.isPending} onPress={confirmDelete} />
-      {deletion.isError ? <Text accessibilityRole="alert">Could not delete your draft. Please try again.</Text> : null}
-      <Text variant="caption" muted>This draft is private to your account on this device. It has not been published.</Text>
-    </View> : <View style={styles.empty}>
-      <View style={styles.art}><Trophy size={dp(64)} color={colors.link} strokeWidth={1.3} /></View>
-      <Text variant="title" accessibilityRole="header" style={styles.emptyTitle}>Great cricket.{ '\n' }Your tournament.</Text>
-      <Text muted style={styles.center}>Give your next competition a home. Set the basics, choose your format, and save your plan.</Text>
-      <Button label="Create tournament" leading={<Plus size={dp(20)} color={colors.primaryText} />} onPress={openSetup} />
-      <Text variant="caption" muted style={styles.center}>Start with a private draft. Teams and fixtures come later.</Text>
-    </View>}
-    <MyTournamentsSection userId={userId} />
-  </ScrollView>;
+  const draftName = draft?.name || 'Untitled tournament';
+  return (
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={[styles.content, {
+        paddingTop: insets.top + spacing.xl,
+        paddingBottom: BOTTOM_NAV_CLEARANCE + insets.bottom,
+      }]}
+    >
+      <View style={styles.header}>
+        <Text style={styles.kicker}>Organizer desk</Text>
+        <Text variant="title" accessibilityRole="header">Tournaments</Text>
+      </View>
+      {isPending ? (
+        <ActivityIndicator color={colors.link} accessibilityLabel="Loading your draft" />
+      ) : isError ? (
+        <Card padding="tight" style={styles.draftSection}>
+          <Text variant="headlineMd" accessibilityRole="header">Could not load your draft</Text>
+          <Text muted>Your saved setup has not been changed.</Text>
+          <Button variant="secondary" label="Try again" onPress={() => { void refetch(); }} />
+        </Card>
+      ) : draft ? (
+        <View style={styles.draftSection}>
+          <Text variant="heading" accessibilityRole="header">Your draft</Text>
+          <Card padding="none">
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Continue setup for ${draftName}`}
+              onPress={openSetup}
+              style={({ pressed }) => [styles.draftRow, pressed && styles.pressed]}
+            >
+              <AppIconTile icon={FileText} borderRadius={radius.md} backgroundColor={colors.primarySoft} iconColor={colors.link} />
+              <View style={styles.draftDetails}>
+                <Text variant="headlineMd">{draftName}</Text>
+                <Text variant="caption" muted>{draft.city || 'Location to be added'}</Text>
+                <Text variant="caption" muted>{`${oversLabel(draft.overs)} · ${draft.teams} teams`}</Text>
+                <Text style={styles.link}>Continue setup</Text>
+              </View>
+              <ArrowRight size={sizes.iconSmall} color={colors.link} />
+            </Pressable>
+            <View style={styles.draftFooter}>
+              <Text variant="caption" muted style={styles.draftNote}>
+                {saved === '1' ? <Text variant="caption" accessibilityLiveRegion="polite">Draft saved. </Text> : null}
+                Private to your account on this device.
+              </Text>
+              <Button label="Delete draft" variant="ghost" loading={deletion.isPending} onPress={confirmDelete} />
+            </View>
+          </Card>
+          {deletion.isError ? <Text accessibilityRole="alert">Could not delete your draft. Please try again.</Text> : null}
+        </View>
+      ) : (
+        <Button label="Create tournament" leading={<Plus size={sizes.iconSmall} color={colors.primaryText} />} onPress={openSetup} />
+      )}
+      <MyTournamentsSection userId={userId} />
+    </ScrollView>
+  );
 }
 
 const createStyles = (colors: Palette) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  content: { paddingHorizontal: sizes.gutter, gap: spacing.xl, maxWidth: 600, width: '100%', alignSelf: 'center' },
-  header: { flexDirection: 'row', gap: spacing.lg, alignItems: 'center' }, flex: { flex: 1, gap: spacing.sm },
+  content: { paddingHorizontal: sizes.gutter, gap: sizes.sectionGap, maxWidth: dp(600), width: '100%', alignSelf: 'center' },
+  header: { gap: spacing.xs },
   kicker: { ...typography.labelUppercase, color: colors.link },
-  icon: { width: sizes.control, height: sizes.control, borderRadius: radius.pill, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
-  stack: { gap: spacing.lg }, panel: { backgroundColor: colors.surface, borderRadius: radius.lg, padding: sizes.cardPadding, gap: spacing.md, ...shadows.card },
-  cardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, badge: { borderRadius: radius.pill, backgroundColor: colors.accentSoft, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
-  badgeText: { ...typography.labelUppercase, color: colors.accent }, link: { ...typography.labelMd, color: colors.link, marginTop: spacing.sm },
-  notice: { padding: spacing.lg, borderRadius: radius.md, backgroundColor: colors.primarySoft },
-  empty: { paddingVertical: spacing.xxl, gap: spacing.xl }, art: { width: dp(112), height: dp(112), alignSelf: 'center', borderRadius: radius.pill, backgroundColor: colors.primarySoft, justifyContent: 'center', alignItems: 'center', marginBottom: spacing.md },
-  emptyTitle: { textAlign: 'center' }, center: { textAlign: 'center' }, pressed: { transform: [{ scale: 0.95 }] },
+  draftSection: { gap: spacing.md },
+  draftRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: sizes.cardPaddingTight },
+  draftDetails: { flex: 1, gap: spacing.xs },
+  link: { ...typography.labelMd, color: colors.link, marginTop: spacing.xs },
+  draftFooter: {
+    flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border,
+    paddingStart: sizes.cardPaddingTight, paddingEnd: spacing.sm,
+  },
+  draftNote: { flexGrow: 1, flexBasis: dp(130) },
+  pressed: { transform: [{ scale: 0.95 }] },
 });
