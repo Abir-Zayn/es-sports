@@ -1,5 +1,6 @@
 import type { Href } from 'expo-router';
 import Award from 'lucide-react-native/icons/award';
+import CalendarDays from 'lucide-react-native/icons/calendar-days';
 import ChartColumn from 'lucide-react-native/icons/chart-column';
 import Languages from 'lucide-react-native/icons/languages';
 import MapPin from 'lucide-react-native/icons/map-pin';
@@ -23,6 +24,7 @@ type Item = { label: string; icon: ComponentType<{ size?: number; color?: string
 export const sideNavItems: Item[] = [
   { label: 'What’s new', icon: Sparkles, href: '/whats-new' },
   { label: 'My profile', icon: User, href: '/profile' },
+  { label: 'Calendar', icon: CalendarDays, href: '/calendar' },
   { label: 'Leaderboards', icon: ChartColumn, href: '/leaderboards' },
   { label: 'Hall of fame', icon: Award, href: '/hall-of-fame' },
   { label: 'Grounds', icon: MapPin, href: '/grounds' },
