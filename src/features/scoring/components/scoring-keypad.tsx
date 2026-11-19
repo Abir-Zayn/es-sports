@@ -43,13 +43,13 @@ export function ScoringKeypad({ disabled, canUndo, onRuns, onExtra, onUndo, onWi
   </View>;
 }
 const styles = (c: Palette) => StyleSheet.create({
-  pad: { gap: spacing.sm }, row: { flexDirection: 'row', gap: spacing.sm },
-  key: { flex: 1, minHeight: dp(60), justifyContent: 'center', alignItems: 'center', borderRadius: radius.md, backgroundColor: c.surfaceRaised },
+  pad: { gap: spacing.sm, padding: spacing.sm, borderRadius: radius.lg, backgroundColor: c.surface }, row: { flexDirection: 'row', gap: spacing.sm },
+  key: { flex: 1, minHeight: dp(56), justifyContent: 'center', alignItems: 'center', borderRadius: radius.md, backgroundColor: c.surfaceRaised },
   // Boundaries are the scorer's primary taps: peach selected-style tile, coral text, no full coral fill.
   boundary: { backgroundColor: c.primarySoft }, extra: { backgroundColor: c.surfaceRaised },
   undo: { backgroundColor: c.surface, borderWidth: 1, borderColor: c.border }, keyLabel: { ...typography.displayMd, fontVariant: ['tabular-nums'] },
   small: { ...typography.labelMd, fontSize: sp(15) }, boundaryLabel: { color: c.link }, extraLabel: { color: c.textMuted },
-  out: { minHeight: dp(60), borderRadius: radius.md, backgroundColor: c.dangerSoft, justifyContent: 'center', alignItems: 'center', marginTop: spacing.xs },
+  out: { minHeight: dp(56), borderRadius: radius.md, backgroundColor: c.dangerSoft, justifyContent: 'center', alignItems: 'center' },
   outLabel: { ...typography.headlineLg, color: c.dangerSoftText, letterSpacing: sp(1.2) },
   disabled: { opacity: 0.4 }, pressed: { transform: [{ scale: 0.95 }] },
 });

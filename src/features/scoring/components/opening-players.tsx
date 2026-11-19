@@ -1,6 +1,6 @@
 import ChevronDown from 'lucide-react-native/icons/chevron-down';
 import { useState } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
@@ -33,12 +33,14 @@ export function OpeningPlayers({ setup, batting, onChange }: { setup: MatchSetup
   const team = field === 'bowlerId' ? otherTeam(batting) : batting;
   const excluded = field === 'strikerId' ? setup.nonStrikerId : field === 'nonStrikerId' ? setup.strikerId : '';
   return <ScorerSection title={t('scoring.openers.section')}>
-    {(Object.keys(labels) as (keyof typeof labels)[]).map((key) => <Pressable key={key}
-      accessibilityRole="button" accessibilityLabel={t('scoring.openers.chooseA11y', { role: labels[key], name: playerName(setup, setup[key]) })}
-      style={s.row} onPress={() => setField(key)}>
-      <Text muted style={s.label}>{labels[key]}</Text><Text style={s.name}>{playerName(setup, setup[key])}</Text>
-      <ChevronDown size={sizes.iconSmall} color={colors.textMuted} />
-    </Pressable>)}
+    <View style={s.list}>
+      {(Object.keys(labels) as (keyof typeof labels)[]).map((key) => <Pressable key={key}
+        accessibilityRole="button" accessibilityLabel={t('scoring.openers.chooseA11y', { role: labels[key], name: playerName(setup, setup[key]) })}
+        style={s.row} onPress={() => setField(key)}>
+        <Text muted style={s.label}>{labels[key]}</Text><Text style={s.name}>{playerName(setup, setup[key])}</Text>
+        <ChevronDown size={sizes.iconSmall} color={colors.textMuted} />
+      </Pressable>)}
+    </View>
     <ScorerSheet visible={field !== null} title={t('scoring.openers.sheetTitle', { role: field ? labels[field].toLowerCase() : t('scoring.openers.fallbackPlayer') })} onClose={() => setField(null)}>
       {setup.teams[team].players.filter((p) => setup.playingXi[team].includes(p.id) && p.id !== excluded).map((p) =>
         <ScorerChoice key={p.id} label={p.name} detail={ScorerRoleLabel(p.role, t)} selected={!!field && setup[field] === p.id}
@@ -47,6 +49,7 @@ export function OpeningPlayers({ setup, batting, onChange }: { setup: MatchSetup
   </ScorerSection>;
 }
 const styles = (c: Palette) => StyleSheet.create({
+  list: { backgroundColor: c.surface, borderRadius: radius.lg, padding: spacing.sm, gap: spacing.xs },
   row: { minHeight: dp(48), flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md, paddingHorizontal: sizes.cardPaddingTight, borderRadius: radius.md, backgroundColor: c.surfaceRaised },
   label: { ...typography.bodySm, width: dp(88) }, name: { ...typography.labelMd, flex: 1 },
 });
