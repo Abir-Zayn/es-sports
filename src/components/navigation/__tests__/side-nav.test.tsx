@@ -43,11 +43,11 @@ describe('home side nav', () => {
     expect(screen.queryByRole('button', { name: 'My profile' })).toBeNull();
   });
 
-  it('lists the eight places in order under the player’s name', async () => {
+  it('lists the nine places in order under the player’s name', async () => {
     await show();
     expect(screen.getByText('Tanvir Rahman')).toBeTruthy();
     expect(sideNavItems.map((item) => item.label)).toEqual([
-      'What’s new', 'My profile', 'Leaderboards', 'Hall of fame', 'Grounds', 'Share the app', 'Cricket blogs', 'Choose language',
+      'What’s new', 'My profile', 'Calendar', 'Leaderboards', 'Hall of fame', 'Grounds', 'Share the app', 'Cricket blogs', 'Choose language',
     ]);
     for (const item of sideNavItems) expect(screen.getByRole('button', { name: item.label })).toBeTruthy();
   });

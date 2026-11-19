@@ -40,6 +40,7 @@ export const enHome = {
 
   'home.drawer.whatsNew': 'What’s new',
   'home.drawer.myProfile': 'My profile',
+  'home.drawer.calendar': 'Calendar',
   'home.drawer.leaderboards': 'Leaderboards',
   'home.drawer.hallOfFame': 'Hall of fame',
   'home.drawer.grounds': 'Grounds',

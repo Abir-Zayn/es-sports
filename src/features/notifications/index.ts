@@ -8,6 +8,7 @@ export {
   toAppNotification,
 } from './notifications-repository';
 export { NotificationsScreen } from './notifications-screen';
+export { usePushNotifications } from './push/use-push-notifications';
 export type {
   AppNotification,
   InviteMeta,

@@ -42,6 +42,7 @@ export const bnHome: Record<keyof typeof enHome, string> = {
 
   'home.drawer.whatsNew': 'নতুন কী আছে',
   'home.drawer.myProfile': 'আমার প্রোফাইল',
+  'home.drawer.calendar': 'ক্যালেন্ডার',
   'home.drawer.leaderboards': 'লিডারবোর্ড',
   'home.drawer.hallOfFame': 'হল অব ফেম',
   'home.drawer.grounds': 'মাঠসমূহ',
