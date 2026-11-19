@@ -9,6 +9,7 @@
 --   when `logo_url` changes, and returns `(previous_logo_url, previous_cover_url)` so the client can immediately
 --   purge replaced or removed files from Storage.
 -- * `tournament_standings`: exposes `tm.logo_url` at the end of the select list so points tables show team logos.
+--   Based on the live per-round view from 20261117191931_tournament_rounds (applied from feat/tournament-knockout-rounds).
 
 alter table public.teams
   add column cover_url text check (cover_url ~ '^https://');
@@ -148,7 +149,7 @@ grant execute on function public.update_tournament_team_images(uuid, uuid, text,
 
 create or replace view public.tournament_standings with (security_invoker = true) as
 with results as (
-  select f.tournament_id, f.home_team_id as team_id,
+  select f.tournament_id, f.round, f.home_team_id as team_id,
     m.team_a_runs as runs_for,
     case when coalesce(m.team_a_wickets, 0) >= t.players_per_side - 1 then m.overs_limit * 6 else m.team_a_balls end as balls_for,
     m.team_b_runs as runs_against,
@@ -159,7 +160,7 @@ with results as (
   join public.tournaments t on t.id = f.tournament_id
   where f.stage = 'League' and f.status = 'scheduled' and m.status = 'completed' and f.home_team_id is not null
   union all
-  select f.tournament_id, f.away_team_id,
+  select f.tournament_id, f.round, f.away_team_id,
     m.team_b_runs,
     case when coalesce(m.team_b_wickets, 0) >= t.players_per_side - 1 then m.overs_limit * 6 else m.team_b_balls end,
     m.team_a_runs,
@@ -169,8 +170,13 @@ with results as (
   join public.matches m on m.id = f.match_id
   join public.tournaments t on t.id = f.tournament_id
   where f.stage = 'League' and f.status = 'scheduled' and m.status = 'completed' and f.away_team_id is not null
+), members as (
+  select tournament_id, team_id, 0 as round from public.tournament_teams
+  union all
+  select rt.tournament_id, rt.team_id, rt.round::int from public.tournament_round_teams rt
+  join public.tournament_rounds r on r.tournament_id = rt.tournament_id and r.round = rt.round and r.kind = 'groups'
 ), totals as (
-  select tt.tournament_id, tt.team_id,
+  select mb.tournament_id, mb.team_id, mb.round,
     count(r.outcome)::int as played,
     count(*) filter (where r.outcome = 'won')::int as won,
     count(*) filter (where r.outcome = 'lost')::int as lost,
@@ -179,15 +185,16 @@ with results as (
     coalesce(sum(r.balls_for), 0)::int as balls_for,
     coalesce(sum(r.runs_against), 0)::int as runs_against,
     coalesce(sum(r.balls_against), 0)::int as balls_against
-  from public.tournament_teams tt
-  left join results r on r.tournament_id = tt.tournament_id and r.team_id = tt.team_id
-  group by tt.tournament_id, tt.team_id
+  from members mb
+  left join results r on r.tournament_id = mb.tournament_id and r.team_id = mb.team_id and r.round = mb.round
+  group by mb.tournament_id, mb.team_id, mb.round
 )
 select s.tournament_id, s.team_id, tm.name, tm.short_name, tm.tone,
   s.played, s.won, s.lost, s.tied, (s.won * 2 + s.tied) as points,
   s.runs_for, s.balls_for, s.runs_against, s.balls_against,
   case when s.balls_for > 0 and s.balls_against > 0
     then round(s.runs_for * 6.0 / s.balls_for - s.runs_against * 6.0 / s.balls_against, 3) end as nrr,
+  s.round,
   tm.logo_url
 from totals s
 join public.teams tm on tm.id = s.team_id;
