@@ -74,7 +74,6 @@ export function TournamentFields({ draft, errors, onChange, onBusyChange, onAddT
         <Plus size={dp(20)} color={colors.link} />
       </Pressable>
     </SettingsCard>
-    <Text variant="caption" muted style={styles.note}>Save a private draft on this device. Your tournament is not published yet.</Text>
   </View>;
 }
 const createStyles = (colors: Palette) => StyleSheet.create({
@@ -86,5 +85,4 @@ const createStyles = (colors: Palette) => StyleSheet.create({
   error: { color: colors.dangerSoftText }, locationError: { paddingHorizontal: spacing.lg, paddingBottom: spacing.md },
   addTeams: { minHeight: dp(76), padding: spacing.lg, flexDirection: 'row', alignItems: 'center', gap: spacing.md }, addCopy: { flex: 1, gap: spacing.xs },
   pressed: { transform: [{ scale: 0.95 }] },
-  note: { textAlign: 'center', paddingHorizontal: spacing.lg },
 });
