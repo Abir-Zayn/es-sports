@@ -1,6 +1,9 @@
+import { useTranslation } from '@/i18n';
+
 import { LegalDocumentScreen } from './legal-document-screen';
-import { termsSections } from './terms-content';
+import { getTermsSections } from './terms-content';
 
 export function TermsScreen() {
-  return <LegalDocumentScreen title="Terms and Conditions" sections={termsSections} />;
+  const { t } = useTranslation();
+  return <LegalDocumentScreen title={t('legal.termsTitle')} sections={getTermsSections(t)} />;
 }

@@ -3,6 +3,7 @@ import { useRef, useState, type ComponentRef } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { Button, Checkbox, PasswordField, Text, TextField } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { AuthLayout } from '../components/auth-layout';
@@ -13,6 +14,7 @@ import { signUpSchema, signUpWithEmail } from '../server/sign-up';
 type FieldErrors = { email?: string; password?: string; confirm?: string; accepted?: string };
 
 export function SignUpScreen() {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const passwordRef = useRef<ComponentRef<typeof TextInput>>(null);
   const confirmRef = useRef<ComponentRef<typeof TextInput>>(null);
@@ -71,26 +73,26 @@ export function SignUpScreen() {
 
   if (confirmSent) {
     return (
-      <AuthLayout scrollable title="Check your email." subtitle="Confirm your account, then return to EsSports to log in.">
-        <Text accessibilityLiveRegion="polite">A confirmation link has been requested for {submittedEmail}. Check your inbox and spam folder.</Text>
-        {resent ? <Text style={styles.sent} accessibilityLiveRegion="polite">Confirmation email requested again.</Text> : null}
+      <AuthLayout scrollable title={t('auth.signUp.confirmTitle')} subtitle={t('auth.signUp.confirmSubtitle')}>
+        <Text accessibilityLiveRegion="polite">{t('auth.signUp.confirmBody', { email: submittedEmail })}</Text>
+        {resent ? <Text style={styles.sent} accessibilityLiveRegion="polite">{t('auth.signUp.confirmResent')}</Text> : null}
         {formError ? <Text style={styles.formError} accessibilityLiveRegion="polite">{formError}</Text> : null}
-        <Button label="Resend confirmation email" variant="secondary" loading={loading} onPress={resend} />
-        <AuthSwitchLink prompt="Confirmed your email?" action="Log in" href="/login" replace />
+        <Button label={t('auth.login.resend')} variant="secondary" loading={loading} onPress={resend} />
+        <AuthSwitchLink prompt={t('auth.signUp.confirmedPrompt')} action={t('auth.signUp.logIn')} href="/login" replace />
       </AuthLayout>
     );
   }
 
   return (
-    <AuthLayout scrollable title="Join the squad." subtitle="Create an account to run or follow tournaments.">
+    <AuthLayout scrollable title={t('auth.signUp.title')} subtitle={t('auth.signUp.subtitle')}>
       <View style={styles.form}>
         <TextField
-          label="Email"
+          label={t('auth.email')}
           value={email}
           editable={!loading}
           onChangeText={setEmail}
           error={errors.email}
-          placeholder="you@example.com"
+          placeholder={t('auth.emailPlaceholder')}
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
@@ -101,7 +103,7 @@ export function SignUpScreen() {
         />
         <PasswordField
           ref={passwordRef}
-          placeholder="Add password"
+          placeholder={t('auth.passwordPlaceholder')}
           value={password}
           editable={!loading}
           onChangeText={setPassword}
@@ -113,8 +115,8 @@ export function SignUpScreen() {
         />
         <PasswordField
           ref={confirmRef}
-          label="Confirm password"
-          placeholder="Add password"
+          label={t('auth.confirmPassword')}
+          placeholder={t('auth.passwordPlaceholder')}
           value={confirm}
           editable={!loading}
           onChangeText={setConfirm}
@@ -128,26 +130,27 @@ export function SignUpScreen() {
           checked={accepted}
           onChange={setAccepted}
           error={errors.accepted}
-          accessibilityLabel="I agree to the Terms and Conditions and Privacy Policy"
+          accessibilityLabel={t('auth.signUp.agreeA11y')}
         >
-          I agree to the{' '}
+          {t('auth.signUp.agreePrefix')}
           <Link href="/terms" style={styles.link}>
-            Terms and Conditions
-          </Link>{' '}
-          and{' '}
-          <Link href="/privacy" style={styles.link}>
-            Privacy Policy
+            {t('auth.signUp.terms')}
           </Link>
+          {t('auth.signUp.agreeAnd')}
+          <Link href="/privacy" style={styles.link}>
+            {t('auth.signUp.privacy')}
+          </Link>
+          {t('auth.signUp.agreeSuffix')}
         </Checkbox>
         {formError ? (
           <Text variant="caption" style={styles.formError} accessibilityLiveRegion="polite">
             {formError}
           </Text>
         ) : null}
-        <Button label="Create account" onPress={submit} loading={loading} />
+        <Button label={t('auth.signUp.submit')} onPress={submit} loading={loading} />
       </View>
 
-      <AuthSwitchLink prompt="Already have an account?" action="Log in" href="/login" replace />
+      <AuthSwitchLink prompt={t('auth.signUp.hasAccount')} action={t('auth.signUp.logIn')} href="/login" replace />
     </AuthLayout>
   );
 }

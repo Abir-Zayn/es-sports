@@ -1,3 +1,5 @@
+import { getLocale, translate, type Locale } from '@/i18n';
+
 import { HANDOVER_MINUTES, type Handover, type TakeoverFacts } from './types';
 
 const MINUTE_MS = 60_000;
@@ -20,9 +22,9 @@ export function minutesLeft(handover: Handover, now: number): number {
   return Math.max(1, Math.ceil((expires - now) / MINUTE_MS));
 }
 
-export function expiryText(handover: Handover, now: number): string {
+export function expiryText(handover: Handover, now: number, locale: Locale = getLocale()): string {
   const left = minutesLeft(handover, now);
-  return left === 0 ? 'Expired' : `Expires in ${left} min`;
+  return left === 0 ? translate(locale, 'handover.rules.expired') : translate(locale, 'handover.rules.expiresIn', { minutes: left });
 }
 
 /**

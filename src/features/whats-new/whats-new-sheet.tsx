@@ -3,16 +3,16 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'reac
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
+import { formatDate, useTranslation } from '@/i18n';
 import { dp, radius, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { useRecordReleaseNotesSeen, useReleaseNotes } from './use-whats-new';
 
 type Props = { onClose: () => void };
 
-const releaseDate = new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-
 export function WhatsNewSheet({ onClose }: Props) {
   const { colors } = useTheme();
+  const { t, locale } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const notes = useReleaseNotes();
   useRecordReleaseNotesSeen(Boolean(notes.data));
@@ -31,13 +31,13 @@ export function WhatsNewSheet({ onClose }: Props) {
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
           <View style={styles.header}>
             <AppIconTile icon={Sparkles} size={sizes.control} backgroundColor={colors.primarySoft} iconColor={colors.link} />
-            <Text variant="title" accessibilityRole="header">What’s new</Text>
+            <Text variant="title" accessibilityRole="header">{t('whatsNew.title')}</Text>
           </View>
           {notes.data ? (
             <View style={styles.release}>
               <View style={styles.releaseHeading}>
                 <Text variant="heading" accessibilityRole="header">{notes.data.title}</Text>
-                <Text variant="caption" muted>{releaseDate.format(new Date(notes.data.published_at))}</Text>
+                <Text variant="caption" muted>{formatDate(notes.data.published_at, 'd MMMM yyyy', locale)}</Text>
               </View>
               {notes.data.highlights.map((item) => (
                 <View key={item.title} style={styles.highlight}>
@@ -50,23 +50,23 @@ export function WhatsNewSheet({ onClose }: Props) {
               ))}
             </View>
           ) : notes.isLoading ? (
-            <ActivityIndicator color={colors.link} accessibilityLabel="Loading release notes" />
+            <ActivityIndicator color={colors.link} accessibilityLabel={t('whatsNew.loading')} />
           ) : notes.isError ? (
             <View style={styles.status} accessibilityLiveRegion="polite">
-              <Text muted>Couldn’t load release notes.</Text>
+              <Text muted>{t('whatsNew.loadError')}</Text>
               <Button
-                label="Try again"
+                label={t('common.retry')}
                 variant="secondary"
                 loading={notes.isFetching}
                 onPress={() => void notes.refetch({ cancelRefetch: false })}
               />
             </View>
           ) : (
-            <Text muted accessibilityLiveRegion="polite">No release notes for this update yet.</Text>
+            <Text muted accessibilityLiveRegion="polite">{t('whatsNew.empty')}</Text>
           )}
         </ScrollView>
         <View style={styles.footer}>
-          <Button label="Got it" variant="secondary" onPress={onClose} />
+          <Button label={t('whatsNew.gotIt')} variant="secondary" onPress={onClose} />
         </View>
       </SafeAreaView>
     </View>

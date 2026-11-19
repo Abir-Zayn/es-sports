@@ -6,6 +6,7 @@ import { useState, type ComponentType } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { SQUAD_MAX } from '../friendly/friendly-rules';
@@ -32,6 +33,7 @@ type Props = {
 export function FriendlyTeamCard({ label, squad, playersPerSide, error, onAddMe, onRename, onImage, onTogglePlaying, onRemove, onFind, onQuickAdd }: Props) {
   const s = useThemedStyles(styles);
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [squadOpen, setSquadOpen] = useState(false);
   const [focused, setFocused] = useState(false);
   const playing = squad.players.filter((p) => p.playing).length;
@@ -39,19 +41,19 @@ export function FriendlyTeamCard({ label, squad, playersPerSide, error, onAddMe,
   const title = squad.name.trim() || label;
   return <View style={[s.card, error ? s.cardError : null]}>
     <TeamImagePicker label={label} uri={squad.imageUri} size={dp(72)} onChange={onImage} />
-    <TextInput value={squad.name} onChangeText={onRename} placeholder={`${label} name`} accessibilityLabel={`${label} name`}
+    <TextInput value={squad.name} onChangeText={onRename} placeholder={t('friendly.team.namePlaceholder', { label })} accessibilityLabel={t('friendly.team.namePlaceholder', { label })}
       maxLength={30} autoCapitalize="words" placeholderTextColor={colors.textMuted} selectionColor={colors.primary}
       onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
       style={[s.input, focused ? s.inputFocused : null, error ? s.inputError : null]} />
-    <Text muted style={s.count}>{playing}/{playersPerSide} Playing · {squad.players.length}/{SQUAD_MAX} Squad</Text>
+    <Text muted style={s.count}>{t('friendly.team.count', { playing, playersPerSide, total: squad.players.length, squadMax: SQUAD_MAX })}</Text>
     {error && !squadOpen ? <Text style={s.error} accessibilityLiveRegion="polite">{error}</Text> : null}
     <View style={s.actions}>
-      <ActionTile icon={UserSearch} accessibilityLabel={`Find player for ${label}`} disabled={full} onPress={onFind} />
-      <ActionTile icon={UserPlus} accessibilityLabel={`Quick add to ${label}`} disabled={full} onPress={onQuickAdd} />
-      {onAddMe && !full ? <ActionTile icon={UserCheck} accessibilityLabel={`Add me to ${label}`} onPress={onAddMe} /> : null}
-      <ActionTile icon={Users} accessibilityLabel={`Show ${label} squad`} onPress={() => setSquadOpen(true)} />
+      <ActionTile icon={UserSearch} accessibilityLabel={t('friendly.team.findPlayerA11y', { label })} disabled={full} onPress={onFind} />
+      <ActionTile icon={UserPlus} accessibilityLabel={t('friendly.team.quickAddA11y', { label })} disabled={full} onPress={onQuickAdd} />
+      {onAddMe && !full ? <ActionTile icon={UserCheck} accessibilityLabel={t('friendly.team.addMeA11y', { label })} onPress={onAddMe} /> : null}
+      <ActionTile icon={Users} accessibilityLabel={t('friendly.team.showSquadA11y', { label })} onPress={() => setSquadOpen(true)} />
     </View>
-    <FriendlySquadSheet visible={squadOpen} title={`${title} squad`} squad={squad} playersPerSide={playersPerSide}
+    <FriendlySquadSheet visible={squadOpen} title={t('friendly.team.squadTitle', { title })} squad={squad} playersPerSide={playersPerSide}
       error={squadOpen ? error : undefined} onClose={() => setSquadOpen(false)} onTogglePlaying={onTogglePlaying} onRemove={onRemove} />
   </View>;
 }

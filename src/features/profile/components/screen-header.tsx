@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AppIconTile, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { sizes, spacing, useTheme } from '@/theme';
 
 type Props = {
@@ -16,13 +17,14 @@ type Props = {
 export function ScreenHeader({ title, trailing }: Props) {
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   return (
     <View style={styles.header}>
       <AppIconTile
         icon={ChevronLeft}
         backgroundColor={colors.surface}
         elevated
-        accessibilityLabel="Go back"
+        accessibilityLabel={t('common.goBack')}
         onPress={() => (router.canGoBack() ? router.back() : router.replace('/profile'))}
       />
       <Text variant="heading" accessibilityRole="header" style={styles.title}>

@@ -1,20 +1,22 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, radius, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 type Props = { searches: readonly string[]; onPick: (search: string) => void; onClear: () => void };
 
 /** What the user searched before. Shown while the search box is empty. */
 export function RecentSearches({ searches, onPick, onClear }: Props) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.wrap}>
       <View style={styles.header}>
-        <Text accessibilityRole="header" style={styles.title}>RECENT SEARCHES</Text>
-        {searches.length > 0 ? <Pressable accessibilityRole="button" onPress={onClear} style={styles.clear}><Text style={styles.clearText}>Clear history</Text></Pressable> : null}
+        <Text accessibilityRole="header" style={styles.title}>{t('search.recentTitle')}</Text>
+        {searches.length > 0 ? <Pressable accessibilityRole="button" onPress={onClear} style={styles.clear}><Text style={styles.clearText}>{t('search.clearHistory')}</Text></Pressable> : null}
       </View>
-      {searches.length === 0 ? <Text muted>No recent searches yet.</Text> : null}
+      {searches.length === 0 ? <Text muted>{t('search.noRecent')}</Text> : null}
       <View style={styles.chips}>
         {searches.map((search) => (
           <Pressable key={search} accessibilityRole="button" onPress={() => onPick(search)} style={({ pressed }) => [styles.chip, pressed && styles.pressed]}>

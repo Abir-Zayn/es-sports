@@ -3,6 +3,7 @@ import Svg, { Ellipse, Rect } from 'react-native-svg';
 
 import { Text } from '@/components/ui';
 import { leagueTable } from '@/features/tournament/sample-table';
+import { useTranslation } from '@/i18n';
 import { radius, useThemedStyles, type Palette } from '@/theme';
 
 import { oversLabel } from '../engine/score-delivery';
@@ -10,31 +11,39 @@ import type { ScoreState } from '../types';
 import { chaseLabel } from './score-summary';
 
 export type OverlayGraphic = 'Lineup' | 'Player card' | 'Over summary' | 'Points table';
+const GRAPHIC_KEYS: Record<OverlayGraphic, 'scoring.overlay.graphic.Lineup' | 'scoring.overlay.graphic.Player card' | 'scoring.overlay.graphic.Over summary' | 'scoring.overlay.graphic.Points table'> = {
+  Lineup: 'scoring.overlay.graphic.Lineup',
+  'Player card': 'scoring.overlay.graphic.Player card',
+  'Over summary': 'scoring.overlay.graphic.Over summary',
+  'Points table': 'scoring.overlay.graphic.Points table',
+};
+
 export function OverlayPreview({ score, graphic, accent }: { score: ScoreState; graphic: OverlayGraphic | null; accent: string }) {
   const s = useThemedStyles(styles);
+  const { t, locale } = useTranslation();
   const striker = score.batters[score.strikerId];
   const nonStriker = score.batters[score.nonStrikerId];
   const bowler = score.bowlers[score.bowlerId];
-  return <View style={s.preview} accessibilityLabel="Local stream overlay preview">
+  return <View style={s.preview} accessibilityLabel={t('scoring.overlay.previewA11y')}>
     <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" viewBox="0 0 352 220" preserveAspectRatio="none">
       <Rect width={352} height={220} fill="#20382A" />
       <Ellipse cx={176} cy={254} rx={255} ry={165} fill="#2B5038" />
       <Rect x={166} y={78} width={20} height={116} fill="#C9B98A" opacity={0.3} />
     </Svg>
     {graphic ? <View style={s.graphic} accessibilityLiveRegion="polite">
-      <Text style={s.graphicTitle}>{graphic}</Text>
+      <Text style={s.graphicTitle}>{t(GRAPHIC_KEYS[graphic])}</Text>
       {graphic === 'Lineup' ? <Text style={s.graphicBody}>{Object.values(score.batters).map((p) => p.name).join(' · ')}</Text> :
-        graphic === 'Player card' ? <><Text style={s.player}>{striker.name}</Text><Text style={s.graphicBody}>{striker.runs} runs · {striker.balls} balls</Text></> :
+        graphic === 'Player card' ? <><Text style={s.player}>{striker.name}</Text><Text style={s.graphicBody}>{t('scoring.overlay.playerRunsBalls', { runs: striker.runs, balls: striker.balls })}</Text></> :
         graphic === 'Over summary' ? <Text style={s.graphicBody}>{score.lastOver
-          ? `Over ${score.lastOver.number} · ${score.lastOver.runs} runs\n${score.lastOver.deliveries.map((d) => d.label).join('   ')}`
-          : `This over · ${score.currentOver.reduce((sum, d) => sum + d.total, 0)} runs\n${score.currentOver.map((d) => d.label).join('   ') || 'No deliveries yet'}`}</Text> :
-          <Text style={s.graphicBody}>Sample standings{leagueTable.rows.slice(0, 4).map((r) => `\n${r.pos}. ${r.team.short} · ${r.points} pts`).join('')}</Text>}
-    </View> : <Text style={s.camera}>YOUR CAMERA FEED</Text>}
+          ? `${t('scoring.overlay.lastOver', { number: score.lastOver.number, runs: score.lastOver.runs })}\n${score.lastOver.deliveries.map((d) => d.label).join('   ')}`
+          : `${t('scoring.overlay.thisOver', { runs: score.currentOver.reduce((sum, d) => sum + d.total, 0) })}\n${score.currentOver.map((d) => d.label).join('   ') || t('scoring.overlay.noDeliveries')}`}</Text> :
+          <Text style={s.graphicBody}>{t('scoring.overlay.sampleStandings')}{leagueTable.rows.slice(0, 4).map((r) => `\n${r.pos}. ${r.team.short} · ${t('scoring.overlay.pointsShort', { points: r.points })}`).join('')}</Text>}
+    </View> : <Text style={s.camera}>{t('scoring.overlay.cameraFeed')}</Text>}
     <View style={s.scorebug}>
       <View style={[s.brand, { backgroundColor: accent }]}><Text style={s.brandText}>ES</Text></View>
       <View style={s.team}><Text style={s.small}>{score.battingTeam}</Text><Text style={s.score}>{score.runs}/{score.wickets}</Text><Text style={s.small}>{oversLabel(score.balls)}</Text></View>
       <View style={s.batters}><Text style={s.small}>{striker.name.split(' ')[0]} {striker.runs}* ({striker.balls})</Text><Text style={s.small}>{nonStriker.name.split(' ')[0]} {nonStriker.runs} ({nonStriker.balls})</Text></View>
-      <View style={s.bowler}><Text style={s.small}>{bowler.name.split(' ')[0]} {bowler.wickets}–{bowler.runs}</Text><Text style={[s.small, { color: accent }]}>{chaseLabel(score)}</Text></View>
+      <View style={s.bowler}><Text style={s.small}>{bowler.name.split(' ')[0]} {bowler.wickets}–{bowler.runs}</Text><Text style={[s.small, { color: accent }]}>{chaseLabel(score, locale)}</Text></View>
     </View>
   </View>;
 }

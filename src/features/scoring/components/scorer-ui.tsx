@@ -4,7 +4,18 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
+
+export function ScorerRoleLabel(role: string, t: ReturnType<typeof useTranslation>['t']): string {
+  const key = ({
+    batter: 'match.role.batter',
+    bowler: 'match.role.bowler',
+    'all-rounder': 'match.role.allRounder',
+    keeper: 'match.role.keeper',
+  } as const)[role.toLowerCase()];
+  return key ? t(key) : role;
+}
 
 export function ScorerFrame({ children, footer }: { children: ReactNode; footer?: ReactNode }) {
   const s = useThemedStyles(styles);
@@ -21,9 +32,10 @@ export function ScorerHeader({ title, subtitle, onBack, trailing }: {
   title: string; subtitle?: string; onBack: () => void; trailing?: ReactNode;
 }) {
   const s = useThemedStyles(styles);
+  const { t } = useTranslation();
   return (
     <View style={s.header}>
-      <AppIconTile icon={ChevronLeft} borderRadius={radius.pill} accessibilityLabel="Back" onPress={onBack} />
+      <AppIconTile icon={ChevronLeft} borderRadius={radius.pill} accessibilityLabel={t('common.back')} onPress={onBack} />
       <View style={s.titleWrap}>
         <Text accessibilityRole="header" style={s.title}>{title}</Text>
         {subtitle ? <Text muted style={s.caption}>{subtitle}</Text> : null}

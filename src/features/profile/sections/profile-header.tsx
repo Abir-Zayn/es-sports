@@ -3,12 +3,13 @@ import Settings from 'lucide-react-native/icons/settings';
 import { StyleSheet, View } from 'react-native';
 
 import { AppIconTile, InitialsAvatar, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { initialsOf } from '@/lib/initials';
 import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { PlayerProfile } from '@/types/profile';
 
 import { CopyIdButton } from '../components/copy-id-button';
-import { battingLabels, roleLabels } from '../labels';
+import { battingLabel, roleLabel } from '../labels';
 
 type Props = {
   profile: PlayerProfile;
@@ -21,28 +22,29 @@ type Props = {
 /** Title bar with edit and settings actions, followed by the player's identity. */
 export function ProfileHeader({ profile, userId, onSettings, onEdit }: Props) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const place = [profile.area, profile.district].filter(Boolean).join(', ');
-  const pills = [roleLabels[profile.role], battingLabels[profile.battingStyle]].filter(Boolean);
+  const pills = [roleLabel(profile.role), battingLabel(profile.battingStyle)].filter(Boolean);
   return (
     <View style={styles.wrap}>
       <View style={styles.bar}>
         <Text variant="title" accessibilityRole="header">
-          Profile
+          {t('profile.title')}
         </Text>
         <View style={styles.actions}>
           <AppIconTile
             icon={Pencil}
             backgroundColor={colors.surface}
             elevated
-            accessibilityLabel="Edit profile"
+            accessibilityLabel={t('profile.editA11y')}
             onPress={onEdit}
           />
           <AppIconTile
             icon={Settings}
             backgroundColor={colors.surface}
             elevated
-            accessibilityLabel="Settings"
+            accessibilityLabel={t('profile.settingsA11y')}
             onPress={onSettings}
           />
         </View>
@@ -52,7 +54,7 @@ export function ProfileHeader({ profile, userId, onSettings, onEdit }: Props) {
           label={initialsOf(profile.fullName)}
           imageUri={profile.avatarUri}
           size={dp(72)}
-          accessibilityLabel={`${profile.fullName} profile picture`}
+          accessibilityLabel={t('profile.pictureA11y', { name: profile.fullName })}
         />
         <View style={styles.names}>
           <View style={styles.nameRow}>
@@ -60,7 +62,7 @@ export function ProfileHeader({ profile, userId, onSettings, onEdit }: Props) {
             {userId ? <CopyIdButton userId={userId} /> : null}
           </View>
           {place ? <Text variant="bodySm" muted>{place}</Text> : null}
-          <View style={styles.pills} accessible accessibilityLabel={`Playing style: ${pills.join(', ')}`}>
+          <View style={styles.pills} accessible accessibilityLabel={t('profile.playingStyleA11y', { style: pills.join(', ') })}>
             {pills.map((label) => (
               <View key={label} style={styles.pill}>
                 <Text style={styles.pillLabel}>{label}</Text>

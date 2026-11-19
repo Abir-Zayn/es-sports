@@ -1,4 +1,5 @@
 import type { MatchSetup, ScorerTeam } from '@/features/scoring/types';
+import { t } from '@/i18n';
 
 import type { FriendlyMatchSetup, FriendlyTeamSquad } from '../types';
 import { teamLabel } from './toss';
@@ -13,7 +14,7 @@ const scorerTeam = (squad: FriendlyTeamSquad, label: string): ScorerTeam => ({
  * left for the scorer to choose; `preset` tells the scorer the toss and sides are already settled.
  */
 export function toScorerSetup(setup: FriendlyMatchSetup, creatorId: string): MatchSetup {
-  if (!setup.toss) throw new Error('Toss the coin before scoring.');
+  if (!setup.toss) throw new Error(t('friendly.rules.tossRequired'));
   const [a, b] = [teamLabel(setup, 'teamA'), teamLabel(setup, 'teamB')];
   const playing = (squad: FriendlyTeamSquad) => squad.players.filter((p) => p.playing).map((p) => p.id);
   const scorer = setup.assignedScorerId;

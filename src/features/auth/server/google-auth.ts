@@ -1,5 +1,6 @@
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 
+import { t } from '@/i18n';
 import { env } from '@/lib/env';
 import { supabase } from '@/lib/supabase';
 
@@ -10,12 +11,6 @@ import type { GoogleAuthResult } from '../types';
 type TokenResult = { ok: true; idToken: string } | { ok: false; cancelled?: boolean; message: string };
 
 type GoogleSigninModule = typeof import('@react-native-google-signin/google-signin');
-
-const NOT_SET_UP = 'Google sign-in isn’t set up yet.';
-const NEEDS_BUILD = 'Google sign-in needs the installed esSports app, not Expo Go. Build it with npx expo run:android.';
-const NOT_CONFIGURED = 'Google sign-in isn’t configured for this build. Check the Android client in Google Cloud.';
-const NETWORK_ERROR = 'Couldn’t connect. Check your connection and try again.';
-const NO_PLAY_SERVICES = 'Google Play services is missing or needs an update.';
 
 /**
  * Loads the native Google module on first use. Expo Go and builds made before the library was added have no native
@@ -42,10 +37,10 @@ function debug(stage: string, details?: Record<string, unknown>) {
 /** Shows the native Android account picker and returns the signed-in account's Google ID token. */
 async function pickGoogleAccount(fallback: string): Promise<TokenResult> {
   const webClientId = env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
-  if (!webClientId) return { ok: false, message: NOT_SET_UP };
+  if (!webClientId) return { ok: false, message: t('auth.err.googleNotSetUp') };
 
   const native = loadGoogleSignin();
-  if (!native) return { ok: false, message: NEEDS_BUILD };
+  if (!native) return { ok: false, message: t('auth.err.googleNeedsBuild') };
   const { GoogleSignin, isErrorWithCode, statusCodes } = native;
 
   try {
@@ -72,11 +67,13 @@ async function pickGoogleAccount(fallback: string): Promise<TokenResult> {
     });
     if (isErrorWithCode(error)) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED || error.code === statusCodes.IN_PROGRESS) return { ok: false, cancelled: true, message: '' };
-      if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) return { ok: false, message: NO_PLAY_SERVICES };
+      if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) return { ok: false, message: t('auth.err.noPlayServices') };
       // Android reports a wrong package name or SHA-1 as DEVELOPER_ERROR (code 10).
-      if (error.code === '10' || /DEVELOPER_ERROR/.test(error.message)) return { ok: false, message: `${NOT_CONFIGURED} (code ${error.code})` };
+      if (error.code === '10' || /DEVELOPER_ERROR/.test(error.message)) {
+        return { ok: false, message: t('auth.err.withCode', { message: t('auth.err.googleNotConfigured'), code: error.code }) };
+      }
       // The code is a public status number. Showing it lets a tester report the real cause.
-      return { ok: false, message: `${fallback} (code ${error.code})` };
+      return { ok: false, message: t('auth.err.withCode', { message: fallback, code: error.code }) };
     }
     return { ok: false, message: fallback };
   }
@@ -84,7 +81,7 @@ async function pickGoogleAccount(fallback: string): Promise<TokenResult> {
 
 /** Signs in with Google. A first-time Google user gets an account, so this is also sign-up. */
 export async function signInWithGoogle(): Promise<GoogleAuthResult> {
-  const fallback = 'Couldn’t sign in with Google. Try again.';
+  const fallback = t('auth.err.googleSignInFailed');
   const picked = await pickGoogleAccount(fallback);
   if (!picked.ok) return picked;
   try {
@@ -92,13 +89,13 @@ export async function signInWithGoogle(): Promise<GoogleAuthResult> {
     debug('supabase signInWithIdToken', { ok: !error, code: error?.code, status: error?.status, message: error?.message });
     return error ? { ok: false, message: authErrorMessage(error, fallback) } : { ok: true };
   } catch {
-    return { ok: false, message: NETWORK_ERROR };
+    return { ok: false, message: t('common.networkError') };
   }
 }
 
 /** Adds Google to the signed-in account. Needs "Allow manual linking" on in the Supabase dashboard. */
 export async function linkGoogleAccount(): Promise<GoogleAuthResult> {
-  const fallback = 'Couldn’t link your Google account. Try again.';
+  const fallback = t('auth.err.googleLinkFailed');
   const picked = await pickGoogleAccount(fallback);
   if (!picked.ok) return picked;
   try {
@@ -106,6 +103,6 @@ export async function linkGoogleAccount(): Promise<GoogleAuthResult> {
     debug('supabase linkIdentity', { ok: !error, code: error?.code, status: error?.status, message: error?.message });
     return error ? { ok: false, message: authErrorMessage(error, fallback) } : { ok: true };
   } catch {
-    return { ok: false, message: NETWORK_ERROR };
+    return { ok: false, message: t('common.networkError') };
   }
 }

@@ -4,9 +4,11 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppIconTile, InitialsAvatar, Text } from '@/components/ui';
 import { Sheet } from '@/features/tournament/roster';
+import { useTranslation } from '@/i18n';
 import { initialsOf } from '@/lib/initials';
 import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
+import { roleLabel } from '../live/match-details';
 import type { FriendlyPlayer, FriendlyTeamSquad } from '../types';
 
 type Props = {
@@ -25,24 +27,25 @@ type Props = {
 export function FriendlySquadSheet({ visible, title, squad, playersPerSide, error, onClose, onTogglePlaying, onRemove }: Props) {
   const s = useThemedStyles(styles);
   const { colors } = useTheme();
+  const { t, locale } = useTranslation();
   const hasReserves = squad.players.length > playersPerSide;
   return <Sheet visible={visible} title={title} onClose={onClose}>
-    {hasReserves ? <Text muted style={s.detail}>Select the players in the lineup.</Text> : null}
+    {hasReserves ? <Text muted style={s.detail}>{t('friendly.squad.lineupPrompt')}</Text> : null}
     {error ? <Text style={s.error} accessibilityLiveRegion="polite">{error}</Text> : null}
     {squad.players.length === 0 ? <View style={s.empty}>
-      <Text muted style={s.emptyText}>No players yet. Find app users or quick add guests.</Text>
+      <Text muted style={s.emptyText}>{t('friendly.squad.empty')}</Text>
     </View> : <ScrollView style={s.list} contentContainerStyle={s.listContent}>
       {squad.players.map((p, index) => <View key={p.id} style={[s.player, index > 0 ? s.divided : null]}>
         <InitialsAvatar label={initialsOf(p.name)} imageUri={p.avatarUrl} size={sizes.avatar} tone={p.userId ? 'blue' : 'neutral'} />
         <View style={[s.who, hasReserves && !p.playing ? s.bench : null]}>
           <Text style={s.name} numberOfLines={1}>{p.name}</Text>
-          <Text muted style={s.detail}>{p.role} · {p.userId ? 'App user' : 'Guest'}</Text>
+          <Text muted style={s.detail}>{roleLabel(p.role, locale)} · {p.userId ? t('friendly.squad.appUser') : t('friendly.squad.guest')}</Text>
         </View>
-        {hasReserves ? <Pressable accessibilityRole="switch" accessibilityState={{ checked: p.playing }} accessibilityLabel={`${p.name} playing`}
+        {hasReserves ? <Pressable accessibilityRole="switch" accessibilityState={{ checked: p.playing }} accessibilityLabel={t('friendly.squad.playingA11y', { name: p.name })}
           onPress={() => onTogglePlaying(p)} style={s.selection}>
           <View style={[s.box, p.playing && s.boxOn]}>{p.playing ? <Check size={dp(14)} color={colors.primaryText} strokeWidth={3} /> : null}</View>
         </Pressable> : null}
-        <AppIconTile icon={X} size={dp(36)} iconSize={sizes.iconSmall} borderRadius={radius.pill} accessibilityLabel={`Remove ${p.name}`} onPress={() => onRemove(p)} />
+        <AppIconTile icon={X} size={dp(36)} iconSize={sizes.iconSmall} borderRadius={radius.pill} accessibilityLabel={t('friendly.squad.removeA11y', { name: p.name })} onPress={() => onRemove(p)} />
       </View>)}
     </ScrollView>}
   </Sheet>;

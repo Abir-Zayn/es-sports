@@ -3,12 +3,14 @@ import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { Button, PasswordField, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { AuthLayout } from './auth-layout';
 import { newPasswordSchema, saveRecoveredPassword } from '../server/password-recovery';
 
 export function RecoveredPasswordForm({ userId }: { userId: string }) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const confirmRef = useRef<ComponentRef<typeof TextInput>>(null);
   const mounted = useRef(false);
@@ -45,28 +47,28 @@ export function RecoveredPasswordForm({ userId }: { userId: string }) {
   }
 
   if (saved) return (
-    <AuthLayout scrollable title="Password updated." subtitle="Your new password is saved. You are signed in and ready to continue.">
-      <Button label="Continue" onPress={() => router.replace('/home')} />
+    <AuthLayout scrollable title={t('auth.recover.savedTitle')} subtitle={t('auth.recover.savedSubtitle')}>
+      <Button label={t('common.continue')} onPress={() => router.replace('/home')} />
     </AuthLayout>
   );
 
   if (invalid) return (
-    <AuthLayout scrollable title="Request a new reset link." subtitle={formError ?? 'This reset session has expired.'}>
-      <Button label="Request a new link" onPress={() => router.replace('/forgot-password')} />
+    <AuthLayout scrollable title={t('auth.recover.expiredTitle')} subtitle={formError ?? t('auth.recover.expiredFallback')}>
+      <Button label={t('auth.reset.requestNew')} onPress={() => router.replace('/forgot-password')} />
     </AuthLayout>
   );
 
   return (
-    <AuthLayout scrollable title="Choose a new password." subtitle="Use at least 8 characters for your new password.">
+    <AuthLayout scrollable title={t('auth.recover.chooseTitle')} subtitle={t('auth.recover.chooseSubtitle')}>
       <View style={styles.form}>
-        <PasswordField label="New password" value={password} onChangeText={setPassword} error={errors.password}
+        <PasswordField label={t('auth.newPassword')} value={password} onChangeText={setPassword} error={errors.password}
           editable={!loading} autoComplete="new-password" textContentType="newPassword" returnKeyType="next"
           onSubmitEditing={() => confirmRef.current?.focus()} />
-        <PasswordField ref={confirmRef} label="Confirm new password" value={confirm} onChangeText={setConfirm}
+        <PasswordField ref={confirmRef} label={t('auth.confirmNewPassword')} value={confirm} onChangeText={setConfirm}
           error={errors.confirm} editable={!loading} autoComplete="new-password" textContentType="newPassword"
           returnKeyType="done" onSubmitEditing={submit} />
         {formError ? <Text style={styles.error} accessibilityLiveRegion="polite">{formError}</Text> : null}
-        <Button label="Save new password" loading={loading} onPress={submit} />
+        <Button label={t('auth.recover.save')} loading={loading} onPress={submit} />
       </View>
     </AuthLayout>
   );

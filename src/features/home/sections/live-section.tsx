@@ -2,27 +2,34 @@ import { ScrollView, StyleSheet } from 'react-native';
 
 import { LIVE_MATCH_CARD_WIDTH, LiveMatchCard } from '@/components/match/live-match-card';
 import { Section, SectionHeader } from '@/components/ui';
-import { sizes, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { dp, sizes, spacing } from '@/theme';
 import type { LiveMatch } from '@/types/cricket';
 
 import { HomeEmptyState } from '../components/home-empty-state';
+import { SectionStatus, type LoadStatus } from '../components/section-status';
 
 const CARD_GAP = spacing.md;
 
 type Props = {
   matches: LiveMatch[];
+  status: LoadStatus;
+  onRetry: () => void;
   onSeeAll: () => void;
   onMatchPress: (match: LiveMatch) => void;
 };
 
 /** Matches being played now, as a sideways scroller of score cards. */
-export function LiveSection({ matches, onSeeAll, onMatchPress }: Props) {
+export function LiveSection({ matches, status, onRetry, onSeeAll, onMatchPress }: Props) {
+  const { t } = useTranslation();
   const isLive = matches.length > 0;
   return (
     <Section>
       {/* The red dot only pulses for real: no live games, no dot. */}
-      <SectionHeader live={isLive} title="Live now" action="See all" onAction={onSeeAll} />
-      {isLive ? (
+      <SectionHeader live={isLive} title={t('home.live.title')} action={t('home.live.seeAll')} onAction={onSeeAll} />
+      {status !== 'ready' ? (
+        <SectionStatus status={status} what={t('home.live.what')} height={dp(200)} onRetry={onRetry} />
+      ) : isLive ? (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -36,9 +43,9 @@ export function LiveSection({ matches, onSeeAll, onMatchPress }: Props) {
         </ScrollView>
       ) : (
         <HomeEmptyState
-          title="No matches live right now"
-          message="Scores show up here as soon as a game starts."
-          action="Browse matches"
+          title={t('home.live.emptyTitle')}
+          message={t('home.live.emptyMessage')}
+          action={t('home.live.emptyAction')}
           onAction={onSeeAll}
         />
       )}

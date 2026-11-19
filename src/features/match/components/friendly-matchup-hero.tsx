@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { InitialsAvatar, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { initialsOf } from '@/lib/initials';
 import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
@@ -19,16 +20,17 @@ type Props = {
 /** The screen's one hero: both sides facing off, with the format as three big numbers. */
 export function FriendlyMatchupHero({ teamA, teamB, nameA, nameB, overs, playersPerSide }: Props) {
   const s = useThemedStyles(styles);
+  const { t } = useTranslation();
   const quota = oversPerBowler(overs);
   const stats = [
-    { key: 'overs', value: overs, label: 'Overs' },
-    { key: 'side', value: playersPerSide, label: 'A side' },
-    { key: 'quota', value: quota, label: 'Per bowler' },
+    { key: 'overs', value: overs, label: t('friendly.hero.overs') },
+    { key: 'side', value: playersPerSide, label: t('friendly.hero.aSide') },
+    { key: 'quota', value: quota, label: t('friendly.hero.perBowler') },
   ];
-  return <View style={s.card} accessible accessibilityLabel={`${nameA} versus ${nameB}. ${overs} overs, ${playersPerSide} a side, up to ${quota} overs per bowler.`}>
+  return <View style={s.card} accessible accessibilityLabel={t('friendly.hero.a11y', { teamA: nameA, teamB: nameB, overs, players: playersPerSide, quota })}>
     <View style={s.faceoff}>
       <Side squad={teamA} name={nameA} />
-      <View style={s.vs}><Text style={s.vsText}>VS</Text></View>
+      <View style={s.vs}><Text style={s.vsText}>{t('friendly.hero.vs')}</Text></View>
       <Side squad={teamB} name={nameB} />
     </View>
     <View style={s.stats}>
@@ -42,10 +44,11 @@ export function FriendlyMatchupHero({ teamA, teamB, nameA, nameB, overs, players
 
 function Side({ squad, name }: { squad: FriendlyTeamSquad; name: string }) {
   const s = useThemedStyles(styles);
+  const { t } = useTranslation();
   return <View style={s.side}>
     <InitialsAvatar label={initialsOf(name)} imageUri={squad.imageUri} tone={squad.tone} size={dp(56)} />
     <Text style={s.sideName} numberOfLines={1}>{name}</Text>
-    <Text muted style={s.sideMeta}>{squad.players.length} in squad</Text>
+    <Text muted style={s.sideMeta}>{t('friendly.hero.inSquad', { count: squad.players.length })}</Text>
   </View>;
 }
 

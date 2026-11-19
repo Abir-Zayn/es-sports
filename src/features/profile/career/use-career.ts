@@ -3,10 +3,11 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useMemo } from 'react';
 
 import { fetchMyTeams, myTeamsKey, type MyTeam } from '@/features/team/data/team-repository';
+import { useLocale } from '@/i18n';
 import type { TeamInfo } from '@/types/cricket';
 
-import { mergeTeams, type Career } from './career-model';
-import { careerKey, fetchCareer } from './career-repository';
+import { buildCareer, mergeTeams, type Career } from './career-model';
+import { careerKey, fetchCareerRows, type CareerRows } from './career-repository';
 
 export type CareerView = Career & {
   status: 'loading' | 'ready' | 'error';
@@ -26,7 +27,15 @@ const emptyBowling = { matches: 0, overs: '0.0', wickets: 0, best: '-', economy:
  * just finished shows up without a restart.
  */
 export function useCareer(userId: string | undefined): CareerView {
-  const career = useQuery({ queryKey: careerKey(userId ?? ''), enabled: Boolean(userId), staleTime: 0, queryFn: () => fetchCareer(userId ?? '') });
+  const locale = useLocale();
+  const selectCareer = useCallback((rows: CareerRows) => buildCareer(rows.figures, rows.played, locale), [locale]);
+  const career = useQuery({
+    queryKey: careerKey(userId ?? ''),
+    enabled: Boolean(userId),
+    staleTime: 0,
+    queryFn: () => fetchCareerRows(userId ?? ''),
+    select: selectCareer,
+  });
   const teams = useQuery({ queryKey: myTeamsKey(userId ?? ''), enabled: Boolean(userId), staleTime: 0, queryFn: () => fetchMyTeams(userId ?? '') });
   const { refetch: refetchCareer } = career;
   const { refetch: refetchTeams } = teams;

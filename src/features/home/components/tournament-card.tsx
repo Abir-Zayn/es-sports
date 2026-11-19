@@ -2,9 +2,10 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { InitialsAvatar, Text } from '@/components/ui';
-import { dp, radius, shadows, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { dp, radius, shadows, spacing, typography, useTheme, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
 
-import type { Tournament } from '../sample-data';
+export type Tournament = { id: string; short: string; name: string; meta: string; tone: AvatarTone; avatarUri?: string };
 
 export const TOURNAMENT_CARD_WIDTH = dp(250);
 const BANNER_HEIGHT = dp(96);
@@ -13,12 +14,13 @@ type Props = { tournament: Tournament; onPress?: () => void };
 
 export function TournamentCard({ tournament, onPress }: Props) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${tournament.name}, ${tournament.meta}`}
-      accessibilityHint="Opens the tournament"
+      accessibilityHint={t('home.tournamentCard.openHint')}
       onPress={onPress}
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
@@ -49,7 +51,7 @@ export function TournamentCard({ tournament, onPress }: Props) {
           </Text>
         </View>
         <View style={styles.view}>
-          <Text style={styles.viewText}>View</Text>
+          <Text style={styles.viewText}>{t('home.tournamentCard.view')}</Text>
         </View>
       </View>
     </Pressable>

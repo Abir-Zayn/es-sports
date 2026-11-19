@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { quadrantAngle } from '@/lib/pitch-quadrant';
 import { dp, radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
@@ -17,9 +18,10 @@ export function ShotDirectionScreen() {
   const routes = useScorerRoutes();
   const s = useThemedStyles(styles);
   const insets = useSafeAreaInsets();
+  const { t, locale } = useTranslation();
   const [angle, setAngle] = useState(-15);
-  if (!pendingShot || !score) return <ScorerFrame><ScorerNotice>No shot is waiting for a direction.</ScorerNotice>
-    <Button label="Back to scoring" onPress={() => routes.replace('pad')} /></ScorerFrame>;
+  if (!pendingShot || !score) return <ScorerFrame><ScorerNotice>{t('scoring.shot.noneWaiting')}</ScorerNotice>
+    <Button label={t('scoring.wicket.backToScoring')} onPress={() => routes.replace('pad')} /></ScorerFrame>;
   const finish = (direction?: number) => {
     dispatch({ type: 'shot', angle: direction, id: localEventId() });
     if (score.awaitingBowler) routes.replace('over'); else routes.back();
@@ -29,14 +31,14 @@ export function ShotDirectionScreen() {
       <View style={s.handle} />
       <ScrollView contentContainerStyle={s.content}>
         <View style={s.heading}><View style={s.badge}><Text style={s.runs}>{pendingShot.runs}</Text></View>
-          <View style={s.title}><Text variant="heading">Where did the ball go?</Text><Text muted style={s.caption}>{pendingShot.batter} · {pendingShot.ball}</Text></View></View>
-        <Text muted style={s.caption}>One tap saves the zone. Or place it on the field and save.</Text>
+          <View style={s.title}><Text variant="heading">{t('scoring.shot.whereTitle')}</Text><Text muted style={s.caption}>{t('scoring.shot.subtitle', { batter: pendingShot.batter, ball: pendingShot.ball })}</Text></View></View>
+        <Text muted style={s.caption}>{t('scoring.shot.hint')}</Text>
         <PitchQuadrantBar angle={null} onPick={(zone) => finish(quadrantAngle(zone))} />
         <ShotField runs={pendingShot.runs} angle={angle} onChange={setAngle} />
-        <Text muted style={s.direction}>Direction <Text style={s.selected}>{directionLabel(angle)}</Text></Text>
-        <View style={s.actions}><View style={s.skip}><Button label="Skip" variant="secondary" onPress={() => finish()} /></View>
-          <View style={s.save}><Button label="Save shot" onPress={() => finish(angle)} /></View></View>
-        <ScorerNotice>Shown only for runs off the bat. 4s and 6s snap to the boundary.</ScorerNotice>
+        <Text muted style={s.direction}>{t('scoring.shot.directionPrefix')} <Text style={s.selected}>{directionLabel(angle, locale)}</Text></Text>
+        <View style={s.actions}><View style={s.skip}><Button label={t('scoring.shot.skip')} variant="secondary" onPress={() => finish()} /></View>
+          <View style={s.save}><Button label={t('scoring.shot.save')} onPress={() => finish(angle)} /></View></View>
+        <ScorerNotice>{t('scoring.shot.notice')}</ScorerNotice>
       </ScrollView>
     </View>
   </View>;

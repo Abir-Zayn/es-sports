@@ -1,23 +1,33 @@
 import { StyleSheet, View } from 'react-native';
 import { Text } from '@/components/ui';
+import { useTranslation, type TranslationKey } from '@/i18n';
 import { quadrantSplit } from '@/lib/pitch-quadrant';
 import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
+import type { PitchQuadrant } from '@/types/cricket';
+
+const ZONE_KEY: Record<PitchQuadrant, TranslationKey> = {
+  off_side: 'pitchZone.off_side',
+  straight_v: 'pitchZone.straight_v',
+  leg_side: 'pitchZone.leg_side',
+  behind_square: 'pitchZone.behind_square',
+};
 
 export function PlayerPitchZones({ shots }: { shots: readonly { runs: number; angle: number }[] }) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const zones = quadrantSplit(shots);
   const hasRuns = zones.some((zone) => zone.runs > 0);
   const colors = [styles.off, styles.straight, styles.leg, styles.behind];
   return <View style={styles.section}>
-    <Text style={styles.heading}>Pitch zones</Text>
-    <Text style={styles.caption}>Share of recorded runs by direction</Text>
-    {hasRuns ? <View style={styles.bar} accessibilityLabel="Run distribution by pitch zone">
+    <Text style={styles.heading}>{t('players.pitchZonesTitle')}</Text>
+    <Text style={styles.caption}>{t('players.pitchZonesSubtitle')}</Text>
+    {hasRuns ? <View style={styles.bar} accessibilityLabel={t('players.pitchZonesA11y')}>
       {zones.map((zone, index) => zone.percent > 0 ? <View key={zone.id} style={[{ flex: zone.percent }, colors[index]]} /> : null)}
-    </View> : <Text style={styles.empty}>No shot data recorded yet.</Text>}
+    </View> : <Text style={styles.empty}>{t('players.pitchZonesEmpty')}</Text>}
     <View style={styles.grid}>{zones.map((zone, index) => <View key={zone.id} style={styles.card}>
       <View style={[styles.dot, colors[index]]} />
-      <Text style={styles.label}>{zone.label}</Text><Text style={styles.value}>{zone.percent}%</Text>
-      <Text style={styles.caption}>{zone.runs} runs</Text>
+      <Text style={styles.label}>{t(ZONE_KEY[zone.id])}</Text><Text style={styles.value}>{zone.percent}%</Text>
+      <Text style={styles.caption}>{t('players.runsCount', { count: zone.runs })}</Text>
     </View>)}</View>
   </View>;
 }

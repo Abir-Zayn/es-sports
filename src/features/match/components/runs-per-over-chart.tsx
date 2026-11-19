@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, sp, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 const PLOT_HEIGHT = dp(130);
@@ -22,9 +23,16 @@ type Props = {
 export function RunsPerOverChart({ title, caption, runsPerOver, wicketOvers, lastInProgress = true }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation();
   const max = Math.max(...runsPerOver.filter(Number.isFinite), 1);
-  const wickets = wicketOvers.length > 0 ? `Wickets in overs ${wicketOvers.join(', ')}.` : 'No wickets.';
-  const summary = `Runs per over, overs 1 to ${runsPerOver.length}: ${runsPerOver.join(', ')}. ${wickets}`;
+  const wickets = wicketOvers.length > 0
+    ? t('match.overs.chartWickets', { overs: wicketOvers.join(', ') })
+    : t('match.overs.chartNoWickets');
+  const summary = t('match.overs.chartSummary', {
+    total: runsPerOver.length,
+    values: runsPerOver.join(', '),
+    wickets,
+  });
   return (
     <View style={styles.card}>
       <View style={styles.header}>
@@ -60,11 +68,11 @@ export function RunsPerOverChart({ title, caption, runsPerOver, wicketOvers, las
         ))}
       </View>
       <View style={styles.legend}>
-        <LegendItem swatch={<View style={[styles.swatch, { backgroundColor: colors.primaryDeep }]} />} label="Runs" />
-        <LegendItem swatch={<View style={styles.dotSwatch} />} label="Wicket" />
+        <LegendItem swatch={<View style={[styles.swatch, { backgroundColor: colors.primaryDeep }]} />} label={t('match.overs.legendRuns')} />
+        <LegendItem swatch={<View style={styles.dotSwatch} />} label={t('match.overs.legendWicket')} />
         <LegendItem
           swatch={<View style={[styles.swatch, { borderWidth: 1.5, borderColor: colors.primary }]} />}
-          label="In progress"
+          label={t('match.overs.legendInProgress')}
         />
       </View>
     </View>

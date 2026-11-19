@@ -1,21 +1,23 @@
 import { StyleSheet, View } from 'react-native';
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, radius, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { Performance } from '@/types/profile';
 
 export function PlayerRecentMatches({ matches }: { matches: readonly Performance[] }) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
-  return <View style={styles.section}><Text style={styles.heading}>Recent matches</Text>
-    {matches.length === 0 ? <Text style={styles.empty}>No recent performances yet.</Text> : matches.map((match) =>
+  return <View style={styles.section}><Text style={styles.heading}>{t('players.recentMatchesTitle')}</Text>
+    {matches.length === 0 ? <Text style={styles.empty}>{t('players.recentEmpty')}</Text> : matches.map((match) =>
       <View key={match.id} style={styles.row}>
         <View style={styles.marker}><View style={styles.dot} /></View>
         <View style={styles.details}>
           <View style={styles.line}><Text style={styles.opponent}>{match.opponent}</Text><Text style={styles.date}>{match.date}</Text></View>
-          <Text style={styles.result}>{match.won ? 'Won' : 'Lost'}</Text>
+          <Text style={styles.result}>{match.won ? t('profile.recent.wonWord') : t('profile.recent.lostWord')}</Text>
           <View style={styles.figures}>
-            {match.bat ? <Text style={styles.figure}>Batting  {match.bat}</Text> : null}
-            {match.bowl ? <Text style={styles.figure}>Bowling  {match.bowl}</Text> : null}
-            {!match.bat && !match.bowl ? <Text style={styles.figure}>No individual figures recorded</Text> : null}
+            {match.bat ? <Text style={styles.figure}>{t('players.battingPrefix', { value: match.bat })}</Text> : null}
+            {match.bowl ? <Text style={styles.figure}>{t('players.bowlingPrefix', { value: match.bowl })}</Text> : null}
+            {!match.bat && !match.bowl ? <Text style={styles.figure}>{t('players.noFigures')}</Text> : null}
           </View>
         </View>
       </View>)}

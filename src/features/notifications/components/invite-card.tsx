@@ -2,16 +2,17 @@ import UserPlus from 'lucide-react-native/icons/user-plus';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { useTranslation, type TranslationKey } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import type { AppNotification, InviteStatus } from '../types';
 import { NotificationRow } from './notification-row';
 
-const statusLabels: Record<Exclude<InviteStatus, 'pending'>, string> = {
-  accepted: 'Accepted',
-  declined: 'Declined',
-  cancelled: 'No longer open',
-  expired: 'Expired',
+const statusKey: Record<Exclude<InviteStatus, 'pending'>, TranslationKey> = {
+  accepted: 'invitations.statusAccepted',
+  declined: 'invitations.statusDeclined',
+  cancelled: 'invitations.statusNoLongerOpen',
+  expired: 'invitations.statusExpired',
 };
 
 type Props = {
@@ -23,15 +24,16 @@ type Props = {
 
 export function InviteCard({ item, busy = false, onOpen, onRespond }: Props) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const invite = item.meta?.invite;
   const canRespond = item.kind === 'invite' && invite?.status === 'pending' && Boolean(onRespond);
-  const statusLabel = invite && invite.status !== 'pending' ? statusLabels[invite.status] : null;
+  const statusLabel = invite && invite.status !== 'pending' ? t(statusKey[invite.status]) : null;
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Open notification: ${item.title}`}
+      accessibilityLabel={t('notifications.openA11y', { title: item.title })}
       onPress={onOpen}
     >
       <NotificationRow item={item} icon={<UserPlus size={sizes.icon} color={colors.link} />}>
@@ -39,21 +41,21 @@ export function InviteCard({ item, busy = false, onOpen, onRespond }: Props) {
           <View style={styles.actions}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`Accept ${item.title}`}
+              accessibilityLabel={t('notifications.acceptItemA11y', { title: item.title })}
               disabled={busy}
               onPress={() => onRespond('accepted')}
               style={[styles.accept, busy ? styles.disabled : null]}
             >
-              <Text style={styles.acceptText}>Accept</Text>
+              <Text style={styles.acceptText}>{t('invitations.accept')}</Text>
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`Decline ${item.title}`}
+              accessibilityLabel={t('notifications.declineItemA11y', { title: item.title })}
               disabled={busy}
               onPress={() => onRespond('declined')}
               style={[styles.decline, busy ? styles.disabled : null]}
             >
-              <Text style={styles.declineText}>Decline</Text>
+              <Text style={styles.declineText}>{t('invitations.decline')}</Text>
             </Pressable>
           </View>
         ) : statusLabel ? (

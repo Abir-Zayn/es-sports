@@ -2,12 +2,14 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect } from 'react';
 
 import { Button } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 
 import { AuthLayout } from '../components/auth-layout';
 import { RecoveredPasswordForm } from '../components/recovered-password-form';
 import { useRecoverySession } from '../utils/use-recovery-session';
 
 export function ResetPasswordScreen() {
+  const { t } = useTranslation();
   const { '#': fragment } = useLocalSearchParams<{ '#': string }>();
   const { state, revision, retry } = useRecoverySession(fragment);
 
@@ -19,12 +21,12 @@ export function ResetPasswordScreen() {
   if (state.status === 'ready') return <RecoveredPasswordForm key={revision} userId={state.userId} />;
 
   return (
-    <AuthLayout scrollable title={state.status === 'checking' ? 'Checking your link.' : 'Check your reset link.'}
-      subtitle={state.status === 'checking' ? 'Please wait while we verify your password reset link.' : state.message}>
-      {state.status === 'checking' ? <Button label="Checking link" loading /> : (
+    <AuthLayout scrollable title={state.status === 'checking' ? t('auth.reset.checkingTitle') : t('auth.reset.invalidTitle')}
+      subtitle={state.status === 'checking' ? t('auth.reset.checkingSubtitle') : state.message}>
+      {state.status === 'checking' ? <Button label={t('auth.reset.checkingBtn')} loading /> : (
         <>
-          {state.retryable ? <Button label="Try again" onPress={retry} /> : null}
-          <Button label="Request a new link" onPress={() => router.replace('/forgot-password')} />
+          {state.retryable ? <Button label={t('common.retry')} onPress={retry} /> : null}
+          <Button label={t('auth.reset.requestNew')} onPress={() => router.replace('/forgot-password')} />
         </>
       )}
     </AuthLayout>

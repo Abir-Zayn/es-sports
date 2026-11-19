@@ -3,9 +3,10 @@ import Search from 'lucide-react-native/icons/search';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { InitialsAvatar, Text } from '@/components/ui';
-import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
 
-import type { HomeUser } from '../sample-data';
+export type HomeUser = { initials: string; name: string; tone: AvatarTone; avatarUri?: string; unreadNotifications: number };
 
 // Lifts the 40dp round buttons to a 48dp touch target without changing their look.
 const ICON_HIT_SLOP = dp(4);
@@ -20,12 +21,13 @@ type Props = {
 /** Avatar, greeting, search and notifications. */
 export function TopBar({ user, onProfile, onSearch, onNotifications }: Props) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const unread = user.unreadNotifications ?? 0;
   const name = user.name?.trim();
   return (
     <View style={styles.row}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Open menu" hitSlop={ICON_HIT_SLOP} onPress={onProfile}>
+      <Pressable accessibilityRole="button" accessibilityLabel={t('home.openMenu')} hitSlop={ICON_HIT_SLOP} onPress={onProfile}>
         <InitialsAvatar
           label={user.initials}
           tone={user.tone}
@@ -35,8 +37,8 @@ export function TopBar({ user, onProfile, onSearch, onNotifications }: Props) {
           borderWidth={2}
         />
       </Pressable>
-      <View style={styles.greeting} accessible accessibilityRole="header" accessibilityLabel={name ? `Welcome back, ${name}` : 'Welcome back'}>
-        <Text style={styles.welcome}>Welcome back</Text>
+      <View style={styles.greeting} accessible accessibilityRole="header" accessibilityLabel={name ? t('home.welcomeBackName', { name }) : t('home.welcomeBack')}>
+        <Text style={styles.welcome}>{t('home.welcomeBack')}</Text>
         {name ? (
           <Text style={styles.name} numberOfLines={1}>
             {name}
@@ -45,7 +47,7 @@ export function TopBar({ user, onProfile, onSearch, onNotifications }: Props) {
       </View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Search"
+        accessibilityLabel={t('common.search')}
         hitSlop={ICON_HIT_SLOP}
         onPress={onSearch}
         style={({ pressed }) => [styles.roundButton, pressed && styles.pressed]}
@@ -54,7 +56,7 @@ export function TopBar({ user, onProfile, onSearch, onNotifications }: Props) {
       </Pressable>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
+        accessibilityLabel={unread > 0 ? t('home.notificationsUnread', { count: unread }) : t('home.notifications')}
         hitSlop={ICON_HIT_SLOP}
         onPress={onNotifications}
         style={({ pressed }) => [styles.roundButton, pressed && styles.pressed]}

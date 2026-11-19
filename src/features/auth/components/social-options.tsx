@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { signInWithGoogle } from '../server/google-auth';
@@ -12,6 +13,7 @@ const phoneIcon = require('../../../../assets/images/phone.png');
 
 /** Google works for both sign-in and first-time sign-up. Phone is a placeholder until an SMS provider is set up. */
 export function SocialOptions() {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -39,21 +41,21 @@ export function SocialOptions() {
   return (
     <View style={styles.wrap}>
       <Text variant="caption" muted style={styles.or}>
-        or
+        {t('auth.or')}
       </Text>
       <Button
         variant="secondary"
-        label="Continue with Google"
+        label={t('auth.social.google')}
         loading={googleLoading}
         leading={<Image source={googleG} style={styles.logo} contentFit="contain" accessibilityElementsHidden />}
         onPress={google}
       />
       <Button
         variant="secondary"
-        label="Continue with phone"
+        label={t('auth.social.phone')}
         disabled={googleLoading}
         leading={<Image source={phoneIcon} style={styles.logo} contentFit="contain" accessibilityElementsHidden />}
-        onPress={() => setNotice('Phone login is coming soon.')}
+        onPress={() => setNotice(t('auth.social.phoneSoon'))}
       />
       {error ? (
         <Text variant="caption" style={styles.error} accessibilityLiveRegion="polite">

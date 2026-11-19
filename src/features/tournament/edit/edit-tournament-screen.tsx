@@ -42,7 +42,7 @@ export function EditTournamentScreen() {
     : !isOwner ? 'Only the tournament owner can edit it.' : null;
   if (blocked || !record) {
     return <View style={{ flex: 1, justifyContent: 'center', padding: spacing.xl, gap: spacing.lg }}>
-      <Text variant="heading">Can't edit this tournament</Text><Text muted>{blocked}</Text>
+      <Text variant="heading">Can’t edit this tournament</Text><Text muted>{blocked}</Text>
       <Button label="Go back" variant="secondary" onPress={leave} />
     </View>;
   }

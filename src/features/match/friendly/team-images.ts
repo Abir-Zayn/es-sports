@@ -1,3 +1,4 @@
+import { t } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 
 const MAX_BYTES = 2 * 1024 * 1024;
@@ -14,11 +15,11 @@ export const teamImageFolder = (userId: string, matchId: string) => `${userId}/f
  */
 export async function uploadTeamImage(userId: string, matchId: string, side: 'a' | 'b', uri: string, mimeType?: string): Promise<string> {
   const type = mimeType ?? 'image/jpeg';
-  if (!TYPES.includes(type)) throw new Error('Choose a JPEG, PNG or WebP image.');
+  if (!TYPES.includes(type)) throw new Error(t('friendly.image.invalidType'));
   const response = await fetch(uri);
-  if (!response.ok) throw new Error('Could not read the team image.');
+  if (!response.ok) throw new Error(t('friendly.image.readFailed'));
   const bytes = await response.arrayBuffer();
-  if (bytes.byteLength > MAX_BYTES) throw new Error('Team images must be under 2 MB.');
+  if (bytes.byteLength > MAX_BYTES) throw new Error(t('friendly.image.tooLarge'));
   const path = `${teamImageFolder(userId, matchId)}/${side}`;
   const bucket = supabase.storage.from('avatars');
   const { error } = await bucket.upload(path, bytes, { contentType: type, upsert: true });

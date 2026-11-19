@@ -3,6 +3,7 @@ export { AppBadge } from './app-badge';
 export { AppIconTile } from './app-icon-tile';
 export { AppTabs, type AppTab } from './app-tabs';
 export { InitialsAvatar } from './initials-avatar';
+export { LanguagePill } from './language-pill';
 export { Button } from './button';
 export { Card } from './card';
 export { Checkbox } from './checkbox';

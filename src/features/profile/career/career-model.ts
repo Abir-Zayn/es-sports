@@ -1,3 +1,4 @@
+import { formatDate, getLocale, translate, type Locale } from '@/i18n';
 import { addPerformances, emptyCareer, toBattingStats, toBowlingStats } from '@/lib/career-stats';
 import type { AvatarTone } from '@/theme';
 import type { TeamInfo } from '@/types/cricket';
@@ -37,9 +38,9 @@ const toTone = (tone: string): AvatarTone => (tones.includes(tone) ? (tone as Av
 const nameKey = (name: string) => name.trim().toLowerCase();
 const oversText = (balls: number) => `${Math.floor(balls / 6)}.${balls % 6}`;
 
-function dateText(iso: string | null): string {
+function dateText(iso: string | null, locale: Locale): string {
   const time = iso ? Date.parse(iso) : NaN;
-  return Number.isFinite(time) ? new Date(time).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '';
+  return Number.isFinite(time) ? formatDate(new Date(time), 'd MMM', locale) : '';
 }
 
 const toPerformance = (row: FigureRow): PlayerMatchPerformance => ({
@@ -65,15 +66,21 @@ export function distinctTeams(played: readonly PlayedRow[]): TeamInfo[] {
 }
 
 /** Career totals, the last few matches and the teams played for, all from finished matches. Pure. */
-export function buildCareer(figures: readonly FigureRow[], played: readonly PlayedRow[]): Career {
+export function buildCareer(
+  figures: readonly FigureRow[],
+  played: readonly PlayedRow[],
+  locale: Locale = getLocale(),
+): Career {
   const totals = addPerformances(emptyCareer, figures.map(toPerformance));
   const byMatch = new Map(played.map((row) => [row.match_id, row]));
   const recent = [...figures].sort(newestFirst).slice(0, RECENT_LIMIT).map((row): Performance => {
     const match = byMatch.get(row.match_id);
     return {
       id: row.match_id,
-      date: dateText(row.completed_at),
-      opponent: match ? `vs ${match.other.name}` : 'vs Unknown',
+      date: dateText(row.completed_at, locale),
+      opponent: match
+        ? translate(locale, 'profile.career.opponentVs', { name: match.other.name })
+        : translate(locale, 'profile.career.opponentUnknown'),
       bat: row.batted ? `${row.runs} (${row.balls_faced})` : undefined,
       bowl: row.balls_bowled > 0 ? `${row.wickets}/${row.runs_conceded} (${oversText(row.balls_bowled)})` : undefined,
       won: Boolean(match && match.winner_side === match.side),

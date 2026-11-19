@@ -4,6 +4,7 @@ import { Alert, StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth';
+import { useTranslation } from '@/i18n';
 import { spacing, useTheme } from '@/theme';
 
 import { handoverErrorText } from '../handover-errors';
@@ -18,6 +19,7 @@ import { useNow, useTakeover, useTakeoverFacts } from '../use-handover';
 export function TakeoverAction({ matchId }: { matchId: string }) {
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const userId = useAuth().session?.user.id;
   const { facts, scorerName } = useTakeoverFacts(matchId, Boolean(userId));
   const now = useNow(facts !== null);
@@ -35,13 +37,12 @@ export function TakeoverAction({ matchId }: { matchId: string }) {
     });
   };
   const ask = () => Alert.alert(
-    'Take over scoring?',
-    `${scorerName ?? 'The current scorer'} has not scored for 15 minutes. You will score from the score saved online, `
-      + 'and they will no longer be able to score this match.',
-    [{ text: 'Cancel', style: 'cancel' }, { text: 'Take over', style: 'destructive', onPress: run }],
+    t('handover.takeover.confirmTitle'),
+    t('handover.takeover.confirmBody', { name: scorerName ?? t('handover.takeover.currentScorerFallback') }),
+    [{ text: t('common.cancel'), style: 'cancel' }, { text: t('handover.takeover.confirmBtn'), style: 'destructive', onPress: run }],
   );
   return <View style={styles.box}>
-    {offered ? <Button label="Take over scoring" loading={takeover.isPending} onPress={ask} /> : null}
+    {offered ? <Button label={t('handover.takeover.btn')} loading={takeover.isPending} onPress={ask} /> : null}
     {error ? <Text accessibilityRole="alert" style={{ color: colors.dangerSoftText }}>{error}</Text> : null}
   </View>;
 }

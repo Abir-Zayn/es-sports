@@ -1,15 +1,17 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { AppNotification } from '../types';
 
 export function NotificationRow({ item, icon, children }: { item: AppNotification; icon: ReactNode; children?: ReactNode }) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   return <View style={styles.row}>
     <View style={styles.icon}>{icon}</View>
     <View style={styles.body}>
-      <View style={styles.heading}><Text style={styles.title}>{item.title}</Text>{!item.isRead ? <View accessibilityLabel="Unread" style={styles.dot} /> : null}</View>
+      <View style={styles.heading}><Text style={styles.title}>{item.title}</Text>{!item.isRead ? <View accessibilityLabel={t('notifications.unreadA11y')} style={styles.dot} /> : null}</View>
       <Text style={styles.message}>{item.message}</Text><Text style={styles.time}>{item.sentLabel}</Text>{children}
     </View>
   </View>;

@@ -1,3 +1,5 @@
+import { t } from '@/i18n';
+
 import type { Delivery, DeliveryInput, ScoreState } from '../types';
 
 export const oversLabel = (balls: number) => `${Math.floor(balls / 6)}.${balls % 6}`;
@@ -12,7 +14,7 @@ export function chooseBowler(score: ScoreState, id: string): ScoreState {
   const bowler = score.bowlers[id];
   if (!score.awaitingBowler || !bowler || score.complete ||
       score.lastOver?.bowlerId === id || bowler.balls >= bowlerQuota(score)) {
-    throw new Error('Choose an eligible bowler who did not bowl the previous over.');
+    throw new Error(t('scoring.errors.chooseEligibleBowler'));
   }
   return { ...score, bowlerId: id, awaitingBowler: false };
 }
@@ -20,27 +22,27 @@ export function chooseBowler(score: ScoreState, id: string): ScoreState {
 function validateWicket(score: ScoreState, input: DeliveryInput) {
   const { dismissal, outId, nextBatterId, fielderId, runs } = input;
   if (!dismissal || !outId || ![score.strikerId, score.nonStrikerId].includes(outId)) {
-    throw new Error('Choose the dismissed batter.');
+    throw new Error(t('scoring.errors.chooseDismissed'));
   }
   if ((outId !== score.strikerId || score.freeHit) && dismissal !== 'Run out') {
-    throw new Error('Only a run out is available for this batter or free hit.');
+    throw new Error(t('scoring.errors.onlyRunOutAllowed'));
   }
-  if (dismissal !== 'Run out' && runs !== 0) throw new Error('Only completed run-out runs can be recorded.');
+  if (dismissal !== 'Run out' && runs !== 0) throw new Error(t('scoring.errors.onlyRunOutRuns'));
   if (['Caught', 'Stumped', 'Run out'].includes(dismissal) && !score.bowlers[fielderId ?? '']) {
-    throw new Error('Choose the fielder.');
+    throw new Error(t('scoring.errors.chooseFielder'));
   }
   if (score.wickets < allOutAt(score) - 1 && (!nextBatterId || !score.batters[nextBatterId] ||
       score.batters[nextBatterId].out || [score.strikerId, score.nonStrikerId].includes(nextBatterId))) {
-    throw new Error('Choose a batter who has not been dismissed and is not at the crease.');
+    throw new Error(t('scoring.errors.chooseNextBatter'));
   }
 }
 
 export function applyDelivery(score: ScoreState, input: DeliveryInput, id: string): ScoreState {
-  if (score.complete || score.awaitingBowler) throw new Error('Complete the current step before recording a ball.');
-  if (!Number.isInteger(input.runs) || input.runs < 0 || input.runs > 6) throw new Error('Choose a valid run count.');
+  if (score.complete || score.awaitingBowler) throw new Error(t('scoring.errors.completeStepFirst'));
+  if (!Number.isInteger(input.runs) || input.runs < 0 || input.runs > 6) throw new Error(t('scoring.errors.validRunCount'));
   if (input.kind === 'dead') return score;
   if (input.kind === 'wicket') validateWicket(score, input);
-  if (['bye', 'leg-bye'].includes(input.kind) && input.runs === 0) throw new Error('Enter at least one extra.');
+  if (['bye', 'leg-bye'].includes(input.kind) && input.runs === 0) throw new Error(t('scoring.errors.enterExtraRun'));
   const legal = input.kind !== 'wide' && input.kind !== 'no-ball';
   const penalty = legal ? 0 : 1;
   const total = input.runs + penalty;

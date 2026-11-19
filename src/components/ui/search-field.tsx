@@ -3,6 +3,7 @@ import X from 'lucide-react-native/icons/x';
 import type { ComponentRef, Ref } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
+import { useTranslation } from '@/i18n';
 import { dp, radius, sp, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 type Props = {
@@ -21,14 +22,16 @@ type Props = {
 export function SearchField({
   value,
   onChangeText,
-  placeholder = 'Search',
+  placeholder,
   accessibilityLabel,
   autoFocus,
   onSubmit,
   ref,
 }: Props) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
+  const resolvedPlaceholder = placeholder ?? t('common.search');
   return (
     <View style={styles.field}>
       <Search size={dp(18)} color={colors.textMuted} />
@@ -38,8 +41,8 @@ export function SearchField({
         onChangeText={onChangeText}
         onSubmitEditing={onSubmit}
         autoFocus={autoFocus}
-        accessibilityLabel={accessibilityLabel ?? placeholder}
-        placeholder={placeholder}
+        accessibilityLabel={accessibilityLabel ?? resolvedPlaceholder}
+        placeholder={resolvedPlaceholder}
         placeholderTextColor={colors.textMuted}
         selectionColor={colors.primary}
         returnKeyType="search"
@@ -48,7 +51,7 @@ export function SearchField({
         style={styles.input}
       />
       {value.length > 0 ? (
-        <Pressable accessibilityRole="button" accessibilityLabel="Clear search" onPress={() => onChangeText('')} style={styles.clear}>
+        <Pressable accessibilityRole="button" accessibilityLabel={t('common.clearSearch')} onPress={() => onChangeText('')} style={styles.clear}>
           <X size={dp(14)} color={colors.text} strokeWidth={2.6} />
         </Pressable>
       ) : null}

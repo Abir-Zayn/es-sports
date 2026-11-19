@@ -1,0 +1,3 @@
+first it will have the FCM and local notification supports both . After that in the calendar before the match start time like 1 hours ago , it will show user a notification that you have a Game to attend . Similarly for the tournament owner and tourament moderator same is applicable that they have an tournament to conduct . 
+
+Notifcation trace wll automatically be deleted after 30 days as no need for saving notification trace after 30 days. 

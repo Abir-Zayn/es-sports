@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { StatsTable, type StatsColumn } from '@/components/match/stats-table';
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { strikeRate } from '../format';
@@ -18,9 +19,10 @@ const columns: StatsColumn[] = [
 /** An innings' batting card: each batter and how they were out, extras, the total and who is yet to bat. */
 export function BattingCard({ innings }: { innings: Innings }) {
   const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation();
   return (
     <StatsTable
-      nameHeading="BATTER"
+      nameHeading={t('match.live.batterHeading')}
       columns={columns}
       rows={innings.batters.map((b) => ({
         key: b.name,
@@ -32,12 +34,12 @@ export function BattingCard({ innings }: { innings: Innings }) {
     >
       <View style={[styles.line, styles.extras]}>
         <Text muted style={styles.extrasLabel}>
-          Extras <Text style={styles.extrasDetail}>{innings.extrasDetail}</Text>
+          {t('match.scorecard.extras')} <Text style={styles.extrasDetail}>{innings.extrasDetail}</Text>
         </Text>
         <Text style={styles.extrasValue}>{innings.extras}</Text>
       </View>
       <View style={[styles.line, styles.total]}>
-        <Text style={styles.totalLabel}>Total</Text>
+        <Text style={styles.totalLabel}>{t('match.scorecard.total')}</Text>
         <Text style={styles.totalValue}>
           {innings.total} <Text muted style={styles.totalOvers}>{innings.totalOvers}</Text>
         </Text>
@@ -45,7 +47,7 @@ export function BattingCard({ innings }: { innings: Innings }) {
       {innings.yetToBat.length > 0 ? (
         <View style={styles.yet}>
           <Text muted style={styles.yetText}>
-            <Text style={styles.yetLabel}>Yet to bat:</Text> {innings.yetToBat.join(', ')}
+            <Text style={styles.yetLabel}>{t('match.scorecard.yetToBat')}</Text> {innings.yetToBat.join(', ')}
           </Text>
         </View>
       ) : null}

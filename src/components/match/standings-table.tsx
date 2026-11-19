@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { InitialsAvatar, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { StandingRow } from '@/types/cricket';
 
@@ -8,12 +9,13 @@ type Props = { rows: StandingRow[] };
 
 /** Points table: position, team, played, points and net run rate. */
 export function StandingsTable({ rows }: Props) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   return (
     <View>
       <View style={[styles.row, styles.head]}>
         <Text style={[styles.headText, styles.pos]}>#</Text>
-        <Text style={[styles.headText, styles.team]}>TEAM</Text>
+        <Text style={[styles.headText, styles.team]}>{t('matchCard.tableTeam')}</Text>
         <Text style={[styles.headText, styles.played]}>P</Text>
         <Text style={[styles.headText, styles.points]}>PTS</Text>
         <Text style={[styles.headText, styles.nrr]}>NRR</Text>

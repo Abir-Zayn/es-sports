@@ -2,21 +2,23 @@ import { StyleSheet, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { InitialsAvatar, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { TeamInfo } from '@/types/cricket';
 
 export type ResultTeamLine = { team: TeamInfo; score: string; overs: string; won: boolean };
-export type ResultHighlight = { title: string; name: string; figure: string };
+export type ResultHighlight = { title: string; tag?: 'MVP' | 'BAT' | 'BOWL'; name: string; figure: string };
 
 type Props = { headline: string; teams: ResultTeamLine[]; highlights: ResultHighlight[] };
 
-const shortTag = (title: string) =>
-  title.includes('MVP') || title.includes('PLAYER') ? 'MVP' : title.includes('BAT') ? 'BAT' : 'BOWL';
+const shortTag = (h: ResultHighlight) =>
+  h.tag ?? (h.title.includes('MVP') || h.title.includes('PLAYER') ? 'MVP' : h.title.includes('BAT') ? 'BAT' : 'BOWL');
 
 /** The finished match at a glance in DAZN hero style: responsive rounded gradient header, central scoreboard, and highlight rows. */
 export function MatchResultSummaryCard({ headline, teams, highlights }: Props) {
   const s = useThemedStyles(styles);
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [first, second] = teams;
 
   return (
@@ -42,7 +44,7 @@ export function MatchResultSummaryCard({ headline, teams, highlights }: Props) {
       <View style={s.inner}>
         {first && second ? (
           <View style={s.scoreboard}>
-            <View style={s.teamCol} accessible accessibilityLabel={`${first.team.name}, ${first.score}, ${first.overs} overs`}>
+            <View style={s.teamCol} accessible accessibilityLabel={`${first.team.name}, ${first.score}, ${t('match.hero.oversA11y', { count: first.overs })}`}>
               <InitialsAvatar
                 label={first.team.short}
                 tone={first.team.tone}
@@ -58,7 +60,7 @@ export function MatchResultSummaryCard({ headline, teams, highlights }: Props) {
 
             <View style={s.centerCol}>
               <Text muted style={s.oversLine}>
-                {first.overs} ov · {second.overs} ov
+                {t('match.ovShort', { overs: first.overs })} · {t('match.ovShort', { overs: second.overs })}
               </Text>
               <View style={s.scoreRow}>
                 <Text style={[s.scoreBig, !first.won && second.won && s.scoreDim]}>{first.score}</Text>
@@ -68,7 +70,7 @@ export function MatchResultSummaryCard({ headline, teams, highlights }: Props) {
               <Text muted style={s.statusTag}>FT</Text>
             </View>
 
-            <View style={s.teamCol} accessible accessibilityLabel={`${second.team.name}, ${second.score}, ${second.overs} overs`}>
+            <View style={s.teamCol} accessible accessibilityLabel={`${second.team.name}, ${second.score}, ${t('match.hero.oversA11y', { count: second.overs })}`}>
               <InitialsAvatar
                 label={second.team.short}
                 tone={second.team.tone}
@@ -100,7 +102,7 @@ export function MatchResultSummaryCard({ headline, teams, highlights }: Props) {
                 <Text style={s.playerName} numberOfLines={1}>
                   {h.name}
                 </Text>
-                <Text muted style={s.roleText}>{shortTag(h.title)}</Text>
+                <Text muted style={s.roleText}>{shortTag(h)}</Text>
                 <View style={s.figurePill}>
                   <Text style={s.figure}>{h.figure}</Text>
                 </View>

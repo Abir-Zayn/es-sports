@@ -1,10 +1,20 @@
 import { StyleSheet, View } from 'react-native';
 import { InitialsAvatar, Text } from '@/components/ui';
+import { useTranslation, type TranslationKey } from '@/i18n';
 import { initialsOf } from '@/lib/initials';
 import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
+import type { PlayingRole } from '@/types/profile';
 import type { PlayerCareer } from '../types';
 
+const ROLE_KEYS: Record<PlayingRole, TranslationKey> = {
+  batter: 'profile.role.batter',
+  bowler: 'profile.role.bowler',
+  'all-rounder': 'profile.role.allRounder',
+  keeper: 'profile.role.keeper',
+};
+
 export function PlayerHeroCard({ player }: { player: PlayerCareer }) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const bio = player.profile;
   const location = [bio.area, bio.district].filter(Boolean).join(', ');
@@ -12,17 +22,17 @@ export function PlayerHeroCard({ player }: { player: PlayerCareer }) {
     <View style={styles.row}>
       <InitialsAvatar label={initialsOf(bio.fullName)} imageUri={bio.avatarUri} size={dp(76)} />
       <View style={styles.details}>
-        <Text style={styles.eyebrow}>PLAYER PROFILE</Text>
+        <Text style={styles.eyebrow}>{t('players.heroEyebrow')}</Text>
         <Text style={styles.name}>{bio.fullName}</Text>
         {player.jerseyNumber != null ? <Text style={styles.number}>#{player.jerseyNumber}</Text> : null}
       </View>
     </View>
     <View style={styles.pills}>
-      <Text style={styles.pill}>{bio.role}</Text>
-      <Text style={styles.pill}>{bio.battingStyle === 'left' ? 'Left-hand bat' : 'Right-hand bat'}</Text>
+      <Text style={styles.pill}>{t(ROLE_KEYS[bio.role])}</Text>
+      <Text style={styles.pill}>{bio.battingStyle === 'left' ? t('profile.batting.left') : t('profile.batting.right')}</Text>
       {location ? <Text style={styles.pill}>{location}</Text> : null}
     </View>
-    {player.isSample ? <Text style={styles.note}>Sample career data</Text> : null}
+    {player.isSample ? <Text style={styles.note}>{t('players.sampleNote')}</Text> : null}
   </View>;
 }
 const createStyles = (c: Palette) => StyleSheet.create({

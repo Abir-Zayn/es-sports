@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
+import { countLabel } from '@/features/match/live/live-view';
+import { useTranslation } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { OverBalls } from './components/over-balls';
@@ -15,13 +17,14 @@ export function EndOfOverScreen() {
   const { score, dispatch } = useScorer();
   const routes = useScorerRoutes();
   const s = useThemedStyles(styles);
+  const { t, locale } = useTranslation();
   const eligible = score ? Object.values(score.bowlers).filter((b) => b.id !== score.lastOver?.bowlerId && b.balls < bowlerQuota(score)) : [];
   const suggested = eligible.find((b) => b.balls > 0 && b.role.includes('rounder')) ?? eligible[0];
   const [bowlerId, setBowlerId] = useState(suggested?.id ?? '');
   const [showAll, setShowAll] = useState(false);
   if (!score?.lastOver || !score.awaitingBowler) return <ScorerFrame>
-    <ScorerNotice>{score?.complete ? 'The innings has finished.' : 'Finish six legal deliveries before choosing the next bowler.'}</ScorerNotice>
-    <Button label="Back to scoring" onPress={() => routes.replace('pad')} />
+    <ScorerNotice>{t(score?.complete ? 'scoring.over.inningsFinished' : 'scoring.over.finishSix')}</ScorerNotice>
+    <Button label={t('scoring.wicket.backToScoring')} onPress={() => routes.replace('pad')} />
   </ScorerFrame>;
   const last = score.lastOver;
   const start = () => {
@@ -29,7 +32,9 @@ export function EndOfOverScreen() {
       chooseBowler(score, bowlerId);
       dispatch({ type: 'bowler', playerId: bowlerId, id: localEventId() });
       routes.toPad();
-    } catch (error) { Alert.alert('Choose a bowler', error instanceof Error ? error.message : 'Choose an eligible bowler.'); }
+    } catch (error) {
+      Alert.alert(t('scoring.over.alertTitle'), error instanceof Error ? error.message : t('scoring.over.alertFallback'));
+    }
   };
   const bowlers = Object.values(score.bowlers)
     .filter((b) => showAll || b.balls > 0 || /Bowler|rounder/.test(b.role))
@@ -39,34 +44,39 @@ export function EndOfOverScreen() {
       return order(a.id) - order(b.id);
     });
   return <ScorerFrame footer={<>
-    <Button label={`Start over ${last.number + 1}${bowlerId ? ` · ${score.bowlers[bowlerId].name.split(' ')[0]}` : ''}`}
+    <Button label={t('scoring.over.startButton', { number: last.number + 1, bowler: bowlerId ? ` · ${score.bowlers[bowlerId].name.split(' ')[0]}` : '' })}
       disabled={!bowlerId} onPress={start} />
-    <Button label="Back to scoring" variant="ghost" onPress={routes.toPad} />
+    <Button label={t('scoring.wicket.backToScoring')} variant="ghost" onPress={routes.toPad} />
   </>}>
     <View style={s.summary}>
-      <View style={s.heading}><Text accessibilityRole="header" style={s.title}>Over {last.number} done</Text><Text style={s.runs}>{last.runs} runs</Text></View>
+      <View style={s.heading}>
+        <Text accessibilityRole="header" style={s.title}>{t('scoring.over.doneTitle', { number: last.number })}</Text>
+        <Text style={s.runs}>{countLabel(last.runs, 'run', locale)}</Text>
+      </View>
       <OverBalls deliveries={last.deliveries} showEmpty={false} />
-      <Text muted style={s.caption}>{score.battingTeam} {score.runs}/{score.wickets} ({oversLabel(score.balls)}) · <Text style={s.link}>{chaseLabel(score)}</Text></Text>
+      <Text muted style={s.caption}>{score.battingTeam} {score.runs}/{score.wickets} ({oversLabel(score.balls)}) · <Text style={s.link}>{chaseLabel(score, locale)}</Text></Text>
     </View>
-    <View style={s.ends}><Text style={s.link}>⇄</Text><Text style={s.caption}>Ends changed · <Text style={s.bold}>{score.batters[score.strikerId].name}</Text> on strike</Text></View>
-    <ScorerSection title={`Next bowler · over ${last.number + 1}`}>
+    <View style={s.ends}><Text style={s.link}>⇄</Text><Text style={s.caption}>{t('scoring.over.endsChanged')} <Text style={s.bold}>{score.batters[score.strikerId].name}</Text> {t('scoring.over.onStrike')}</Text></View>
+    <ScorerSection title={t('scoring.over.nextBowler', { number: last.number + 1 })}>
       <View style={s.list}>{bowlers.map((bowler) => {
         const previous = bowler.id === last.bowlerId;
         const quotaDone = bowler.balls >= bowlerQuota(score);
         const disabled = previous || quotaDone;
         const selected = bowlerId === bowler.id;
         const left = Math.ceil((bowlerQuota(score) - bowler.balls) / 6);
+        const statusA11y = previous ? t('scoring.over.justBowled') : quotaDone ? t('scoring.over.quotaDone') : t('scoring.over.oversLeftA11y', { count: left });
+        const statusShort = previous ? t('scoring.over.justBowled') : quotaDone ? t('scoring.over.quotaDone') : left === 1 ? t('scoring.over.overLeftOne', { count: left }) : t('scoring.over.oversLeftShort', { count: left });
         return <Pressable key={bowler.id} accessibilityRole="radio" accessibilityState={{ checked: selected, disabled }}
-          accessibilityLabel={`${bowler.name}. ${previous ? 'Just bowled' : quotaDone ? 'Quota done' : `${left} overs left`}`}
+          accessibilityLabel={t('scoring.over.bowlerA11y', { name: bowler.name, status: statusA11y })}
           disabled={disabled} onPress={() => setBowlerId(bowler.id)}
           style={({ pressed }) => [s.bowler, selected && s.selected, disabled && s.disabled, pressed && s.pressed]}>
           <View style={[s.radio, selected && s.radioSelected]}>{selected ? <View style={s.dot} /> : null}</View>
           <View style={s.nameWrap}><Text style={s.name}>{bowler.name}</Text><Text muted style={s.caption}>
-            {bowler.balls ? `${oversLabel(bowler.balls)} · ${bowler.runs} runs · ${bowler.wickets} wkts` : 'Yet to bowl'}</Text></View>
-          <Text muted style={[s.left, disabled && s.unavailable]}>{previous ? 'Just bowled' : quotaDone ? 'Quota done' : `${left} ${left === 1 ? 'over left' : 'left'}`}</Text>
+            {bowler.balls ? t('scoring.over.bowlerStats', { overs: oversLabel(bowler.balls), runs: bowler.runs, wickets: bowler.wickets }) : t('scoring.over.yetToBowl')}</Text></View>
+          <Text muted style={[s.left, disabled && s.unavailable]}>{statusShort}</Text>
         </Pressable>;
       })}</View>
-      <Button label={showAll ? 'Show bowlers' : 'Choose from all playing XI'} variant="ghost" size="compact" onPress={() => setShowAll((value) => !value)} />
+      <Button label={t(showAll ? 'scoring.over.showBowlers' : 'scoring.over.showAllXi')} variant="ghost" size="compact" onPress={() => setShowAll((value) => !value)} />
     </ScorerSection>
   </ScorerFrame>;
 }
