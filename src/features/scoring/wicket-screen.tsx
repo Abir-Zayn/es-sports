@@ -6,24 +6,11 @@ import { useTranslation } from '@/i18n';
 import { radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { ScorerChips, ScorerChoice, ScorerFrame, ScorerHeader, ScorerNotice, ScorerSection } from './components/scorer-ui';
-import { FielderPicker } from './components/fielder-picker';
 import { allOutAt, applyDelivery, oversLabel } from './engine/score-delivery';
 import { localEventId, useScorer } from './scorer-provider';
-import type { DeliveryInput, Dismissal } from './types';
+import type { DeliveryInput } from './types';
 import { useScorerRoutes } from './use-scorer-routes';
 import { wicketDescription } from './wicket-description';
-
-const dismissals: Dismissal[] = ['Bowled', 'Caught', 'LBW', 'Run out', 'Stumped', 'Caught & bowled', 'Hit wicket'];
-
-const DISMISSAL_KEY: Record<Dismissal, 'scoring.wicket.dismissal.bowled' | 'scoring.wicket.dismissal.caught' | 'scoring.wicket.dismissal.lbw' | 'scoring.wicket.dismissal.runOut' | 'scoring.wicket.dismissal.stumped' | 'scoring.wicket.dismissal.caughtAndBowled' | 'scoring.wicket.dismissal.hitWicket'> = {
-  Bowled: 'scoring.wicket.dismissal.bowled',
-  Caught: 'scoring.wicket.dismissal.caught',
-  LBW: 'scoring.wicket.dismissal.lbw',
-  'Run out': 'scoring.wicket.dismissal.runOut',
-  Stumped: 'scoring.wicket.dismissal.stumped',
-  'Caught & bowled': 'scoring.wicket.dismissal.caughtAndBowled',
-  'Hit wicket': 'scoring.wicket.dismissal.hitWicket',
-};
 
 export function WicketScreen() {
   const { score, dispatch, pendingShot } = useScorer();
@@ -31,17 +18,13 @@ export function WicketScreen() {
   const s = useThemedStyles(styles);
   const { t, locale } = useTranslation();
   const [outId, setOutId] = useState(score?.strikerId ?? '');
-  const [dismissal, setDismissal] = useState<Dismissal>(score?.freeHit ? 'Run out' : 'Caught');
   const available = score ? Object.values(score.batters).filter((p) => !p.out && ![score.strikerId, score.nonStrikerId].includes(p.id)) : [];
   const [nextBatterId, setNextBatterId] = useState(available[0]?.id ?? '');
-  const [fielderId, setFielderId] = useState(score ? Object.values(score.bowlers).find((p) => p.role.includes('rounder'))?.id ?? Object.keys(score.bowlers)[0] : '');
   const [completedRuns, setCompletedRuns] = useState(0);
   if (!score || score.complete || score.awaitingBowler || pendingShot) return <ScorerFrame>
     <ScorerNotice>{t('scoring.wicket.returnNotice')}</ScorerNotice><Button label={t('scoring.wicket.backToScoring')} onPress={() => routes.replace('pad')} />
   </ScorerFrame>;
-  const needsFielder = ['Caught', 'Stumped', 'Run out'].includes(dismissal);
-  const input: DeliveryInput = { kind: 'wicket', runs: dismissal === 'Run out' ? completedRuns : 0, outId, dismissal,
-    nextBatterId: nextBatterId || undefined, fielderId: needsFielder ? fielderId : undefined };
+  const input: DeliveryInput = { kind: 'wicket', runs: completedRuns, outId, dismissal: 'Unspecified', nextBatterId: nextBatterId || undefined };
   const confirm = () => {
     try {
       const id = localEventId();
@@ -66,20 +49,12 @@ export function WicketScreen() {
             balls: score.batters[id].balls,
             strike: id === score.strikerId ? t('scoring.wicket.onStrikeSuffix') : '',
           })}
-          onPress={() => { setOutId(id); if (id !== score.strikerId) setDismissal('Run out'); }} />
+          onPress={() => setOutId(id)} />
       </View>)}
     </View></ScorerSection>
-    <ScorerSection title={t('scoring.wicket.how')}><ScorerChips>{dismissals.map((value) =>
-      <ScorerChoice key={value} label={t(DISMISSAL_KEY[value])} selected={dismissal === value}
-        disabled={(score.freeHit || outId !== score.strikerId) && value !== 'Run out'}
-        onPress={() => setDismissal(value)} />)}</ScorerChips></ScorerSection>
-    {score.freeHit ? <ScorerNotice>{t('scoring.wicket.freeHitOnlyRunOut')}</ScorerNotice> : null}
-    {needsFielder ? <ScorerSection title={t(dismissal === 'Caught' ? 'scoring.wicket.caughtBy' : dismissal === 'Stumped' ? 'scoring.wicket.stumpedBy' : 'scoring.wicket.runOutBy')}>
-      <FielderPicker score={score} selected={fielderId} onSelect={setFielderId} />
-    </ScorerSection> : null}
-    {dismissal === 'Run out' ? <ScorerSection title={t('scoring.wicket.runsCompleted')}><ScorerChips>
+    <ScorerSection title={t('scoring.wicket.runsCompleted')}><ScorerChips>
       {[0, 1, 2, 3].map((n) => <ScorerChoice key={n} label={String(n)} selected={completedRuns === n} onPress={() => setCompletedRuns(n)} />)}
-    </ScorerChips></ScorerSection> : null}
+    </ScorerChips></ScorerSection>
     {score.wickets < allOutAt(score) - 1 ? <ScorerSection title={t('scoring.wicket.nextBatter')}><ScorerChips>
       {available.map((p) => <ScorerChoice key={p.id} label={p.name} selected={nextBatterId === p.id} onPress={() => setNextBatterId(p.id)} />)}
     </ScorerChips></ScorerSection> : <ScorerNotice>{t('scoring.wicket.endsInnings')}</ScorerNotice>}

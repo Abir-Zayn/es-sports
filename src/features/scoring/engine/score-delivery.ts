@@ -24,10 +24,10 @@ function validateWicket(score: ScoreState, input: DeliveryInput) {
   if (!dismissal || !outId || ![score.strikerId, score.nonStrikerId].includes(outId)) {
     throw new Error(t('scoring.errors.chooseDismissed'));
   }
-  if ((outId !== score.strikerId || score.freeHit) && dismissal !== 'Run out') {
+  if ((outId !== score.strikerId || score.freeHit) && dismissal !== 'Run out' && dismissal !== 'Unspecified') {
     throw new Error(t('scoring.errors.onlyRunOutAllowed'));
   }
-  if (dismissal !== 'Run out' && runs !== 0) throw new Error(t('scoring.errors.onlyRunOutRuns'));
+  if (dismissal !== 'Run out' && dismissal !== 'Unspecified' && runs !== 0) throw new Error(t('scoring.errors.onlyRunOutRuns'));
   if (['Caught', 'Stumped', 'Run out'].includes(dismissal) && !score.bowlers[fielderId ?? '']) {
     throw new Error(t('scoring.errors.chooseFielder'));
   }
@@ -69,7 +69,7 @@ export function applyDelivery(score: ScoreState, input: DeliveryInput, id: strin
     bowlers: { ...score.bowlers, [bowler.id]: {
       ...bowler, balls: bowler.balls + Number(legal),
       runs: bowler.runs + (input.kind === 'bye' || input.kind === 'leg-bye' ? 0 : total),
-      wickets: bowler.wickets + Number(input.kind === 'wicket' && input.dismissal !== 'Run out'),
+      wickets: bowler.wickets + Number(input.kind === 'wicket' && input.dismissal !== 'Run out' && input.dismissal !== 'Unspecified'),
     } },
     currentOver: deliveries,
   };

@@ -4,6 +4,12 @@ import { createInnings } from '../create-innings';
 import { applyDelivery, chooseBowler } from '../score-delivery';
 
 describe('scoring boundaries', () => {
+  it('records an unspecified wicket without crediting the bowler', () => {
+    const score = createInnings(initialSetup);
+    const next = applyDelivery(score, { kind: 'wicket', runs: 0, dismissal: 'Unspecified', outId: score.strikerId, nextBatterId: 'KK-2' }, 'unknown');
+    expect(next.wickets).toBe(1);
+    expect(next.bowlers[score.bowlerId].wickets).toBe(0);
+  });
   it('rejects a caught dismissal on a free hit', () => {
     const score = { ...createInnings(initialSetup), freeHit: true };
     expect(() => applyDelivery(score, {

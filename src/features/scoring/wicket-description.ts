@@ -6,7 +6,8 @@ export function wicketDescription(score: ScoreState, input: DeliveryInput, local
   const batter = score.batters[input.outId ?? score.strikerId];
   const bowler = score.bowlers[score.bowlerId].name.split(' ')[0];
   const fielder = score.bowlers[input.fielderId ?? '']?.name ?? translate(locale, 'scoring.wicket.fielderFallback');
-  const how = input.dismissal === 'Caught' ? translate(locale, 'match.dismissal.caught', { fielder, bowler }) :
+  const how = input.dismissal === 'Unspecified' ? translate(locale, 'match.dismissal.out') :
+    input.dismissal === 'Caught' ? translate(locale, 'match.dismissal.caught', { fielder, bowler }) :
     input.dismissal === 'Stumped' ? translate(locale, 'match.dismissal.stumped', { fielder, bowler }) :
     input.dismissal === 'Run out' ? translate(locale, 'match.dismissal.runOutFielder', { fielder }) :
     input.dismissal === 'Caught & bowled' ? translate(locale, 'match.dismissal.caughtAndBowled', { bowler }) :
