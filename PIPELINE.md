@@ -23,7 +23,7 @@ Merge a PR into `main`. That's it. `.eas/workflows/release.yml` runs on EAS:
    missing before.
 2. **One channel for users: `production`.** The only build profiles are `development` (dev client, for engineers)
    and `production` (users). Do not re-add `preview` or create ad-hoc profiles/channels for user builds.
-3. **Do not change** `runtimeVersion`, `updates`, the `production` profile in `eas.json`, or `.eas/workflows/` without
+3. **Do not change** `runtimeVersion`, `updates`, the `production` profile in `eas.json`, `.fingerprintignore`, or `.eas/workflows/` without
    the owner's explicit approval in the PR.
 4. **Native change = new APK.** Adding a native package (`npx expo install …`), a config plugin, permissions, icons,
    splash, or `android.*` in `app.json` produces a new fingerprint. Say so in the PR description so the owner knows a
