@@ -15,6 +15,7 @@ import { AddMatchSheet } from './components/add-match-sheet';
 import { EditMatchSheet } from './components/edit-match-sheet';
 import { ScheduleControls } from './components/schedule-controls';
 import { ScheduleDay } from './components/schedule-day';
+import { ScheduleSummary, type ScheduleStatus } from './components/schedule-summary';
 import type { ScheduledMatch, ScheduleTeam } from './types';
 import { useScheduleBuilder } from './use-schedule-builder';
 
@@ -52,6 +53,7 @@ export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isS
   const playingDays = [...new Set(matches.map((m) => m.date))];
   const locked = live && matches.some((m) => m.started);
   const published = Boolean(saved.data?.publishedAt);
+  const status: ScheduleStatus = locked ? 'underway' : live ? 'published' : published && builder.dirty ? 'changes' : 'draft';
 
   if (saved.isPending) return <ActivityIndicator color={colors.link} accessibilityLabel="Loading schedule" style={styles.status} />;
   if (saved.isError) {
@@ -66,16 +68,13 @@ export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isS
   return (
     <>
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomInset + spacing.xxl }]}>
-        <Text muted>
-          {oversLabel(setup.overs)} · {teams.length} teams · {shortDate(setup.startDate)} – {shortDate(setup.endDate)}
-        </Text>
+        <ScheduleSummary status={status} viewOnly={!isOwner} format={oversLabel(setup.overs)} teams={teams.length}
+          dates={`${shortDate(setup.startDate)} – ${shortDate(setup.endDate)}`} matches={matches.length} days={playingDays.length} />
         {isOwner ? (
           <ScheduleControls mode={builder.mode} settings={builder.settings} hasMatches={matches.length > 0} locked={locked}
             onMode={builder.changeMode} onSettings={builder.changeSettings} onAdd={() => setAdding(true)}
             onDraw={() => (matches.length > 0 ? setConfirmRedraw(true) : builder.draw())} />
-        ) : (
-          <Text variant="caption" muted>Only the tournament owner can change the schedule.</Text>
-        )}
+        ) : null}
         {builder.problem ? <Text accessibilityRole="alert" style={styles.error}>{builder.problem}</Text> : null}
         {builder.outOfDate ? (
           <Text accessibilityRole="alert" style={styles.warning}>
@@ -88,9 +87,7 @@ export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isS
           </Text>
         ) : (
           <>
-            <Text variant="caption" muted>
-              {matches.length} matches over {playingDays.length} days.{isOwner ? ' Tap a match to change it.' : ''}
-            </Text>
+            {isOwner ? <Text variant="caption" muted>Tap a match to change it.</Text> : null}
             {playingDays.map((date) => (
               <ScheduleDay key={date} date={date} venue={setup.venue} matches={matches.filter((m) => m.date === date)} onEdit={isOwner || (isStaff && live && isUuid(tournamentId)) ? setEditing : undefined} />
             ))}

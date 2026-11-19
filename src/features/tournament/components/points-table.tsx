@@ -1,26 +1,25 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
+import { dp, fontWeight, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { PointsRow } from '@/types/cricket';
 
-import { PointsTableKey } from '../table/points-table-key';
 import { COLUMN_WIDTH, COUNT_COLUMNS, EDGE_BAR, PointsTableRow } from '../table/points-table-row';
 
 type Props = {
   rows: PointsRow[];
-  /** How many teams from the top qualify. Their rows get a coloured edge bar and a tinted position badge. */
+  /** How many teams from the top qualify. Their rows get a coloured edge bar. */
   qualifyCount: number;
-  /** What the edge bar means, shown in the legend under the table. */
+  /** What the edge bar means, shown as the one line under the table. */
   qualifyNote: string;
   /** Names of teams the organiser has knocked out. Their rows are dimmed and tagged "Out". */
   outTeams?: ReadonlySet<string>;
 };
 
 /**
- * The league table as one card: a tinted heading strip, a position badge per row, NRR coloured by sign and a
- * tinted points column. Qualifying teams get a coloured left bar, and a coral cut line sits under the last one.
- * A key under the card explains the markers and every column heading.
+ * The league table as one compact card, like the standings in sports apps: rank, team, counts, NRR and bold
+ * points. Qualifying teams get a coloured left bar and a cut line under the last one; one line under the card
+ * says what the bar means. Each row reads its full column names aloud, so the short headings need no key.
  */
 export function PointsTable({ rows, qualifyCount, qualifyNote, outTeams }: Props) {
   const styles = useThemedStyles(createStyles);
@@ -33,14 +32,10 @@ export function PointsTable({ rows, qualifyCount, qualifyNote, outTeams }: Props
           <Text style={[styles.headText, styles.pos]}>#</Text>
           <Text style={[styles.headText, styles.team]}>Team</Text>
           {COUNT_COLUMNS.map((column) => (
-            <Text key={column.key} style={[styles.headText, styles.count]}>
-              {column.key}
-            </Text>
+            <Text key={column.key} style={[styles.headText, styles.count]}>{column.key}</Text>
           ))}
           <Text style={[styles.headText, styles.nrr]}>NRR</Text>
-          <View style={styles.points}>
-            <Text style={[styles.headText, styles.pointsText]}>PTS</Text>
-          </View>
+          <Text style={[styles.headText, styles.points]}>PTS</Text>
         </View>
         {rows.map((row, i) => (
           <PointsTableRow
@@ -54,27 +49,31 @@ export function PointsTable({ rows, qualifyCount, qualifyNote, outTeams }: Props
           />
         ))}
       </View>
-      <PointsTableKey qualifyNote={qualifyCount > 0 ? qualifyNote : null} showOut={rows.some(isOut)} />
+      {qualifyCount > 0 ? (
+        <View style={styles.legend}>
+          <View style={styles.swatch} />
+          <Text style={styles.legendText}>{qualifyNote}</Text>
+        </View>
+      ) : null}
     </View>
   );
 }
 
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
-    wrap: { gap: spacing.lg },
+    wrap: { gap: spacing.md },
     card: { marginHorizontal: sizes.gutter, borderRadius: radius.lg, backgroundColor: colors.surface, overflow: 'hidden', ...shadows.card },
     head: {
-      flexDirection: 'row', alignItems: 'center', gap: dp(2), minHeight: dp(40), paddingLeft: spacing.sm + EDGE_BAR, paddingRight: spacing.sm,
-      backgroundColor: colors.surfaceRaised,
+      flexDirection: 'row', alignItems: 'center', gap: dp(2), minHeight: dp(36), paddingLeft: spacing.sm + EDGE_BAR, paddingRight: spacing.sm,
+      borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border,
     },
     headText: { ...typography.labelSm, color: colors.textMuted },
     pos: { width: COLUMN_WIDTH.pos },
     team: { flex: 1, minWidth: 0 },
     count: { width: COLUMN_WIDTH.count, textAlign: 'center' },
     nrr: { width: COLUMN_WIDTH.nrr, textAlign: 'right' },
-    points: {
-      width: COLUMN_WIDTH.points, alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center', marginLeft: spacing.xs,
-      backgroundColor: colors.primarySoft,
-    },
-    pointsText: { color: colors.link },
+    points: { width: COLUMN_WIDTH.points, textAlign: 'right', fontWeight: fontWeight.heading, color: colors.text },
+    legend: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: sizes.gutter },
+    swatch: { width: dp(10), height: dp(10), borderRadius: radius.pill, backgroundColor: colors.primary },
+    legendText: { ...typography.bodySm, color: colors.textMuted },
   });

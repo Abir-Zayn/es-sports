@@ -153,4 +153,5 @@ export const bnScoringHandover: Record<keyof typeof enScoringHandover, string> =
   'handover.takeover.currentScorerFallback': 'বর্তমান স্কোরার',
   'handover.takeover.confirmBtn': 'দায়িত্ব নিন',
   'handover.takeover.btn': 'স্কোরিংয়ের দায়িত্ব নিন',
+  'handover.resume.btn': 'স্কোরিং চালিয়ে যান',
 };

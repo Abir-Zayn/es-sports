@@ -14,8 +14,6 @@ import { useTournamentMatchUpdates } from './use-tournament-match-updates';
 
 type Props = { tournament: TournamentRecord };
 
-const RULES = 'Win = 2 pts · Tie = 1 pt (NR column). Level on points: net run rate, then wins. Only league matches count.';
-
 /** The live points table of a published tournament (one per group once drawn), worked out on the server from finished league matches. */
 export function RealTournamentTable({ tournament }: Props) {
   const styles = useThemedStyles(createStyles);
@@ -42,7 +40,6 @@ export function RealTournamentTable({ tournament }: Props) {
   }
   const rows = standings.data ?? [];
   if (rows.length === 0) return <Text muted>No teams have joined yet. The table appears once the organiser adds teams.</Text>;
-  const played = rows.some((row) => row.played > 0);
   // With drawn groups, one table per group, numbered from 1 within it. Before the draw, one table of everyone.
   const groupOf = new Map((teams.data ?? []).map((entry) => [entry.team.id, entry.group]));
   const grouped = tournament.groupsPlanned > 1 && rows.every((row) => row.teamId != null && groupOf.get(row.teamId) != null);
@@ -64,8 +61,6 @@ export function RealTournamentTable({ tournament }: Props) {
           </View>
         </View>
       ))}
-      {played ? null : <Text muted>No league match has finished yet. The table fills in as results come in.</Text>}
-      <Text style={styles.rules}>{RULES}</Text>
     </View>
   );
 }
@@ -75,6 +70,5 @@ const createStyles = (colors: Palette) =>
     gap: { gap: spacing.md },
     // The table runs edge to edge, like the sample table screen.
     flush: { marginHorizontal: -sizes.gutter },
-    rules: { ...typography.bodySm, color: colors.textMuted },
     title: typography.headlineMd,
   });
