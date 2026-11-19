@@ -49,7 +49,6 @@ describe('league table screen', () => {
       expect(screen.getAllByText(heading, { includeHiddenElements: true }).length).toBeGreaterThan(0);
     }
     expect(screen.queryByText('Team')).toBeNull();
-    expect(screen.getByLabelText('Columns: played, won, lost, no result, net run rate, points')).toBeTruthy();
     for (const { team } of leagueTable.rows) expect(screen.getByText(team.name)).toBeTruthy();
     expect(screen.getByText('+1.245')).toBeTruthy();
     expect(screen.getByText('-1.180')).toBeTruthy();

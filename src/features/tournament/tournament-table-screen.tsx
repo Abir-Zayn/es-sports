@@ -1,28 +1,17 @@
 import { useLocalSearchParams } from 'expo-router';
-import { StyleSheet } from 'react-native';
-
-import { Text } from '@/components/ui';
-import { sizes, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { PointsTable } from './components/points-table';
 import { TournamentScreenFrame } from './components/tournament-screen-frame';
 import { leagueTable } from './sample-table';
 
-/** The league's points table, edge to edge, with the scoring rules under it. */
+/** The league's points table, edge to edge. */
 export function TournamentTableScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const styles = useThemedStyles(createStyles);
   const table = leagueTable;
 
   return (
     <TournamentScreenFrame tournamentId={id ?? 't1'} section="table" flush>
       <PointsTable rows={table.rows} qualifyCount={table.qualifyCount} qualifyNote={table.qualifyNote} />
-      <Text style={styles.rules}>{table.rules}</Text>
     </TournamentScreenFrame>
   );
 }
-
-const createStyles = (colors: Palette) =>
-  StyleSheet.create({
-    rules: { paddingHorizontal: sizes.gutter, ...typography.bodySm, color: colors.textMuted },
-  });
