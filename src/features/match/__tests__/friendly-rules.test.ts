@@ -1,7 +1,7 @@
-import type { FriendlyMatchSetup } from '../../types';
+import type { FriendlyMatchSetup } from '../types';
 import {
   addPlayer, fitPlaying, friendlyProblems, newFriendly, removePlayer, renameTeam, shortName, togglePlaying, withPlayersPerSide,
-} from '../friendly-rules';
+} from '../utils/friendly-rules';
 
 const ME = 'me';
 let n = 0;

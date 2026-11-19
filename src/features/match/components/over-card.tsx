@@ -4,7 +4,7 @@ import { Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
-import { countLabel } from '../live/live-view';
+import { countLabel } from '../utils/live-view';
 import type { OverSummary } from '../types';
 import { LiveBallPill, spokenBall } from './live-ball-pill';
 

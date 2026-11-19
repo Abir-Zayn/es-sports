@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 
-import type { MatchTabId } from './types';
+import type { MatchTabId } from '../types';
 
 export const matchTabs: { id: MatchTabId; label: string }[] = [
   { id: 'live', label: 'Live' },

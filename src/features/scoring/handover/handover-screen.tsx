@@ -4,7 +4,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth';
-import { useLiveMatchData } from '@/features/match/use-live-match-data';
+import { useLiveMatchData } from '@/features/match/server/use-live-match-data';
 import { useTranslation } from '@/i18n';
 import { spacing, typography, useTheme } from '@/theme';
 

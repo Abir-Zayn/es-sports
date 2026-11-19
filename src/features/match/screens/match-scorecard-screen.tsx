@@ -6,14 +6,14 @@ import { InitialsAvatar, Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import { dp } from '@/theme';
 
-import { BattingCard } from './components/batting-card';
-import { BowlingCard } from './components/bowling-card';
-import { MatchLoadState, StaleMatchNote } from './components/match-load-state';
-import { MatchScreenFrame } from './components/match-screen-frame';
-import { FallOfWicketsSection } from './sections/fall-of-wickets-section';
-import { PartnershipsSection } from './sections/partnerships-section';
-import type { Innings } from './types';
-import { useLiveMatchData } from './use-live-match-data';
+import { BattingCard } from '../components/batting-card';
+import { BowlingCard } from '../components/bowling-card';
+import { MatchLoadState, StaleMatchNote } from '../components/match-load-state';
+import { MatchScreenFrame } from '../components/match-screen-frame';
+import { FallOfWicketsSection } from '../components/fall-of-wickets-section';
+import { PartnershipsSection } from '../components/partnerships-section';
+import type { Innings } from '../types';
+import { useLiveMatchData } from '../server/use-live-match-data';
 
 /** Full scorecard of the real match: pick an innings to see its batting, fall of wickets, bowling and partnerships. */
 export function MatchScorecardScreen() {

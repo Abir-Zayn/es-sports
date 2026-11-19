@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
-import { searchPlayers } from '@/features/match/friendly/search-players';
+import { searchPlayers } from '@/features/match';
 import { useTranslation } from '@/i18n';
 import { initialsOf } from '@/lib/initials';
 

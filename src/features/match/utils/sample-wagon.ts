@@ -1,5 +1,5 @@
 // TODO: replace with data from Supabase once the project and tables exist. Sample values from the design file.
-import type { Shot, WagonBatter } from './types';
+import type { Shot, WagonBatter } from '../types';
 
 const shots = (pairs: [number, number][]): Shot[] => pairs.map(([runs, angle]) => ({ runs, angle }));
 

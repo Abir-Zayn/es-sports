@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AppTabs } from '@/components/ui';
-import { useOpenMatch } from '@/features/match/use-match-routes';
+import { useOpenMatch } from '@/features/match';
 import { spacing } from '@/theme';
 
 import { HistoryMatchCard } from './components/history-match-card';

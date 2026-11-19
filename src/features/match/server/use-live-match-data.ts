@@ -7,10 +7,10 @@ import type { BallEventRow, MatchRow, PlayerRow } from '@/features/scoring/data/
 import type { MatchSetup } from '@/features/scoring/types';
 import { getLocale, t, useLocale, type Locale } from '@/i18n';
 
-import { buildLiveView, stagedLiveView } from './live/build-live-view';
-import type { LiveMatchViewData } from './live/live-view';
-import { isWatchConnected, watchMatch } from './live/match-channel';
-import { sampleLiveView } from './live/sample-live-view';
+import { buildLiveView, stagedLiveView } from '../utils/build-live-view';
+import type { LiveMatchViewData } from '../utils/live-view';
+import { isWatchConnected, watchMatch } from './match-channel';
+import { sampleLiveView } from '../utils/sample-live-view';
 
 /** How often a live match is fetched again while someone watches it and its Realtime channel is not connected. */
 const LIVE_REFRESH_MS = 15_000;

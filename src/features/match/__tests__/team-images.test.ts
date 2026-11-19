@@ -2,7 +2,7 @@ import * as SecureStore from 'expo-secure-store';
 
 import { abandonFriendlyMatches, existingMatchIds } from '@/features/scoring/data/friendly-create';
 
-import { sweepOrphanTeamImages, sweepOrphanTeamImagesDaily } from '../team-image-sweep';
+import { sweepOrphanTeamImages, sweepOrphanTeamImagesDaily } from '../server/team-image-sweep';
 
 const USER = '11111111-1111-4111-8111-111111111111';
 const OLD_MATCH = '22222222-2222-4222-8222-222222222222';

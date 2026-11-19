@@ -1,7 +1,7 @@
-import { matchInfo } from '../sample-info';
-import { innings, liveSnapshot, matchHeader } from '../sample-match';
-import { oversData } from '../sample-overs';
-import { wagonBatters } from '../sample-wagon';
+import { matchInfo } from './sample-info';
+import { innings, liveSnapshot, matchHeader } from './sample-match';
+import { oversData } from './sample-overs';
+import { wagonBatters } from './sample-wagon';
 import type { LiveMatchViewData } from './live-view';
 
 /** The design-file match, shown when no saved or staged match has this id. */

@@ -5,7 +5,7 @@ import { useTranslation } from '@/i18n';
 import { initialsOf } from '@/lib/initials';
 import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
-import { oversPerBowler } from '../friendly/friendly-rules';
+import { oversPerBowler } from '../utils/friendly-rules';
 import type { FriendlyTeamSquad } from '../types';
 
 type Props = {

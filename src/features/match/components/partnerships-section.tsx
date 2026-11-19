@@ -4,7 +4,7 @@ import { Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import { radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
-import { countLabel } from '../live/live-view';
+import { countLabel } from '../utils/live-view';
 import type { Partnership } from '../types';
 
 /** Runs added for each wicket as proportional bars. The stand still in progress is highlighted and starred. */

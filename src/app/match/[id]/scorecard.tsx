@@ -1,3 +1,3 @@
-import { MatchScorecardScreen } from '@/features/match/match-scorecard-screen';
+import { MatchScorecardScreen } from '@/features/match';
 
 export default MatchScorecardScreen;

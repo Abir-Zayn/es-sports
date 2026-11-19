@@ -2,7 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, Share, StyleSheet, View } from 'react-native';
 
-import { useOpenMatch } from '@/features/match/use-match-routes';
+import { useOpenMatch } from '@/features/match/utils/use-match-routes';
 import { sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { LiveMatchSummary } from './components/live-match-summary';

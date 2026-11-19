@@ -1,9 +1,9 @@
 import { initialSetup } from '@/features/scoring/sample-data';
 
 import { seedEvents, seedMatch, seedPlayers } from '../__fixtures__/seed-match';
-import { buildLiveView, stagedLiveView } from '../live/build-live-view';
-import { roleLabel } from '../live/match-details';
-import { bowlerOvers, dismissalText } from '../live/scorecard-rows';
+import { buildLiveView, stagedLiveView } from '../utils/build-live-view';
+import { roleLabel } from '../utils/match-details';
+import { bowlerOvers, dismissalText } from '../utils/scorecard-rows';
 
 const view = buildLiveView(seedMatch, seedPlayers, seedEvents);
 const [first, second] = view.innings;

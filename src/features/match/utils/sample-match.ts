@@ -1,7 +1,7 @@
 // TODO: replace with data from Supabase once the project and tables exist. Sample values from the design file.
 import { kings, strikers } from '@/features/tournament/sample-teams';
 
-import type { BatterLine, BowlerLine, Innings, LiveSnapshot, MatchHeader, Partnership } from './types';
+import type { BatterLine, BowlerLine, Innings, LiveSnapshot, MatchHeader, Partnership } from '../types';
 
 export const matchHeader: MatchHeader = {
   id: 'm12',

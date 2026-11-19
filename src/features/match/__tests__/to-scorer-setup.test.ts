@@ -2,9 +2,9 @@ import { normalizeOpeners } from '@/features/scoring/components/opening-players'
 import { createInnings } from '@/features/scoring/engine/create-innings';
 import { battingFirst } from '@/features/scoring/sample-data';
 
-import { addPlayer, newFriendly, renameTeam, withPlayersPerSide } from '../friendly-rules';
-import { toScorerSetup } from '../to-scorer-setup';
-import { decideToss } from '../toss';
+import { addPlayer, newFriendly, renameTeam, withPlayersPerSide } from '../utils/friendly-rules';
+import { toScorerSetup } from '../utils/to-scorer-setup';
+import { decideToss } from '../utils/toss';
 
 function tossed() {
   let setup = withPlayersPerSide(newFriendly('friendly-1', 'me', new Date()), 4);

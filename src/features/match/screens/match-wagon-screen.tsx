@@ -8,15 +8,15 @@ import { useTranslation } from '@/i18n';
 import { quadrantSplit } from '@/lib/pitch-quadrant';
 import { typography } from '@/theme';
 
-import { MatchLoadState, StaleMatchNote } from './components/match-load-state';
-import { MatchScreenFrame } from './components/match-screen-frame';
-import { QuadrantSplitCards } from './components/quadrant-split-cards';
-import { SideSplitCards } from './components/side-split-cards';
-import { WagonLegend } from './components/wagon-legend';
-import { WagonWheel } from './components/wagon-wheel';
-import { sideSplit, type ShotFilter } from './components/wagon-geometry';
-import type { WagonBatter } from './types';
-import { useLiveMatchData } from './use-live-match-data';
+import { MatchLoadState, StaleMatchNote } from '../components/match-load-state';
+import { MatchScreenFrame } from '../components/match-screen-frame';
+import { QuadrantSplitCards } from '../components/quadrant-split-cards';
+import { SideSplitCards } from '../components/side-split-cards';
+import { WagonLegend } from '../components/wagon-legend';
+import { WagonWheel } from '../components/wagon-wheel';
+import { sideSplit, type ShotFilter } from '../utils/wagon-geometry';
+import type { WagonBatter } from '../types';
+import { useLiveMatchData } from '../server/use-live-match-data';
 
 /** Where each batter hit the ball, from the match's recorded shots: wagon wheel, off/leg split and the four pitch zones. */
 export function MatchWagonScreen() {

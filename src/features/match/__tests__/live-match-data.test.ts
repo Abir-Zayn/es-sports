@@ -5,10 +5,10 @@ import { quadrantSplit } from '@/lib/pitch-quadrant';
 
 import { SEED_MATCH_ID as MATCH, seedEvents as events, seedMatch as match, seedPlayers as players } from '../__fixtures__/seed-match';
 import { ballKind, spokenBall } from '../components/live-ball-pill';
-import { buildLiveView, stagedLiveView } from '../live/build-live-view';
-import { chaseLine, nickname, padOver } from '../live/live-view';
-import { ballLabel, oversOf } from '../live/over-rows';
-import { loadLiveMatch, MatchNotFoundError } from '../use-live-match-data';
+import { buildLiveView, stagedLiveView } from '../utils/build-live-view';
+import { chaseLine, nickname, padOver } from '../utils/live-view';
+import { ballLabel, oversOf } from '../utils/over-rows';
+import { loadLiveMatch, MatchNotFoundError } from '../server/use-live-match-data';
 
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('@/features/scoring/data/match-repository', () => ({

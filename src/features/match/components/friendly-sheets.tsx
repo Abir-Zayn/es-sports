@@ -8,8 +8,8 @@ import { AddGuestSheet } from '@/features/tournament/squad';
 import { useTranslation } from '@/i18n';
 import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import { searchPlayers } from '../friendly/search-players';
-import { roleLabel } from '../live/match-details';
+import { searchPlayers } from '../server/search-players';
+import { roleLabel } from '../utils/match-details';
 import type { FriendlyMatchSetup, FriendlySide } from '../types';
 
 export type FriendlySheet = { kind: 'find' | 'guest'; side: FriendlySide } | { kind: 'scorer' } | null;

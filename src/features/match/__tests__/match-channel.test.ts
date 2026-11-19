@@ -1,4 +1,4 @@
-import { isWatchConnected, watchMatch } from '../live/match-channel';
+import { isWatchConnected, watchMatch } from '../server/match-channel';
 
 type Handler = () => void;
 type FakeChannel = { name: string; handlers: Handler[]; on: jest.Mock; subscribe: jest.Mock; status: (value: string) => void };

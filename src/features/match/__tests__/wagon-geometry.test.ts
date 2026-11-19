@@ -1,5 +1,5 @@
-import { matchesFilter, shotsPath, sideSplit } from '../components/wagon-geometry';
-import { wagonBatters } from '../sample-wagon';
+import { matchesFilter, shotsPath, sideSplit } from '../utils/wagon-geometry';
+import { wagonBatters } from '../utils/sample-wagon';
 
 describe('wagon wheel', () => {
   it('splits runs between off and leg', () => {

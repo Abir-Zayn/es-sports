@@ -13,20 +13,20 @@ import { t as tGlobal, useTranslation } from '@/i18n';
 import { appLink, shareText } from '@/lib/share';
 import { dp, radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
-import { FriendlyFormatCard, ScorerAssignmentRow } from './components/friendly-setup-form';
-import { FriendlyMatchupHero } from './components/friendly-matchup-hero';
-import { FriendlySheets, type FriendlySheet } from './components/friendly-sheets';
-import { FriendlyTeamCard } from './components/friendly-team-card';
-import { SavedFriendlies } from './components/saved-friendlies';
-import { TossCoinModal } from './components/toss-coin-modal';
+import { FriendlyFormatCard, ScorerAssignmentRow } from '../components/friendly-setup-form';
+import { FriendlyMatchupHero } from '../components/friendly-matchup-hero';
+import { FriendlySheets, type FriendlySheet } from '../components/friendly-sheets';
+import { FriendlyTeamCard } from '../components/friendly-team-card';
+import { SavedFriendlies } from '../components/saved-friendlies';
+import { TossCoinModal } from '../components/toss-coin-modal';
 import {
   addPlayer, friendlyProblems, newFriendly, removePlayer, renameTeam, sides, togglePlaying, withPlayersPerSide,
-} from './friendly/friendly-rules';
-import { teamLabel } from './friendly/toss';
-import { sweepOrphanTeamImagesDaily } from './friendly/team-image-sweep';
-import { uploadTeamImage } from './friendly/team-images';
-import { toScorerSetup } from './friendly/to-scorer-setup';
-import type { FriendlyMatchSetup, FriendlySide, FriendlyTossResult } from './types';
+} from '../utils/friendly-rules';
+import { teamLabel } from '../utils/toss';
+import { sweepOrphanTeamImagesDaily } from '../server/team-image-sweep';
+import { uploadTeamImage } from '../server/team-images';
+import { toScorerSetup } from '../utils/to-scorer-setup';
+import type { FriendlyMatchSetup, FriendlySide, FriendlyTossResult } from '../types';
 
 const errorText = (error: unknown) => (error instanceof Error ? error.message : tGlobal('friendly.fallbackError'));
 

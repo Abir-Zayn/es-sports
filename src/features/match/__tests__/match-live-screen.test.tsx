@@ -3,10 +3,10 @@ import type { ReactNode } from 'react';
 
 import { ThemeProvider } from '@/theme';
 
-import type { LiveMatchViewData } from '../live/live-view';
-import { sampleLiveView } from '../live/sample-live-view';
-import { MatchLiveScreen } from '../match-live-screen';
-import { MatchWagonScreen } from '../match-wagon-screen';
+import type { LiveMatchViewData } from '../utils/live-view';
+import { sampleLiveView } from '../utils/sample-live-view';
+import { MatchLiveScreen } from '../screens/match-live-screen';
+import { MatchWagonScreen } from '../screens/match-wagon-screen';
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
@@ -17,7 +17,7 @@ jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: ({ children }: { children: ReactNode }) => children,
 }));
 let mockView: LiveMatchViewData | undefined;
-jest.mock('../use-live-match-data', () => ({
+jest.mock('../server/use-live-match-data', () => ({
   useLiveMatchData: () => ({ data: mockView, isRefetching: false, refetch: jest.fn() }),
 }));
 const showing = (view: LiveMatchViewData) => { mockView = view; };

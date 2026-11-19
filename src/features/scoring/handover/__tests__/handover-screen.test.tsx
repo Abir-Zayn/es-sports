@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 
-import { useLiveMatchData } from '@/features/match/use-live-match-data';
+import { useLiveMatchData } from '@/features/match/server/use-live-match-data';
 
 import { minutesFromNow, offerFixture, renderWithClient } from '../__fixtures__/render';
 import { HandoverError } from '../handover-errors';
@@ -15,7 +15,7 @@ jest.mock('react-native-safe-area-context', () => {
 });
 jest.mock('expo-router', () => ({ useRouter: () => mockRouter, useLocalSearchParams: () => ({ id: 'h1' }) }));
 jest.mock('@/features/auth/components/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'u-sam' } } }) }));
-jest.mock('@/features/match/use-live-match-data', () => ({ useLiveMatchData: jest.fn() }));
+jest.mock('@/features/match/server/use-live-match-data', () => ({ useLiveMatchData: jest.fn() }));
 jest.mock('../handover-repository', () => ({ fetchIncomingOffers: jest.fn(), acceptHandover: jest.fn(), declineHandover: jest.fn() }));
 
 const offer = (over: Partial<IncomingOffer> = {}): IncomingOffer => ({

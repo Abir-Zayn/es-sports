@@ -27,7 +27,7 @@ jest.mock('@/features/invitations', () => ({
   sendTeamPlayerInvite: (...args: unknown[]) => mockSend(...args),
   cancelInvitation: jest.fn(),
 }));
-jest.mock('@/features/match/friendly/search-players', () => ({
+jest.mock('@/features/match/server/search-players', () => ({
   searchPlayers: async () => [{ id: 'arafat', name: 'Arafat Hossain', area: 'Halishahar', avatarUrl: null }],
 }));
 jest.mock('../data/team-repository', () => ({

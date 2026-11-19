@@ -7,7 +7,7 @@ import { Sheet } from '@/features/tournament/roster';
 import { useTranslation } from '@/i18n';
 import { dp, radius, sp, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
-import { decideToss, flipCoin, tossWinner } from '../friendly/toss';
+import { decideToss, flipCoin, tossWinner } from '../utils/toss';
 import type { FriendlySide, FriendlyTossResult, TossCall, TossDecision } from '../types';
 
 // Metal colours: the coin looks the same in both themes.

@@ -5,7 +5,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
-import { searchPlayers, suggestPlayers } from '@/features/match/friendly/search-players';
+import { searchPlayers, suggestPlayers } from '@/features/match/server/search-players';
 import { isUuid } from '@/features/scoring/data/uuid';
 import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
