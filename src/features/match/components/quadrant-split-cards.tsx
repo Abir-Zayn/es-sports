@@ -1,25 +1,35 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import type { QuadrantShare } from '@/lib/pitch-quadrant';
 import { radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
+
+const ZONE_KEYS: Record<QuadrantShare['id'], 'pitchZone.off_side' | 'pitchZone.straight_v' | 'pitchZone.leg_side' | 'pitchZone.behind_square'> = {
+  off_side: 'pitchZone.off_side',
+  straight_v: 'pitchZone.straight_v',
+  leg_side: 'pitchZone.leg_side',
+  behind_square: 'pitchZone.behind_square',
+};
 
 /** Runs in each of the four pitch zones, separated by clean horizontal bars without tile backgrounds. */
 export function QuadrantSplitCards({ split }: { split: QuadrantShare[] }) {
   const s = useThemedStyles(styles);
+  const { t } = useTranslation();
   return (
     <View style={s.list}>
       {split.map((zone) => {
         const width = Math.min(100, Math.max(0, Number.isFinite(zone.percent) ? zone.percent : 0));
+        const label = t(ZONE_KEYS[zone.id]);
         return (
           <View
             key={zone.id}
             style={s.row}
             accessible
-            accessibilityLabel={`${zone.label}: ${zone.runs} runs from ${zone.shots} shots, ${zone.percent} percent`}
+            accessibilityLabel={t('match.wagon.quadrantA11y', { label, runs: zone.runs, shots: zone.shots, percent: zone.percent })}
           >
             <View style={s.topLine}>
-              <Text style={s.label}>{zone.label}</Text>
+              <Text style={s.label}>{label}</Text>
               <Text style={s.runs}>
                 {zone.runs} <Text muted style={s.percent}>· {zone.percent}%</Text>
               </Text>

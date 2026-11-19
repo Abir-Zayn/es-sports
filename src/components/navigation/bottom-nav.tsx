@@ -8,6 +8,7 @@ import { type LayoutChangeEvent, Pressable, StyleSheet, View, useWindowDimension
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
+import { useTranslation } from '@/i18n';
 import { shadows, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { BallIcon } from './ball-icon';
@@ -96,6 +97,7 @@ export function buildNotchBarPath(width: number, height: number, cornerRadius = 
 export function BottomNav({ onCreate }: { onCreate: () => void }) {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const { width: windowWidth } = useWindowDimensions();
   const defaultWidth = Math.max(0, windowWidth - spacing.lg * 2);
@@ -122,15 +124,15 @@ export function BottomNav({ onCreate }: { onCreate: () => void }) {
         <Path d={pathData} fill={colors.surface} stroke={colors.border} strokeWidth={1} />
       </Svg>
       <TabTrigger name="home" asChild>
-        <TabButton label="Home" icon={House} />
+        <TabButton label={t('nav.home')} icon={House} />
       </TabTrigger>
       <TabTrigger name="tournaments" asChild>
-        <TabButton label="Tournaments" icon={Trophy} />
+        <TabButton label={t('nav.tournaments')} icon={Trophy} />
       </TabTrigger>
       <View style={styles.createSlot} pointerEvents="box-none">
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Create"
+          accessibilityLabel={t('nav.create')}
           onPress={onCreate}
           style={({ pressed }) => [styles.create, pressed && styles.pressed]}
         >
@@ -138,10 +140,10 @@ export function BottomNav({ onCreate }: { onCreate: () => void }) {
         </Pressable>
       </View>
       <TabTrigger name="matches" asChild>
-        <TabButton label="Matches" icon={BallIcon} />
+        <TabButton label={t('nav.matches')} icon={BallIcon} />
       </TabTrigger>
       <TabTrigger name="profile" asChild>
-        <TabButton label="Profile" icon={User} />
+        <TabButton label={t('nav.profile')} icon={User} />
       </TabTrigger>
     </View>
   );

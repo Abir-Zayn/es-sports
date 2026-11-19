@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native';
 
 import { ChoiceTabs, type ChoiceTab } from '@/components/match/choice-tabs';
 import { AppTabs, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { quadrantSplit } from '@/lib/pitch-quadrant';
 import { typography } from '@/theme';
 
@@ -17,27 +18,21 @@ import { sideSplit, type ShotFilter } from './components/wagon-geometry';
 import type { WagonBatter } from './types';
 import { useLiveMatchData } from './use-live-match-data';
 
-const filterTabs: { id: ShotFilter; label: string }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'runs', label: '1–3s' },
-  { id: 'fours', label: '4s' },
-  { id: 'sixes', label: '6s' },
-];
-
 /** Where each batter hit the ball, from the match's recorded shots: wagon wheel, off/leg split and the four pitch zones. */
 export function MatchWagonScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const matchId = id ?? '';
+  const { t } = useTranslation();
   const live = useLiveMatchData(matchId);
   const view = live.data;
   return (
     <MatchScreenFrame matchId={matchId} tab="wagon" title={view?.header.title} subtitle={view?.header.subtitle}>
       <StaleMatchNote query={live} />
       {!view ? (
-        <MatchLoadState query={live} label="Loading shots" />
+        <MatchLoadState query={live} label={t('match.loadingShots')} />
       ) : view.wagonBatters.length === 0 ? (
         <Text muted accessibilityLiveRegion="polite">
-          No shot directions recorded yet. They appear here as the scorer taps where each scoring shot went.
+          {t('match.wagon.empty')}
         </Text>
       ) : (
         <BatterWagon batters={view.wagonBatters} />
@@ -47,26 +42,32 @@ export function MatchWagonScreen() {
 }
 
 function BatterWagon({ batters }: { batters: WagonBatter[] }) {
+  const { t } = useTranslation();
   const [batterId, setBatterId] = useState(batters[0].id);
   const [filter, setFilter] = useState<ShotFilter>('all');
   const batter = batters.find((b) => b.id === batterId) ?? batters[0];
   const split = sideSplit(batter.shots);
   const tabs: ChoiceTab<string>[] = batters.map((b) => ({ id: b.id, title: b.name, subtitle: b.line }));
+  const filterTabs: { id: ShotFilter; label: string }[] = [
+    { id: 'all', label: t('match.wagon.filterAll') },
+    { id: 'runs', label: t('match.wagon.filterRuns') },
+    { id: 'fours', label: t('match.wagon.filterFours') },
+    { id: 'sixes', label: t('match.wagon.filterSixes') },
+  ];
   return (
     <>
-      <ChoiceTabs tabs={tabs} selected={batter.id} onSelect={setBatterId} accessibilityLabel="Batter" />
+      <ChoiceTabs tabs={tabs} selected={batter.id} onSelect={setBatterId} accessibilityLabel={t('match.wagon.batterA11y')} />
       <AppTabs tabs={filterTabs} selected={filter} onSelect={setFilter} />
       <WagonWheel
         shots={batter.shots}
         filter={filter}
-        accessibilityLabel={`Wagon wheel for ${batter.name}: ${split.off} runs off side, ${split.leg} runs leg side`}
+        accessibilityLabel={t('match.wagon.wheelA11y', { name: batter.name, off: split.off, leg: split.leg })}
       />
       <WagonLegend />
       <SideSplitCards {...split} />
       <QuadrantSplitCards split={quadrantSplit(batter.shots)} />
       <Text muted style={styles.note}>
-        Shot direction is tapped by the scorer for each scoring shot. Organizers can switch it off per match to keep
-        scoring fast.
+        {t('match.wagon.note')}
       </Text>
     </>
   );

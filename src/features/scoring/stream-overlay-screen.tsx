@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { OverlayPreview, type OverlayGraphic } from './components/overlay-preview';
@@ -12,11 +13,19 @@ import { useScorerRoutes } from './use-scorer-routes';
 
 const graphics: OverlayGraphic[] = ['Lineup', 'Player card', 'Over summary', 'Points table'];
 
+const GRAPHIC_KEYS: Record<OverlayGraphic, 'scoring.overlay.graphic.Lineup' | 'scoring.overlay.graphic.Player card' | 'scoring.overlay.graphic.Over summary' | 'scoring.overlay.graphic.Points table'> = {
+  Lineup: 'scoring.overlay.graphic.Lineup',
+  'Player card': 'scoring.overlay.graphic.Player card',
+  'Over summary': 'scoring.overlay.graphic.Over summary',
+  'Points table': 'scoring.overlay.graphic.Points table',
+};
+
 export function StreamOverlayScreen() {
   const { score, overlay, dispatch } = useScorer();
   const routes = useScorerRoutes();
   const s = useThemedStyles(styles);
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [preview, setPreview] = useState<{ graphic: OverlayGraphic; key: number } | null>(null);
   useEffect(() => {
     if (!preview) return;
@@ -24,36 +33,37 @@ export function StreamOverlayScreen() {
     return () => clearTimeout(timer);
   }, [preview]);
   const update = (value: Partial<typeof overlay>) => dispatch({ type: 'overlay', value: { ...overlay, ...value } });
-  if (!score) return <ScorerFrame><ScorerNotice>Start a scoring session to preview the overlay.</ScorerNotice>
-    <Button label="Set up match" onPress={() => routes.replace('setup')} /></ScorerFrame>;
+  if (!score) return <ScorerFrame><ScorerNotice>{t('scoring.overlay.needSession')}</ScorerNotice>
+    <Button label={t('scoring.pad.setUpMatch')} onPress={() => routes.replace('setup')} /></ScorerFrame>;
   return <ScorerFrame>
-    <ScorerHeader title="Stream overlay" subtitle="Match 12 · Kings vs Strikers" onBack={routes.back}
-      trailing={<View style={s.badge}><Text style={s.badgeText}>Streamer</Text></View>} />
+    <ScorerHeader title={t('scoring.overlay.title')} subtitle={t('scoring.overlay.subtitle')} onBack={routes.back}
+      trailing={<View style={s.badge}><Text style={s.badgeText}>{t('scoring.overlay.streamerBadge')}</Text></View>} />
     <OverlayPreview score={score} graphic={preview?.graphic ?? null} accent={overlay.color === 'blue' ? colors.primary : '#FFC83D'} />
-    <ScorerSection title="Overlay link">
-      <View style={s.linkRow}><View style={s.link}><Text muted style={s.caption}>Overlay not connected</Text></View><Button label="Copy" disabled /></View>
-      <ScorerNotice>A hosted overlay service is needed to generate a browser-source link. This preview uses your local scoring session.</ScorerNotice>
+    <ScorerSection title={t('scoring.overlay.linkSection')}>
+      <View style={s.linkRow}><View style={s.link}><Text muted style={s.caption}>{t('scoring.overlay.notConnected')}</Text></View><Button label={t('scoring.overlay.copy')} disabled /></View>
+      <ScorerNotice>{t('scoring.overlay.linkNotice')}</ScorerNotice>
     </ScorerSection>
-    <ScorerSection title="Show on stream">
+    <ScorerSection title={t('scoring.overlay.showOnStream')}>
       <View style={s.graphics}>{graphics.map((graphic) => <Pressable key={graphic} accessibilityRole="button"
         accessibilityState={{ selected: preview?.graphic === graphic }} onPress={() => setPreview({ graphic, key: Date.now() })}
         style={({ pressed }) => [s.graphicButton, preview?.graphic === graphic && s.selected, pressed && s.pressed]}>
-        <Text style={s.graphicLabel}>{graphic}</Text>
+        <Text style={s.graphicLabel}>{t(GRAPHIC_KEYS[graphic])}</Text>
       </Pressable>)}</View>
-      <ScorerNotice>Tap to preview a full-screen graphic for 10 seconds.</ScorerNotice>
+      <ScorerNotice>{t('scoring.overlay.tapPreviewNotice')}</ScorerNotice>
     </ScorerSection>
     <View style={s.toggles}>
-      <SwitchRow title="Boundary and wicket flash" detail="Big FOUR, SIX and WICKET animations" value={overlay.flashes} onChange={(flashes) => update({ flashes })} />
-      <SwitchRow title="Milestones" detail="Fifties, hundreds and the result" value={overlay.milestones} onChange={(milestones) => update({ milestones })} />
+      <SwitchRow title={t('scoring.overlay.flashTitle')} detail={t('scoring.overlay.flashDetail')} value={overlay.flashes} onChange={(flashes) => update({ flashes })} />
+      <SwitchRow title={t('scoring.overlay.milestonesTitle')} detail={t('scoring.overlay.milestonesDetail')} value={overlay.milestones} onChange={(milestones) => update({ milestones })} />
     </View>
-    <View style={s.colorRow}><Text muted style={s.caption}>Overlay colour</Text><View style={s.swatches}>
+    <View style={s.colorRow}><Text muted style={s.caption}>{t('scoring.overlay.colorLabel')}</Text><View style={s.swatches}>
       {(['blue', 'yellow'] as const).map((color) => <Pressable key={color} accessibilityRole="radio"
-        accessibilityLabel={`${color} overlay colour`} accessibilityState={{ checked: overlay.color === color }}
+        accessibilityLabel={t('scoring.overlay.colorA11y', { color: t(color === 'blue' ? 'scoring.overlay.colorBlue' : 'scoring.overlay.colorYellow') })}
+        accessibilityState={{ checked: overlay.color === color }}
         onPress={() => update({ color })} style={s.swatchTarget}>
         <View style={[s.swatch, { backgroundColor: color === 'blue' ? colors.primary : '#FFC83D' }, overlay.color === color && s.swatchSelected]} />
       </Pressable>)}
     </View></View>
-    <ScorerNotice>Overlay preferences are local to this session. Live publishing and automatic animations require the streaming service.</ScorerNotice>
+    <ScorerNotice>{t('scoring.overlay.localNotice')}</ScorerNotice>
   </ScorerFrame>;
 }
 const styles = (c: Palette) => StyleSheet.create({

@@ -3,12 +3,13 @@ import { useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { otherTeam, playerName } from '../sample-data';
 import type { MatchSetup, TeamCode } from '../types';
 import { ScorerSheet } from './scorer-sheet';
-import { ScorerChoice, ScorerSection } from './scorer-ui';
+import { ScorerChoice, ScorerRoleLabel, ScorerSection } from './scorer-ui';
 
 export function normalizeOpeners(setup: MatchSetup, batting: TeamCode): MatchSetup {
   const batters = setup.playingXi[batting];
@@ -22,20 +23,25 @@ export function normalizeOpeners(setup: MatchSetup, batting: TeamCode): MatchSet
 export function OpeningPlayers({ setup, batting, onChange }: { setup: MatchSetup; batting: TeamCode; onChange: (setup: MatchSetup) => void }) {
   const { colors } = useTheme();
   const s = useThemedStyles(styles);
+  const { t } = useTranslation();
   const [field, setField] = useState<'strikerId' | 'nonStrikerId' | 'bowlerId' | null>(null);
-  const labels = { strikerId: 'Striker', nonStrikerId: 'Non-striker', bowlerId: 'Bowler' };
+  const labels = {
+    strikerId: t('scoring.openers.striker'),
+    nonStrikerId: t('scoring.openers.nonStriker'),
+    bowlerId: t('scoring.openers.bowler'),
+  };
   const team = field === 'bowlerId' ? otherTeam(batting) : batting;
   const excluded = field === 'strikerId' ? setup.nonStrikerId : field === 'nonStrikerId' ? setup.strikerId : '';
-  return <ScorerSection title="Openers & opening bowler">
+  return <ScorerSection title={t('scoring.openers.section')}>
     {(Object.keys(labels) as (keyof typeof labels)[]).map((key) => <Pressable key={key}
-      accessibilityRole="button" accessibilityLabel={`Choose ${labels[key]}: ${playerName(setup, setup[key])}`}
+      accessibilityRole="button" accessibilityLabel={t('scoring.openers.chooseA11y', { role: labels[key], name: playerName(setup, setup[key]) })}
       style={s.row} onPress={() => setField(key)}>
       <Text muted style={s.label}>{labels[key]}</Text><Text style={s.name}>{playerName(setup, setup[key])}</Text>
       <ChevronDown size={sizes.iconSmall} color={colors.textMuted} />
     </Pressable>)}
-    <ScorerSheet visible={field !== null} title={`Choose ${field ? labels[field].toLowerCase() : 'player'}`} onClose={() => setField(null)}>
+    <ScorerSheet visible={field !== null} title={t('scoring.openers.sheetTitle', { role: field ? labels[field].toLowerCase() : t('scoring.openers.fallbackPlayer') })} onClose={() => setField(null)}>
       {setup.teams[team].players.filter((p) => setup.playingXi[team].includes(p.id) && p.id !== excluded).map((p) =>
-        <ScorerChoice key={p.id} label={p.name} detail={p.role} selected={!!field && setup[field] === p.id}
+        <ScorerChoice key={p.id} label={p.name} detail={ScorerRoleLabel(p.role, t)} selected={!!field && setup[field] === p.id}
           onPress={() => { if (field) onChange({ ...setup, [field]: p.id }); setField(null); }} />)}
     </ScorerSheet>
   </ScorerSection>;

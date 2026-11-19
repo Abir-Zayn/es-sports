@@ -12,6 +12,7 @@ import { BOTTOM_NAV_CLEARANCE } from '@/components/navigation/bottom-nav';
 import { Button, SettingsGroup, SettingsRow, Text } from '@/components/ui';
 import { signOut, useAuth } from '@/features/auth';
 import { useOpenTeam } from '@/features/team/use-team-routes';
+import { useTranslation } from '@/i18n';
 import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { useCareer } from './career/use-career';
@@ -28,6 +29,7 @@ export function ProfileScreen() {
   const openTeam = useOpenTeam();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const { session } = useAuth();
   const { profile, status, reload } = useProfile();
@@ -56,18 +58,18 @@ export function ProfileScreen() {
       {status === 'error' ? (
         <View style={styles.loadError}>
           <Text variant="caption" style={styles.error} accessibilityLiveRegion="polite">
-            Couldn’t load your saved profile.
+            {t('profile.loadProfileError')}
           </Text>
-          <Button label="Try again" variant="secondary" size="compact" onPress={reload} />
+          <Button label={t('common.retry')} variant="secondary" size="compact" onPress={reload} />
         </View>
       ) : null}
-      {career.status === 'loading' ? <ActivityIndicator accessibilityLabel="Loading your career" color={colors.textMuted} /> : null}
+      {career.status === 'loading' ? <ActivityIndicator accessibilityLabel={t('profile.loadingCareer')} color={colors.textMuted} /> : null}
       {career.status === 'error' ? (
         <View style={styles.loadError}>
           <Text variant="caption" style={styles.error} accessibilityLiveRegion="polite">
-            Couldn’t load your match figures.
+            {t('profile.loadCareerError')}
           </Text>
-          <Button label="Try again" variant="secondary" size="compact" onPress={career.reload} />
+          <Button label={t('common.retry')} variant="secondary" size="compact" onPress={career.reload} />
         </View>
       ) : null}
       {/* Zeros while loading, or above "No matches yet", would say the same thing twice or say it wrong. */}
@@ -85,27 +87,27 @@ export function ProfileScreen() {
       <View style={styles.links}>
         <SettingsGroup>
           <SettingsRow
-            label="Personal Information"
+            label={t('profile.personalInfoRow')}
             leading={<User size={sizes.icon} color={colors.textMuted} />}
             onPress={() => router.push('/profile/edit')}
           />
           <SettingsRow
-            label="Drafted tournaments"
+            label={t('profile.draftedTournaments')}
             leading={<Trophy size={sizes.icon} color={colors.textMuted} />}
             onPress={() => router.push('/tournaments')}
           />
           <SettingsRow
-            label="Recently deleted"
+            label={t('profile.recentlyDeleted')}
             leading={<Trash size={sizes.icon} color={colors.textMuted} />}
             onPress={() => router.push('/profile/deleted-tournaments')}
           />
           <SettingsRow
-            label="Team management"
+            label={t('profile.teamManagement')}
             leading={<Users size={sizes.icon} color={colors.textMuted} />}
             onPress={() => router.push('/team/manage')}
           />
           <SettingsRow
-            label="Notifications"
+            label={t('profile.notifications')}
             leading={<Bell size={sizes.icon} color={colors.textMuted} />}
             onPress={() => router.push('/notifications')}
           />
@@ -115,7 +117,7 @@ export function ProfileScreen() {
             {error}
           </Text>
         ) : null}
-        <Button label="Log out" variant="secondary" loading={loggingOut} onPress={logOut} />
+        <Button label={t('profile.logOut')} variant="secondary" loading={loggingOut} onPress={logOut} />
       </View>
     </ScrollView>
   );

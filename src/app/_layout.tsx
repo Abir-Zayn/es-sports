@@ -9,6 +9,8 @@ import { AuthProvider, useAuth } from '@/features/auth';
 import { ProfileProvider } from '@/features/profile/profile-provider';
 import { useOutboxRecovery } from '@/features/scoring/use-outbox-recovery';
 import { useTeamMembershipUpdates } from '@/features/team/data/use-team-membership-updates';
+import { AutoOpenWhatsNew } from '@/features/whats-new';
+import { I18nProvider, useLocaleHydrated } from '@/i18n';
 import { watchAppFocus } from '@/lib/app-focus';
 import { queryClient } from '@/lib/query-client';
 import { ThemeProvider, useTheme } from '@/theme';
@@ -17,6 +19,8 @@ SplashScreen.preventAutoHideAsync();
 
 function AppShell() {
   const { session, isLoading } = useAuth();
+  const localeHydrated = useLocaleHydrated();
+  const appReady = !isLoading && localeHydrated;
   const { colors, scheme } = useTheme();
   const [splashDone, setSplashDone] = useState(false);
   useOutboxRecovery(session?.user.id);
@@ -30,11 +34,12 @@ function AppShell() {
   return (
     <>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-      {!isLoading && (
+      {appReady && (
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="terms" />
           <Stack.Screen name="privacy" />
+          <Stack.Screen name="language" />
           <Stack.Screen name="reset-password" />
           <Stack.Screen name="forgot-password" />
           <Stack.Protected guard={!session}>
@@ -69,12 +74,11 @@ function AppShell() {
             <Stack.Screen name="tournament/schedule" />
             <Stack.Screen name="invitations" />
             <Stack.Screen name="notifications" />
-            <Stack.Screen name="whats-new" />
+            <Stack.Screen name="whats-new" options={{ presentation: 'transparentModal', animation: 'fade', contentStyle: { backgroundColor: 'transparent' } }} />
             <Stack.Screen name="leaderboards" />
             <Stack.Screen name="hall-of-fame" />
             <Stack.Screen name="grounds" />
             <Stack.Screen name="blogs" />
-            <Stack.Screen name="language" />
             <Stack.Screen name="tournament/[id]/index" />
             <Stack.Screen name="tournament/[id]/head-to-head" />
             <Stack.Screen name="tournament/[id]/matches" />
@@ -85,8 +89,9 @@ function AppShell() {
         </Stack>
       )}
       {!splashDone && (
-        <AnimatedSplash ready={!isLoading} onShown={hideNativeSplash} onDone={endSplash} />
+        <AnimatedSplash ready={appReady} onShown={hideNativeSplash} onDone={endSplash} />
       )}
+      {splashDone && appReady && session ? <AutoOpenWhatsNew /> : null}
     </>
   );
 }
@@ -94,13 +99,15 @@ function AppShell() {
 export default function RootLayout() {
   return (
     <ThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <ProfileProvider>
-            <AppShell />
-          </ProfileProvider>
-        </AuthProvider>
-      </QueryClientProvider>
+      <I18nProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <ProfileProvider>
+              <AppShell />
+            </ProfileProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      </I18nProvider>
     </ThemeProvider>
   );
 }

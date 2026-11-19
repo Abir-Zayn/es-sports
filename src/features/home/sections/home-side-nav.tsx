@@ -13,25 +13,24 @@ import { ScrollView, Share, StyleSheet, View } from 'react-native';
 import { SideNav } from '@/components/navigation/side-nav';
 import { SlideNavItem } from '@/components/navigation/slide-nav-item';
 import { InitialsAvatar, Text } from '@/components/ui';
+import { useTranslation, type TranslationKey } from '@/i18n';
 import { dp, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
-import type { HomeUser } from '../sample-data';
+import type { HomeUser } from './top-bar';
 
-type Item = { label: string; icon: ComponentType<{ size?: number; color?: string }>; href?: Href };
+type Item = { label: string; labelKey: TranslationKey; icon: ComponentType<{ size?: number; color?: string }>; href?: Href };
 
 /** In the order shown. An item without `href` is an action handled below. */
 export const sideNavItems: Item[] = [
-  { label: 'What’s new', icon: Sparkles, href: '/whats-new' },
-  { label: 'My profile', icon: User, href: '/profile' },
-  { label: 'Leaderboards', icon: ChartColumn, href: '/leaderboards' },
-  { label: 'Hall of fame', icon: Award, href: '/hall-of-fame' },
-  { label: 'Grounds', icon: MapPin, href: '/grounds' },
-  { label: 'Share the app', icon: Share2 },
-  { label: 'Cricket blogs', icon: Newspaper, href: '/blogs' },
-  { label: 'Choose language', icon: Languages, href: '/language' },
+  { label: 'What’s new', labelKey: 'home.drawer.whatsNew', icon: Sparkles, href: '/whats-new' },
+  { label: 'My profile', labelKey: 'home.drawer.myProfile', icon: User, href: '/profile' },
+  { label: 'Leaderboards', labelKey: 'home.drawer.leaderboards', icon: ChartColumn, href: '/leaderboards' },
+  { label: 'Hall of fame', labelKey: 'home.drawer.hallOfFame', icon: Award, href: '/hall-of-fame' },
+  { label: 'Grounds', labelKey: 'home.drawer.grounds', icon: MapPin, href: '/grounds' },
+  { label: 'Share the app', labelKey: 'home.drawer.shareApp', icon: Share2 },
+  { label: 'Cricket blogs', labelKey: 'home.drawer.blogs', icon: Newspaper, href: '/blogs' },
+  { label: 'Choose language', labelKey: 'home.drawer.chooseLanguage', icon: Languages, href: '/language' },
 ];
-
-const SHARE_MESSAGE = 'I score and follow local cricket on esSports. Join me!';
 
 type Props = {
   open: boolean;
@@ -42,12 +41,13 @@ type Props = {
 
 /** The menu behind the Home avatar: who is signed in, then the app's other places. */
 export function HomeSideNav({ open, user, onClose, onNavigate }: Props) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   function choose(item: Item) {
     onClose();
     if (item.href) onNavigate(item.href);
     // A dismissed or failed share sheet needs no message.
-    else void Share.share({ message: SHARE_MESSAGE }).catch(() => undefined);
+    else void Share.share({ message: t('home.drawer.shareMessage') }).catch(() => undefined);
   }
   return (
     <SideNav open={open} onClose={onClose}>
@@ -57,7 +57,7 @@ export function HomeSideNav({ open, user, onClose, onNavigate }: Props) {
       </View>
       <ScrollView contentContainerStyle={styles.list}>
         {sideNavItems.map((item) => (
-          <SlideNavItem key={item.label} icon={item.icon} label={item.label} onPress={() => choose(item)} />
+          <SlideNavItem key={item.labelKey} icon={item.icon} label={t(item.labelKey)} onPress={() => choose(item)} />
         ))}
       </ScrollView>
     </SideNav>

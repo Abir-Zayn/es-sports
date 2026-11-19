@@ -6,9 +6,8 @@ import { AppTabs, Button, SegmentedControl, Text, type SegmentedOption } from '@
 import { sizes, spacing, useTheme } from '@/theme';
 import type { StatMode } from '@/types/cricket';
 
-import { StatLeaderboard } from '../components/stat-leaderboard';
-import { StatPodium } from '../components/stat-podium';
-import { rankPlayers } from '../data/player-stats';
+import { RankedBoard } from '../components/ranked-board';
+import { rankPlayers, tournamentEconomyMinBalls } from '../data/player-stats';
 import { fetchPlayerTotals, playerStatsKey } from '../data/player-stats-repository';
 import { tournamentErrorText } from '../data/tournament-errors';
 import type { TournamentRecord } from '../data/tournament-repository';
@@ -28,7 +27,10 @@ export function RealTournamentStats({ tournament }: Props) {
   const [mode, setMode] = useState<StatMode>('bat');
   const [categoryId, setCategoryId] = useState<Record<StatMode, string>>({ bat: 'runs', bowl: 'wickets' });
   const totals = useQuery({ queryKey: playerStatsKey(tournament.id), queryFn: () => fetchPlayerTotals(tournament.id), staleTime: 30_000 });
-  const boards = useMemo(() => rankPlayers(totals.data ?? []), [totals.data]);
+  const boards = useMemo(() => {
+    const players = totals.data ?? [];
+    return rankPlayers(players, { minEconomyBalls: tournamentEconomyMinBalls(players) });
+  }, [totals.data]);
 
   if (totals.isPending) return <ActivityIndicator color={colors.link} accessibilityLabel="Loading top players" />;
   if (totals.isError) {
@@ -51,17 +53,7 @@ export function RealTournamentStats({ tournament }: Props) {
         <AppTabs tabs={categories.map((c) => ({ id: c.id, label: c.label }))} selected={board.id}
           onSelect={(id) => setCategoryId((current) => ({ ...current, [mode]: id }))} />
       </ScrollView>
-      {board.note ? <Text variant="caption" muted>{board.note}</Text> : null}
-      {board.leaders.length === 0 ? (
-        <Text muted accessibilityLiveRegion="polite">Nobody qualifies for this list yet.</Text>
-      ) : (
-        <>
-          <StatPodium leaders={board.leaders} unit={board.unit} />
-          {board.leaders.length > 3 ? (
-            <StatLeaderboard leaders={board.leaders.slice(3)} valueHeading={board.valueHeading} secondaryHeading={board.secondaryHeading} />
-          ) : null}
-        </>
-      )}
+      <RankedBoard key={board.id} board={board} />
     </View>
   );
 }

@@ -3,7 +3,7 @@ import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BrandMark } from '@/components/brand/brand-mark';
-import { Text } from '@/components/ui';
+import { LanguagePill, Text } from '@/components/ui';
 import { dp, sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
 type Props = {
@@ -19,6 +19,9 @@ export function AuthLayout({ title, subtitle, children, scrollable = false }: Pr
   const styles = useThemedStyles(createStyles);
   const body = (
     <>
+      <View style={styles.topBar}>
+        <LanguagePill />
+      </View>
       <View style={styles.logo}>
         <BrandMark size={dp(100)} />
       </View>
@@ -51,7 +54,8 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     safe: { flex: 1, backgroundColor: colors.background },
     flex: { flex: 1 },
-    content: { paddingHorizontal: sizes.gutter, paddingTop: spacing.xl, paddingBottom: spacing.lg, gap: spacing.xl },
-    logo: { paddingTop: spacing.xxl },
+    content: { paddingHorizontal: sizes.gutter, paddingTop: spacing.md, paddingBottom: spacing.lg, gap: spacing.xl },
+    topBar: { flexDirection: 'row', justifyContent: 'flex-end' },
+    logo: { paddingTop: spacing.lg },
     heading: { gap: spacing.sm },
   });

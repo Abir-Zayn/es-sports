@@ -4,6 +4,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { radius, sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
 export function ScorerSheet({ title, visible, onClose, children }: {
@@ -11,12 +12,14 @@ export function ScorerSheet({ title, visible, onClose, children }: {
 }) {
   const s = useThemedStyles(styles);
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
+  const closeLabel = t('common.close');
   return (
     <Modal transparent visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={s.overlay}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Close sheet" style={StyleSheet.absoluteFill} onPress={onClose} />
+        <Pressable accessibilityRole="button" accessibilityLabel={closeLabel} style={StyleSheet.absoluteFill} onPress={onClose} />
         <View style={[s.sheet, { paddingBottom: Math.max(insets.bottom, sizes.cardPaddingTight) }]} accessibilityViewIsModal>
-          <View style={s.header}><Text variant="heading">{title}</Text><AppIconTile icon={X} accessibilityLabel="Close sheet" onPress={onClose} /></View>
+          <View style={s.header}><Text variant="heading">{title}</Text><AppIconTile icon={X} accessibilityLabel={closeLabel} onPress={onClose} /></View>
           <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">{children}</ScrollView>
         </View>
       </View>

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, Text, TextField } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { AuthLayout } from './auth-layout';
@@ -11,6 +12,7 @@ import { resetRequestSchema, sendResetEmail } from '../utils/send-reset-email';
 type FieldErrors = { email?: string };
 
 export function ForgotPasswordScreen() {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const [email, setEmail] = useState('');
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -59,32 +61,31 @@ export function ForgotPasswordScreen() {
 
   if (sentTo) {
     return (
-      <AuthLayout scrollable title="Check your email." subtitle="If an account exists for this email, a reset link is on its way.">
+      <AuthLayout scrollable title={t('auth.forgot.sentTitle')} subtitle={t('auth.forgot.sentSubtitle')}>
         <Text accessibilityLiveRegion="polite">
-          A password reset link was requested for {sentTo}. Check your inbox and spam folder. If nothing arrives, the address may
-          not be registered.
+          {t('auth.forgot.sentBody', { email: sentTo })}
         </Text>
         {formError ? <Text style={styles.formError} accessibilityLiveRegion="polite">{formError}</Text> : null}
-        <Button label={remaining > 0 ? `Resend link in ${remaining}s` : 'Resend reset link'}
+        <Button label={remaining > 0 ? t('auth.forgot.resendIn', { seconds: remaining }) : t('auth.forgot.resend')}
           disabled={remaining > 0} loading={loading} onPress={submit} />
-        <Button label="Use another email" variant="secondary" disabled={loading} onPress={() => {
+        <Button label={t('auth.forgot.anotherEmail')} variant="secondary" disabled={loading} onPress={() => {
           setSentTo(null); setFormError(null);
         }} />
-        <AuthSwitchLink prompt="Remembered your password?" action="Log in" href="/login" replace />
+        <AuthSwitchLink prompt={t('auth.forgot.remembered')} action={t('auth.signUp.logIn')} href="/login" replace />
       </AuthLayout>
     );
   }
 
   return (
-    <AuthLayout scrollable title="Reset your password." subtitle="Enter your account email and we’ll send you a reset link.">
+    <AuthLayout scrollable title={t('auth.forgot.title')} subtitle={t('auth.forgot.subtitle')}>
       <View style={styles.form}>
         <TextField
-          label="Email"
+          label={t('auth.email')}
           value={email}
           editable={!loading}
           onChangeText={setEmail}
           error={errors.email}
-          placeholder="you@example.com"
+          placeholder={t('auth.emailPlaceholder')}
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
@@ -98,11 +99,11 @@ export function ForgotPasswordScreen() {
             {formError}
           </Text>
         ) : null}
-        <Button label={remaining > 0 ? `Send again in ${remaining}s` : 'Send reset link'}
+        <Button label={remaining > 0 ? t('auth.forgot.sendAgainIn', { seconds: remaining }) : t('auth.forgot.send')}
           onPress={submit} loading={loading} disabled={remaining > 0} />
       </View>
 
-      <AuthSwitchLink prompt="Remembered your password?" action="Log in" href="/login" replace />
+      <AuthSwitchLink prompt={t('auth.forgot.remembered')} action={t('auth.signUp.logIn')} href="/login" replace />
     </AuthLayout>
   );
 }

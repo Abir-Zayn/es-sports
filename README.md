@@ -133,3 +133,18 @@ Steps:
 4. If the update misbehaves, roll back with `npx eas-cli@latest update:rollback` (or republish the previous commit).
 
 Anything else (a native package, app permissions, `app.json` plugin changes, a new `version`) needs a new APK: `npx eas-cli@latest build -p android --profile preview`, then a new GitHub release and README link.
+
+### What’s new release notes
+
+Apply the `app_release_notes` migration in the Supabase project used by the app. For each OTA that should announce changes, copy the **Android update ID** from the publish output or `npx eas-cli@latest update:view <group-id>`. Each platform has its own update ID. Add a row in the Supabase SQL Editor with that ID, a release title, and one to eight highlights with distinct titles. Titles can contain up to 100 characters and descriptions up to 500.
+
+```sql
+insert into public.app_release_notes (update_id, title, highlights)
+values (
+  '<platform-update-id>'::uuid,
+  'Release notes are here',
+  '[{"title":"Revisit update notes","description":"Open What’s new from the Home menu to see what changed in this update."}]'::jsonb
+);
+```
+
+The `published_at` timestamp defaults to the time the row is added. On a preview device, launch into Home after the OTA has applied and confirm that the sheet opens. Dismiss it, restart the app, and use **Home menu → What’s new** to open it again. If the notes are added after the app launches, reopen the app to trigger a fresh check.

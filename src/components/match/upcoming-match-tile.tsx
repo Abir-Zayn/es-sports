@@ -2,6 +2,7 @@ import Bell from 'lucide-react-native/icons/bell';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { UpcomingMatch } from '@/types/cricket';
 
@@ -16,6 +17,7 @@ const titleCase = (text: string) => text.charAt(0) + text.slice(1).toLowerCase()
 /** One upcoming match as a flat row: date, the two sides with time and ground, and a reminder button. */
 export function UpcomingMatchTile({ match, onRemind }: Props) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.card}>
@@ -32,7 +34,7 @@ export function UpcomingMatchTile({ match, onRemind }: Props) {
       </View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Remind me: ${match.home} ${match.away}`}
+        accessibilityLabel={t('matchCard.remindMeA11y', { home: match.home, away: match.away })}
         onPress={onRemind}
         style={({ pressed }) => [styles.remind, pressed && styles.pressed]}
       >

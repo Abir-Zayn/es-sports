@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useLocale } from '@/i18n';
 import type { Fixture } from '@/types/cricket';
 
 import { watchMatchesRealtime } from './matches-channel';
-import { fetchMatches } from './matches-repository';
+import { fetchMatchRows, mapMatchRowsToFixtures, type RawMatchRow } from './matches-repository';
 
 export type MatchFilter = 'upcoming' | 'completed';
 
@@ -15,11 +16,16 @@ export const matchesQueryKey = (filter: MatchFilter) => ['matches', filter] as c
  */
 export function useRealtimeMatches(filter: MatchFilter) {
   const queryClient = useQueryClient();
+  const locale = useLocale();
   const status = filter === 'upcoming' ? 'scheduled' : 'completed';
 
-  const query = useQuery<Fixture[]>({
+  const query = useQuery<RawMatchRow[] | null, Error, Fixture[]>({
     queryKey: matchesQueryKey(filter),
-    queryFn: ({ signal }) => fetchMatches(status, signal),
+    queryFn: ({ signal }) => fetchMatchRows(status, signal),
+    select: useCallback(
+      (rows: RawMatchRow[] | null) => mapMatchRowsToFixtures(rows, status, locale),
+      [status, locale],
+    ),
   });
 
   useEffect(() => {

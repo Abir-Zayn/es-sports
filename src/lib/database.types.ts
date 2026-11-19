@@ -39,6 +39,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_release_notes: {
+        Row: {
+          highlights: Json
+          published_at: string
+          title: string
+          update_id: string
+        }
+        Insert: {
+          highlights: Json
+          published_at?: string
+          title: string
+          update_id: string
+        }
+        Update: {
+          highlights?: Json
+          published_at?: string
+          title?: string
+          update_id?: string
+        }
+        Relationships: []
+      }
       ball_events: {
         Row: {
           angle: number | null
@@ -1350,16 +1371,19 @@ export type Database = {
         Returns: string
       }
       tournament_player_stats: {
-        Args: { p_tournament: string }
+        Args: { p_tournament?: string }
         Returns: {
           balls_bowled: number
           balls_faced: number
+          best_overs: number | null
           best_runs: number | null
           best_wickets: number | null
           dots: number
           fours: number
           highest: number | null
+          highest_balls: number | null
           highest_not_out: boolean | null
+          highest_overs: number | null
           innings: number
           matches: number
           name: string

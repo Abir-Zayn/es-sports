@@ -1,4 +1,5 @@
 import { careerOf, useLedger } from '@/features/profile';
+import { t } from '@/i18n';
 import { addPerformances, emptyCareer } from '@/lib/career-stats';
 import type { PlayingRole } from '@/types/profile';
 import { findSamplePlayer } from './sample-players';
@@ -9,7 +10,7 @@ export function usePlayerProfile(id: string, name?: string, role?: string): Play
   const ledger = useLedger();
   const sample = findSamplePlayer(id);
   const fallbackRole = roles.find((value) => value === role?.toLowerCase()) ?? 'batter';
-  const fallbackName = name?.trim() || (/^[a-z][a-z.'-]+(?:\s+[a-z.'-]+)+$/i.test(id) ? id : 'Player');
+  const fallbackName = name?.trim() || (/^[a-z][a-z.'-]+(?:\s+[a-z.'-]+)+$/i.test(id) ? id : t('players.fallbackName'));
   const player: PlayerCareer = sample ?? {
     profile: { id, fullName: fallbackName, role: fallbackRole, battingStyle: 'right' },
     totals: emptyCareer, shots: [], recent: [], isSample: false,

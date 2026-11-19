@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useReducer, useState
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { useAuth } from '@/features/auth';
+import { t, useTranslation } from '@/i18n';
 import { useTheme } from '@/theme';
 
 import { ScorerError } from './components/scorer-error';
@@ -24,6 +25,7 @@ type Settled = { phase: 'error'; message: string; stopped?: OutboxStoppedError }
 export function ScorerProvider({ matchId, children }: { matchId: string; children: ReactNode }) {
   const userId = useAuth().session?.user.id;
   const { colors } = useTheme();
+  const { t: translateUi } = useTranslation();
   const [attempt, setAttempt] = useState(0);
   // A result only counts for the request it answers, so a new route, user or retry shows loading again.
   const requestKey = `${matchId}|${userId ?? ''}|${attempt}`;
@@ -35,7 +37,7 @@ export function ScorerProvider({ matchId, children }: { matchId: string; childre
     loadScorer(matchId, userId).then(
       (loaded) => { if (current) setAnswer({ key: requestKey, settled: { phase: 'ready', loaded } }); },
       (error: unknown) => {
-        const message = error instanceof Error ? error.message : 'Could not open the match.';
+        const message = error instanceof Error ? error.message : t('scoring.provider.openFailed');
         const stopped = error instanceof OutboxStoppedError ? error : undefined;
         if (current) setAnswer({ key: requestKey, settled: { phase: 'error', message, stopped } });
       },
@@ -44,14 +46,14 @@ export function ScorerProvider({ matchId, children }: { matchId: string; childre
   }, [matchId, userId, requestKey]);
 
   const retry = useCallback(() => setAttempt((value) => value + 1), []);
-  const settled: Settled | null = !userId ? { phase: 'error', message: 'Sign in to score a match.' }
+  const settled: Settled | null = !userId ? { phase: 'error', message: translateUi('scoring.provider.signIn') }
     : answer?.key === requestKey ? answer.settled : null;
   if (settled?.phase === 'ready') {
     return <ScorerSessionProvider routeId={matchId} loaded={settled.loaded} onReload={retry}>{children}</ScorerSessionProvider>;
   }
   if (settled?.phase === 'error') return <ScorerError message={settled.message} stopped={settled.stopped} onRetry={retry} />;
   return <View style={[styles.loading, { backgroundColor: colors.background }]}>
-    <ActivityIndicator accessibilityLabel="Opening match" color={colors.primary} />
+    <ActivityIndicator accessibilityLabel={translateUi('scoring.provider.opening')} color={colors.primary} />
   </View>;
 }
 
@@ -67,7 +69,7 @@ function ScorerSessionProvider({ routeId, loaded, onReload, children }: { routeI
 
 export function useScorer() {
   const value = useContext(ScorerContext);
-  if (!value) throw new Error('Scorer screens must be inside ScorerProvider.');
+  if (!value) throw new Error(t('scoring.provider.insideProvider'));
   return value;
 }
 

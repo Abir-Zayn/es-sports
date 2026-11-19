@@ -1,3 +1,5 @@
+import { t } from '@/i18n';
+
 import { battingFirst, otherTeam, teamCodes } from '../sample-data';
 import type { MatchSetup, ScoreState, TeamCode } from '../types';
 
@@ -5,7 +7,7 @@ export const MIN_SIDE = 2;
 export const MAX_SIDE = 16;
 
 export function createInnings(setup: MatchSetup, previous?: ScoreState): ScoreState {
-  if (previous && (!previous.complete || previous.innings !== 1)) throw new Error('Finish the first innings first.');
+  if (previous && (!previous.complete || previous.innings !== 1)) throw new Error(t('scoring.errors.finishFirstInnings'));
   const battingTeam = previous ? previous.bowlingTeam : battingFirst(setup);
   const bowlingTeam = otherTeam(battingTeam);
   const size = setup.playersPerSide;
@@ -14,13 +16,13 @@ export function createInnings(setup: MatchSetup, previous?: ScoreState): ScoreSt
     const ids = setup.playingXi[code];
     return ids.length !== size || new Set(ids).size !== size || !ids.every((id) => known(code, id));
   })) {
-    throw new Error(`Select ${size} different players for each team.`);
+    throw new Error(t('scoring.errors.selectPlayersCount', { size }));
   }
   if (setup.strikerId === setup.nonStrikerId ||
       !setup.playingXi[battingTeam].includes(setup.strikerId) ||
       !setup.playingXi[battingTeam].includes(setup.nonStrikerId) ||
       !setup.playingXi[bowlingTeam].includes(setup.bowlerId)) {
-    throw new Error('Choose two different opening batters and a bowler from the opposing team.');
+    throw new Error(t('scoring.errors.chooseOpeners'));
   }
   const players = (code: TeamCode) => setup.teams[code].players.filter((p) => setup.playingXi[code].includes(p.id));
   return {

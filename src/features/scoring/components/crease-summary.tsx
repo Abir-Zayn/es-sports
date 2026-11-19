@@ -2,6 +2,7 @@ import ArrowLeftRight from 'lucide-react-native/icons/arrow-left-right';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { oversLabel } from '../engine/score-delivery';
@@ -14,6 +15,7 @@ const economy = (runs: number, balls: number) => (balls > 0 ? ((runs / balls) * 
 export function CreaseSummary({ score, onSwap, disabled }: { score: ScoreState; onSwap: () => void; disabled: boolean }) {
   const s = useThemedStyles(styles);
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const bowler = score.bowlers[score.bowlerId];
   const batter = (id: string, onStrike: boolean) => {
     const b = score.batters[id];
@@ -26,14 +28,14 @@ export function CreaseSummary({ score, onSwap, disabled }: { score: ScoreState; 
   return <View style={s.wrap}>
     <View style={s.row}>
       {batter(score.strikerId, true)}
-      <Pressable accessibilityRole="button" accessibilityLabel="Swap striker and non-striker" disabled={disabled}
+      <Pressable accessibilityRole="button" accessibilityLabel={t('scoring.pad.swapBattersA11y')} disabled={disabled}
         accessibilityState={{ disabled }} onPress={onSwap} style={[s.swap, disabled && s.disabled]}>
         <ArrowLeftRight size={sizes.iconSmall} color={colors.textMuted} />
       </Pressable>
       {batter(score.nonStrikerId, false)}
     </View>
-    <View style={s.bowler}><Text muted style={s.caption}>BOWLER</Text><Text style={s.name}>{bowler.name}</Text>
-      <Text muted style={s.figures}>{oversLabel(bowler.balls)}-{bowler.maidens}-{bowler.runs}-{bowler.wickets} · Econ {economy(bowler.runs, bowler.balls)}</Text></View>
+    <View style={s.bowler}><Text muted style={s.caption}>{t('match.live.bowlerHeading')}</Text><Text style={s.name}>{bowler.name}</Text>
+      <Text muted style={s.figures}>{t('scoring.pad.bowlerStats', { overs: oversLabel(bowler.balls), maidens: bowler.maidens, runs: bowler.runs, wickets: bowler.wickets, econ: economy(bowler.runs, bowler.balls) })}</Text></View>
   </View>;
 }
 const styles = (c: Palette) => StyleSheet.create({

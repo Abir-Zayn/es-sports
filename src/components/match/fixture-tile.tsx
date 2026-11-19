@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppBadge, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dateParts } from '@/lib/date-parts';
 import { dp, radius, spacing, sp, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { Fixture, FixtureSide } from '@/types/cricket';
@@ -19,6 +20,7 @@ const scoreText = ({ score, overs }: FixtureSide) => (score ? `${score}${overs ?
  */
 export function FixtureTile({ fixture, onPress, showBadge = false, badgeLabel }: Props) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const { day, weekday } = dateParts(fixture.date);
   const [one, two] = fixture.sides;
@@ -26,20 +28,20 @@ export function FixtureTile({ fixture, onPress, showBadge = false, badgeLabel }:
   const played = fixture.state !== 'upcoming';
   const isResult = fixture.state === 'result';
   const spoken = (side: FixtureSide) => `${side.team.name}${side.score ? ` ${scoreText(side)}` : ''}`;
-  const when = live ? ', live' : fixture.time ? `, ${fixture.time}` : '';
+  const when = live ? `, ${t('matchCard.liveLower')}` : fixture.time ? `, ${fixture.time}` : '';
 
   const tileBadge = live ? (
-    <AppBadge dot label="LIVE" backgroundColor={colors.live} color={colors.onLive} />
+    <AppBadge dot label={t('matchCard.live')} backgroundColor={colors.live} color={colors.onLive} />
   ) : showBadge ? (
     isResult ? (
       <AppBadge
-        label={badgeLabel ?? 'Completed'}
+        label={badgeLabel ?? t('matchCard.completed')}
         backgroundColor={colors.successSoft}
         color={colors.success}
       />
     ) : (
       <AppBadge
-        label={badgeLabel ?? 'Upcoming'}
+        label={badgeLabel ?? t('matchCard.upcoming')}
         backgroundColor={colors.surfaceRaised}
         color={colors.textMuted}
       />
@@ -49,7 +51,7 @@ export function FixtureTile({ fixture, onPress, showBadge = false, badgeLabel }:
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${fixture.title}, ${fixture.day}${when}. ${played ? `${spoken(one)}, ${spoken(two)}` : `${one.team.name} versus ${two.team.name}`}. ${fixture.note}`}
+      accessibilityLabel={`${fixture.title}, ${fixture.day}${when}. ${played ? `${spoken(one)}, ${spoken(two)}` : `${one.team.name} ${t('matchCard.versusSpoken')} ${two.team.name}`}. ${fixture.note}`}
       onPress={onPress}
       style={({ pressed }) => [styles.bar, pressed && styles.pressed]}
     >
@@ -59,7 +61,7 @@ export function FixtureTile({ fixture, onPress, showBadge = false, badgeLabel }:
       </View>
       <View style={styles.body}>
         {/* Beside the whole block, so it stays level with the date circle when a result line is shown. */}
-        <Text style={styles.versus}>vs</Text>
+        <Text style={styles.versus}>{t('matchCard.versus')}</Text>
         <View style={styles.main}>
           <View style={styles.line}>
             <View style={styles.column}>
@@ -128,7 +130,7 @@ const createStyles = (colors: Palette) =>
     // in it, so a small bottom pad lifts "vs" to the optical middle of the block beside it.
     versus: {
       ...typography.labelSm,
-      width: dp(18),
+      minWidth: dp(18),
       lineHeight: sp(12),
       paddingBottom: dp(2),
       color: colors.textMuted,

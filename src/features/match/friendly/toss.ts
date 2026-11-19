@@ -1,3 +1,5 @@
+import { t } from '@/i18n';
+
 import type { FriendlyMatchSetup, FriendlySide, FriendlyTossResult, TossCall, TossDecision } from '../types';
 import { otherSide } from './friendly-rules';
 
@@ -23,4 +25,4 @@ export function battingFirstSide(toss: Pick<FriendlyTossResult, 'winner' | 'deci
 }
 
 export const teamLabel = (setup: FriendlyMatchSetup, side: FriendlySide) =>
-  setup[side].name.trim() || (side === 'teamA' ? 'Team A' : 'Team B');
+  setup[side].name.trim() || (side === 'teamA' ? t('friendly.teamA') : t('friendly.teamB'));

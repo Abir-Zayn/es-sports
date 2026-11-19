@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n';
+
 import { plural, type OutboxStoppedError } from '../../data/outbox-errors';
 import { ScorerNotice } from '../../components/scorer-ui';
 import { useNewScorerName } from '../use-handover';
@@ -8,13 +10,13 @@ import { useNewScorerName } from '../use-handover';
  * server's own message, so a refusal that has nothing to do with a handover is not mislabelled.
  */
 export function ScoringMovedNotice({ stopped }: { stopped: OutboxStoppedError }) {
+  const { t } = useTranslation();
   const moved = useNewScorerName(stopped.matchId, stopped.userId);
   if (!moved.name) return <ScorerNotice>{stopped.message}</ScorerNotice>;
   return <>
-    <ScorerNotice>{`Scoring moved to ${moved.name}.`}</ScorerNotice>
+    <ScorerNotice>{t('handover.moved.title', { name: moved.name })}</ScorerNotice>
     <ScorerNotice>
-      {`${plural(stopped.pending)} on this phone cannot be applied, because ${moved.name} now scores from the score saved online. `
-        + 'Discard them to see that score.'}
+      {t('handover.moved.detail', { changes: plural(stopped.pending), name: moved.name })}
     </ScorerNotice>
   </>;
 }

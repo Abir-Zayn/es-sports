@@ -1,8 +1,10 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, radius, shadows, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
+import { countLabel } from '../live/live-view';
 import type { OverSummary } from '../types';
 import { LiveBallPill, spokenBall } from './live-ball-pill';
 
@@ -13,68 +15,83 @@ const spokenOver = (over: OverSummary) => over.balls.filter((b) => b !== '').map
 /** The over being bowled ball by ball as circular badges in a DAZN-style Form card, with recent overs below. */
 export function ThisOverCard({ current, previous }: Props) {
   const styles = useThemedStyles(createStyles);
+  const { t, locale } = useTranslation();
   if (!current) {
     return (
       <View style={styles.section}>
         <View style={styles.sectionHead}>
-          <Text accessibilityRole="header" style={styles.sectionTitle}>Recent overs</Text>
+          <Text accessibilityRole="header" style={styles.sectionTitle}>{t('match.over.recentOvers')}</Text>
         </View>
         <View style={styles.card}>
           <View style={styles.emptyRow}>
-            <Text style={styles.title}>This over</Text>
-            <Text muted style={styles.runs}>No balls bowled yet.</Text>
+            <Text style={styles.title}>{t('match.over.thisOver')}</Text>
+            <Text muted style={styles.runs}>{t('match.over.noBallsYet')}</Text>
           </View>
         </View>
       </View>
     );
   }
+  const currentRunsText = countLabel(current.runs, 'run', locale);
   return (
     <View style={styles.section}>
       <View style={styles.sectionHead}>
-        <Text accessibilityRole="header" style={styles.sectionTitle}>Recent overs</Text>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>{t('match.over.recentOvers')}</Text>
       </View>
       <View style={styles.card}>
         <View style={styles.row}>
           <View style={styles.meta}>
             <Text style={styles.title} numberOfLines={1}>
-              {current.inProgress ? 'This over' : 'Last over'} · Ov {current.number}
+              {t('match.over.ovShort', {
+                label: t(current.inProgress ? 'match.over.thisOver' : 'match.over.lastOver'),
+                number: current.number,
+              })}
             </Text>
             <Text muted style={styles.sub} numberOfLines={1}>
-              {current.bowler} · {current.runs} runs
+              {t('match.over.runsLine', { bowler: current.bowler, runsText: currentRunsText })}
             </Text>
           </View>
           <View
             style={styles.balls}
             accessible
-            accessibilityLabel={`Over ${current.number}: ${spokenOver(current) || 'no balls yet'}`}
+            accessibilityLabel={t('match.over.currentA11y', {
+              number: current.number,
+              balls: spokenOver(current) || t('match.over.noBallsLower'),
+            })}
           >
             {current.balls.map((ball, i) => (
               <LiveBallPill key={i} value={ball} size={dp(28)} />
             ))}
           </View>
         </View>
-        {previous.map((over) => (
-          <View
-            key={over.number}
-            style={[styles.row, styles.divider]}
-            accessible
-            accessibilityLabel={`Over ${over.number}, ${over.runs} runs: ${spokenOver(over)}`}
-          >
-            <View style={styles.meta}>
-              <Text style={styles.previousLabel} numberOfLines={1}>
-                Over {over.number}
-              </Text>
-              <Text muted style={styles.sub} numberOfLines={1}>
-                {over.bowler} · {over.runs} runs
-              </Text>
+        {previous.map((over) => {
+          const runsText = countLabel(over.runs, 'run', locale);
+          return (
+            <View
+              key={over.number}
+              style={[styles.row, styles.divider]}
+              accessible
+              accessibilityLabel={t('match.over.previousA11y', {
+                number: over.number,
+                runsText,
+                balls: spokenOver(over),
+              })}
+            >
+              <View style={styles.meta}>
+                <Text style={styles.previousLabel} numberOfLines={1}>
+                  {t('match.over.overTitle', { number: over.number })}
+                </Text>
+                <Text muted style={styles.sub} numberOfLines={1}>
+                  {t('match.over.runsLine', { bowler: over.bowler, runsText })}
+                </Text>
+              </View>
+              <View style={styles.balls}>
+                {over.balls.map((ball, i) => (
+                  <LiveBallPill key={i} value={ball} size={dp(26)} />
+                ))}
+              </View>
             </View>
-            <View style={styles.balls}>
-              {over.balls.map((ball, i) => (
-                <LiveBallPill key={i} value={ball} size={dp(26)} />
-              ))}
-            </View>
-          </View>
-        ))}
+          );
+        })}
       </View>
     </View>
   );

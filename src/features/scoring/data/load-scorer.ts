@@ -1,3 +1,5 @@
+import { t } from '@/i18n';
+
 import { localEventId } from '../local-id';
 import { newSession, type ScorerSession } from '../session-reducer';
 import { computeResult } from './match-result';
@@ -29,23 +31,23 @@ export async function loadScorer(routeId: string, userId: string): Promise<Loade
   await outboxes.recover(userId, routeId);
   const match = await findMatch(routeId, userId);
   if (!match) {
-    if (isUuid(routeId)) throw new Error('This match could not be found.');
+    if (isUuid(routeId)) throw new Error(t('match.notFound'));
     const staged = stagedSetup(routeId);
     // A friendly is only known on the phone that set it up until its first ball, so it cannot fall back to a preview.
-    if (!staged && routeId.startsWith(FRIENDLY_REF_PREFIX)) throw new Error('This friendly match was not started. Set it up again.');
+    if (!staged && routeId.startsWith(FRIENDLY_REF_PREFIX)) throw new Error(t('scoring.errors.friendlyNotStarted'));
     return {
       userId, matchId: staged?.matchId ?? localEventId(), fixtureRef: routeId, session: newSession(staged?.setup),
       saved: { matchExists: false, auditLength: 0, resultKey: null },
     };
   }
-  if (!(await canScoreMatch(match.id))) throw new Error('Only the assigned scorer can score this match.');
+  if (!(await canScoreMatch(match.id))) throw new Error(t('scoring.errors.onlyAssignedScorer'));
   const outbox = outboxes.outboxFor(userId, match.id, match.fixture_ref ?? routeId);
   await outbox.flush();
   const [players, events] = await Promise.all([fetchPlayers(match.id), fetchEvents(match.id)]);
   if (match.status === 'scheduled' && (match.fixture_ref ?? '').startsWith(FRIENDLY_REF_PREFIX)) {
     const a = players.filter((player) => player.side === 'a' && player.in_playing_xi).length;
     const b = players.filter((player) => player.side === 'b' && player.in_playing_xi).length;
-    if (a < 4 || a !== b) throw new Error('This match setup is incomplete. Create the match again.');
+    if (a < 4 || a !== b) throw new Error(t('scoring.errors.setupIncomplete'));
   }
   outbox.rebase(events.map((event) => event.id), match.score_head ?? null);
   const session = replayEvents({ ...newSession(), setup: setupFromRows(match, players) }, events);

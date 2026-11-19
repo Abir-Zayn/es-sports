@@ -14,21 +14,15 @@ import { quadrantSplit } from '@/lib/pitch-quadrant';
 import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { ScorerFrame, ScorerHeader, ScorerNotice } from './components/scorer-ui';
-import { computeResult } from './data/match-result';
 import { sideOf } from './data/sides';
 import { matchPerformances, rollupCareerStats, topPerformers, type MatchPlayerLine } from './engine/career-stats-rollup';
 import { oversLabel } from './engine/score-delivery';
 import { useScorer } from './scorer-provider';
 import { useScorerRoutes } from './use-scorer-routes';
+import { computeResult, formatMatchResult } from './data/match-result';
+import { useTranslation } from '@/i18n';
 
 type SummaryTab = 'all' | 'standings' | 'wagon' | 'careers';
-
-const SUMMARY_TABS: UnderlineTabItem<SummaryTab>[] = [
-  { id: 'all', label: 'Summary' },
-  { id: 'standings', label: 'Innings' },
-  { id: 'wagon', label: 'Shot map' },
-  { id: 'careers', label: 'Careers' },
-];
 
 const batting = (p: MatchPlayerLine) => `${p.runs}${p.isNotOut ? '*' : ''} (${p.ballsFaced})`;
 const bowling = (p: MatchPlayerLine) => `${p.wicketsTaken}/${p.runsConceded} (${oversLabel(p.ballsBowled)})`;
@@ -39,6 +33,7 @@ export function MatchResultScreen() {
   const routes = useScorerRoutes();
   const { colors } = useTheme();
   const s = useThemedStyles(styles);
+  const { t, locale } = useTranslation();
   const ledger = useLedger();
   const [tab, setTab] = useState<SummaryTab>('all');
   const result = useMemo(() => (score ? computeResult(score) : null), [score]);
@@ -47,13 +42,19 @@ export function MatchResultScreen() {
   if (!score || !result || !score.previousInnings) {
     return (
       <ScorerFrame>
-        <ScorerHeader title="Match summary" onBack={routes.back} />
-        <ScorerNotice>The summary is ready when the second innings ends.</ScorerNotice>
-        <Button label="Back to scoring" onPress={() => routes.replace('pad')} />
+        <ScorerHeader title={t('scoring.result.title')} onBack={routes.back} />
+        <ScorerNotice>{t('scoring.result.waitSecondInnings')}</ScorerNotice>
+        <Button label={t('scoring.wicket.backToScoring')} onPress={() => routes.replace('pad')} />
       </ScorerFrame>
     );
   }
 
+  const summaryTabs: UnderlineTabItem<SummaryTab>[] = [
+    { id: 'all', label: t('scoring.result.tabAll') },
+    { id: 'standings', label: t('scoring.result.tabInnings') },
+    { id: 'wagon', label: t('scoring.result.tabWagon') },
+    { id: 'careers', label: t('scoring.result.tabCareers') },
+  ];
   const first = score.previousInnings;
   const innings = [
     { code: first.team, runs: first.runs, wickets: first.wickets, balls: first.balls },
@@ -61,9 +62,9 @@ export function MatchResultScreen() {
   ];
   const top = topPerformers(lines);
   const highlights: ResultHighlight[] = [
-    ...(top.mvp ? [{ title: 'PLAYER OF THE MATCH', name: top.mvp.playerName, figure: top.mvp.ballsBowled > 0 && top.mvp.wicketsTaken > 0 ? bowling(top.mvp) : batting(top.mvp) }] : []),
-    ...(top.batter ? [{ title: 'BEST BATTER', name: top.batter.playerName, figure: batting(top.batter) }] : []),
-    ...(top.bowler ? [{ title: 'BEST BOWLER', name: top.bowler.playerName, figure: bowling(top.bowler) }] : []),
+    ...(top.mvp ? [{ title: t('scoring.result.mvp'), tag: 'MVP' as const, name: top.mvp.playerName, figure: top.mvp.ballsBowled > 0 && top.mvp.wicketsTaken > 0 ? bowling(top.mvp) : batting(top.mvp) }] : []),
+    ...(top.batter ? [{ title: t('scoring.result.bestBatter'), tag: 'BAT' as const, name: top.batter.playerName, figure: batting(top.batter) }] : []),
+    ...(top.bowler ? [{ title: t('scoring.result.bestBowler'), tag: 'BOWL' as const, name: top.bowler.playerName, figure: bowling(top.bowler) }] : []),
   ];
   const shots = [...first.shots, ...score.shots];
   // Careers count matches scored on this device; this match is left out of "before" so it is added once.
@@ -76,32 +77,32 @@ export function MatchResultScreen() {
   const showCareers = tab === 'all' || tab === 'careers';
 
   return (
-    <ScorerFrame footer={<Button label="Done" onPress={routes.leave} />}>
+    <ScorerFrame footer={<Button label={t('common.done')} onPress={routes.leave} />}>
       <View style={s.topRow}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={routes.back}
+        <Pressable accessibilityRole="button" accessibilityLabel={t('common.back')} onPress={routes.back}
           style={({ pressed }) => [s.backBtn, pressed && s.pressed]}>
           <ChevronLeft size={sizes.icon} color={colors.text} strokeWidth={2.2} />
         </Pressable>
-        <Text accessibilityRole="header" style={s.topTitle} numberOfLines={1}>Match summary</Text>
+        <Text accessibilityRole="header" style={s.topTitle} numberOfLines={1}>{t('scoring.result.title')}</Text>
         <View style={s.topSpacer} />
       </View>
       <View style={s.bleedTabs}>
-        <MatchResultSummaryCard headline={result.result_summary} highlights={highlights}
+        <MatchResultSummaryCard headline={formatMatchResult(score, locale) ?? result.result_summary} highlights={highlights}
           teams={innings.map((i) => ({
             team: score.teams[i.code], score: `${i.runs}/${i.wickets}`, overs: oversLabel(i.balls), won: result.winner_side === sideOf[i.code],
           }))} />
-        <UnderlineTabs tabs={SUMMARY_TABS} selected={tab} onSelect={setTab} />
+        <UnderlineTabs tabs={summaryTabs} selected={tab} onSelect={setTab} />
       </View>
       {showStandings ? (
         <View style={s.section}>
           <View style={s.sectionHead}>
-            <Text accessibilityRole="header" style={s.sectionTitle}>Innings breakdown</Text>
+            <Text accessibilityRole="header" style={s.sectionTitle}>{t('scoring.result.inningsBreakdown')}</Text>
             <Info size={sizes.iconSmall} color={colors.textMuted} strokeWidth={2} />
           </View>
           <View style={s.tableFlat}>
             <View style={[s.tableRow, s.tableHead]}>
               <Text style={[s.headCell, s.colRank]}>#</Text>
-              <Text style={[s.headCell, s.colTeam]}>Team</Text>
+              <Text style={[s.headCell, s.colTeam]}>{t('scoring.result.teamCol')}</Text>
               <Text style={[s.headCell, s.colStat]}>OV</Text>
               <Text style={[s.headCell, s.colStat]}>W</Text>
               <Text style={[s.headCell, s.colPts]}>RUNS</Text>
@@ -127,29 +128,29 @@ export function MatchResultScreen() {
       {showWagon ? (
         <View style={s.section}>
           <View style={s.sectionHead}>
-            <Text accessibilityRole="header" style={s.sectionTitle}>Where the runs came from</Text>
+            <Text accessibilityRole="header" style={s.sectionTitle}>{t('scoring.result.whereRunsCameFrom')}</Text>
             <Info size={sizes.iconSmall} color={colors.textMuted} strokeWidth={2} />
           </View>
           {shots.length > 0 ? (
             <View style={s.wagonGroup}>
-              <WagonWheel shots={shots} filter="all" accessibilityLabel={`Wagon wheel of ${shots.length} scoring shots in the match`} />
+              <WagonWheel shots={shots} filter="all" accessibilityLabel={t('scoring.result.wagonWheelA11y', { count: shots.length })} />
               <QuadrantSplitCards split={quadrantSplit(shots)} />
             </View>
           ) : (
-            <View style={s.flatNote}><ScorerNotice>No shot directions were recorded in this match.</ScorerNotice></View>
+            <View style={s.flatNote}><ScorerNotice>{t('scoring.result.noShotsRecorded')}</ScorerNotice></View>
           )}
         </View>
       ) : null}
       {showCareers ? (
         <View style={s.section}>
           <View style={s.sectionHead}>
-            <Text accessibilityRole="header" style={s.sectionTitle}>Career updated</Text>
+            <Text accessibilityRole="header" style={s.sectionTitle}>{t('scoring.result.careerUpdated')}</Text>
             <Info size={sizes.iconSmall} color={colors.textMuted} strokeWidth={2} />
           </View>
           {careers.length > 0 ? (
             <View style={s.tableFlat}>
               <View style={[s.tableRow, s.tableHead]}>
-                <Text style={[s.headCell, s.colTeam]}>Player</Text>
+                <Text style={[s.headCell, s.colTeam]}>{t('scoring.result.playerCol')}</Text>
                 <Text style={[s.headCell, s.colStat]}>M</Text>
                 <Text style={[s.headCell, s.colStat]}>WKTS</Text>
                 <Text style={[s.headCell, s.colStat]}>AVG</Text>
@@ -157,7 +158,13 @@ export function MatchResultScreen() {
               </View>
               {careers.map(({ line, update }) => (
                 <View key={line.playerId} style={[s.tableRow, s.rowBar]} accessible
-                  accessibilityLabel={`${line.playerName}: highest ${update.highestRun}, ${update.totalMatches} matches, ${update.totalWickets} wickets, average ${update.avg}`}>
+                  accessibilityLabel={t('scoring.result.careerPlayerA11y', {
+                    name: line.playerName,
+                    highest: update.highestRun,
+                    matches: update.totalMatches,
+                    wickets: update.totalWickets,
+                    avg: update.avg,
+                  })}>
                   <Text style={[s.teamCellName, s.colTeam]} numberOfLines={1}>{line.playerName}</Text>
                   <Text style={[s.cellNum, s.colStat]}>{update.totalMatches}</Text>
                   <Text style={[s.cellNum, s.colStat]}>{update.totalWickets}</Text>
@@ -167,9 +174,7 @@ export function MatchResultScreen() {
               ))}
             </View>
           ) : null}
-          <ScorerNotice>{careers.length > 0
-            ? 'Players added from the app get this match on their profile. Guest figures stay with the match.'
-            : 'Everyone played as a guest, so no profiles changed. Add players from the app to build their careers.'}</ScorerNotice>
+          <ScorerNotice>{t(careers.length > 0 ? 'scoring.result.careerLinkedNotice' : 'scoring.result.careerGuestNotice')}</ScorerNotice>
         </View>
       ) : null}
     </ScorerFrame>

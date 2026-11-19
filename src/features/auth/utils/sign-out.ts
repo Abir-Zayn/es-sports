@@ -1,3 +1,4 @@
+import { t } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 
 export async function signOut(): Promise<{ ok: true } | { ok: false; message: string }> {
@@ -7,5 +8,5 @@ export async function signOut(): Promise<{ ok: true } | { ok: false; message: st
   } catch {
     // Keep the current screen and allow retry if revocation or secure storage fails.
   }
-  return { ok: false, message: 'Couldn’t log out. Check your connection and try again.' };
+  return { ok: false, message: t('auth.err.signOutFailed') };
 }

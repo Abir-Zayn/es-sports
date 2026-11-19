@@ -1,25 +1,32 @@
 import { ScrollView, StyleSheet } from 'react-native';
 
 import { Section, SectionHeader } from '@/components/ui';
-import { sizes, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { dp, sizes, spacing } from '@/theme';
 
 import { HomeEmptyState } from '../components/home-empty-state';
+import { SectionStatus, type LoadStatus } from '../components/section-status';
 import { TOURNAMENT_CARD_WIDTH, TournamentCard } from '../components/tournament-card';
-import type { Tournament } from '../sample-data';
+import type { Tournament } from '../components/tournament-card';
 
 const CARD_GAP = spacing.md;
 
 type Props = {
   tournaments: Tournament[];
+  status: LoadStatus;
+  onRetry: () => void;
   onTournamentPress: (tournament: Tournament) => void;
 };
 
 /** Tournaments worth following, as a sideways scroller of cards. */
-export function TournamentsToFollow({ tournaments, onTournamentPress }: Props) {
+export function TournamentsToFollow({ tournaments, status, onRetry, onTournamentPress }: Props) {
+  const { t } = useTranslation();
   return (
     <Section>
-      <SectionHeader title="Tournaments to follow" />
-      {tournaments.length > 0 ? (
+      <SectionHeader title={t('home.tournaments.title')} />
+      {status !== 'ready' ? (
+        <SectionStatus status={status} what={t('home.tournaments.what')} height={dp(180)} onRetry={onRetry} />
+      ) : tournaments.length > 0 ? (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -32,7 +39,7 @@ export function TournamentsToFollow({ tournaments, onTournamentPress }: Props) {
           ))}
         </ScrollView>
       ) : (
-        <HomeEmptyState title="No tournaments yet" message="New tournaments near you will appear here." />
+        <HomeEmptyState title={t('home.tournaments.emptyTitle')} message={t('home.tournaments.emptyMessage')} />
       )}
     </Section>
   );

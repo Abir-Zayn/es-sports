@@ -1,7 +1,8 @@
 import type { BallEventRow } from '@/features/scoring/data/types';
+import { getLocale, translate, type Locale } from '@/i18n';
 
 import type { OverSummary } from '../types';
-import { padOver } from './live-view';
+import { countLabel, padOver } from './live-view';
 
 const LABELS = { wide: 'Wd', 'no-ball': 'Nb', bye: 'B', 'leg-bye': 'Lb', wicket: 'W' } as const;
 
@@ -20,7 +21,13 @@ export function inningsDeliveries(rows: readonly BallEventRow[], innings: 1 | 2)
  * Every over of an innings, newest first, built from the ball log. The last over is marked in progress when
  * it has fewer than six legal balls and the innings is still going; its unbowled balls are empty chips.
  */
-export function oversOf(rows: readonly BallEventRow[], innings: 1 | 2, nameOf: (key: string | null) => string, inningsOver: boolean): OverSummary[] {
+export function oversOf(
+  rows: readonly BallEventRow[],
+  innings: 1 | 2,
+  nameOf: (key: string | null) => string,
+  inningsOver: boolean,
+  locale: Locale = getLocale(),
+): OverSummary[] {
   const overs: (OverSummary & { legal: number; batters: string[] })[] = [];
   let legal = 0;
   let runs = 0;
@@ -47,18 +54,22 @@ export function oversOf(rows: readonly BallEventRow[], innings: 1 | 2, nameOf: (
   return overs.map(({ legal: count, batters, ...over }, index) => {
     const inProgress = index === overs.length - 1 && count < 6 && !inningsOver;
     return {
-      ...over, to: `to ${batters.join(' & ')}${inProgress ? ' · in progress' : ''}`,
+      ...over,
+      to: translate(locale, inProgress ? 'match.over.toBattersLive' : 'match.over.toBatters', { batters: batters.join(' & ') }),
       balls: inProgress ? padOver(over.balls, count) : over.balls, ...(inProgress ? { inProgress } : {}),
     };
   }).reverse();
 }
 
 /** The current stand: runs and legal balls since the last wicket of the innings, e.g. "41 runs · 26 balls". */
-export function partnershipOf(rows: readonly BallEventRow[], innings: 1 | 2): string {
+export function partnershipOf(rows: readonly BallEventRow[], innings: 1 | 2, locale: Locale = getLocale()): string {
   const deliveries = inningsDeliveries(rows, innings);
   const lastWicket = deliveries.map((r) => r.delivery_kind).lastIndexOf('wicket');
   const stand = deliveries.slice(lastWicket + 1);
   const runs = stand.reduce((sum, r) => sum + (r.total_runs ?? 0), 0);
   const balls = stand.filter((r) => r.is_legal).length;
-  return `${runs} run${runs === 1 ? '' : 's'} · ${balls} ball${balls === 1 ? '' : 's'}`;
+  return translate(locale, 'match.live.partnershipLine', {
+    runsText: countLabel(runs, 'run', locale),
+    ballsText: countLabel(balls, 'ball', locale),
+  });
 }

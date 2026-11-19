@@ -1,3 +1,5 @@
+import { getLocale, translate, type Locale } from '@/i18n';
+
 import { allOutAt } from '../engine/score-delivery';
 import type { ScoreState } from '../types';
 import { sideOf, teamOf } from './sides';
@@ -34,6 +36,30 @@ export function computeResult(score: ScoreState): MatchResult | null {
   if (score.runs === first.runs) return result(base, null, 'tie', null, 'Match tied');
   const margin = first.runs - score.runs;
   return result(base, firstSide, 'runs', margin, `${name(firstSide)} won by ${plural(margin, 'run')}`);
+}
+
+/** Localized display summary for UI screens while keeping persisted DB `result_summary` canonical. */
+export function formatMatchResult(score: ScoreState, locale: Locale = getLocale()): string | null {
+  const first = score.previousInnings;
+  const res = computeResult(score);
+  if (!res || !first) return null;
+  if (res.result_type === 'tie') return translate(locale, 'matches.matchTied');
+  const name = (side: Side) => score.teams[teamOf(side)].name;
+  if (res.result_type === 'wickets' && res.winner_side && res.result_margin !== null) {
+    const wicketsText = translate(locale, res.result_margin === 1 ? 'scoring.result.wicketOne' : 'scoring.result.wicketMany', { count: res.result_margin });
+    const ballsLeft = score.oversLimit * 6 - score.balls;
+    const leftText = ballsLeft > 0
+      ? translate(locale, 'scoring.result.ballsLeftSuffix', {
+        ballsText: translate(locale, ballsLeft === 1 ? 'match.ballOne' : 'match.ballMany', { count: ballsLeft }),
+      })
+      : '';
+    return translate(locale, 'scoring.result.wonByWickets', { team: name(res.winner_side), wicketsText, leftText });
+  }
+  if (res.result_type === 'runs' && res.winner_side && res.result_margin !== null) {
+    const runsText = translate(locale, res.result_margin === 1 ? 'match.runOne' : 'match.runMany', { count: res.result_margin });
+    return translate(locale, 'scoring.result.wonByRuns', { team: name(res.winner_side), runsText });
+  }
+  return res.result_summary;
 }
 
 function result(

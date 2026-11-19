@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppAvatar, Text } from '@/components/ui';
 import { dp, radius, shadows, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
@@ -14,10 +14,10 @@ const PODIUM_ORDER = [1, 0, 2] as const;
 const AVATAR_SIZE = [dp(76), dp(60), dp(60)] as const;
 const BLOCK_HEIGHT = [dp(96), dp(72), dp(58)] as const;
 
-type Props = { leaders: StatLeader[]; unit: string };
+type Props = { leaders: StatLeader[]; unit: string; onPressPlayer?: (leader: StatLeader) => void };
 
 /** The top three of a leaderboard, with the leader raised in the middle. */
-export function StatPodium({ leaders, unit }: Props) {
+export function StatPodium({ leaders, unit, onPressPlayer }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   return (
@@ -28,11 +28,14 @@ export function StatPodium({ leaders, unit }: Props) {
         const first = place === 0;
         const medal = MEDALS[place];
         return (
-          <View
-            key={leader.rank}
+          <Pressable
+            key={leader.id ?? `${leader.rank}-${leader.name}`}
+            disabled={!onPressPlayer || !leader.id}
+            onPress={() => onPressPlayer?.(leader)}
+            accessibilityRole={onPressPlayer && leader.id ? 'button' : undefined}
             accessible
             accessibilityLabel={`${leader.rank}. ${leader.name}, ${leader.team}, ${leader.value} ${unit}`}
-            style={styles.place}
+            style={({ pressed }) => [styles.place, pressed && styles.pressed]}
           >
             <View>
               <AppAvatar label={leader.initials} size={AVATAR_SIZE[place]} borderColor={medal} borderWidth={3} />
@@ -58,7 +61,7 @@ export function StatPodium({ leaders, unit }: Props) {
                 {unit}
               </Text>
             </View>
-          </View>
+          </Pressable>
         );
       })}
     </View>
@@ -69,6 +72,7 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     row: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing.sm, paddingTop: spacing.sm },
     place: { flex: 1, minWidth: 0, alignItems: 'center', gap: spacing.sm },
+    pressed: { opacity: 0.6 },
     medal: {
       position: 'absolute',
       bottom: -spacing.sm,

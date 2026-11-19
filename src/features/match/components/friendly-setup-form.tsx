@@ -4,6 +4,7 @@ import Plus from 'lucide-react-native/icons/plus';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppIconTile, InitialsAvatar, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { initialsOf } from '@/lib/initials';
 import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
@@ -21,13 +22,15 @@ type FormatProps = {
 export function FriendlyFormatCard({ overs, playersPerSide, error, onOvers, onPlayersPerSide }: FormatProps) {
   const s = useThemedStyles(styles);
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const quota = oversPerBowler(overs);
+  const quotaText = quota === 1 ? t('friendly.form.overOne', { count: quota }) : t('friendly.form.overMany', { count: quota });
   return <View style={s.card}>
-    <Text muted style={s.label}>Overs</Text>
-    <View style={s.pills} accessibilityRole="radiogroup" accessibilityLabel="Overs">
+    <Text muted style={s.label}>{t('friendly.form.oversLabel')}</Text>
+    <View style={s.pills} accessibilityRole="radiogroup" accessibilityLabel={t('friendly.form.oversLabel')}>
       {OVERS_OPTIONS.map((value) => {
         const on = value === overs;
-        return <Pressable key={value} accessibilityRole="radio" accessibilityState={{ checked: on }} accessibilityLabel={`${value} overs`}
+        return <Pressable key={value} accessibilityRole="radio" accessibilityState={{ checked: on }} accessibilityLabel={t('friendly.form.oversOptionA11y', { count: value })}
           onPress={() => onOvers(value)} style={({ pressed }) => [s.pill, on && s.pillOn, pressed && s.pressed]}>
           <Text style={[s.pillText, on && s.pillTextOn]}>{value}</Text>
         </Pressable>;
@@ -36,18 +39,18 @@ export function FriendlyFormatCard({ overs, playersPerSide, error, onOvers, onPl
     <View style={s.divider} />
     <View style={s.stepper}>
       <View style={s.stepperText}>
-        <Text style={s.rowTitle}>Players a side</Text>
-        <Text muted style={s.caption}>{SIDE_MIN} to {SIDE_MAX}</Text>
+        <Text style={s.rowTitle}>{t('friendly.form.playersPerSide')}</Text>
+        <Text muted style={s.caption}>{t('friendly.form.playersRange', { min: SIDE_MIN, max: SIDE_MAX })}</Text>
       </View>
       <View style={s.stepperControl}>
-        <AppIconTile icon={Minus} size={sizes.iconButton} borderRadius={radius.pill} backgroundColor={colors.surface} accessibilityLabel="Fewer players a side"
+        <AppIconTile icon={Minus} size={sizes.iconButton} borderRadius={radius.pill} backgroundColor={colors.surface} accessibilityLabel={t('friendly.form.fewerPlayersA11y')}
           onPress={playersPerSide > SIDE_MIN ? () => onPlayersPerSide(playersPerSide - 1) : undefined} />
-        <Text style={s.value} accessibilityLabel={`Players a side, ${playersPerSide}`}>{playersPerSide}</Text>
-        <AppIconTile icon={Plus} size={sizes.iconButton} borderRadius={radius.pill} backgroundColor={colors.surface} accessibilityLabel="More players a side"
+        <Text style={s.value} accessibilityLabel={t('friendly.form.playersValueA11y', { count: playersPerSide })}>{playersPerSide}</Text>
+        <AppIconTile icon={Plus} size={sizes.iconButton} borderRadius={radius.pill} backgroundColor={colors.surface} accessibilityLabel={t('friendly.form.morePlayersA11y')}
           onPress={playersPerSide < SIDE_MAX ? () => onPlayersPerSide(playersPerSide + 1) : undefined} />
       </View>
     </View>
-    <Text muted style={s.caption}>{overs} overs · {playersPerSide} a side · up to {quota} over{quota === 1 ? '' : 's'} per bowler. Extra players sit on the bench.</Text>
+    <Text muted style={s.caption}>{t('friendly.form.summary', { overs, players: playersPerSide, quotaText })}</Text>
     {error ? <Text style={s.error} accessibilityLiveRegion="polite">{error}</Text> : null}
   </View>;
 }
@@ -58,8 +61,9 @@ type ScorerProps = { name: string; avatarUrl?: string | null; detail: string; er
 export function ScorerAssignmentRow({ name, avatarUrl, detail, error, onPress }: ScorerProps) {
   const s = useThemedStyles(styles);
   const { colors } = useTheme();
+  const { t } = useTranslation();
   return <View style={s.group}>
-    <Pressable accessibilityRole="button" accessibilityLabel={`Scorer: ${name}. Change scorer`} onPress={onPress}
+    <Pressable accessibilityRole="button" accessibilityLabel={t('friendly.form.scorerA11y', { name })} onPress={onPress}
       style={({ pressed }) => [s.card, s.row, pressed && s.rowPressed]}>
       <InitialsAvatar label={initialsOf(name)} imageUri={avatarUrl} size={sizes.avatar} />
       <View style={s.rowText}><Text style={s.rowTitle}>{name}</Text><Text muted style={s.caption}>{detail}</Text></View>

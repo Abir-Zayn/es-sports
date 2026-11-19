@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { Text } from '@/components/ui';
+import { useTranslation, type TranslationKey } from '@/i18n';
 import { palettes, shadows, spacing, typography, useTheme } from '@/theme';
 
 import { BallIcon } from './ball-icon';
@@ -20,9 +21,9 @@ const SCRIM_BOTTOM_OPACITY = 0.9;
 const ACTION_SIZE = 64;
 const RADIUS = 120;
 // Angles from the + button, in degrees: up-left and up-right.
-const actions: { choice: CreateChoice; label: string; icon: ComponentType<{ size?: number; color?: string }>; angle: number }[] = [
-  { choice: 'tournament', label: 'Create Tournament', icon: Trophy, angle: 125 },
-  { choice: 'friendly', label: 'Friendly Match', icon: BallIcon, angle: 55 },
+const actions: { choice: CreateChoice; labelKey: TranslationKey; icon: ComponentType<{ size?: number; color?: string }>; angle: number }[] = [
+  { choice: 'tournament', labelKey: 'nav.createTournament', icon: Trophy, angle: 125 },
+  { choice: 'friendly', labelKey: 'nav.friendlyMatch', icon: BallIcon, angle: 55 },
 ];
 const CLOSE_MS = 180;
 const spring = { damping: 16, stiffness: 180, mass: 0.8 };
@@ -37,6 +38,7 @@ type Props = { open: boolean; onChoose: (choice: CreateChoice) => void; onClose:
 export function RadialCreateMenu({ open, onChoose, onClose }: Props) {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
   const progress = useSharedValue(0);
   // Stays mounted through the closing animation, then unmounts so it never blocks touches.
@@ -78,13 +80,13 @@ export function RadialCreateMenu({ open, onChoose, onClose }: Props) {
           </Defs>
           <Rect width="100%" height="100%" fill="url(#scrim)" />
         </Svg>
-        <Pressable style={StyleSheet.absoluteFill} accessibilityRole="button" accessibilityLabel="Dismiss create menu" onPress={onClose} />
+        <Pressable style={StyleSheet.absoluteFill} accessibilityRole="button" accessibilityLabel={t('nav.dismissCreateMenu')} onPress={onClose} />
       </Animated.View>
       <View pointerEvents="box-none" style={[styles.anchor, { bottom: centreFromBottom }]}>
         {actions.map((action, index) => (
-          <RadialAction key={action.choice} {...action} index={index} progress={progress} onPress={() => onChoose(action.choice)} />
+          <RadialAction key={action.choice} {...action} label={t(action.labelKey)} index={index} progress={progress} onPress={() => onChoose(action.choice)} />
         ))}
-        <Pressable accessibilityRole="button" accessibilityLabel="Close create menu" onPress={onClose}
+        <Pressable accessibilityRole="button" accessibilityLabel={t('nav.closeCreateMenu')} onPress={onClose}
           style={[styles.close, { backgroundColor: colors.primary }]}>
           <Animated.View style={closeStyle}>
             <Plus size={24} color={colors.primaryText} strokeWidth={2.5} />
@@ -95,7 +97,7 @@ export function RadialCreateMenu({ open, onChoose, onClose }: Props) {
   );
 }
 
-type ActionProps = (typeof actions)[number] & { index: number; progress: SharedValue<number>; onPress: () => void };
+type ActionProps = (typeof actions)[number] & { label: string; index: number; progress: SharedValue<number>; onPress: () => void };
 
 function RadialAction({ label, icon: Icon, angle, index, progress, onPress }: ActionProps) {
   const { colors } = useTheme();

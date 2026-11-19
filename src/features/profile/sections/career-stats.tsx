@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, Section, SectionHeader, Text } from '@/components/ui';
+import { useTranslation, type TranslationKey } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { BattingStats, BowlingStats } from '@/types/profile';
 
@@ -14,39 +15,40 @@ type Props = {
   onFindTeam: () => void;
 };
 
-const modes = [
-  { id: 'bat' as const, label: 'Batting', icon: require('../../../../assets/images/career-bat.svg') },
-  { id: 'bowl' as const, label: 'Bowling', icon: require('../../../../assets/images/career-ball.svg') },
+const modes: { id: Mode; labelKey: TranslationKey; icon: number }[] = [
+  { id: 'bat', labelKey: 'profile.career.batting', icon: require('../../../../assets/images/career-bat.svg') },
+  { id: 'bowl', labelKey: 'profile.career.bowling', icon: require('../../../../assets/images/career-ball.svg') },
 ];
 
-function battingCells(s: BattingStats): [string, string | number][] {
+function battingCells(s: BattingStats): [TranslationKey, string | number][] {
   return [
-    ['Matches', s.matches],
-    ['Innings', s.innings],
-    ['Runs', s.runs],
-    ['Highest', s.highest],
-    ['Average', s.average],
-    ['Strike rate', s.strikeRate],
-    ['50s', s.fifties],
-    ['100s', s.hundreds],
+    ['profile.stats.matches', s.matches],
+    ['profile.career.innings', s.innings],
+    ['profile.stats.runs', s.runs],
+    ['profile.career.highest', s.highest],
+    ['profile.career.average', s.average],
+    ['profile.career.strikeRate', s.strikeRate],
+    ['profile.career.fifties', s.fifties],
+    ['profile.career.hundreds', s.hundreds],
   ];
 }
 
-function bowlingCells(s: BowlingStats): [string, string | number][] {
+function bowlingCells(s: BowlingStats): [TranslationKey, string | number][] {
   return [
-    ['Matches', s.matches],
-    ['Overs', s.overs],
-    ['Wickets', s.wickets],
-    ['Best', s.best],
-    ['Economy', s.economy],
-    ['Average', s.average],
-    ['3W', s.threeW],
-    ['5W', s.fiveW],
+    ['profile.stats.matches', s.matches],
+    ['profile.career.overs', s.overs],
+    ['profile.stats.wickets', s.wickets],
+    ['profile.career.best', s.best],
+    ['profile.career.economy', s.economy],
+    ['profile.career.average', s.average],
+    ['profile.career.threeW', s.threeW],
+    ['profile.career.fiveW', s.fiveW],
   ];
 }
 
 /** Career figures with a Bat / Bowl switch. With no matches played it invites the player to join a team. */
 export function CareerStats({ batting, bowling, onFindTeam }: Props) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const [mode, setMode] = useState<Mode>('bat');
   const empty = batting.matches === 0 && bowling.matches === 0;
@@ -54,23 +56,23 @@ export function CareerStats({ batting, bowling, onFindTeam }: Props) {
 
   return (
     <Section>
-      <SectionHeader title="Career" />
+      <SectionHeader title={t('profile.career.title')} />
       <View style={styles.body}>
         {empty ? (
           <View style={styles.empty}>
             <Text muted style={styles.emptyText}>
-              No matches yet. Join a team to start building your record.
+              {t('profile.career.empty')}
             </Text>
-            <Button label="Find a team" size="compact" onPress={onFindTeam} />
+            <Button label={t('profile.career.findTeam')} size="compact" onPress={onFindTeam} />
           </View>
         ) : (
           <>
-            <View style={styles.modes} accessibilityRole="tablist" accessibilityLabel="Career stats type">
+            <View style={styles.modes} accessibilityRole="tablist" accessibilityLabel={t('profile.career.typeA11y')}>
               {modes.map((option) => (
                 <Pressable
                   key={option.id}
                   accessibilityRole="tab"
-                  accessibilityLabel={option.label}
+                  accessibilityLabel={t(option.labelKey)}
                   accessibilityState={{ selected: mode === option.id }}
                   onPress={() => setMode(option.id)}
                   style={[styles.mode, mode === option.id && styles.modeSelected]}
@@ -80,14 +82,17 @@ export function CareerStats({ batting, bowling, onFindTeam }: Props) {
               ))}
             </View>
             <View style={styles.grid}>
-              {cells.map(([label, value]) => (
-                <View key={label} accessible accessibilityLabel={`${label} ${value}`} style={styles.cell}>
-                  <Text style={styles.value}>{value}</Text>
-                  <Text variant="bodySm" muted>
-                    {label}
-                  </Text>
-                </View>
-              ))}
+              {cells.map(([labelKey, value]) => {
+                const label = t(labelKey);
+                return (
+                  <View key={labelKey} accessible accessibilityLabel={`${label} ${value}`} style={styles.cell}>
+                    <Text style={styles.value}>{value}</Text>
+                    <Text variant="bodySm" muted>
+                      {label}
+                    </Text>
+                  </View>
+                );
+              })}
             </View>
           </>
         )}

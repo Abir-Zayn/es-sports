@@ -1,3 +1,5 @@
+import { t } from '@/i18n';
+
 import { OutboxConflictError, OutboxRejectedError, OutboxStoppedError, errorMessage, operationName, plural } from './outbox-errors';
 import { applyToHead, applyToIds, headResumeIndex, resumeIndex, withOpId, type OutboxOp } from './outbox-ops';
 import type { OutboxRecord, OutboxStore } from './outbox-store';
@@ -94,8 +96,10 @@ export class Outbox {
     await this.queue.settled();
     if (this.pending > 0) {
       if (this.stopped) throw this.stopped;
-      throw new Error(`${plural(this.pending)} to this match are saved on this phone but not sent yet. `
-        + `${this.snapshot.error ?? 'Check your connection and try again.'}`);
+      throw new Error(t('scoring.errors.flushPending', {
+        changes: plural(this.pending),
+        reason: this.snapshot.error ?? t('scoring.errors.flushCheckConn'),
+      }));
     }
   }
 
@@ -120,7 +124,7 @@ export class Outbox {
   private async send(op: OutboxOp): Promise<void> {
     // A change belongs to the account that made it; after a switch it waits on the phone for that account.
     try {
-      if ((await this.deps.currentUserId()) !== this.userId) throw new Error('Sign in with the account that recorded these changes.');
+      if ((await this.deps.currentUserId()) !== this.userId) throw new Error(t('scoring.errors.flushAccount'));
       await this.deps.send(this.matchId, op, this.record.head ?? null);
     } catch (error: unknown) {
       // Another device wrote first, or the server refused this change for good: stop, keep every change,

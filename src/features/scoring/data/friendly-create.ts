@@ -1,3 +1,4 @@
+import { t } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 
 import type { MatchInsert, PlayerRow } from './types';
@@ -8,7 +9,7 @@ const ABANDONED = 'EFA01';
 /** The setup's match id was abandoned by the image sweep, so it can never be saved. Start again with a new id. */
 export class FriendlySetupExpiredError extends Error {
   constructor() {
-    super('This match setup expired. Start the toss again.');
+    super(t('scoring.errors.expiredSetup'));
   }
 }
 
@@ -20,7 +21,7 @@ const codeOf = (error: unknown) => (typeof error === 'object' && error !== null 
  * The server sets the status, start time and creator itself.
  */
 export async function createFriendlyMatch(match: MatchInsert, players: PlayerRow[], scorers: string[] = []): Promise<string> {
-  if (scorers.length > 1) throw new Error('A friendly match can have only one assigned scorer.');
+  if (scorers.length > 1) throw new Error(t('scoring.errors.singleScorerOnly'));
   const { data, error } = await supabase.rpc('create_friendly_match', {
     p_match: match, p_players: players, ...(scorers[0] ? { p_scorer: scorers[0] } : {}),
   });

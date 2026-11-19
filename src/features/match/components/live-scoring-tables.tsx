@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { StatsTable, type StatsColumn } from '@/components/match/stats-table';
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { economy, strikeRate } from '../format';
@@ -26,21 +27,22 @@ const bowlerColumns: StatsColumn[] = [
 /** The two batters at the crease, with the stand they have built. */
 export function LiveBattersCard({ batters, partnership }: { batters: LiveBatter[]; partnership: string }) {
   const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation();
   return (
     <StatsTable
-      nameHeading="BATTER"
+      nameHeading={t('match.live.batterHeading')}
       columns={batterColumns}
       rows={batters.map((b) => ({
         key: b.name,
         name: b.name,
         marker: b.onStrike,
-        markerLabel: 'on strike',
+        markerLabel: t('match.live.onStrike'),
         values: [String(b.runs), String(b.balls), String(b.fours), String(b.sixes), strikeRate(b.runs, b.balls)],
       }))}
     >
       <View style={styles.footer}>
         <Text muted style={styles.footerLabel}>
-          Partnership
+          {t('match.live.partnership')}
         </Text>
         <Text style={styles.footerValue}>{partnership}</Text>
       </View>
@@ -50,9 +52,10 @@ export function LiveBattersCard({ batters, partnership }: { batters: LiveBatter[
 
 /** The bowler bowling now. */
 export function LiveBowlerCard({ bowler }: { bowler: BowlerLine }) {
+  const { t } = useTranslation();
   return (
     <StatsTable
-      nameHeading="BOWLER"
+      nameHeading={t('match.live.bowlerHeading')}
       columns={bowlerColumns}
       rows={[
         {

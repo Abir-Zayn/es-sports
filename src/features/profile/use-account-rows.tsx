@@ -5,8 +5,8 @@ import { useCallback, useEffect, useRef, useState, type ReactElement } from 'rea
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { SettingsRow, Text } from '@/components/ui';
-import { linkGoogleAccount } from '@/features/auth';
-import { loadLinkedAccounts, type LinkedAccounts } from '@/features/auth';
+import { linkGoogleAccount, loadLinkedAccounts, type LinkedAccounts } from '@/features/auth';
+import { useTranslation } from '@/i18n';
 import { dp, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { useProfile } from './profile-provider';
@@ -19,6 +19,7 @@ const googleG = require('../../../assets/images/google-g.png');
  * and the cloud button replaces them only after the player confirms.
  */
 export function useAccountRows(): { rows: ReactElement[]; error: string | null } {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const { importFromProvider, status } = useProfile();
   const [accounts, setAccounts] = useState<LinkedAccounts | null>(null);
@@ -72,17 +73,17 @@ export function useAccountRows(): { rows: ReactElement[]; error: string | null }
   function confirmImport() {
     const google = accounts?.google;
     if (!google) return;
-    Alert.alert('Import from Google?', 'This replaces your current name and photo with the ones from your Google account.', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('settings.importTitle'), t('settings.importBody'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Import',
+        text: t('settings.importAction'),
         onPress: () =>
           run('import', async () => {
             try {
               await importFromProvider(google, 'overwrite');
               return null;
             } catch {
-              return 'Couldn’t import from Google. Try again.';
+              return t('settings.importError');
             }
           }),
       },
@@ -93,27 +94,27 @@ export function useAccountRows(): { rows: ReactElement[]; error: string | null }
   const googleIcon = <Image source={googleG} style={styles.googleIcon} contentFit="contain" accessibilityElementsHidden />;
   const canImport = status === 'ready' && !!accounts?.google && (!!accounts.google.fullName || !!accounts.google.avatarUrl);
 
-  const emailRow = <SettingsRow key="email-login" icon={KeyRound} label="Email" value={accounts ? (accounts.hasEmail ? 'Connected' : 'Not set') : ''} />;
+  const emailRow = <SettingsRow key="email-login" icon={KeyRound} label={t('settings.email')} value={accounts ? (accounts.hasEmail ? t('settings.connected') : t('settings.notSet')) : ''} />;
   const googleRow = accounts?.google ? (
     <SettingsRow
       key="google"
-      label="Google"
+      label={t('settings.google')}
       leading={googleIcon}
       trailing={
         <View style={styles.linked}>
           <Text muted style={styles.linkedLabel}>
-            Linked
+            {t('settings.linked')}
           </Text>
-          {canImport ? <ImportButton busy={busy === 'import'} disabled={busy !== null} onPress={confirmImport} /> : null}
+          {canImport ? <ImportButton busy={busy === 'import'} disabled={busy !== null} label={t('settings.importA11y')} onPress={confirmImport} /> : null}
         </View>
       }
     />
   ) : (
     <SettingsRow
       key="google"
-      label="Google"
+      label={t('settings.google')}
       leading={googleIcon}
-      value={accounts ? 'Link' : ''}
+      value={accounts ? t('settings.link') : ''}
       trailing={busy === 'link' ? spinner : undefined}
       onPress={accounts ? link : undefined}
     />
@@ -123,12 +124,12 @@ export function useAccountRows(): { rows: ReactElement[]; error: string | null }
 }
 
 /** A cloud button beside "Linked" that replaces the name and photo with Google's, after a confirm. */
-function ImportButton({ busy, disabled, onPress }: { busy: boolean; disabled: boolean; onPress: () => void }) {
+function ImportButton({ busy, disabled, label, onPress }: { busy: boolean; disabled: boolean; label: string; onPress: () => void }) {
   const { colors } = useTheme();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="Import name and photo from Google"
+      accessibilityLabel={label}
       accessibilityState={{ disabled, busy }}
       disabled={disabled}
       hitSlop={sizes.hitSlop}
