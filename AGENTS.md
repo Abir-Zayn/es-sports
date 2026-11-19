@@ -31,6 +31,22 @@ Run lint and typecheck before declaring any task done.
 - Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
 - Docs: https://docs.expo.dev/router/introduction.md
 
+## Feature folder layout
+
+Every feature in `src/features/<name>/` uses the same folders. `auth` is the reference; other features are being moved over one at a time.
+
+| Folder | Holds |
+|---|---|
+| `screens/` | Full screens that a route in `src/app/` renders |
+| `components/` | UI pieces used by this feature's screens, plus providers |
+| `server/` | Every function that talks to Supabase or another backend |
+| `utils/` | Pure helpers, schemas and hooks with no direct backend calls |
+| `types/` | The feature's TypeScript types (`types/index.ts`) |
+| `__tests__/` | Tests |
+| `index.ts` | Public API. Other features import from `@/features/<name>` only, never from files inside it |
+
+Do not put files directly in the feature root (only `index.ts`). Move files with `git mv` so history follows them.
+
 ## Building with EAS
 
 > **MANDATORY — release rules:** read and follow [PIPELINE.md](PIPELINE.md) before any `eas build`, `eas update`, or change to `eas.json`, `app.json`, `app.config.js`, or `.eas/workflows/`. Users only get what is merged to `main`; never ship from a local checkout.
