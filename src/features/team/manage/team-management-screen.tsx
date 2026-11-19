@@ -55,7 +55,7 @@ export function TeamManagementScreen() {
                 router.push({ pathname: '/team/[id]/manage', params: { id: team.id } });
               }}
               style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
-              <InitialsAvatar label={team.shortName} imageUri={team.logoUrl} size={sizes.avatar} />
+              <InitialsAvatar label={team.shortName} tone={team.tone} imageUri={team.logoUrl} size={sizes.avatar} />
               <View style={styles.names}>
                 <Text style={styles.name} numberOfLines={1}>{team.name}</Text>
                 <Text variant="caption" muted>{canManage(team.myRole) ? 'Add and remove members' : 'View members or leave'}</Text>

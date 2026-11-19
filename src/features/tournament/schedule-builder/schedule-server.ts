@@ -2,16 +2,18 @@
 // that the owner moves or cancels one match at a time, and the teams playing are notified.
 import { traceApi } from '@/lib/api-log';
 import { supabase } from '@/lib/supabase';
+import type { AvatarTone } from '@/theme';
 
 import { toTournamentError } from '../data/tournament-errors';
 import type { Schedule, ScheduledMatch, ScheduleMode, SideRef, SlotSettings, StageName, LinkedMatch } from './types';
 
 const stages: readonly StageName[] = ['League', 'Round of 16', 'Quarter-final', 'Semi-final', 'Final'];
+const tones: readonly AvatarTone[] = ['blue', 'yellow', 'neutral'];
 /** 16 teams in a league with knockouts is 123 matches; the server allows 200. */
 const FIXTURE_LIMIT = 200;
 const DEFAULT_SETTINGS: SlotSettings = { perDay: 2, firstStartMin: 9 * 60 };
 
-type TeamRow = { id: string; name: string; short_name: string } | null;
+type TeamRow = { id: string; name: string; short_name: string; tone?: string | null; logo_url?: string | null } | null;
 type FixtureRow = {
   id: string; number: number; stage: string; round: number; home_label: string | null; away_label: string | null;
   match_date: string; start_min: number; status: string; cancel_reason: string | null; match_id: string | null;
@@ -19,7 +21,13 @@ type FixtureRow = {
 };
 
 function side(team: TeamRow, label: string | null): SideRef {
-  if (team) return { kind: 'team', team: { id: team.id, name: team.name, short: team.short_name } };
+  if (team) {
+    const tone = tones.find((item) => item === team.tone) ?? 'neutral';
+    return {
+      kind: 'team',
+      team: { id: team.id, name: team.name, short: team.short_name, tone, logoUrl: team.logo_url ?? null },
+    };
+  }
   // A team deleted after its match was cancelled leaves neither; the old match still needs a name.
   return { kind: 'tbd', label: label ?? 'Team removed' };
 }
@@ -38,7 +46,7 @@ export async function fetchServerSchedule(tournamentId: string): Promise<Schedul
     traceApi('schedule.settings', { tournamentId }, () => supabase.from('tournaments')
       .select('schedule_mode, slots_per_day, first_start_min, schedule_published_at').eq('id', tournamentId).maybeSingle()),
     traceApi('schedule.fixtures', { tournamentId }, () => supabase.from('tournament_fixtures')
-      .select('id, number, stage, round, home_label, away_label, match_date, start_min, status, cancel_reason, match_id, home:teams!tournament_fixtures_home_team_id_fkey(id, name, short_name), away:teams!tournament_fixtures_away_team_id_fkey(id, name, short_name), match:matches!tournament_fixtures_match_id_fkey(id, status, team_a_runs, team_a_wickets, team_a_balls, team_b_runs, team_b_wickets, team_b_balls, overs_limit, winner_side, result_summary, completed_at)')
+      .select('id, number, stage, round, home_label, away_label, match_date, start_min, status, cancel_reason, match_id, home:teams!tournament_fixtures_home_team_id_fkey(id, name, short_name, tone, logo_url), away:teams!tournament_fixtures_away_team_id_fkey(id, name, short_name, tone, logo_url), match:matches!tournament_fixtures_match_id_fkey(id, status, team_a_runs, team_a_wickets, team_a_balls, team_b_runs, team_b_wickets, team_b_balls, overs_limit, winner_side, result_summary, completed_at)')
       .eq('tournament_id', tournamentId).order('match_date').order('start_min').limit(FIXTURE_LIMIT)),
   ]);
   if (settings.error) throw toTournamentError(settings.error);

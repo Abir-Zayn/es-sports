@@ -721,6 +721,7 @@ export type Database = {
       teams: {
         Row: {
           area: string | null
+          cover_url: string | null
           created_at: string
           created_by: string | null
           district: string | null
@@ -733,6 +734,7 @@ export type Database = {
         }
         Insert: {
           area?: string | null
+          cover_url?: string | null
           created_at?: string
           created_by?: string | null
           district?: string | null
@@ -745,6 +747,7 @@ export type Database = {
         }
         Update: {
           area?: string | null
+          cover_url?: string | null
           created_at?: string
           created_by?: string | null
           district?: string | null
@@ -1095,6 +1098,7 @@ export type Database = {
         Row: {
           balls_against: number | null
           balls_for: number | null
+          logo_url: string | null
           lost: number | null
           name: string | null
           nrr: number | null
@@ -1200,6 +1204,10 @@ export type Database = {
       cancel_tournament_fixture: {
         Args: { p_fixture: string; p_reason: string }
         Returns: undefined
+      }
+      can_manage_team_media: {
+        Args: { p_team_text: string }
+        Returns: boolean
       }
       claim_push_batch: {
         Args: { p_limit?: number }
@@ -1327,6 +1335,18 @@ export type Database = {
           p_tournament: string
         }
         Returns: undefined
+      }
+      update_tournament_team_images: {
+        Args: {
+          p_cover_url: string | null
+          p_logo_url: string | null
+          p_team: string
+          p_tournament: string
+        }
+        Returns: {
+          previous_cover_url: string | null
+          previous_logo_url: string | null
+        }[]
       }
       delete_tournament: { Args: { p_tournament: string }; Returns: undefined }
       restore_tournament: { Args: { p_tournament: string }; Returns: undefined }

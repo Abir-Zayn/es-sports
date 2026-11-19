@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import * as ImagePicker from 'expo-image-picker';
 import type { ReactNode } from 'react';
 
 import { ThemeProvider } from '@/theme';
@@ -11,6 +12,7 @@ const T = 'f5c00000-0000-4000-8000-000000000001';
 const mockPush = jest.fn();
 // These cover the invite flow, hidden in the app for now.
 jest.mock('../permissions', () => ({ ...jest.requireActual('../permissions'), INVITES_ENABLED: true }));
+jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn() }));
 jest.mock('@/lib/supabase', () => ({ supabase: jest.requireActual('../../__fixtures__/supabase-fake').fake }));
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
@@ -151,5 +153,46 @@ describe('teams and staff of a published tournament', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Add my team' }));
     await fireEvent.press(await screen.findByRole('button', { name: 'Add Delta' }));
     expect(await screen.findByText(/already has all its teams/)).toBeTruthy();
+  });
+
+  it('uploads team profile and cover photos from the teams list and deletes replaced images', async () => {
+    const oldLogo = 'https://example.supabase.co/storage/v1/object/public/avatars/teams/a/profile-old';
+    const oldCover = 'https://example.supabase.co/storage/v1/object/public/avatars/teams/a/cover-old';
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = jest.fn(async () => ({
+      ok: true,
+      headers: { get: () => 'image/jpeg' },
+      arrayBuffer: async () => new ArrayBuffer(256),
+    })) as unknown as typeof fetch;
+    try {
+      fake.results.tournament_teams = {
+        data: [{ team_id: 'a', teams: { ...team('a', 'Alpha'), logo_url: oldLogo, cover_url: oldCover } }],
+        error: null,
+      };
+      fake.rpcResult = { data: [{ previous_logo_url: oldLogo, previous_cover_url: oldCover }], error: null };
+      jest.mocked(ImagePicker.launchImageLibraryAsync)
+        .mockResolvedValueOnce({ canceled: false, assets: [{ uri: 'file:///new-logo.jpg', width: 200, height: 200 }] })
+        .mockResolvedValueOnce({ canceled: false, assets: [{ uri: 'file:///new-cover.jpg', width: 800, height: 450 }] });
+
+      await show();
+      await fireEvent.press(screen.getByRole('button', { name: 'Edit Alpha photos' }));
+      expect(await screen.findByText('Alpha photos')).toBeTruthy();
+      await fireEvent.press(screen.getByRole('button', { name: 'Replace profile photo' }));
+      await fireEvent.press(screen.getByRole('button', { name: 'Replace cover photo' }));
+      await fireEvent.press(screen.getByRole('button', { name: 'Save photos' }));
+
+      await waitFor(() => expect(fake.rpc).toHaveBeenCalledWith('update_tournament_team_images', {
+        p_tournament: T,
+        p_team: 'a',
+        p_logo_url: expect.stringMatching(/\/teams\/a\/profile-/),
+        p_cover_url: expect.stringMatching(/\/teams\/a\/cover-/),
+      }));
+      expect(fake.storageUploads).toHaveLength(2);
+      expect(fake.storageRemovals).toEqual([
+        { bucket: 'avatars', paths: ['teams/a/profile-old', 'teams/a/cover-old'] },
+      ]);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 });

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -62,14 +63,19 @@ function Info({ team, members }: { team: TeamRecord; members: TeamMemberRecord[]
     { label: 'Members', value: String(members.length) },
   ].filter((row) => row.value !== '');
   return (
-    <View style={styles.card}>
-      {rows.map((row) => (
-        <View key={row.label} style={styles.infoRow}>
-          <Text muted>{row.label}</Text>
-          <Text style={styles.value}>{row.value}</Text>
-        </View>
-      ))}
-    </View>
+    <>
+      {team.coverUrl ? (
+        <Image source={{ uri: team.coverUrl }} style={styles.cover} contentFit="cover" accessibilityLabel={`${team.name} cover`} />
+      ) : null}
+      <View style={styles.card}>
+        {rows.map((row) => (
+          <View key={row.label} style={styles.infoRow}>
+            <Text muted>{row.label}</Text>
+            <Text style={styles.value}>{row.value}</Text>
+          </View>
+        ))}
+      </View>
+    </>
   );
 }
 
@@ -99,6 +105,7 @@ const createStyles = (colors: Palette) => StyleSheet.create({
   tabs: { marginTop: spacing.xs },
   body: { paddingHorizontal: sizes.gutter, paddingTop: spacing.lg, gap: sizes.sectionGap },
   gap: { gap: spacing.md },
+  cover: { width: '100%', aspectRatio: 1.88, borderRadius: radius.lg },
   card: { backgroundColor: colors.surface, borderRadius: radius.lg, ...shadows.card, paddingHorizontal: sizes.cardPaddingTight },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md, paddingVertical: spacing.md },
   value: { flexShrink: 1, ...typography.bodyMd, textAlign: 'right' },

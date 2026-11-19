@@ -163,3 +163,85 @@ describe('moderator requests that were declined', () => {
     expect(roster.staff.map((m) => `${m.user.name}:${m.status}`)).toEqual(['Organiser:accepted', 'Mitu:accepted']);
   });
 });
+
+describe('team profile and cover photos', () => {
+  const originalFetch = globalThis.fetch;
+  const oldLogo = 'https://example.supabase.co/storage/v1/object/public/avatars/teams/a/profile-old';
+  const oldCover = 'https://example.supabase.co/storage/v1/object/public/avatars/teams/a/cover-old';
+
+  beforeEach(() => {
+    globalThis.fetch = jest.fn(async () => ({
+      ok: true,
+      headers: { get: () => 'image/jpeg' },
+      arrayBuffer: async () => new ArrayBuffer(512),
+    })) as unknown as typeof fetch;
+  });
+
+  afterAll(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('maps team tone, logoUrl and coverUrl onto the roster', async () => {
+    fake.results.tournament_teams = {
+      data: [{ team_id: 'a', teams: { ...team('a', 'Alpha'), logo_url: oldLogo, cover_url: oldCover } }],
+      error: null,
+    };
+    const roster = await server.fetchRoster(T, me);
+    expect(roster.teams[0]).toMatchObject({ tone: 'blue', logoUrl: oldLogo, coverUrl: oldCover });
+  });
+
+  it('uploads new photos, updates the team row, and deletes only the replaced files from storage', async () => {
+    fake.rpcResult = { data: [{ previous_logo_url: oldLogo, previous_cover_url: oldCover }], error: null };
+    await server.updateTeamImages(T, 'me', 'a', {
+      logoUri: 'file:///new-logo.jpg',
+      coverUri: oldCover,
+      previousLogoUrl: oldLogo,
+      previousCoverUrl: oldCover,
+    });
+    expect(fake.storageUploads).toHaveLength(1);
+    expect(fake.storageUploads[0].path).toMatch(/^teams\/a\/profile-/);
+    expect(fake.rpc).toHaveBeenCalledWith('update_tournament_team_images', {
+      p_tournament: T,
+      p_team: 'a',
+      p_logo_url: expect.stringMatching(/\/teams\/a\/profile-/),
+      p_cover_url: oldCover,
+    });
+    expect(fake.storageRemovals).toEqual([{ bucket: 'avatars', paths: ['teams/a/profile-old'] }]);
+  });
+
+  it('removes a cleared photo from storage and clears the database column', async () => {
+    fake.rpcResult = { data: [{ previous_logo_url: oldLogo, previous_cover_url: null }], error: null };
+    await server.updateTeamImages(T, 'me', 'a', {
+      logoUri: '',
+      coverUri: '',
+      previousLogoUrl: oldLogo,
+      previousCoverUrl: null,
+    });
+    expect(fake.storageUploads).toHaveLength(0);
+    expect(fake.rpc).toHaveBeenCalledWith('update_tournament_team_images', {
+      p_tournament: T,
+      p_team: 'a',
+      p_logo_url: null,
+      p_cover_url: null,
+    });
+    expect(fake.storageRemovals).toEqual([{ bucket: 'avatars', paths: ['teams/a/profile-old'] }]);
+  });
+
+  it('deletes freshly uploaded photos if the server refuses the update', async () => {
+    fake.rpcResult = { data: null, error: { code: '42501', message: 'not allowed' } };
+    await expect(
+      server.updateTeamImages(T, 'me', 'a', {
+        logoUri: 'file:///new-logo.jpg',
+        coverUri: 'file:///new-cover.jpg',
+        previousLogoUrl: oldLogo,
+        previousCoverUrl: oldCover,
+      }),
+    ).rejects.toThrow('not allowed');
+    expect(fake.storageUploads).toHaveLength(2);
+    expect(fake.storageRemovals).toHaveLength(1);
+    expect(fake.storageRemovals[0].paths).toEqual([
+      fake.storageUploads[0].path,
+      fake.storageUploads[1].path,
+    ]);
+  });
+});

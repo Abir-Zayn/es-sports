@@ -9,10 +9,14 @@ import { supabase } from '@/lib/supabase';
 import {
   fetchTournament, fetchTournamentStaff, fetchTournamentTeams, toPerson, type PersonRecord, type StaffRecord,
 } from '../data/tournament-repository';
-import { tournamentErrorText } from '../data/tournament-errors';
-import { addTournamentTeam, createTournamentTeam, removeTournamentModerator, removeTournamentTeam, setTournamentTeamEliminated } from '../data/tournament-writes';
+import { removeTeamPhotos, uploadTeamPhoto } from '../data/team-images';
+import { TournamentError, tournamentErrorText } from '../data/tournament-errors';
+import {
+  addTournamentTeam, createTournamentTeam, removeTournamentModerator, removeTournamentTeam,
+  setTournamentTeamEliminated, updateTournamentTeamImages,
+} from '../data/tournament-writes';
 import { RosterError } from './roster-store';
-import type { NewTeam, Roster, RosterTeam, StaffMember, TeamOwnerSlot, UserSummary } from './types';
+import type { NewTeam, Roster, RosterTeam, StaffMember, TeamOwnerSlot, TeamPhotosInput, UserSummary } from './types';
 
 type PendingInvite = { id: string; kind: string; teamId: string | null; person: PersonRecord; status: string; fromUser: string };
 
@@ -52,7 +56,11 @@ export async function fetchRoster(tournamentId: string, me: UserSummary): Promis
       const requests = pending.filter((item) => item.kind === 'team_owner' && item.teamId === team.id);
       const invite = requests.find((item) => item.status === 'pending') ?? requests.find((item) => item.status === 'declined');
       const slot: TeamOwnerSlot | null = owner ? { user: toUser(owner), status: 'accepted' } : invite ? { user: toUser(invite.person), status: invite.status === 'pending' ? 'pending' : 'declined', invitationId: invite.id } : null;
-      return { id: team.id, name: team.name, short: team.shortName, owner: slot, players: [], ownedByMe: owner?.id === me.id, eliminated };
+      return {
+        id: team.id, name: team.name, short: team.shortName, tone: team.tone,
+        logoUrl: team.logoUrl, coverUrl: team.coverUrl ?? null,
+        owner: slot, players: [], ownedByMe: owner?.id === me.id, eliminated,
+      };
     });
     return {
       tournamentId, tournamentName: tournament.name, maxTeams: tournament.teamsPlanned,
@@ -116,6 +124,47 @@ export const disbandTeam = (tournamentId: string, actorId: string, teamId: strin
 /** Knocks the team out, or brings it back. The team stays entered. */
 export const setTeamEliminated = (tournamentId: string, actorId: string, teamId: string, eliminated: boolean) =>
   change(tournamentId, actorId, () => setTournamentTeamEliminated(tournamentId, teamId, eliminated));
+
+/** Uploads newly picked team profile/cover photos, saves them to DB, and deletes replaced or removed files from Storage. */
+export async function updateTeamImages(
+  tournamentId: string,
+  actorId: string,
+  teamId: string,
+  input: TeamPhotosInput,
+): Promise<Roster> {
+  const uploaded: string[] = [];
+  const resolve = async (uri: string, previous: string | null | undefined, kind: 'profile' | 'cover') => {
+    if (!uri) return null;
+    if (uri === previous || uri.startsWith('https://')) return uri;
+    const url = await uploadTeamPhoto(teamId, kind, uri);
+    uploaded.push(url);
+    return url;
+  };
+  let logoUrl: string | null;
+  let coverUrl: string | null;
+  let sent = false;
+  let prev: { previousLogoUrl: string | null; previousCoverUrl: string | null };
+  try {
+    logoUrl = await resolve(input.logoUri, input.previousLogoUrl, 'profile');
+    coverUrl = await resolve(input.coverUri, input.previousCoverUrl, 'cover');
+    sent = true;
+    prev = await updateTournamentTeamImages(tournamentId, teamId, { logoUrl, coverUrl });
+  } catch (error) {
+    // Keep uploaded files only when the server reply may have been lost in flight; otherwise remove orphans immediately.
+    const refused = !sent || !(error instanceof TournamentError) || error.code !== null;
+    if (refused) await removeTeamPhotos(teamId, uploaded, actorId);
+    throw toRosterError(error);
+  }
+  const stale = [
+    prev.previousLogoUrl !== logoUrl ? prev.previousLogoUrl : null,
+    input.previousLogoUrl !== logoUrl ? input.previousLogoUrl : null,
+    prev.previousCoverUrl !== coverUrl ? prev.previousCoverUrl : null,
+    input.previousCoverUrl !== coverUrl ? input.previousCoverUrl : null,
+  ];
+  await removeTeamPhotos(teamId, stale, actorId);
+  return fetchRoster(tournamentId, { id: actorId, name: '', area: null, avatarUrl: null });
+}
+
 export const setRegistrationDeadline = unavailable;
 export const closeRegistration = unavailable;
 export const reopenRegistration = unavailable;

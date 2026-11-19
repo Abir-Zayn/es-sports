@@ -1,3 +1,5 @@
+import type { AvatarTone } from '@/theme';
+
 import type { SquadRules } from '../create/squad-formats';
 
 /** Who runs a tournament: its author (one) and the moderators they invite. */
@@ -40,6 +42,9 @@ export type TournamentPlayer = {
  */
 export type RosterTeam = {
   id: string; name: string; short: string; owner: TeamOwnerSlot | null; players: TournamentPlayer[];
+  tone?: AvatarTone;
+  logoUrl?: string | null;
+  coverUrl?: string | null;
   ownedByMe?: boolean;
   /** Knocked out by the tournament owner. The team stays listed so its results remain. */
   eliminated?: boolean;
@@ -97,6 +102,13 @@ export type RosterSetup = {
 };
 
 export type NewTeam = { name: string; short: string };
+
+export type TeamPhotosInput = {
+  logoUri: string;
+  coverUri: string;
+  previousLogoUrl?: string | null;
+  previousCoverUrl?: string | null;
+};
 
 /** A guest player: enough to fill the squad on match day. */
 export type GuestPlayerInput = { name: string; phone: string; role: PlayerRole };

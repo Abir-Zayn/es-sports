@@ -12,7 +12,7 @@ import {
 import { closeProblem, deadlineProblem, lockProblem, reopenProblem } from './registration';
 import { commit, current, fail, find, newId, wait } from './roster-store';
 import { sampleUsers } from './sample-users';
-import type { NewTeam, Roster, RosterSetup, UserSummary } from './types';
+import type { NewTeam, Roster, RosterSetup, TeamPhotosInput, UserSummary } from './types';
 
 export { resetRosters, RosterError } from './roster-store';
 
@@ -128,6 +128,25 @@ export async function setTeamEliminated(tournamentId: string, actorId: string, t
   const roster = current(tournamentId);
   fail(eliminateProblem(roleIn(roster, actorId)));
   return commit({ ...roster, teams: roster.teams.map((t) => (t.id === teamId ? { ...t, eliminated } : t)) });
+}
+
+/** Replaces or clears a team's profile and cover images in the in-memory roster. */
+export async function updateTeamImages(
+  tournamentId: string,
+  actorId: string,
+  teamId: string,
+  input: TeamPhotosInput,
+): Promise<Roster> {
+  await wait();
+  const roster = current(tournamentId);
+  const team = roster.teams.find((t) => t.id === teamId);
+  fail(team ? null : 'This team no longer exists.');
+  const allowed = capabilitiesOf(roleIn(roster, actorId)).manageTeams || Boolean(team?.ownedByMe) || team?.owner?.user.id === actorId;
+  fail(allowed ? null : 'Only tournament staff or the team owner can update team photos.');
+  return commit({
+    ...roster,
+    teams: roster.teams.map((t) => (t.id === teamId ? { ...t, logoUrl: input.logoUri || null, coverUrl: input.coverUri || null } : t)),
+  });
 }
 
 /** Moves the registration deadline, earlier or later. */

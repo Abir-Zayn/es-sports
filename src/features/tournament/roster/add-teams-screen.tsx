@@ -16,6 +16,7 @@ import { RegistrationSection } from './components/registration-section';
 import { SquadAlertsSection } from './components/squad-alerts-section';
 import { ScheduleSection } from './components/schedule-section';
 import { StaffSection } from './components/staff-section';
+import { TeamPhotosSheet } from './components/team-photos-sheet';
 import { TeamsSection } from './components/teams-section';
 import { UserSearchSheet } from './components/user-search-sheet';
 import { capabilitiesOf, roleIn, serverCapabilities } from './permissions';
@@ -27,7 +28,7 @@ import type { RosterTeam } from './types';
 import { rosterErrorText, useMe, useRoster } from './use-roster';
 import { useRosterActions } from './use-roster-actions';
 
-type OpenSheet = { kind: 'moderator' } | { kind: 'create-team' } | { kind: 'add-own' } | { kind: 'team-owner'; team: RosterTeam } | { kind: 'disband'; team: RosterTeam } | { kind: 'eliminate'; team: RosterTeam } | { kind: 'lock' } | null;
+type OpenSheet = { kind: 'moderator' } | { kind: 'create-team' } | { kind: 'add-own' } | { kind: 'team-owner'; team: RosterTeam } | { kind: 'team-photos'; team: RosterTeam } | { kind: 'disband'; team: RosterTeam } | { kind: 'eliminate'; team: RosterTeam } | { kind: 'lock' } | null;
 
 const suggestSamplePlayers = async (excludeIds: string[]) => sampleUsers.filter((user) => !excludeIds.includes(user.id)).slice(0, 20);
 
@@ -45,7 +46,7 @@ export function AddTeamsScreen() {
   const roster = useRoster(tournamentId, me, parseSetup(params), repo);
   const actions = useRosterActions(tournamentId, me.id, repo);
   const [sheet, setSheet] = useState<OpenSheet>(null);
-  const { busy, inviteModerator, inviteOwner, createTeam, disband, eliminate, lock } = actions;
+  const { busy, inviteModerator, inviteOwner, createTeam, disband, eliminate, lock, updateTeamImages } = actions;
 
   function open(next: OpenSheet) {
     actions.reset();
@@ -121,6 +122,7 @@ export function AddTeamsScreen() {
             onCancelInvite={(team) => actions.cancelOwner.mutate(team.id)}
             onShareInvite={shareInvite}
             onViewSquad={viewSquad}
+            onEditPhotos={(team) => open({ kind: 'team-photos', team })}
             onDisband={(team) => open({ kind: 'disband', team })}
             // Eliminating notifies the team's owner, so it is confirmed; bringing a team back is not.
             onToggleEliminated={(team) => (team.eliminated ? eliminate.mutate({ teamId: team.id, eliminated: false }) : open({ kind: 'eliminate', team }))}
@@ -163,6 +165,13 @@ export function AddTeamsScreen() {
         creating={createTeam.isPending}
         error={createTeam.isError ? rosterErrorText(createTeam.error) : null}
         onCreate={(team) => createTeam.mutate(team, { onSuccess: close })}
+        onClose={close}
+      />
+      <TeamPhotosSheet
+        team={sheet?.kind === 'team-photos' ? sheet.team : null}
+        saving={updateTeamImages.isPending}
+        error={updateTeamImages.isError ? rosterErrorText(updateTeamImages.error) : null}
+        onSave={(photos) => sheet?.kind === 'team-photos' && updateTeamImages.mutate({ teamId: sheet.team.id, photos }, { onSuccess: close })}
         onClose={close}
       />
       <ConfirmSheet

@@ -1,6 +1,6 @@
 import Ban from 'lucide-react-native/icons/ban';
 import RotateCcw from 'lucide-react-native/icons/rotate-ccw';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppBadge, AppIconTile, Button, InitialsAvatar, Text } from '@/components/ui';
 import { sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
@@ -18,6 +18,7 @@ type Props = {
   onCancelInvite: () => void;
   onShareInvite: () => void;
   onViewSquad: () => void;
+  onEditPhotos: () => void;
   onDisband: () => void;
   /** Eliminates the team, or brings an eliminated team back. */
   onToggleEliminated: () => void;
@@ -33,18 +34,30 @@ function ownerLine(team: RosterTeam): string {
 const ownerBadge = (team: RosterTeam) => (!team.owner ? (team.ownedByMe ? 'Yours' : 'Vacant') : team.owner.status === 'pending' ? 'Invite pending' : team.owner.status === 'declined' ? 'Declined' : 'Accepted');
 
 /** One team: its short-name badge, name, owner status, squad size, and what the viewer may do with it. */
-export function TeamRow({ team, maxSquad, caps, busy, onInviteOwner, onReinviteOwner, onCancelInvite, onShareInvite, onViewSquad, onDisband, onToggleEliminated }: Props) {
+export function TeamRow({ team, maxSquad, caps, busy, onInviteOwner, onReinviteOwner, onCancelInvite, onShareInvite, onViewSquad, onEditPhotos, onDisband, onToggleEliminated }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const canInvite = INVITES_ENABLED && caps.manageTeams && (!team.owner || team.owner.status === 'declined');
   const pending = caps.manageTeams && team.owner?.status === 'pending';
+  const canEditPhotos = caps.manageTeams || Boolean(team.ownedByMe);
   // A server team's squad is read on its own screen, so only an in-memory team shows its size here.
   const squad = !fromServer(team);
   const accepted = team.owner?.status === 'accepted';
+  const avatar = <InitialsAvatar label={team.short} tone={team.tone} imageUri={team.logoUrl ?? undefined} size={sizes.avatar} shape="square" />;
   return (
     <View style={styles.row}>
       <View style={[styles.top, team.eliminated && styles.out]}>
-        <InitialsAvatar label={team.short} size={sizes.avatar} shape="square" />
+        {canEditPhotos ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Change ${team.name} logo and cover`}
+            disabled={busy}
+            onPress={onEditPhotos}
+            style={({ pressed }) => pressed && styles.pressed}
+          >
+            {avatar}
+          </Pressable>
+        ) : avatar}
         <View style={styles.names}>
           <View style={styles.nameLine}>
             <Text style={styles.name} numberOfLines={1}>
@@ -73,6 +86,9 @@ export function TeamRow({ team, maxSquad, caps, busy, onInviteOwner, onReinviteO
       </View>
       <View style={styles.actions}>
         <Button label="Squad" variant="secondary" size="compact" accessibilityLabel={`View ${team.name} squad`} onPress={onViewSquad} />
+        {canEditPhotos ? (
+          <Button label="Photos" variant="secondary" size="compact" disabled={busy} accessibilityLabel={`Edit ${team.name} photos`} onPress={onEditPhotos} />
+        ) : null}
         {canInvite ? (
           <Button label={team.owner?.status === 'declined' ? 'Invite someone else' : 'Invite owner'} size="compact" disabled={busy} accessibilityLabel={`Invite owner for ${team.name}`} onPress={onInviteOwner} />
         ) : null}
@@ -95,6 +111,7 @@ const createStyles = (colors: Palette) =>
   StyleSheet.create({
     row: { gap: spacing.sm, paddingVertical: spacing.md },
     top: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+    pressed: { opacity: 0.7 },
     out: { opacity: 0.6 },
     names: { flex: 1, minWidth: 0, gap: spacing.xs / 2 },
     nameLine: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
