@@ -59,11 +59,17 @@ describe('schedule builder', () => {
 
   it('draws a round robin over the tournament days, two matches a day by default', async () => {
     await show();
-    expect(await screen.findByText('20 overs · 4 teams · 1 Nov – 10 Nov')).toBeTruthy();
+    // The summary at the top: status first, then format, teams, dates and matches.
+    expect(await screen.findByText('Draft')).toBeTruthy();
+    expect(screen.getByLabelText('Format: 20 overs')).toBeTruthy();
+    expect(screen.getByLabelText('Teams: 4')).toBeTruthy();
+    expect(screen.getByLabelText('Dates: 1 Nov – 10 Nov')).toBeTruthy();
+    expect(screen.getByLabelText('Matches: none yet')).toBeTruthy();
     // Nothing to publish until the schedule is drawn.
     expect(screen.queryByRole('button', { name: 'Publish schedule' })).toBeNull();
     await fireEvent.press(screen.getByRole('button', { name: 'Draw schedule' }));
-    expect(await screen.findByText('6 matches over 3 days. Tap a match to change it.')).toBeTruthy();
+    expect(await screen.findByLabelText('Matches · 3 days: 6')).toBeTruthy();
+    expect(screen.getByText('Tap a match to change it.')).toBeTruthy();
     expect(screen.getByText('Sunday, 1 Nov')).toBeTruthy();
     // Three matches at 9:00 AM, plus the "First match at" setting showing the same time.
     expect(screen.getAllByText('9:00 AM').length).toBe(4);
@@ -72,7 +78,7 @@ describe('schedule builder', () => {
 
   it('adjusts start time with hour and minute sliders and moves a match', async () => {
     await show();
-    await screen.findByText('20 overs · 4 teams · 1 Nov – 10 Nov');
+    await screen.findByLabelText('Format: 20 overs');
     await setSlider('First match hour', 1);
     await setSlider('First match minutes', 15);
     expect(screen.getByText('10:15 AM')).toBeTruthy();
@@ -95,6 +101,7 @@ describe('schedule builder', () => {
 
     await fireEvent.press(screen.getByRole('button', { name: 'Publish schedule' }));
     expect(await screen.findByText('Published. Moving or cancelling a match saves at once and tells both teams.')).toBeTruthy();
+    expect(screen.getByText('Published')).toBeTruthy();
   });
 
   it('says why it cannot draw when the days are too few', async () => {
@@ -118,7 +125,7 @@ describe('schedule builder', () => {
     await addMatch('Kings', -2); // 7:00 AM (Strikers match 1)
     await addMatch('Riders', 2); // 11:00 AM (Strikers match 2)
     await addMatch('Hawks', 6); // 3:00 PM (Strikers match 3)
-    expect(await screen.findByText('3 matches over 1 days. Tap a match to change it.')).toBeTruthy();
+    expect(await screen.findByLabelText('Matches · 1 day: 3')).toBeTruthy();
 
     // 4th match for Strikers on the same day at 7:00 PM: ground is free, but Strikers already played 3 times.
     await addMatch('Kings', 10);
