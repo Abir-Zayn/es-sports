@@ -1,4 +1,4 @@
-import { act, render, renderHook, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react-native';
 import { useEffect, type ReactNode } from 'react';
 
 import { careerOf, resetLedger, useLedger } from '@/features/profile/career-ledger';
@@ -108,5 +108,29 @@ describe('scoring a friendly to the end', () => {
     expect(screen.getByLabelText('Off side: 4 runs from 1 shots, 40 percent')).toBeTruthy();
     expect(screen.getByLabelText('Straight / V: 6 runs from 1 shots, 60 percent')).toBeTruthy();
     expect(screen.getByLabelText('King 1: highest 10*, 1 matches, 0 wickets, average -')).toBeTruthy();
+  });
+
+  it('splits the batting by team and filters the shot map by team, batter and shot type', async () => {
+    function Played() {
+      const { dispatch } = useScorer();
+      useEffect(() => playMatch(dispatch), [dispatch]);
+      return <MatchResultScreen />;
+    }
+    await render(<Played />, { wrapper });
+    // One batting card per team, so each run is credited to its batter and side.
+    expect(await screen.findByLabelText('King 1, 10 runs off 6 balls, 1 fours, 1 sixes, not out')).toBeTruthy();
+    expect(screen.getByLabelText('Striker 1, 0 runs off 1 balls, 0 fours, 0 sixes')).toBeTruthy();
+
+    // The shot map opens on the side that batted first, with a count on each filter.
+    expect(screen.getByLabelText('Shot map: 2 shots for Kings')).toBeTruthy();
+    expect(screen.getByRole('tab', { name: '4s · 1' })).toBeTruthy();
+    await fireEvent.press(screen.getByRole('tab', { name: '6s · 1' }));
+    expect(screen.getByLabelText('Shot map: 1 shots for Kings')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('tab', { name: 'King 1' }));
+    expect(screen.getByLabelText('Shot map: 1 shots for King 1')).toBeTruthy();
+
+    // The switch on the right moves to the other side, which hit no recorded shots.
+    await fireEvent.press(screen.getByRole('tab', { name: 'ST' }));
+    expect(screen.getByText('No shot directions were recorded for Strikers.')).toBeTruthy();
   });
 });

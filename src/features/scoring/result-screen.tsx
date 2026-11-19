@@ -6,11 +6,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Button, InitialsAvatar, Text } from '@/components/ui';
 import { MatchResultSummaryCard, type ResultHighlight } from '@/features/match/components/match-result-summary-card';
 import { UnderlineTabs, type UnderlineTabItem } from '@/features/match/components/match-tabs';
-import { QuadrantSplitCards } from '@/features/match/components/quadrant-split-cards';
-import { WagonWheel } from '@/features/match/components/wagon-wheel';
 import { careerOf, useLedger } from '@/features/profile/career-ledger';
 import { addPerformances, emptyCareer } from '@/lib/career-stats';
-import { quadrantSplit } from '@/lib/pitch-quadrant';
 import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { ScorerFrame, ScorerHeader, ScorerNotice } from './components/scorer-ui';
@@ -19,6 +16,9 @@ import { matchPerformances, rollupCareerStats, topPerformers, type MatchPlayerLi
 import { oversLabel } from './engine/score-delivery';
 import { useScorer } from './scorer-provider';
 import { useScorerRoutes } from './use-scorer-routes';
+import { BattingTables } from './result/batting-tables';
+import { inningsSides } from './result/innings-sides';
+import { ShotMap } from './result/shot-map';
 import { computeResult, formatMatchResult } from './data/match-result';
 import { useTranslation } from '@/i18n';
 
@@ -55,18 +55,13 @@ export function MatchResultScreen() {
     { id: 'wagon', label: t('scoring.result.tabWagon') },
     { id: 'careers', label: t('scoring.result.tabCareers') },
   ];
-  const first = score.previousInnings;
-  const innings = [
-    { code: first.team, runs: first.runs, wickets: first.wickets, balls: first.balls },
-    { code: score.battingTeam, runs: score.runs, wickets: score.wickets, balls: score.balls },
-  ];
+  const innings = inningsSides(score);
   const top = topPerformers(lines);
   const highlights: ResultHighlight[] = [
     ...(top.mvp ? [{ title: t('scoring.result.mvp'), tag: 'MVP' as const, name: top.mvp.playerName, figure: top.mvp.ballsBowled > 0 && top.mvp.wicketsTaken > 0 ? bowling(top.mvp) : batting(top.mvp) }] : []),
     ...(top.batter ? [{ title: t('scoring.result.bestBatter'), tag: 'BAT' as const, name: top.batter.playerName, figure: batting(top.batter) }] : []),
     ...(top.bowler ? [{ title: t('scoring.result.bestBowler'), tag: 'BOWL' as const, name: top.bowler.playerName, figure: bowling(top.bowler) }] : []),
   ];
-  const shots = [...first.shots, ...score.shots];
   // Careers count matches scored on this device; this match is left out of "before" so it is added once.
   const before = (line: MatchPlayerLine) => (line.profileId
     ? addPerformances(emptyCareer, careerOf(ledger.filter((m) => m.matchId !== savedId), line.profileId).performances)
@@ -123,23 +118,12 @@ export function MatchResultScreen() {
               );
             })}
           </View>
+          <BattingTables sides={innings} teams={score.teams} />
         </View>
       ) : null}
       {showWagon ? (
-        <View style={s.section}>
-          <View style={s.sectionHead}>
-            <Text accessibilityRole="header" style={s.sectionTitle}>{t('scoring.result.whereRunsCameFrom')}</Text>
-            <Info size={sizes.iconSmall} color={colors.textMuted} strokeWidth={2} />
-          </View>
-          {shots.length > 0 ? (
-            <View style={s.wagonGroup}>
-              <WagonWheel shots={shots} filter="all" accessibilityLabel={t('scoring.result.wagonWheelA11y', { count: shots.length })} />
-              <QuadrantSplitCards split={quadrantSplit(shots)} />
-            </View>
-          ) : (
-            <View style={s.flatNote}><ScorerNotice>{t('scoring.result.noShotsRecorded')}</ScorerNotice></View>
-          )}
-        </View>
+        <ShotMap sides={innings} teams={score.teams}
+          empty={(message) => <View style={s.flatNote}><ScorerNotice>{message}</ScorerNotice></View>} />
       ) : null}
       {showCareers ? (
         <View style={s.section}>
@@ -202,6 +186,5 @@ const styles = (c: Palette) => StyleSheet.create({
   cellMuted: { ...typography.bodyMd, color: c.textMuted, fontVariant: ['tabular-nums'] },
   cellNum: { ...typography.bodyMd, color: c.text, fontVariant: ['tabular-nums'] },
   cellStrong: { ...typography.headlineMd, color: c.text, fontVariant: ['tabular-nums'] },
-  wagonGroup: { gap: spacing.md },
   flatNote: { padding: sizes.cardPaddingTight, borderRadius: radius.lg, backgroundColor: c.surface, ...shadows.card },
 });
