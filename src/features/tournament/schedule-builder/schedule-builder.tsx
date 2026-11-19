@@ -11,19 +11,22 @@ import { ResumeScoringAction } from '@/features/scoring/handover/components/resu
 
 import { StartMatchSheet } from '../fixture-match/start-match-sheet';
 import { canStartFixture } from '../fixture-match/start-fixture';
+import type { RoundView } from '../data/rounds-repository';
+import type { EnteredTeam, TournamentRecord } from '../data/tournament-repository';
 import { ConfirmSheet } from '../roster/components/confirm-sheet';
+import { GroupsSection } from '../teams/groups-section';
 import { AddMatchSheet } from './components/add-match-sheet';
 import { EditMatchSheet } from './components/edit-match-sheet';
 import { ScheduleControls } from './components/schedule-controls';
 import { ScheduleDay } from './components/schedule-day';
 import { ScheduleSummary, type ScheduleStatus } from './components/schedule-summary';
-import type { ScheduledMatch, ScheduleTeam } from './types';
+import type { RoundPlan, ScheduledMatch, ScheduleTeam } from './types';
 import { useScheduleBuilder } from './use-schedule-builder';
 
 /** What the builder needs from the tournament: a draft's setup or a published tournament's. */
 export type ScheduleSetup = Pick<TournamentDraft, 'competition' | 'overs' | 'venue' | 'startDate' | 'endDate' | 'playersPerSide'> & {
-  /** Team ids per group. Undefined for a single league; null while the groups are still to be drawn. */
-  groupIds?: string[][] | null;
+  /** The round to draw in a published tournament with rounds. */
+  plan?: RoundPlan;
 };
 
 type Props = {
@@ -34,6 +37,7 @@ type Props = {
   isOwner: boolean;
   isStaff?: boolean;
   bottomInset: number;
+  groups?: { tournament: TournamentRecord; teams: EnteredTeam[]; round: RoundView };
 };
 
 const shortDate = (date: string) => format(parseISO(date), 'd MMM');
@@ -42,17 +46,17 @@ const shortDate = (date: string) => format(parseISO(date), 'd MMM');
  * The owner picks auto draw or manual, builds the matches, then publishes. Once published, tapping a match moves or
  * cancels it at once (the owner panel). Anyone else on the staff sees the schedule read-only.
  */
-export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isStaff = false, bottomInset }: Props) {
+export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isStaff = false, bottomInset, groups }: Props) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
-  const builder = useScheduleBuilder({ tournamentId, teams, competition: setup.competition, overs: setup.overs, days, isOwner, groupIds: setup.groupIds });
+  const builder = useScheduleBuilder({ tournamentId, teams, competition: setup.competition, overs: setup.overs, days, isOwner, plan: setup.plan });
   const [starting, setStarting] = useState<ScheduledMatch | null>(null);
   const [editing, setEditing] = useState<ScheduledMatch | null>(null);
   const [adding, setAdding] = useState(false);
   const [confirmRedraw, setConfirmRedraw] = useState(false);
   const { matches, saved, publish, live } = builder;
   const playingDays = [...new Set(matches.map((m) => m.date))];
-  const locked = live && matches.some((m) => m.started);
+  const locked = live && matches.some((m) => m.started && (!setup.plan || (setup.plan.kind === 'groups' ? m.stage === 'League' && m.round === setup.plan.round : m.stage !== 'League')));
   const published = Boolean(saved.data?.publishedAt);
   const status: ScheduleStatus = locked ? 'underway' : live ? 'published' : published && builder.dirty ? 'changes' : 'draft';
 
@@ -71,6 +75,17 @@ export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isS
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomInset + spacing.xxl }]}>
         <ScheduleSummary status={status} viewOnly={!isOwner} format={oversLabel(setup.overs)} teams={teams.length}
           dates={`${shortDate(setup.startDate)} – ${shortDate(setup.endDate)}`} matches={matches.length} days={playingDays.length} />
+        {groups && groups.round.kind === 'groups' && groups.round.groups > 1 ? (
+          <GroupsSection tournament={groups.tournament} teams={groups.teams} round={groups.round}
+            canChange={isOwner && !matches.some((match) => match.stage === 'League' && match.round === groups.round.round && match.started)} />
+        ) : null}
+        {!groups && setup.plan?.kind === 'groups' && setup.plan.groupIds === null ? <Text muted>Draw the groups before scheduling group matches.</Text> : null}
+        {!groups && setup.plan?.kind === 'groups' ? setup.plan.groupIds?.map((ids, index) => (
+          <Card key={`group-${index}`}>
+            <Text>{`Group ${String.fromCharCode(65 + index)}`}</Text>
+            <Text muted>{ids.map((id) => teams.find((team) => team.id === id)?.name ?? 'Team').join(' · ')}</Text>
+          </Card>
+        )) : null}
         {isOwner ? (
           <ScheduleControls mode={builder.mode} settings={builder.settings} hasMatches={matches.length > 0} locked={locked}
             onMode={builder.changeMode} onSettings={builder.changeSettings} onAdd={() => setAdding(true)}
@@ -120,7 +135,7 @@ export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isS
         onClose={() => setEditing(null)}
       />
       {starting ? <StartMatchSheet key={starting.id} tournamentId={tournamentId} match={starting} playersPerSide={setup.playersPerSide} onClose={() => setStarting(null)} /> : null}
-      <AddMatchSheet visible={adding} teams={teams} days={days} firstStartMin={builder.settings.firstStartMin} onAdd={builder.add} onClose={() => setAdding(false)} />
+      <AddMatchSheet visible={adding} teams={teams} groupIds={setup.plan?.kind === 'groups' ? setup.plan.groupIds : undefined} days={days} firstStartMin={builder.settings.firstStartMin} onAdd={builder.add} onClose={() => setAdding(false)} />
       <ConfirmSheet
         visible={confirmRedraw}
         title="Redraw schedule?"

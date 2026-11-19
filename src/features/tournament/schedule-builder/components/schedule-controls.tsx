@@ -33,13 +33,11 @@ export function ScheduleControls({ mode, settings, hasMatches, locked, onMode, o
       <SegmentedControl options={modes} selected={mode} onSelect={onMode} accessibilityLabel="How to make the schedule" />
       {mode === 'auto' ? (
         <>
-          <Text variant="caption" muted>Draws every match from the teams and settings. You can move any match afterwards.</Text>
           <ScheduleSettings settings={settings} onChange={onSettings} />
           <Button label={hasMatches ? 'Redraw schedule' : 'Draw schedule'} variant={hasMatches ? 'secondary' : 'primary'} onPress={onDraw} />
         </>
       ) : (
         <>
-          <Text variant="caption" muted>Add each match yourself: the two teams, the stage, the day and the time.</Text>
           <Button label="Add match" variant={hasMatches ? 'secondary' : 'primary'} onPress={onAdd} />
         </>
       )}

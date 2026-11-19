@@ -1,4 +1,4 @@
-import { generatePairings, pairingProblem, roundRobin } from '../generate';
+import { generatePairings, groupMatchProblem, pairingProblem, roundRobin } from '../generate';
 import type { Pairing, ScheduleTeam } from '../types';
 
 const teams = (n: number): ScheduleTeam[] => Array.from({ length: n }, (_, i) => ({ id: `t${i + 1}`, name: `Team ${i + 1}`, short: `T${i + 1}` }));
@@ -18,6 +18,12 @@ describe('round robin', () => {
 });
 
 describe('pairings', () => {
+  it('requires league opponents to belong to the same drawn group', () => {
+    const groups = [['t1', 't2'], ['t3', 't4']];
+    expect(groupMatchProblem('t1', 't2', groups)).toBeNull();
+    expect(groupMatchProblem('t1', 't3', groups)).toMatch(/same group/);
+    expect(groupMatchProblem('t1', 't2', null)).toMatch(/groups.*first/i);
+  });
   it('refuses fewer than 2 teams, and a knockout that is not 2, 4, 8 or 16', () => {
     expect(pairingProblem(1, 'league')).toMatch(/at least 2 teams/);
     expect(pairingProblem(6, 'knockout')).toMatch(/2, 4, 8 or 16 teams/);

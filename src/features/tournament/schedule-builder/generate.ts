@@ -5,6 +5,13 @@ const tbd = (label: string): SideRef => ({ kind: 'tbd', label });
 
 const isPowerOfTwo = (n: number) => n >= 2 && (n & (n - 1)) === 0;
 
+/** League opponents must be members of the same drawn group. */
+export function groupMatchProblem(home: string, away: string, groups?: string[][] | null): string | null {
+  if (groups === undefined) return null;
+  if (groups === null) return 'Draw the groups first.';
+  return groups.some((group) => group.includes(home) && group.includes(away)) ? null : 'Pick two teams from the same group.';
+}
+
 /** The knockout round named by how many sides are left in it. */
 function knockoutStage(sides: number): StageName {
   if (sides >= 16) return 'Round of 16';
@@ -41,6 +48,27 @@ export function groupRoundRobin(teams: ScheduleTeam[], groupIds: string[][]): [S
   const perGroup = groupIds.map((ids) => roundRobin(teams.filter((t) => ids.includes(t.id))));
   const rounds = Math.max(0, ...perGroup.map((r) => r.length));
   return Array.from({ length: rounds }, (_, r) => perGroup.flatMap((group) => group[r] ?? []));
+}
+
+/**
+ * A fixed bracket from teams in slot order (slot 0 meets slot 1, 2 meets 3, …), numbered after `start`. Later rounds
+ * name the matches that feed them, e.g. "Winner of Match 9"; the owner's confirmed winner fills that side.
+ */
+export function knockoutPairings(slotted: ScheduleTeam[], start = 0): Pairing[] {
+  const pairings: Pairing[] = [];
+  const add = (stage: StageName, round: number, home: SideRef, away: SideRef) => {
+    pairings.push({ number: start + pairings.length + 1, stage, round, home, away });
+    return start + pairings.length;
+  };
+  let feeders: number[] = [];
+  for (let i = 0; i + 1 < slotted.length; i += 2) feeders.push(add(knockoutStage(slotted.length), 1, team(slotted[i]), team(slotted[i + 1])));
+  for (let round = 2; feeders.length > 1; round++) {
+    const stage = knockoutStage(feeders.length);
+    const next: number[] = [];
+    for (let i = 0; i < feeders.length; i += 2) next.push(add(stage, round, tbd(`Winner of Match ${feeders[i]}`), tbd(`Winner of Match ${feeders[i + 1]}`)));
+    feeders = next;
+  }
+  return pairings;
 }
 
 /** Why no schedule can be drawn for these teams, or null when it can. */

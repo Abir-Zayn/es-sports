@@ -17,6 +17,7 @@ import { toFixture } from '../schedule-builder/to-fixture';
 import { scheduleKey } from '../schedule-builder/use-schedule-builder';
 import { ScheduleGroupSection } from '../sections/schedule-group-section';
 import { groupName } from '../teams/group-teams';
+import { fetchTournamentRounds, roundsKey, roundsView } from '../data/rounds-repository';
 import { useTournamentMatchUpdates } from './use-tournament-match-updates';
 
 type Props = { tournament: TournamentRecord; canSchedule: boolean; canStart?: boolean; onSchedule: () => void };
@@ -28,18 +29,19 @@ export function RealTournamentMatches({ tournament, canSchedule, canStart = fals
   const [starting, setStarting] = useState<ScheduledMatch | null>(null);
   const [filter, setFilter] = useState<ScheduleFilter>('all');
   const schedule = useQuery({ queryKey: scheduleKey(tournament.id), queryFn: () => fetchSchedule(tournament.id) });
-  // Same query as the Groups tab; a league match is labelled with its home team's group.
-  const teams = useQuery({
-    queryKey: [...tournamentKey(tournament.id), 'teams'], queryFn: () => fetchTournamentTeams(tournament.id), enabled: tournament.groupsPlanned > 1,
-  });
+  // Same queries as the Groups tab; a league match is labelled with its round and its home team's group.
+  const teams = useQuery({ queryKey: [...tournamentKey(tournament.id), 'teams'], queryFn: () => fetchTournamentTeams(tournament.id) });
+  const rounds = useQuery({ queryKey: roundsKey(tournament.id), queryFn: () => fetchTournamentRounds(tournament.id) });
   const groups = useMemo(() => {
-    const groupOf = new Map((teams.data ?? []).map((e) => [e.team.id, e.group]));
+    const views = roundsView(tournament, teams.data ?? [], rounds.data);
     const label = (m: ScheduledMatch) => {
-      const g = m.home.kind === 'team' ? groupOf.get(m.home.team.id) : null;
-      return g == null ? undefined : groupName(g);
+      const view = views.find((r) => r.round === m.round && r.kind === 'groups');
+      const g = view && view.groups > 1 && m.home.kind === 'team' ? view.groupOf.get(m.home.team.id) : undefined;
+      const parts = [views.length > 1 ? `Round ${m.round + 1}` : null, g == null ? null : groupName(g)].filter(Boolean);
+      return parts.length > 0 ? parts.join(' · ') : undefined;
     };
     return buildSchedule((schedule.data?.matches ?? []).map((m) => toFixture(m, tournament.venue, label(m))), filter);
-  }, [schedule.data, teams.data, tournament.venue, filter]);
+  }, [schedule.data, teams.data, rounds.data, tournament, filter]);
   const linkedIds = new Map((schedule.data?.matches ?? []).filter((m) => m.match && !m.cancelled).map((m) => [m.id, m.match!.id]));
   const cancelledIds = new Set((schedule.data?.matches ?? []).filter((m) => m.cancelled).map((m) => m.id));
   const manage = canSchedule ? (
