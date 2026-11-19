@@ -68,6 +68,27 @@ describe('the push hook', () => {
     expect(N.addPushTokenListener).toHaveBeenCalled();
   });
 
+  it('does not loop when fetching the token fires the token listener (Android does this)', async () => {
+    N.getPermissionsAsync.mockResolvedValue({ granted: true } as never);
+    let fire: (token: { type: string; data: string }) => void = () => undefined;
+    N.addPushTokenListener.mockImplementation(((listener: typeof fire) => { fire = listener; return { remove: jest.fn() }; }) as never);
+    N.getExpoPushTokenAsync.mockImplementation(async () => {
+      fire({ type: 'android', data: 'fcm-1' });
+      return { type: 'expo', data: 'ExponentPushToken[abc]' };
+    });
+    await renderHook(() => usePushNotifications('u1', false));
+    await waitFor(() => expect(supabase.rpc).toHaveBeenCalledTimes(1));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(N.getExpoPushTokenAsync).toHaveBeenCalledTimes(1);
+    expect(supabase.rpc).toHaveBeenCalledTimes(1);
+
+    // A token that really changed is fetched and saved again.
+    N.getExpoPushTokenAsync.mockImplementation(async () => ({ type: 'expo', data: 'ExponentPushToken[new]' }));
+    fire({ type: 'android', data: 'fcm-2' });
+    await waitFor(() => expect(supabase.rpc).toHaveBeenLastCalledWith('register_push_token', { p_token: 'ExponentPushToken[new]', p_platform: 'android' }));
+    expect(supabase.rpc).toHaveBeenCalledTimes(2);
+  });
+
   it('does nothing while signed out', async () => {
     await renderHook(() => usePushNotifications(undefined, false));
     expect(N.getPermissionsAsync).not.toHaveBeenCalled();

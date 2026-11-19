@@ -19,11 +19,16 @@ export function usePushNotifications(userId: string | undefined, ready: boolean)
   useEffect(() => {
     if (!userId) return;
     let cancelled = false;
+    let saved: string | null = null;
+    let deviceToken: string | null = null;
     const register = async () => {
       for (let attempt = 0; attempt < ATTEMPTS && !cancelled; attempt += 1) {
         try {
           const token = await getPushToken();
-          if (token && !cancelled) await savePushToken(token, Platform.OS === 'ios' ? 'ios' : 'android');
+          if (token && token !== saved && !cancelled) {
+            await savePushToken(token, Platform.OS === 'ios' ? 'ios' : 'android');
+            saved = token;
+          }
           return;
         } catch {
           // Offline or a server hiccup: back off and try again, then give up until the next sign-in or app start.
@@ -32,8 +37,16 @@ export function usePushNotifications(userId: string | undefined, ready: boolean)
       }
     };
     void register();
-    // Fires with the FCM token; the Expo token wraps it, so fetch and save the Expo one again.
-    const tokenChange = Notifications.addPushTokenListener(() => void register());
+    // Fires with the FCM token; the Expo token wraps it, so fetch and save the Expo one again. Android also fires it on
+    // every token fetch, including register's own, so only a token that actually changed re-registers; reacting to
+    // every event looped about 6 times a second and starved every other request.
+    const tokenChange = Notifications.addPushTokenListener(({ data }) => {
+      const next = String(data);
+      if (next === deviceToken) return;
+      const first = deviceToken === null;
+      deviceToken = next;
+      if (!first) void register();
+    });
     return () => {
       cancelled = true;
       tokenChange.remove();

@@ -128,7 +128,6 @@ function TournamentForm({ userId, initial }: { userId: string; initial: Tourname
       {autosave.failed ? <Text accessibilityRole="alert" style={styles.error}>Automatic saving failed. Your entries are still here; try saving again.</Text> : null}
       {publisher.isError ? <Text accessibilityRole="alert" style={styles.error}>{tournamentErrorText(publisher.error)}</Text> : null}
       <Button label="Publish tournament" loading={publisher.isPending} disabled={busy} onPress={() => { void publish(); }} />
-      <Text variant="caption" muted>Publishing saves the tournament on the server. Cover and profile photos stay on this device and are not published yet.</Text>
     </ScrollView>
     <Modal visible={leaving} transparent animationType="none" onRequestClose={() => setLeaving(false)}>
       <View style={styles.modal}>
