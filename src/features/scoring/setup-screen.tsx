@@ -46,6 +46,7 @@ export function ScorerSetupScreen() {
     {chase ? <ScorerNotice>{t('scoring.setup.chaseNotice', { team: teams[batting].team.name, runs: score.runs + 1 })}</ScorerNotice>
     : setup.preset ? <ScorerNotice>{t('scoring.setup.presetNotice', { tossTeam: teams[setup.tossWinner].team.name, decision, battingTeam: teams[batting].team.name })}</ScorerNotice>
     : <>
+      <View style={s.tossCard}>
       <ScorerSection title={t('scoring.setup.whoWonToss')}>
         <View style={s.teams}>{teamCodes.map((code) => <Pressable key={code}
           accessibilityRole="button" accessibilityState={{ selected: setup.tossWinner === code }}
@@ -59,20 +60,21 @@ export function ScorerSetupScreen() {
           selected={setup.decision} onSelect={(choice) => configure({ ...setup, decision: choice })} />
         <Text style={s.batting}>{t('scoring.setup.willBatFirst', { team: teams[batting].team.name })}</Text>
       </ScorerSection>
+      </View>
       {tournament ? null : <PlayingXiEditor setup={normalized} onChange={configure} />}
     </>}
     <OpeningPlayers setup={normalized} batting={batting} onChange={configure} />
     <SwitchRow title={t('scoring.setup.recordShotsTitle')} detail={t('scoring.setup.recordShotsDetail')} value={setup.recordShots}
       onChange={(recordShots) => configure({ ...normalized, recordShots })} />
-    <ScorerNotice>{t(chase ? 'scoring.setup.chaseSavedNotice' : 'scoring.setup.firstInningsNotice')}</ScorerNotice>
     {!chase && !setup.preset && !tournament ? <Button label={t('scoring.setup.tryReference')} variant="ghost" onPress={() => {
       dispatch({ type: 'demo', id: localEventId() }); routes.replace('pad');
     }} /> : null}
   </ScorerFrame>;
 }
 const styles = (c: Palette) => StyleSheet.create({
+  tossCard: { backgroundColor: c.surface, borderRadius: radius.lg, padding: sizes.cardPaddingTight, gap: spacing.lg, ...shadows.card },
   teams: { flexDirection: 'row', gap: spacing.md },
-  team: { flex: 1, minHeight: dp(100), padding: spacing.md, gap: spacing.md, alignItems: 'center', justifyContent: 'center', backgroundColor: c.surface, borderWidth: 2, borderColor: 'transparent', borderRadius: radius.lg, ...shadows.card },
+  team: { flex: 1, minHeight: dp(100), padding: spacing.md, gap: spacing.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: c.surfaceRaised, borderWidth: 2, borderColor: 'transparent', borderRadius: radius.md },
   selected: { borderColor: c.primary, backgroundColor: c.primarySoft },
   teamName: { ...typography.labelMd, textAlign: 'center' },
   batting: { ...typography.bodyMd, color: c.link },

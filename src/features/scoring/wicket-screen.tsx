@@ -13,7 +13,7 @@ import type { DeliveryInput, Dismissal } from './types';
 import { useScorerRoutes } from './use-scorer-routes';
 import { wicketDescription } from './wicket-description';
 
-const dismissals: Dismissal[] = ['Bowled', 'Caught', 'LBW', 'Run out', 'Stumped', 'Caught & bowled', 'Hit wicket'];
+const dismissals: Dismissal[] = ['Bowled', 'Caught', 'LBW', 'Run out', 'Stumped', 'Hit wicket'];
 
 const DISMISSAL_KEY: Record<Dismissal, 'scoring.wicket.dismissal.bowled' | 'scoring.wicket.dismissal.caught' | 'scoring.wicket.dismissal.lbw' | 'scoring.wicket.dismissal.runOut' | 'scoring.wicket.dismissal.stumped' | 'scoring.wicket.dismissal.caughtAndBowled' | 'scoring.wicket.dismissal.hitWicket'> = {
   Bowled: 'scoring.wicket.dismissal.bowled',
