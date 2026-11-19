@@ -126,7 +126,12 @@ function SquadBody({ roster, team, meId }: { roster: Roster; team: RosterTeam; m
         title="Find players"
         hint="Players already on esSports. Their matches count on their career straight away."
         actionLabel="Add"
-        excludeIds={roster.teams.flatMap((t) => t.players.flatMap((p) => (p.userId ? [p.userId] : [])))}
+        excludeIds={team.players.flatMap((p) => (p.userId ? [p.userId] : []))}
+        bookedBy={Object.fromEntries(
+          roster.teams
+            .filter((t) => t.id !== team.id)
+            .flatMap((t) => t.players.flatMap((p) => (p.userId ? [[p.userId, t.name]] : []))),
+        )}
         maxSelect={Math.max(0, roster.squadRules.maxSquad - team.players.length)}
         inviting={addMembers.isPending}
         error={addMembers.isError ? rosterErrorText(addMembers.error) : null}

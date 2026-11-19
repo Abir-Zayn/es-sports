@@ -21,6 +21,8 @@ export type ServerSquad = {
   registrationDeadline: string;
   candidates: SquadCandidate[];
   selectedIds: string[];
+  /** Every player in another team's squad in this tournament (`profileId -> teamName`). */
+  bookedBy?: Record<string, string>;
   myRole: TeamRole | null;
   /** The tournament owner: may add any player straight to the team and squad. */
   isOrganiser: boolean;
@@ -63,6 +65,7 @@ export async function fetchServerSquad(tournamentId: string, teamId: string, meI
       availability: member.availability, takenBy: takenBy.get(member.profileId) ?? null,
     })),
     selectedIds: rows.filter((row) => row.teamId === teamId).map((row) => row.profileId),
+    bookedBy: Object.fromEntries(takenBy),
     myRole: members.find((member) => member.profileId === meId)?.role ?? null,
     isOrganiser: tournament.ownerId === meId,
   };
