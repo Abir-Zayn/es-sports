@@ -3,8 +3,8 @@ import { useEffect } from 'react';
 
 import { Button } from '@/components/ui';
 
-import { AuthLayout } from './auth-layout';
-import { RecoveredPasswordForm } from './recovered-password-form';
+import { AuthLayout } from '../components/auth-layout';
+import { RecoveredPasswordForm } from '../components/recovered-password-form';
 import { useRecoverySession } from '../utils/use-recovery-session';
 
 export function ResetPasswordScreen() {

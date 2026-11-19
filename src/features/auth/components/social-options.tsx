@@ -5,7 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { Button, Text } from '@/components/ui';
 import { dp, spacing, useThemedStyles, type Palette } from '@/theme';
 
-import { signInWithGoogle } from '../utils/google-auth';
+import { signInWithGoogle } from '../server/google-auth';
 
 const googleG = require('../../../../assets/images/google-g.png');
 const phoneIcon = require('../../../../assets/images/phone.png');

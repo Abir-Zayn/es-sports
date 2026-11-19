@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { supabase } from '@/lib/supabase';
 
-import { authErrorMessage } from './auth-errors';
+import { authErrorMessage } from '../utils/auth-errors';
 import { signInSchema } from './sign-in';
 import type { SendResetResult } from '../types';
 

@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 
-import { providerProfileFromMetadata } from './provider-profile';
+import { providerProfileFromMetadata } from '../utils/provider-profile';
 import type { LinkedAccountsResult, ProviderProfile } from '../types';
 
 /** Which sign-in methods the current user has, and what Google shares if it is linked. */

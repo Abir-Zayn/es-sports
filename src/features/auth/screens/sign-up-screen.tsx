@@ -5,10 +5,10 @@ import { StyleSheet, TextInput, View } from 'react-native';
 import { Button, Checkbox, PasswordField, Text, TextField } from '@/components/ui';
 import { spacing, useThemedStyles, type Palette } from '@/theme';
 
-import { AuthLayout } from './auth-layout';
-import { AuthSwitchLink } from './auth-switch-link';
-import { resendConfirmation } from '../utils/resend-confirmation';
-import { signUpSchema, signUpWithEmail } from '../utils/sign-up';
+import { AuthLayout } from '../components/auth-layout';
+import { AuthSwitchLink } from '../components/auth-switch-link';
+import { resendConfirmation } from '../server/resend-confirmation';
+import { signUpSchema, signUpWithEmail } from '../server/sign-up';
 
 type FieldErrors = { email?: string; password?: string; confirm?: string; accepted?: string };
 

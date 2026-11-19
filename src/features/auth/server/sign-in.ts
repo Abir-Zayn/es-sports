@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { supabase } from '@/lib/supabase';
 
-import { authErrorMessage } from './auth-errors';
+import { authErrorMessage } from '../utils/auth-errors';
 import type { SignInInput, SignInResult } from '../types';
 
 export const signInSchema = z.object({

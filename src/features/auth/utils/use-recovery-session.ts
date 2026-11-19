@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { INVALID_RECOVERY_LINK, openRecoverySession } from './password-recovery';
+import { INVALID_RECOVERY_LINK, openRecoverySession } from '../server/password-recovery';
 
 type State = { status: 'checking' } | { status: 'ready'; userId: string }
   | { status: 'error'; message: string; retryable: boolean };

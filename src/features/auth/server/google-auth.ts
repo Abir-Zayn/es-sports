@@ -3,7 +3,7 @@ import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { env } from '@/lib/env';
 import { supabase } from '@/lib/supabase';
 
-import { authErrorMessage } from './auth-errors';
+import { authErrorMessage } from '../utils/auth-errors';
 import type { GoogleAuthResult } from '../types';
 
 /** `cancelled` means the user dismissed the account picker; show no error for it. */
