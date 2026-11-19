@@ -1,13 +1,14 @@
+import { t } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 
 import { providerProfileFromMetadata } from './provider-profile';
-import type { LinkedAccountsResult, ProviderProfile } from '../types';
+import type { LinkedAccountsResult } from '../types';
 
 /** Which sign-in methods the current user has, and what Google shares if it is linked. */
 export async function loadLinkedAccounts(): Promise<LinkedAccountsResult> {
   try {
     const { data, error } = await supabase.auth.getUserIdentities();
-    if (error || !data) return { ok: false, message: 'Couldn’t load your linked accounts.' };
+    if (error || !data) return { ok: false, message: t('auth.err.linkedAccountsFailed') };
     const google = data.identities.find((identity) => identity.provider === 'google');
     return {
       ok: true,
@@ -17,6 +18,6 @@ export async function loadLinkedAccounts(): Promise<LinkedAccountsResult> {
       },
     };
   } catch {
-    return { ok: false, message: 'Couldn’t connect. Check your connection and try again.' };
+    return { ok: false, message: t('common.networkError') };
   }
 }

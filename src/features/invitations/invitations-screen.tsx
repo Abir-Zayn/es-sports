@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth';
+import { useTranslation } from '@/i18n';
 import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { InvitationCard } from './invitation-card';
@@ -30,6 +31,7 @@ export function InvitationsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const queryClient = useQueryClient();
   const userId = useSignedInUserId();
@@ -71,19 +73,19 @@ export function InvitationsScreen() {
           borderRadius={radius.pill}
           backgroundColor={colors.surface}
           elevated
-          accessibilityLabel="Back"
+          accessibilityLabel={t('common.back')}
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/home'))}
         />
         <Text accessibilityRole="header" style={styles.title}>
-          Invitations
+          {t('invitations.title')}
         </Text>
       </View>
       {invitations.isPending ? (
-        <ActivityIndicator color={colors.link} accessibilityLabel="Loading invitations" style={styles.status} />
+        <ActivityIndicator color={colors.link} accessibilityLabel={t('invitations.loading')} style={styles.status} />
       ) : invitations.isError ? (
         <View style={styles.failed}>
-          <Text muted>Could not load your invitations.</Text>
-          <Button label="Try again" variant="secondary" onPress={() => void invitations.refetch()} />
+          <Text muted>{t('invitations.loadError')}</Text>
+          <Button label={t('common.retry')} variant="secondary" onPress={() => void invitations.refetch()} />
         </View>
       ) : (
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}>
@@ -94,7 +96,7 @@ export function InvitationsScreen() {
           ) : null}
           {list.length === 0 ? (
             <Text muted accessibilityLiveRegion="polite">
-              No invitations right now.
+              {t('invitations.empty')}
             </Text>
           ) : (
             list.map((invitation) => (

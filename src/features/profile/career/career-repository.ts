@@ -32,8 +32,10 @@ const toFigure = (row: Record<string, unknown>): FigureRow[] => {
   }];
 };
 
-/** The account's real career: every finished match it played in, read from the ball-by-ball log on the server. */
-export async function fetchCareer(userId: string): Promise<Career> {
+export type CareerRows = { figures: FigureRow[]; played: PlayedRow[] };
+
+/** Fetches raw career rows so presentation can reformat cleanly when language changes. */
+export async function fetchCareerRows(userId: string): Promise<CareerRows> {
   const [figures, played] = await Promise.all([
     supabase.from('player_match_figures').select(FIGURE_COLUMNS).eq('profile_id', userId),
     supabase.from('match_players').select(PLAYED_COLUMNS).eq('profile_id', userId).eq('in_playing_xi', true)
@@ -41,8 +43,14 @@ export async function fetchCareer(userId: string): Promise<Career> {
   ]);
   if (figures.error) throw figures.error;
   if (played.error) throw played.error;
-  return buildCareer(
-    (figures.data ?? []).flatMap((row) => toFigure(row as Record<string, unknown>)),
-    (played.data ?? []).flatMap((row) => toPlayed(row as never)),
-  );
+  return {
+    figures: (figures.data ?? []).flatMap((row) => toFigure(row as Record<string, unknown>)),
+    played: (played.data ?? []).flatMap((row) => toPlayed(row as never)),
+  };
+}
+
+/** The account's real career: every finished match it played in, read from the ball-by-ball log on the server. */
+export async function fetchCareer(userId: string): Promise<Career> {
+  const { figures, played } = await fetchCareerRows(userId);
+  return buildCareer(figures, played);
 }

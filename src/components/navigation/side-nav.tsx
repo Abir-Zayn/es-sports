@@ -3,6 +3,7 @@ import { Modal, Pressable, StyleSheet, useWindowDimensions } from 'react-native'
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useTranslation } from '@/i18n';
 import { radius, spacing, useThemedStyles, type Palette } from '@/theme';
 
 /** Share of the screen width the panel takes. */
@@ -18,6 +19,7 @@ type Props = { open: boolean; onClose: () => void; children: ReactNode };
  * The dimmed rest of the screen and Back close it.
  */
 export function SideNav({ open, onClose, children }: Props) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const insets = useSafeAreaInsets();
   const width = useWindowDimensions().width * SIDE_NAV_WIDTH_RATIO;
@@ -42,7 +44,7 @@ export function SideNav({ open, onClose, children }: Props) {
   return (
     <Modal visible transparent animationType="none" statusBarTranslucent navigationBarTranslucent onRequestClose={onClose}>
       <Animated.View style={[StyleSheet.absoluteFill, styles.scrim, scrimStyle]} />
-      <Pressable style={StyleSheet.absoluteFill} accessibilityRole="button" accessibilityLabel="Close menu" onPress={onClose} />
+      <Pressable style={StyleSheet.absoluteFill} accessibilityRole="button" accessibilityLabel={t('nav.closeMenu')} onPress={onClose} />
       <Animated.View
         accessibilityViewIsModal
         style={[styles.panel, { width, paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.lg }, panelStyle]}

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AppTabs, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { sizes } from '@/theme';
 
 import { MatchLoadState, StaleMatchNote } from './components/match-load-state';
@@ -16,6 +17,7 @@ import { useLiveMatchData } from './use-live-match-data';
 export function MatchOversScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const matchId = id ?? '';
+  const { t } = useTranslation();
   const live = useLiveMatchData(matchId);
   const view = live.data;
   const played = view?.overs.filter((o) => o.overs.length > 0) ?? [];
@@ -23,9 +25,9 @@ export function MatchOversScreen() {
     <MatchScreenFrame matchId={matchId} tab="overs" title={view?.header.title} subtitle={view?.header.subtitle}>
       <StaleMatchNote query={live} />
       {!view ? (
-        <MatchLoadState query={live} label="Loading overs" />
+        <MatchLoadState query={live} label={t('match.loadingOvers')} />
       ) : played.length === 0 ? (
-        <Text muted accessibilityLiveRegion="polite">No overs bowled yet.</Text>
+        <Text muted accessibilityLiveRegion="polite">{t('match.overs.empty')}</Text>
       ) : (
         <InningsOvers innings={played} />
       )}
@@ -35,6 +37,7 @@ export function MatchOversScreen() {
 
 function InningsOvers({ innings }: { innings: OversData[] }) {
   // Opens on the latest innings.
+  const { t } = useTranslation();
   const [selected, setSelected] = useState(innings.length - 1);
   const current = innings[selected] ?? innings[innings.length - 1];
   const tabs = innings.map((inn, i) => ({ id: String(i), label: inn.inningsLabel }));
@@ -42,7 +45,7 @@ function InningsOvers({ innings }: { innings: OversData[] }) {
     <>
       {innings.length > 1 ? <AppTabs tabs={tabs} selected={String(selected)} onSelect={(i) => setSelected(Number(i))} /> : null}
       <RunsPerOverChart
-        title="Runs per over"
+        title={t('match.overs.runsPerOverTitle')}
         caption={current.inningsLabel}
         runsPerOver={current.runsPerOver}
         wicketOvers={current.wicketOvers}

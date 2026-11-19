@@ -1,3 +1,5 @@
+import { getLocale, translate, type Locale } from '@/i18n';
+
 import type { BowlerLine, Innings, LiveBatter, LiveSide, MatchInfoData, OverSummary, OversData, WagonBatter } from '../types';
 
 export type LiveStatus = 'live' | 'completed' | 'scheduled';
@@ -49,11 +51,28 @@ export function nickname(name: string): string {
 
 export const oversText = (balls: number) => `${Math.floor(balls / 6)}.${balls % 6}`;
 export const runRate = (runs: number, balls: number) => (balls > 0 ? ((runs / balls) * 6).toFixed(2) : '0.00');
-const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
+
+export function countLabel(count: number, unit: 'run' | 'ball', locale: Locale = getLocale()): string {
+  const key = unit === 'run'
+    ? (count === 1 ? 'match.runOne' : 'match.runMany')
+    : (count === 1 ? 'match.ballOne' : 'match.ballMany');
+  return translate(locale, key, { count });
+}
 
 /** "Strikers need 13 runs in 12 balls", or the line once the target is reached or the balls run out. */
-export function chaseLine(team: string, target: number, runs: number, ballsLeft: number): string {
+export function chaseLine(
+  team: string,
+  target: number,
+  runs: number,
+  ballsLeft: number,
+  locale: Locale = getLocale(),
+): string {
   const need = Math.max(0, target - runs);
-  if (need === 0) return `${nickname(team)} have reached the target`;
-  return `${nickname(team)} need ${plural(need, 'run')} in ${plural(Math.max(0, ballsLeft), 'ball')}`;
+  const name = nickname(team);
+  if (need === 0) return translate(locale, 'match.chaseReached', { team: name });
+  return translate(locale, 'match.chaseNeed', {
+    team: name,
+    runsText: countLabel(need, 'run', locale),
+    ballsText: countLabel(Math.max(0, ballsLeft), 'ball', locale),
+  });
 }

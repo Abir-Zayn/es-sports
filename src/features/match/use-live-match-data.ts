@@ -1,8 +1,11 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import { fetchEvents, fetchPlayers, findSpectatorMatch, isUuid } from '@/features/scoring/data/match-repository';
 import { stagedSetup } from '@/features/scoring/data/staged-setups';
+import type { BallEventRow, MatchRow, PlayerRow } from '@/features/scoring/data/types';
+import type { MatchSetup } from '@/features/scoring/types';
+import { getLocale, t, useLocale, type Locale } from '@/i18n';
 
 import { buildLiveView, stagedLiveView } from './live/build-live-view';
 import type { LiveMatchViewData } from './live/live-view';
@@ -19,8 +22,38 @@ export const liveMatchKey = (matchId: string) => ['live-match', matchId] as cons
 /** A saved match id that the server does not know, or that this account may not see. */
 export class MatchNotFoundError extends Error {
   constructor() {
-    super('This match could not be found.');
+    super(t('match.notFound'));
   }
+}
+
+type LiveMatchPayload =
+  | { source: 'stored'; match: MatchRow; players: PlayerRow[]; rows: BallEventRow[]; isLive: boolean }
+  | { source: 'staged'; setup: MatchSetup }
+  | { source: 'sample' };
+
+async function loadStoredPayload(matchId: string): Promise<Extract<LiveMatchPayload, { source: 'stored' }>> {
+  const match = await findSpectatorMatch(matchId);
+  if (!match) throw new MatchNotFoundError();
+  const [players, rows] = await Promise.all([fetchPlayers(match.id), fetchEvents(match.id)]);
+  const isLive = match.status !== 'completed' && (match.status === 'live' || rows.some((r) => !r.voided_at && r.kind === 'innings_start'));
+  return { source: 'stored', match, players, rows, isLive };
+}
+
+async function loadLiveMatchPayload(matchId: string, shownSource?: LiveMatchPayload['source']): Promise<LiveMatchPayload> {
+  if (isUuid(matchId) || shownSource === 'stored') return loadStoredPayload(matchId);
+  try {
+    return await loadStoredPayload(matchId);
+  } catch {
+    // Not saved yet, offline, signed out, or a log the scorer rules reject: fall through to what this phone knows.
+  }
+  const staged = stagedSetup(matchId);
+  return staged ? { source: 'staged', setup: staged.setup } : { source: 'sample' };
+}
+
+function mapLiveMatchPayload(payload: LiveMatchPayload, locale: Locale): LiveMatchViewData {
+  if (payload.source === 'stored') return buildLiveView(payload.match, payload.players, payload.rows, locale);
+  if (payload.source === 'staged') return stagedLiveView(payload.setup, locale);
+  return sampleLiveView();
 }
 
 /**
@@ -30,21 +63,8 @@ export class MatchNotFoundError extends Error {
  * `shown` is what the screen already shows: once that is a saved match, a refresh holds to it in the same way.
  */
 export async function loadLiveMatch(matchId: string, shown?: LiveMatchViewData): Promise<LiveMatchViewData> {
-  if (isUuid(matchId) || shown?.source === 'stored') return loadStoredMatch(matchId);
-  try {
-    return await loadStoredMatch(matchId);
-  } catch {
-    // Not saved yet, offline, signed out, or a log the scorer rules reject: fall through to what this phone knows.
-  }
-  const staged = stagedSetup(matchId);
-  return staged ? stagedLiveView(staged.setup) : sampleLiveView();
-}
-
-async function loadStoredMatch(matchId: string): Promise<LiveMatchViewData> {
-  const match = await findSpectatorMatch(matchId);
-  if (!match) throw new MatchNotFoundError();
-  const [players, rows] = await Promise.all([fetchPlayers(match.id), fetchEvents(match.id)]);
-  return buildLiveView(match, players, rows);
+  const payload = await loadLiveMatchPayload(matchId, shown?.source);
+  return mapLiveMatchPayload(payload, getLocale());
 }
 
 /**
@@ -54,12 +74,14 @@ async function loadStoredMatch(matchId: string): Promise<LiveMatchViewData> {
  */
 export function useLiveMatchData(matchId: string) {
   const client = useQueryClient();
-  const query = useQuery({
+  const locale = useLocale();
+  const query = useQuery<LiveMatchPayload, Error, LiveMatchViewData>({
     queryKey: liveMatchKey(matchId),
-    queryFn: () => loadLiveMatch(matchId, client.getQueryData<LiveMatchViewData>(liveMatchKey(matchId))),
+    queryFn: () => loadLiveMatchPayload(matchId, client.getQueryData<LiveMatchPayload>(liveMatchKey(matchId))?.source),
+    select: useCallback((payload: LiveMatchPayload) => mapLiveMatchPayload(payload, locale), [locale]),
     enabled: matchId.length > 0,
     retry: (failures, error) => !(error instanceof MatchNotFoundError) && failures < 2,
-    refetchInterval: (state) => (state.state.data?.header.status === 'live' && state.state.data.source === 'stored'
+    refetchInterval: (state) => (state.state.data?.source === 'stored' && state.state.data.isLive
       ? (isWatchConnected(matchId) ? CONNECTED_REFRESH_MS : LIVE_REFRESH_MS) : false),
   });
   // The channel filters on the stored match id; a match opened by fixture reference is refreshed by polling.

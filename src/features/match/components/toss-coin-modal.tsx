@@ -4,6 +4,7 @@ import { AccessibilityInfo, Animated, Easing, StyleSheet, View } from 'react-nat
 
 import { Button, SegmentedControl, Text } from '@/components/ui';
 import { Sheet } from '@/features/tournament/roster';
+import { useTranslation } from '@/i18n';
 import { dp, radius, sp, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { decideToss, flipCoin, tossWinner } from '../friendly/toss';
@@ -34,7 +35,8 @@ type Flip = { calledBy: FriendlySide; call: TossCall; landed: TossCall };
 
 /** The coin toss: one captain calls, the coin spins, the winner chooses to bat or bowl, then scoring starts. */
 export function TossCoinModal({ visible, onClose, ...body }: Props) {
-  return <Sheet visible={visible} title="Toss" onClose={onClose}>
+  const { t } = useTranslation();
+  return <Sheet visible={visible} title={t('friendly.toss.title')} onClose={onClose}>
     {/* Mounted only while open, so a reopened toss starts fresh. */}
     {visible ? <TossBody {...body} /> : null}
   </Sheet>;
@@ -42,6 +44,7 @@ export function TossCoinModal({ visible, onClose, ...body }: Props) {
 
 function TossBody({ names, onStart, saving = false, error, random, spinMs = SPIN_MS }: Omit<Props, 'visible' | 'onClose'>) {
   const s = useThemedStyles(styles);
+  const { t } = useTranslation();
   const [calledBy, setCalledBy] = useState<FriendlySide>('teamA');
   const [call, setCall] = useState<TossCall>('heads');
   const [phase, setPhase] = useState<'call' | 'spinning' | 'landed'>('call');
@@ -66,34 +69,43 @@ function TossBody({ names, onStart, saving = false, error, random, spinMs = SPIN
   const rotateY = spin.interpolate({ inputRange: [0, 1], outputRange: ['0deg', `${TURNS * 360}deg`] });
   const lift = spin.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, -60, 0] });
 
+  const faceLabelLower = face ? t(face === 'heads' ? 'friendly.toss.headsLower' : 'friendly.toss.tailsLower') : '';
+  const faceLabelUpper = face ? t(face === 'heads' ? 'friendly.toss.faceUpperHeads' : 'friendly.toss.faceUpperTails') : '';
+
   return <View style={s.body}>
     <View style={s.stage}>
       <Animated.View style={[s.coin, face === 'tails' ? s.tails : s.heads, { transform: [{ translateY: lift }, { rotateY }] }]}
-        accessible accessibilityRole="image" accessibilityLabel={face ? `Coin landed ${face}` : 'Coin'}>
+        accessible accessibilityRole="image" accessibilityLabel={face ? t('friendly.toss.coinLandedA11y', { face: faceLabelLower }) : t('friendly.toss.coinA11y')}>
         {face === 'tails' ? <Stumps /> : <Crown size={dp(44)} color={INK} strokeWidth={2.2} />}
-        <Text style={s.coinText}>{face ? face.toUpperCase() : phase === 'spinning' ? '' : 'HEADS · TAILS'}</Text>
+        <Text style={s.coinText}>{face ? faceLabelUpper : phase === 'spinning' ? '' : t('friendly.toss.headsTailsPrompt')}</Text>
       </Animated.View>
     </View>
     {phase === 'call' ? <>
-      <Text muted>Who calls?</Text>
+      <Text muted>{t('friendly.toss.whoCalls')}</Text>
       <SegmentedControl options={[{ id: 'teamA', label: names.teamA }, { id: 'teamB', label: names.teamB }]}
-        selected={calledBy} onSelect={setCalledBy} accessibilityLabel="Calling team" />
-      <Text muted>{names[calledBy]} calls</Text>
-      <SegmentedControl options={[{ id: 'heads', label: 'Heads' }, { id: 'tails', label: 'Tails' }]}
-        selected={call} onSelect={setCall} accessibilityLabel="Call" />
-      <Button label="Flip coin" onPress={() => void toss()} />
-    </> : phase === 'spinning' ? <Text muted style={s.center} accessibilityLiveRegion="polite">In the air…</Text>
+        selected={calledBy} onSelect={setCalledBy} accessibilityLabel={t('friendly.toss.callingTeamA11y')} />
+      <Text muted>{t('friendly.toss.teamCalls', { team: names[calledBy] })}</Text>
+      <SegmentedControl options={[{ id: 'heads', label: t('friendly.toss.heads') }, { id: 'tails', label: t('friendly.toss.tails') }]}
+        selected={call} onSelect={setCall} accessibilityLabel={t('friendly.toss.callA11y')} />
+      <Button label={t('friendly.toss.flipCoin')} onPress={() => void toss()} />
+    </> : phase === 'spinning' ? <Text muted style={s.center} accessibilityLiveRegion="polite">{t('friendly.toss.inTheAir')}</Text>
       : winner ? <>
-        <Text style={s.banner} accessibilityRole="header" accessibilityLiveRegion="polite">{names[winner]} won the toss!</Text>
-        <Text muted style={s.center}>{names[flip!.calledBy]} called {flip!.call}; it landed {flip!.landed}.</Text>
+        <Text style={s.banner} accessibilityRole="header" accessibilityLiveRegion="polite">{t('friendly.toss.wonBanner', { team: names[winner] })}</Text>
+        <Text muted style={s.center}>
+          {t('friendly.toss.callSummary', {
+            team: names[flip!.calledBy],
+            call: t(flip!.call === 'heads' ? 'friendly.toss.headsLower' : 'friendly.toss.tailsLower'),
+            landed: t(flip!.landed === 'heads' ? 'friendly.toss.headsLower' : 'friendly.toss.tailsLower'),
+          })}
+        </Text>
         <View style={s.choices}>
           {(['bat', 'bowl'] as const).map((choice) => <View key={choice} style={s.choice}>
-            <Button label={choice === 'bat' ? 'Bat first' : 'Bowl first'} variant={decision === choice ? 'primary' : 'secondary'} disabled={saving || Boolean(error)}
+            <Button label={t(choice === 'bat' ? 'friendly.toss.batFirst' : 'friendly.toss.bowlFirst')} variant={decision === choice ? 'primary' : 'secondary'} disabled={saving || Boolean(error)}
               accessibilityState={{ selected: decision === choice }} onPress={() => setDecision(choice)} />
           </View>)}
         </View>
         {error ? <Text accessibilityRole="alert">{error}</Text> : null}
-        <Button label={saving ? 'Saving match…' : 'Start scoring'} disabled={!decision || saving}
+        <Button label={saving ? t('friendly.toss.savingMatch') : t('friendly.toss.startScoring')} disabled={!decision || saving}
           onPress={() => { if (flip && decision) onStart(decideToss(flip, decision, new Date())); }} />
       </> : null}
   </View>;

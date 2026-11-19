@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth';
+import { useTranslation } from '@/i18n';
 import { radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { expiryText, isOpen } from '../handover-rules';
@@ -16,6 +17,7 @@ import { useIncomingOffers, useNow } from '../use-handover';
 export function IncomingHandoverBanner() {
   const router = useRouter();
   const styles = useThemedStyles(createStyles);
+  const { t, locale } = useTranslation();
   const userId = useAuth().session?.user.id;
   const { data, refetch } = useIncomingOffers(userId);
   const now = useNow(true);
@@ -24,9 +26,9 @@ export function IncomingHandoverBanner() {
   if (offers.length === 0) return null;
   return <View style={styles.list}>
     {offers.map((offer) => <View key={offer.id} style={styles.card} accessibilityRole="alert">
-      <Text style={styles.title}>{`${offer.fromName} asks you to score`}</Text>
-      <Text muted style={styles.detail}>{`${offer.teamA} vs ${offer.teamB} · ${expiryText(offer, now)}`}</Text>
-      <Button label="View request" size="compact" onPress={() => router.push({ pathname: '/handover/[id]', params: { id: offer.id } })} />
+      <Text style={styles.title}>{t('handover.banner.asksToScore', { name: offer.fromName })}</Text>
+      <Text muted style={styles.detail}>{`${t('match.vsTitle', { teamA: offer.teamA, teamB: offer.teamB })} · ${expiryText(offer, now, locale)}`}</Text>
+      <Button label={t('handover.banner.viewRequest')} size="compact" onPress={() => router.push({ pathname: '/handover/[id]', params: { id: offer.id } })} />
     </View>)}
   </View>;
 }

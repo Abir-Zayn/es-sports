@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { AppBadge, Button, Text } from '@/components/ui';
+import { useTranslation, type TranslationKey } from '@/i18n';
 import { radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { isOpen, type Invitation, type InvitationStatus } from './types';
@@ -14,43 +15,45 @@ type Props = {
   onManageSquad: () => void;
 };
 
-function headline({ kind, teamName, tournamentName }: Invitation): string {
-  if (kind === 'team-player') return `Play for ${teamName ?? 'a team'}`;
-  return kind === 'team-owner' ? `Own ${teamName ?? 'a team'} in ${tournamentName}` : `Moderate ${tournamentName}`;
-}
-
-const roleText: Record<Invitation['kind'], string> = {
-  'team-player': 'As a player you join the team squad. Within one tournament you can play for one team only.',
-  'team-owner': 'As team owner you invite the players and pick one team moderator.',
-  'tournament-moderator': 'As moderator you help add teams and invite team owners.',
+const roleTextKey: Record<Invitation['kind'], TranslationKey> = {
+  'team-player': 'invitations.rolePlayer',
+  'team-owner': 'invitations.roleOwner',
+  'tournament-moderator': 'invitations.roleModerator',
 };
 
-const statusLabels: Record<Exclude<InvitationStatus, 'pending'>, string> = {
-  accepted: 'Accepted',
-  declined: 'Declined',
-  cancelled: 'Cancelled',
-  expired: 'Expired',
+const statusKey: Record<Exclude<InvitationStatus, 'pending'>, TranslationKey> = {
+  accepted: 'invitations.statusAccepted',
+  declined: 'invitations.statusDeclined',
+  cancelled: 'invitations.statusCancelled',
+  expired: 'invitations.statusExpired',
 };
 
 /** One invite: what it is, who sent it, and Accept, Decline, or Cancel while it is open. */
 export function InvitationCard({ invitation, busy, onAccept, onDecline, onCancel, onManageSquad }: Props) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
+  const title =
+    invitation.kind === 'team-player'
+      ? t('invitations.playFor', { team: invitation.teamName ?? t('invitations.aTeam') })
+      : invitation.kind === 'team-owner'
+        ? t('invitations.ownIn', { team: invitation.teamName ?? t('invitations.aTeam'), tournament: invitation.tournamentName })
+        : t('invitations.moderate', { tournament: invitation.tournamentName });
   const open = isOpen(invitation);
   const effectiveStatus: Exclude<InvitationStatus, 'pending'> =
     invitation.status === 'pending' ? 'expired' : invitation.status;
   const isSent = invitation.direction === 'sent';
   const personLine = isSent
-    ? `To ${invitation.toName ?? 'Invited user'} · ${invitation.sentLabel}`
-    : `From ${invitation.fromName} · ${invitation.sentLabel}`;
+    ? t('invitations.toLine', { name: invitation.toName ?? t('invitations.invitedUserFallback'), sent: invitation.sentLabel })
+    : t('invitations.fromLine', { name: invitation.fromName, sent: invitation.sentLabel });
 
   return (
     <View style={styles.row}>
       <View style={styles.top}>
-        <Text style={styles.title}>{headline(invitation)}</Text>
+        <Text style={styles.title}>{title}</Text>
         {!open ? (
           <AppBadge
-            label={statusLabels[effectiveStatus]}
+            label={t(statusKey[effectiveStatus])}
             backgroundColor={effectiveStatus === 'accepted' ? colors.primarySoft : colors.surfaceRaised}
             color={effectiveStatus === 'accepted' ? colors.link : colors.textMuted}
           />
@@ -58,14 +61,14 @@ export function InvitationCard({ invitation, busy, onAccept, onDecline, onCancel
       </View>
       <Text style={styles.meta}>{personLine}</Text>
       <Text variant="caption" muted>
-        {roleText[invitation.kind]}
+        {t(roleTextKey[invitation.kind])}
       </Text>
       {invitation.kind === 'team-owner' && invitation.status === 'accepted' && !isSent ? (
         <View style={styles.actions}>
           <Button
-            label="Manage squad"
+            label={t('invitations.manageSquad')}
             size="compact"
-            accessibilityLabel={`Manage ${invitation.teamName ?? 'team'} squad`}
+            accessibilityLabel={t('invitations.manageSquadA11y', { team: invitation.teamName ?? t('invitations.teamWord') })}
             onPress={onManageSquad}
           />
         </View>
@@ -74,11 +77,11 @@ export function InvitationCard({ invitation, busy, onAccept, onDecline, onCancel
         onCancel ? (
           <View style={styles.actions}>
             <Button
-              label="Cancel"
+              label={t('common.cancel')}
               variant="secondary"
               size="compact"
               disabled={busy}
-              accessibilityLabel={`Cancel: ${headline(invitation)}`}
+              accessibilityLabel={t('invitations.cancelA11y', { headline: title })}
               onPress={onCancel}
             />
           </View>
@@ -86,18 +89,18 @@ export function InvitationCard({ invitation, busy, onAccept, onDecline, onCancel
       ) : (
         <View style={styles.actions}>
           <Button
-            label="Accept"
+            label={t('invitations.accept')}
             size="compact"
             disabled={busy}
-            accessibilityLabel={`Accept: ${headline(invitation)}`}
+            accessibilityLabel={t('invitations.acceptA11y', { headline: title })}
             onPress={onAccept}
           />
           <Button
-            label="Decline"
+            label={t('invitations.decline')}
             variant="secondary"
             size="compact"
             disabled={busy}
-            accessibilityLabel={`Decline: ${headline(invitation)}`}
+            accessibilityLabel={t('invitations.declineA11y', { headline: title })}
             onPress={onDecline}
           />
         </View>

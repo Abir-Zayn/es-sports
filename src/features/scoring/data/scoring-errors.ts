@@ -1,7 +1,9 @@
+import { t } from '@/i18n';
+
 /** The match's score head is not the one this phone expected, so another device wrote to it first (ESC01). */
 export class ScoringConflictError extends Error {
   constructor() {
-    super('This match was changed on another device');
+    super(t('scoring.errors.conflict'));
   }
 }
 

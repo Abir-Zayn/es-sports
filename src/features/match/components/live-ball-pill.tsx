@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { getLocale, translate } from '@/i18n';
 import { dp, radius, sp, typography, useTheme, type Palette } from '@/theme';
 
 // Boundary colours read the same in both themes, with white text at accessible contrast.
@@ -21,14 +22,34 @@ export function ballKind(value: string): BallKind {
   return value === '0' ? 'dot' : 'runs';
 }
 
-const SPOKEN: Record<BallKind, (v: string) => string> = {
-  four: () => 'four', six: () => 'six', wicket: () => 'wicket', dot: () => 'dot ball', pending: () => 'to come',
-  runs: (v) => `${v} run${v === '1' ? '' : 's'}`,
-  extra: (v) => ({ Wd: 'wide', Nb: 'no ball', Lb: 'leg bye', B: 'bye' })[v] ?? v,
-};
+const EXTRA_KEYS = {
+  Wd: 'match.ball.wide',
+  Nb: 'match.ball.noBall',
+  Lb: 'match.ball.legBye',
+  B: 'match.ball.bye',
+} as const;
 
 /** How a ball is read out, e.g. "four", "wide", "2 runs". */
-export const spokenBall = (value: string) => SPOKEN[ballKind(value)](value);
+export const spokenBall = (value: string): string => {
+  const locale = getLocale();
+  switch (ballKind(value)) {
+    case 'four': return translate(locale, 'match.ball.four');
+    case 'six': return translate(locale, 'match.ball.six');
+    case 'wicket': return translate(locale, 'match.ball.wicket');
+    case 'dot': return translate(locale, 'match.ball.dot');
+    case 'pending': return translate(locale, 'match.ball.pending');
+    case 'runs': {
+      const count = Number(value);
+      return Number.isFinite(count)
+        ? translate(locale, count === 1 ? 'match.runOne' : 'match.runMany', { count })
+        : value;
+    }
+    case 'extra': {
+      const key = EXTRA_KEYS[value as keyof typeof EXTRA_KEYS];
+      return key ? translate(locale, key) : value;
+    }
+  }
+};
 
 function coloursOf(kind: BallKind, c: Palette): { background: string; color: string; border?: string } {
   switch (kind) {

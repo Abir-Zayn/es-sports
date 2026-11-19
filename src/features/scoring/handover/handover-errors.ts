@@ -1,3 +1,5 @@
+import { t } from '@/i18n';
+
 import { errorCode } from '../data/scoring-errors';
 
 /** Why a handover call failed, in words for the person. `closed` means the request is over: refetch, never retry. */
@@ -13,13 +15,13 @@ const CLOSED_CODES = new Set(['ESH01', 'ESH03', 'ESH05']);
 /** `who` is the scorer's name, used by ESH04 ("<name> scored a moment ago"). */
 export function handoverMessage(error: unknown, who?: string | null): string {
   switch (errorCode(error)) {
-    case 'ESH01': return 'This scoring request is no longer open.';
-    case 'ESH02': return 'Scoring is already being handed over. Cancel that request first.';
-    case 'ESH03': return 'The scorer changed, so this request is no longer open.';
-    case 'ESH04': return `${who?.trim() || 'The scorer'} scored a moment ago. Try again after 15 minutes without a ball.`;
-    case 'ESH05': return 'This match is finished.';
-    case '42501': return 'You are not allowed to do that for this match.';
-    default: return 'Could not reach the server. Check your connection and try again.';
+    case 'ESH01': return t('handover.err.closed');
+    case 'ESH02': return t('handover.err.alreadyPending');
+    case 'ESH03': return t('handover.err.scorerChanged');
+    case 'ESH04': return t('handover.err.recentBall', { who: who?.trim() || t('handover.err.scorerFallback') });
+    case 'ESH05': return t('handover.err.finished');
+    case '42501': return t('handover.err.notAllowed');
+    default: return t('handover.err.network');
   }
 }
 

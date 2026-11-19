@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 type Props = { label: string; uri?: string; /** Square size in px. */ size?: number; onChange: (uri?: string, mimeType?: string) => void };
@@ -13,6 +14,7 @@ const MAX_BYTES = 2 * 1024 * 1024;
 
 export function TeamImagePicker({ label, uri, size = dp(48), onChange }: Props) {
   const s = useThemedStyles(styles);
+  const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
   const busy = useRef(false);
   const mounted = useRef(true);
@@ -27,22 +29,22 @@ export function TeamImagePicker({ label, uri, size = dp(48), onChange }: Props) 
       const asset = result.assets[0];
       const mime = asset.mimeType ?? 'image/jpeg';
       if (!TYPES.includes(mime) || (asset.fileSize && asset.fileSize > MAX_BYTES)) {
-        setError('Choose a JPEG, PNG or WebP image under 2 MB.');
+        setError(t('friendly.image.invalidOrLarge'));
         return;
       }
       setError(null);
       onChange(asset.uri, mime);
     } catch {
-      if (mounted.current) setError('Could not open photos. Try again.');
+      if (mounted.current) setError(t('friendly.image.openPhotosFailed'));
     } finally { busy.current = false; }
   }
 
   return <View style={s.wrap}>
-    <Pressable accessibilityRole="button" accessibilityLabel={`${uri ? 'Change' : 'Add'} ${label} image`}
+    <Pressable accessibilityRole="button" accessibilityLabel={t(uri ? 'friendly.image.changeA11y' : 'friendly.image.addA11y', { label })}
       onPress={() => void pick()} style={[s.button, { width: size, height: size, borderRadius: radius.pill }]}>
       {uri ? <Image source={{ uri }} style={s.image} contentFit="cover" /> : <Camera size={size > dp(56) ? sizes.tabIcon : sizes.icon} color={s.icon.color} />}
     </Pressable>
-    {uri ? <Text onPress={() => onChange(undefined, undefined)} accessibilityRole="button" accessibilityLabel={`Remove ${label} image`} style={s.remove}>Remove</Text> : null}
+    {uri ? <Text onPress={() => onChange(undefined, undefined)} accessibilityRole="button" accessibilityLabel={t('friendly.image.removeA11y', { label })} style={s.remove}>{t('friendly.image.remove')}</Text> : null}
     {error ? <Text accessibilityRole="alert" style={s.error}>{error}</Text> : null}
   </View>;
 }

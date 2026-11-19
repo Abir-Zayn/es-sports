@@ -1,8 +1,9 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { comingSoon } from '@/lib/coming-soon';
 import { useToneColors } from '@/features/tournament/use-tone-colors';
+import { useTranslation } from '@/i18n';
+import { comingSoon } from '@/lib/coming-soon';
 import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import type { MatchInfoData } from '../types';
@@ -12,17 +13,18 @@ export function WatchLiveSection({ streams }: { streams: MatchInfoData['streams'
   const { colors } = useTheme();
   const toneColors = useToneColors();
   const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation();
   return (
     <View style={styles.section}>
       <Text accessibilityRole="header" style={styles.title}>
-        Watch live
+        {t('match.info.watchLive')}
       </Text>
       <View style={styles.row}>
         {streams.map((stream) => (
           <Pressable
             key={stream.id}
             accessibilityRole="link"
-            accessibilityLabel={`Watch on ${stream.label}`}
+            accessibilityLabel={t('match.info.watchOn', { platform: stream.label })}
             onPress={() => comingSoon(stream.label)}
             style={({ pressed }) => [styles.button, pressed && styles.pressed]}
           >

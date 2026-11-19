@@ -5,6 +5,7 @@ import { Button, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth';
 import { searchPlayers } from '@/features/match/friendly/search-players';
 import { UserSearchSheet, type UserSummary } from '@/features/tournament/roster';
+import { translate, useTranslation, type Locale } from '@/i18n';
 import { spacing, typography, useTheme } from '@/theme';
 
 import { ScorerNotice } from '../../components/scorer-ui';
@@ -23,11 +24,11 @@ type Props = {
   onLeave: () => void;
 };
 
-const endedText = (outcome: HandoverOutcome, name: string): string => ({
-  declined: `${name} declined. You are still the scorer.`,
-  expired: 'Your scoring request ran out of time. You are still the scorer.',
-  cancelled: 'Your scoring request was cancelled. You are still the scorer.',
-  accepted: `${name} accepted. Scoring has moved to them, so this phone can no longer score.`,
+const endedText = (outcome: HandoverOutcome, name: string, locale: Locale): string => ({
+  declined: translate(locale, 'handover.section.declined', { name }),
+  expired: translate(locale, 'handover.section.expired'),
+  cancelled: translate(locale, 'handover.section.cancelled'),
+  accepted: translate(locale, 'handover.section.accepted', { name }),
 })[outcome.kind];
 
 /**
@@ -36,6 +37,7 @@ const endedText = (outcome: HandoverOutcome, name: string): string => ({
  */
 export function HandoverSection({ matchId, ready, onLeave }: Props) {
   const { colors } = useTheme();
+  const { t, locale } = useTranslation();
   const userId = useAuth().session?.user.id ?? '';
   const [picking, setPicking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +48,7 @@ export function HandoverSection({ matchId, ready, onLeave }: Props) {
   const ended = live ? null : outcome;
   const names = useNames([...(live ? [live.toUser] : []), ...(ended ? [ended.toUser] : [])]);
   const { offer, cancel } = useHandoverActions(matchId);
-  const nameOf = (id: string) => names.data?.[id] ?? 'The new scorer';
+  const nameOf = (id: string) => names.data?.[id] ?? t('handover.section.newScorerFallback');
 
   const send = (user: UserSummary) => {
     setError(null);
@@ -54,9 +56,9 @@ export function HandoverSection({ matchId, ready, onLeave }: Props) {
     offer.mutate(user.id, { onSuccess: () => setPicking(false), onError: (failure) => setError(handoverErrorText(failure)) });
   };
   const confirm = (user: UserSummary) => Alert.alert(
-    `Hand scoring to ${user.name}?`,
-    `They have ${HANDOVER_MINUTES} minutes to accept. You keep scoring until they do. After that this phone can no longer score this match.`,
-    [{ text: 'Cancel', style: 'cancel' }, { text: 'Send request', onPress: () => send(user) }],
+    t('handover.section.confirmTitle', { name: user.name }),
+    t('handover.section.confirmBody', { minutes: HANDOVER_MINUTES }),
+    [{ text: t('common.cancel'), style: 'cancel' }, { text: t('handover.section.sendRequest'), onPress: () => send(user) }],
   );
   const stop = (id: string) => {
     mute();
@@ -67,19 +69,19 @@ export function HandoverSection({ matchId, ready, onLeave }: Props) {
   return <View style={styles.box}>
     {live ? <View style={styles.waiting} accessibilityLiveRegion="polite">
       <View style={styles.text}>
-        <Text style={styles.line}>{`Waiting for ${nameOf(live.toUser)}`}</Text>
-        <Text muted style={styles.caption}>{expiryText(live, now)}</Text>
+        <Text style={styles.line}>{t('handover.section.waitingFor', { name: nameOf(live.toUser) })}</Text>
+        <Text muted style={styles.caption}>{expiryText(live, now, locale)}</Text>
       </View>
-      <Button label="Cancel" variant="secondary" size="compact" loading={cancel.isPending} onPress={() => stop(live.id)} />
+      <Button label={t('common.cancel')} variant="secondary" size="compact" loading={cancel.isPending} onPress={() => stop(live.id)} />
     </View> : <>
-      <Button label="Hand over scoring" variant="secondary" size="compact" disabled={!ready} onPress={() => { setError(null); setPicking(true); }} />
-      {ready ? null : <ScorerNotice>Hand over once every ball has been sent.</ScorerNotice>}
+      <Button label={t('handover.section.handOverBtn')} variant="secondary" size="compact" disabled={!ready} onPress={() => { setError(null); setPicking(true); }} />
+      {ready ? null : <ScorerNotice>{t('handover.section.waitSync')}</ScorerNotice>}
     </>}
-    {ended ? <ScorerNotice>{endedText(ended, nameOf(ended.toUser))}</ScorerNotice> : null}
-    {ended?.kind === 'accepted' ? <Button label="Leave scoring" variant="secondary" size="compact" onPress={onLeave} /> : null}
+    {ended ? <ScorerNotice>{endedText(ended, nameOf(ended.toUser), locale)}</ScorerNotice> : null}
+    {ended?.kind === 'accepted' ? <Button label={t('handover.section.leaveBtn')} variant="secondary" size="compact" onPress={onLeave} /> : null}
     {error && !picking ? <Text accessibilityRole="alert" style={[styles.caption, { color: colors.dangerSoftText }]}>{error}</Text> : null}
-    <UserSearchSheet visible={picking} title="Hand over scoring" actionLabel="Hand over" inviting={offer.isPending} error={error}
-      hint="Choose a player with an esSports account. Guests cannot score. They must accept within 15 minutes." search={searchPlayers}
+    <UserSearchSheet visible={picking} title={t('handover.section.pickTitle')} actionLabel={t('handover.section.pickAction')} inviting={offer.isPending} error={error}
+      hint={t('handover.section.pickHint')} search={searchPlayers}
       excludeIds={[userId]} onInvite={confirm} onClose={() => setPicking(false)} />
   </View>;
 }

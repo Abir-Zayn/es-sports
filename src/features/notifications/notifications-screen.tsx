@@ -6,6 +6,7 @@ import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { InviteCard } from './components/invite-card';
@@ -28,6 +29,7 @@ export function NotificationsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const [tab, setTab] = useState<NotificationFilterTab>('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -85,7 +87,7 @@ export function NotificationsScreen() {
     return (
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Open notification: ${item.title}`}
+        accessibilityLabel={t('notifications.openA11y', { title: item.title })}
         onPress={() => openItem(item)}
       >
         <NotificationRow item={item} icon={<Bell size={sizes.icon} color={colors.link} />} />
@@ -98,19 +100,19 @@ export function NotificationsScreen() {
       <View style={styles.top}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Go back"
+          accessibilityLabel={t('common.goBack')}
           style={({ pressed }) => [styles.back, pressed && styles.pressed]}
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/home'))}
         >
           <ArrowLeft color={colors.text} size={sizes.icon} />
         </Pressable>
         <Pressable accessibilityRole="button" onPress={markAllRead} disabled={unreadCount === 0} style={styles.mark}>
-          <Text style={[styles.markText, unreadCount === 0 ? styles.disabled : null]}>Mark all as read</Text>
+          <Text style={[styles.markText, unreadCount === 0 ? styles.disabled : null]}>{t('notifications.markAllRead')}</Text>
         </Pressable>
       </View>
       <View style={styles.titleRow}>
-        <Text style={styles.title}>Notifications</Text>
-        {unreadCount > 0 ? <Text style={styles.pill}>{unreadCount} unread</Text> : null}
+        <Text style={styles.title}>{t('notifications.title')}</Text>
+        {unreadCount > 0 ? <Text style={styles.pill}>{t('notifications.unreadCount', { count: unreadCount })}</Text> : null}
       </View>
       {error ? (
         <Text accessibilityRole="alert" style={styles.errorBanner}>
@@ -127,8 +129,8 @@ export function NotificationsScreen() {
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + spacing.xl }]}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>All caught up</Text>
-            <Text style={styles.emptyText}>No notifications in this category.</Text>
+            <Text style={styles.emptyTitle}>{t('notifications.emptyTitle')}</Text>
+            <Text style={styles.emptyText}>{t('notifications.emptyBody')}</Text>
           </View>
         }
       />

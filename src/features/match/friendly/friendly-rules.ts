@@ -1,3 +1,4 @@
+import { t } from '@/i18n';
 import { normalisePhone, phoneProblem } from '@/lib/phone';
 
 import type { FriendlyMatchSetup, FriendlyPlayer, FriendlySide, FriendlyTeamSquad } from '../types';
@@ -59,16 +60,16 @@ const playingCount = (squad: FriendlyTeamSquad) => squad.players.filter((p) => p
 
 /** Why this person cannot join this squad, or null. One person plays for one side only. */
 export function joinProblem(setup: FriendlyMatchSetup, side: FriendlySide, who: { userId: string | null; phone: string | null }): string | null {
-  if (setup[side].players.length >= SQUAD_MAX) return `A squad holds at most ${SQUAD_MAX} players.`;
+  if (setup[side].players.length >= SQUAD_MAX) return t('friendly.rules.squadFull', { max: SQUAD_MAX });
   const clash = everyone(setup).find((p) => (who.userId !== null && p.userId === who.userId) || (who.phone !== null && p.phone === who.phone));
-  if (clash) return `${clash.name} is already in a squad for this match.`;
+  if (clash) return t('friendly.rules.alreadyInMatch', { name: clash.name });
   return null;
 }
 
 /** Adds a player to a squad: playing while the side has room, otherwise on the bench. Throws a message to show. */
 export function addPlayer(setup: FriendlyMatchSetup, side: FriendlySide, input: { id: string; name: string; role: string; userId?: string | null; phone?: string; avatarUrl?: string | null }): FriendlyMatchSetup {
   const name = input.name.trim().replace(/\s+/g, ' ');
-  if (name.length < 2 || name.length > 40) throw new Error('Enter a player name of 2 to 40 characters.');
+  if (name.length < 2 || name.length > 40) throw new Error(t('friendly.rules.playerNameLength'));
   const phoneError = phoneProblem(input.phone ?? '');
   if (phoneError) throw new Error(phoneError);
   const phone = normalisePhone(input.phone ?? '') || null;
@@ -95,7 +96,7 @@ export function togglePlaying(setup: FriendlyMatchSetup, side: FriendlySide, pla
   const player = squad.players.find((p) => p.id === playerId);
   if (!player) return setup;
   if (!player.playing && playingCount(squad) >= setup.playersPerSide) {
-    throw new Error(`${setup.playersPerSide} are already playing. Bench someone first.`);
+    throw new Error(t('friendly.rules.lineupFull', { count: setup.playersPerSide }));
   }
   return { ...setup, [side]: { ...squad, players: squad.players.map((p) => (p.id === playerId ? { ...p, playing: !p.playing } : p)) } };
 }
@@ -116,19 +117,20 @@ export function friendlyProblems(setup: FriendlyMatchSetup, creatorId: string): 
     const squad = setup[side];
     const name = squad.name.trim();
     const playing = playingCount(squad);
-    if (name.length < 2 || name.length > 30) problems[side] = 'Give the team a name of 2 to 30 characters.';
-    else if (playing !== setup.playersPerSide) problems[side] = `Pick ${setup.playersPerSide} players to play (${playing} so far).`;
+    if (name.length < 2 || name.length > 30) problems[side] = t('friendly.rules.teamNameLength');
+    else if (playing !== setup.playersPerSide) problems[side] = t('friendly.rules.pickPlayers', { required: setup.playersPerSide, playing });
   }
   if (!problems.teamB && setup.teamA.name.trim().toLowerCase() === setup.teamB.name.trim().toLowerCase()) {
-    problems.teamB = 'The two teams need different names.';
+    problems.teamB = t('friendly.rules.differentNames');
   }
   const quota = oversPerBowler(setup.overs);
   if (setup.playersPerSide * quota < setup.overs) {
-    problems.format = `With ${setup.playersPerSide} a side, each bowler gets ${quota} over${quota === 1 ? '' : 's'}: not enough for ${setup.overs} overs. Pick fewer overs or more players.`;
+    const quotaText = quota === 1 ? t('friendly.form.overOne', { count: quota }) : t('friendly.form.overMany', { count: quota });
+    problems.format = t('friendly.rules.bowlerQuotaTooLow', { players: setup.playersPerSide, quotaText, overs: setup.overs });
   }
   const scorer = setup.assignedScorerId;
   if (scorer && scorer !== creatorId && !everyone(setup).some((p) => p.userId === scorer)) {
-    problems.scorer = 'The scorer must be you or an app user in one of the squads.';
+    problems.scorer = t('friendly.rules.scorerInvalid');
   }
   return problems;
 }

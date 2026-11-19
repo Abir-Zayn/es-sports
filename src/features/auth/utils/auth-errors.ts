@@ -1,31 +1,33 @@
+import { t } from '@/i18n';
+
 type AuthError = { code?: string; message?: string };
 
 export function authErrorMessage(error: AuthError, fallback: string): string {
   switch (error.code) {
     case 'invalid_credentials':
-      return 'Email or password is wrong.';
+      return t('auth.err.invalidCredentials');
     case 'email_not_confirmed':
-      return 'Confirm your email before logging in. Check your inbox or resend the email below.';
+      return t('auth.err.emailNotConfirmed');
     case 'user_already_exists':
-      return 'An account with this email already exists. Log in instead.';
+      return t('auth.err.userExists');
     case 'weak_password':
-      return 'That password is too easy to guess. Try another.';
+      return t('auth.err.weakPassword');
     case 'over_email_send_rate_limit':
     case 'over_request_rate_limit':
-      return 'Too many attempts. Wait a minute and try again.';
+      return t('auth.err.rateLimit');
     case 'identity_already_exists':
-      return 'That Google account is already linked to another esSports account.';
+      return t('auth.err.identityExists');
     case 'manual_linking_disabled':
-      return 'Linking accounts isn’t available right now. Try again later.';
+      return t('auth.err.manualLinkingDisabled');
     case 'provider_disabled':
     case 'validation_failed':
-      return 'Google sign-in isn’t available right now. Try again later.';
+      return t('auth.err.googleUnavailable');
     case 'signup_disabled':
     case 'email_provider_disabled':
-      return 'Email sign-up is unavailable right now. Try again later.';
+      return t('auth.err.signupDisabled');
     case 'email_address_invalid':
     case 'email_address_not_authorized':
-      return 'We could not send a confirmation email to this address. Try another email address.';
+      return t('auth.err.emailNotAuthorized');
     default:
       return fallback;
   }

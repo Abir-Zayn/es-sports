@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppIconTile, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 type Props = {
@@ -15,6 +16,7 @@ type Props = {
 export function LegalDocumentScreen({ title, sections }: Props) {
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   return (
     <SafeAreaView style={styles.safe}>
@@ -23,7 +25,7 @@ export function LegalDocumentScreen({ title, sections }: Props) {
           icon={ChevronLeft}
           backgroundColor={colors.surface}
           elevated
-          accessibilityLabel="Go back"
+          accessibilityLabel={t('common.goBack')}
           onPress={() => router.back()}
         />
         <Text variant="heading" accessibilityRole="header">

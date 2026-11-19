@@ -4,23 +4,25 @@ import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppIconTile, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { radius, sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
 /** Placeholder for a screen that isn't built yet, with a way back. */
 export function ComingSoonScreen({ title }: { title: string }) {
   const router = useRouter();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
-        <AppIconTile icon={ChevronLeft} size={sizes.iconButton} borderRadius={radius.pill} accessibilityLabel="Back"
+        <AppIconTile icon={ChevronLeft} size={sizes.iconButton} borderRadius={radius.pill} accessibilityLabel={t('common.back')}
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/home'))} />
       </View>
       <View style={styles.body}>
         <Text variant="title" accessibilityRole="header">
           {title}
         </Text>
-        <Text muted>Coming soon.</Text>
+        <Text muted>{t('common.comingSoon')}</Text>
       </View>
     </SafeAreaView>
   );

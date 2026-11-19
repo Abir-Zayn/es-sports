@@ -2,10 +2,11 @@ import { Image } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { useLocale } from '@/i18n';
 import { radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { PlayingRole } from '@/types/profile';
 
-import { roleLabels } from '../labels';
+import { roleLabel } from '../labels';
 
 const roleIcons: Record<PlayingRole, number> = {
   batter: require('../../../../assets/logo/bat-logo.svg'),
@@ -24,19 +25,21 @@ type Props = {
 
 /** A playing role as its icon and label, e.g. a bat and "Batsman". Static by default, a radio button when `onPress` is given. */
 export function PlayingRoleOption({ role, selected = false, onPress }: Props) {
+  useLocale();
   const styles = useThemedStyles(createStyles);
+  const label = roleLabel(role);
   const content = (
     <>
       <Image source={roleIcons[role]} style={styles.icon} contentFit="contain" accessible={false} />
       <Text style={styles.label} numberOfLines={1}>
-        {roleLabels[role]}
+        {label}
       </Text>
     </>
   );
 
   if (!onPress) {
     return (
-      <View accessible accessibilityLabel={roleLabels[role]} style={styles.option}>
+      <View accessible accessibilityLabel={label} style={styles.option}>
         {content}
       </View>
     );
@@ -44,7 +47,7 @@ export function PlayingRoleOption({ role, selected = false, onPress }: Props) {
   return (
     <Pressable
       accessibilityRole="radio"
-      accessibilityLabel={roleLabels[role]}
+      accessibilityLabel={label}
       accessibilityState={{ selected }}
       onPress={onPress}
       style={({ pressed }) => [styles.option, selected && styles.selected, pressed && styles.pressed]}

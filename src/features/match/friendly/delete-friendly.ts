@@ -1,4 +1,5 @@
 import { outboxes } from '@/features/scoring/data/outboxes';
+import { t } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 
 import { teamImageFolder } from './team-images';
@@ -18,9 +19,9 @@ const trace = (stage: string, details?: unknown) => {
 
 function deleteMessage(code: string | undefined): string {
   switch (code) {
-    case '42501': return 'Only the person who created this match can delete it.';
-    case 'ED001': return 'A finished match cannot be deleted.';
-    default: return 'Could not delete the match. Check your connection and try again.';
+    case '42501': return t('friendly.delete.errNotCreator');
+    case 'ED001': return t('friendly.delete.errFinished');
+    default: return t('friendly.delete.errGeneric');
   }
 }
 

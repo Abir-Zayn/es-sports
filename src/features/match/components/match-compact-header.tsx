@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 type Props = { title: string; subtitle: string; onBack: () => void };
@@ -12,11 +13,12 @@ export function MatchCompactHeader({ title, subtitle, onBack }: Props) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation();
   return (
     <View style={[styles.row, { paddingTop: insets.top + spacing.xs }]}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Back"
+        accessibilityLabel={t('common.back')}
         onPress={onBack}
         style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
       >
@@ -34,7 +36,7 @@ export function MatchCompactHeader({ title, subtitle, onBack }: Props) {
       </View>
       <View style={styles.liveChip}>
         <View style={styles.liveDot} />
-        <Text style={styles.liveText}>LIVE</Text>
+        <Text style={styles.liveText}>{t('matchCard.live')}</Text>
       </View>
     </View>
   );

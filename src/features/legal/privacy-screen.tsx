@@ -1,6 +1,9 @@
+import { useTranslation } from '@/i18n';
+
 import { LegalDocumentScreen } from './legal-document-screen';
-import { privacySections } from './privacy-content';
+import { getPrivacySections } from './privacy-content';
 
 export function PrivacyScreen() {
-  return <LegalDocumentScreen title="Privacy Policy" sections={privacySections} />;
+  const { t } = useTranslation();
+  return <LegalDocumentScreen title={t('legal.privacyTitle')} sections={getPrivacySections(t)} />;
 }

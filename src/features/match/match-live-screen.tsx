@@ -3,6 +3,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { comingSoon } from '@/lib/coming-soon';
 import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
@@ -23,17 +24,18 @@ export function MatchLiveScreen() {
   const matchId = id ?? '';
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation();
   const { goBack } = useMatchRoutes(matchId);
   const live = useLiveMatchData(matchId);
 
   if (!live.data) {
     // The frame keeps the back button and tabs, so a match that failed to load is never a dead end.
-    return <MatchScreenFrame matchId={matchId} tab="live"><MatchLoadState query={live} label="Loading match" /></MatchScreenFrame>;
+    return <MatchScreenFrame matchId={matchId} tab="live"><MatchLoadState query={live} label={t('match.loadingMatch')} /></MatchScreenFrame>;
   }
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={live.isRefetching} onRefresh={() => void live.refetch()} tintColor={colors.textMuted} />}>
-      <LiveHero view={live.data} onBack={goBack} onShare={() => comingSoon('Sharing')} />
+      <LiveHero view={live.data} onBack={goBack} onShare={() => comingSoon(t('match.shareFeature'))} />
       <MatchTabs matchId={matchId} selected="live" />
       <View style={styles.stale}><StaleMatchNote query={live} /></View>
       <LiveBody view={live.data} matchId={matchId} />
@@ -44,27 +46,28 @@ export function MatchLiveScreen() {
 function LiveBody({ view, matchId }: { view: LiveMatchViewData; matchId: string }) {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation();
   const { openTab } = useMatchRoutes(matchId);
   const [current = null, ...earlier] = view.recentOvers;
   return (
     <View style={styles.body}>
       {view.source === 'sample' ? (
-        <Text muted style={styles.note}>Preview match. Live scores show here once this match is being scored.</Text>
+        <Text muted style={styles.note}>{t('match.live.previewNote')}</Text>
       ) : null}
       {view.header.toss && view.header.status !== 'scheduled' ? <Text muted style={styles.note}>{view.header.toss}</Text> : null}
       {view.stream ? (
-        <StreamLinkCard label={view.stream.label} source={view.stream.source} onPress={() => comingSoon('Live stream')} />
+        <StreamLinkCard label={view.stream.label} source={view.stream.source} onPress={() => comingSoon(t('match.liveStreamFeature'))} />
       ) : null}
       {view.crease ? (
         <View style={styles.section}>
           <View style={styles.sectionHead}>
-            <Text accessibilityRole="header" style={styles.sectionTitle}>At the crease</Text>
+            <Text accessibilityRole="header" style={styles.sectionTitle}>{t('match.live.atCrease')}</Text>
           </View>
           <LiveBattersCard batters={view.crease.batters} partnership={view.crease.partnership} />
           {view.crease.bowler ? <LiveBowlerCard bowler={view.crease.bowler} /> : null}
         </View>
       ) : (
-        <Text muted style={styles.note}>The crease and the over appear here once the first ball is bowled.</Text>
+        <Text muted style={styles.note}>{t('match.live.waitFirstBall')}</Text>
       )}
       {view.header.status === 'scheduled' ? null : <ThisOverCard current={current} previous={earlier.slice(0, 2)} />}
       {view.recentOvers.length > 0 ? (
@@ -73,7 +76,7 @@ function LiveBody({ view, matchId }: { view: LiveMatchViewData; matchId: string 
           onPress={() => openTab('overs')}
           style={({ pressed }) => [styles.allOvers, pressed && styles.pressed]}
         >
-          <Text style={styles.allOversText}>See all overs</Text>
+          <Text style={styles.allOversText}>{t('match.live.seeAllOvers')}</Text>
           <ChevronRight size={sizes.iconSmall} color={colors.text} strokeWidth={2.2} />
         </Pressable>
       ) : null}

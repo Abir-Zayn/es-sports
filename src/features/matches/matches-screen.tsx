@@ -7,30 +7,31 @@ import { AppTabs, type AppTab, Button, Text } from '@/components/ui';
 import { IncomingHandoverBanner } from '@/features/scoring/handover/components/incoming-handover-banner';
 import { buildSchedule } from '@/features/tournament/schedule';
 import { ScheduleGroupSection } from '@/features/tournament/sections/schedule-group-section';
+import { useTranslation } from '@/i18n';
 import { sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { useRealtimeMatches, type MatchFilter } from './use-realtime-matches';
-
-const matchFilterTabs: AppTab<MatchFilter>[] = [
-  { id: 'upcoming', label: 'Upcoming' },
-  { id: 'completed', label: 'Completed' },
-];
-
-const emptyText: Record<MatchFilter, string> = {
-  upcoming: 'No upcoming matches.',
-  completed: 'No completed matches yet.',
-};
 
 /** The Matches tab: real-time upcoming and recent completed matches with status badges. */
 export function MatchesScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = useThemedStyles(createStyles);
+  const { t, locale } = useTranslation();
   const [filter, setFilter] = useState<MatchFilter>('upcoming');
   const { data, isPending, isError, isRefetching, refetch } = useRealtimeMatches(filter);
 
+  const matchFilterTabs: AppTab<MatchFilter>[] = useMemo(
+    () => [
+      { id: 'upcoming', label: t('matches.tabUpcoming') },
+      { id: 'completed', label: t('matches.tabCompleted') },
+    ],
+    [t],
+  );
+
+  const emptyText = filter === 'upcoming' ? t('matches.emptyUpcoming') : t('matches.emptyCompleted');
   const scheduleState = filter === 'upcoming' ? 'upcoming' : 'result';
-  const groups = useMemo(() => buildSchedule(data ?? [], scheduleState), [data, scheduleState]);
+  const groups = useMemo(() => buildSchedule(data ?? [], scheduleState), [data, scheduleState, locale]);
 
   return (
     <ScrollView
@@ -43,20 +44,20 @@ export function MatchesScreen() {
     >
       <View style={styles.header}>
         <Text variant="title" accessibilityRole="header">
-          Matches
+          {t('matches.title')}
         </Text>
-        <Text muted>{filter === 'upcoming' ? 'Upcoming fixtures' : 'Recent completed matches'}</Text>
+        <Text muted>{filter === 'upcoming' ? t('matches.subtitleUpcoming') : t('matches.subtitleCompleted')}</Text>
       </View>
       <AppTabs tabs={matchFilterTabs} selected={filter} onSelect={setFilter} />
       <IncomingHandoverBanner />
       {isPending ? (
-        <ActivityIndicator accessibilityLabel="Loading matches" color={colors.textMuted} style={styles.status} />
+        <ActivityIndicator accessibilityLabel={t('matches.loading')} color={colors.textMuted} style={styles.status} />
       ) : isError ? (
         <View style={styles.status}>
           <Text muted accessibilityLiveRegion="polite">
-            Could not load matches.
+            {t('matches.loadError')}
           </Text>
-          <Button label="Try again" variant="secondary" size="compact" onPress={() => void refetch()} />
+          <Button label={t('common.retry')} variant="secondary" size="compact" onPress={() => void refetch()} />
         </View>
       ) : groups.length > 0 ? (
         groups.map((group) => (
@@ -68,7 +69,7 @@ export function MatchesScreen() {
         ))
       ) : (
         <Text muted accessibilityLiveRegion="polite">
-          {emptyText[filter]}
+          {emptyText}
         </Text>
       )}
     </ScrollView>

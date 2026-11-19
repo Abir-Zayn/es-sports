@@ -3,6 +3,7 @@ import Copy from 'lucide-react-native/icons/copy';
 import { useEffect, useRef, useState } from 'react';
 
 import { AppIconTile } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { copyText } from '@/lib/copy-text';
 import { dp, sizes, useTheme } from '@/theme';
 
@@ -13,6 +14,7 @@ type Props = { userId: string };
 /** Copies the account's user id, which other players paste into a search to find this person. */
 export function CopyIdButton({ userId }: Props) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
@@ -24,7 +26,7 @@ export function CopyIdButton({ userId }: Props) {
     timer.current = setTimeout(() => setState('idle'), RESET_MS);
   }
 
-  const label = state === 'copied' ? 'User ID copied' : state === 'failed' ? 'Could not copy the user ID' : 'Copy user ID';
+  const label = state === 'copied' ? t('profile.copiedId') : state === 'failed' ? t('profile.copyIdFailed') : t('profile.copyId');
   return (
     <AppIconTile
       icon={state === 'copied' ? Check : Copy}

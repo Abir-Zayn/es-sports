@@ -3,6 +3,7 @@ import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import { CareerStatsGrid } from './components/career-stats-grid';
 import { PlayerHeroCard } from './components/player-hero-card';
@@ -15,15 +16,16 @@ export function PlayerProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const player = usePlayerProfile(params.id ?? '', params.name, params.role);
   return <View style={styles.screen}>
     <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + spacing.xxl }]}>
       <View style={styles.header}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back" style={({ pressed }) => [styles.back, pressed && styles.pressed]} onPress={() => router.canGoBack() ? router.back() : router.replace('/home')}>
+        <Pressable accessibilityRole="button" accessibilityLabel={t('common.goBack')} style={({ pressed }) => [styles.back, pressed && styles.pressed]} onPress={() => router.canGoBack() ? router.back() : router.replace('/home')}>
           <ArrowLeft size={sizes.icon} color={colors.text} />
         </Pressable>
-        <Text style={styles.title}>Career profile</Text>
+        <Text style={styles.title}>{t('players.title')}</Text>
       </View>
       <PlayerHeroCard player={player} />
       <CareerStatsGrid totals={player.totals} />

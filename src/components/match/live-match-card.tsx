@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppBadge, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { LiveMatch } from '@/types/cricket';
 
@@ -17,6 +18,7 @@ type Props = {
 /** A match in progress: competition, both scores, what the game needs, and this over's balls. */
 export function LiveMatchCard({ match, onPress }: Props) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const [first, second] = match.teams;
   return (
@@ -27,7 +29,7 @@ export function LiveMatchCard({ match, onPress }: Props) {
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
       <View style={styles.topRow}>
-        <AppBadge dot label="LIVE" backgroundColor={colors.live} color={colors.onLive} />
+        <AppBadge dot label={t('matchCard.live')} backgroundColor={colors.live} color={colors.onLive} />
         <Text style={styles.label} numberOfLines={1}>
           {match.label}
         </Text>
@@ -42,14 +44,17 @@ export function LiveMatchCard({ match, onPress }: Props) {
         <TeamScoreRow team={second} />
       </View>
 
-      <View style={styles.divider} />
-
-      <View style={styles.ballsRow}>
-        <Text style={styles.thisOver}>This over</Text>
-        {match.balls.map((ball, i) => (
-          <BallChip key={`${ball}-${i}`} value={ball} />
-        ))}
-      </View>
+      {match.balls.length > 0 ? (
+        <>
+          <View style={styles.divider} />
+          <View style={styles.ballsRow}>
+            <Text style={styles.thisOver}>{t('matchCard.thisOver')}</Text>
+            {match.balls.map((ball, i) => (
+              <BallChip key={`${ball}-${i}`} value={ball} />
+            ))}
+          </View>
+        </>
+      ) : null}
     </Pressable>
   );
 }

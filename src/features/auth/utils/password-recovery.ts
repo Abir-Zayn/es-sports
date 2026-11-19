@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
+import { t } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 
 import { authErrorMessage } from './auth-errors';
 import { signUpSchema } from './sign-up';
 
 export const INVALID_RECOVERY_LINK = 'This reset link is invalid or has expired. Request a new link and try again.';
-const CONNECTION_ERROR = 'Couldn’t connect. Check your connection and try again.';
 type Failure = { ok: false; message: string; retryable: boolean };
 type RecoveryResult = { ok: true; userId: string } | Failure;
 let recoveryWork: Promise<unknown> = Promise.resolve();
@@ -26,16 +26,19 @@ const credentialsSchema = z.object({
 
 export const newPasswordSchema = z.object({
   password: signUpSchema.shape.password,
-  confirm: z.string().min(1, 'Repeat your password.'),
+  confirm: z.string().min(1, { error: () => t('auth.val.repeatPassword') }),
 }).refine((input) => input.password === input.confirm, {
-  path: ['confirm'], message: 'Passwords don’t match.',
+  path: ['confirm'], error: () => t('auth.val.passwordMismatchCurly'),
 });
 
 function recoveryFailure(error: { status?: number; code?: string } | null): Failure {
   const limited = error?.status === 429 || ['over_request_rate_limit', 'over_email_send_rate_limit'].includes(error?.code ?? '');
   const retryable = limited || error?.status === 0 || (error?.status ?? 0) >= 500;
-  return { ok: false, retryable, message: limited ? 'Too many attempts. Wait a minute and try again.'
-    : retryable ? CONNECTION_ERROR : INVALID_RECOVERY_LINK };
+  return {
+    ok: false,
+    retryable,
+    message: limited ? t('auth.err.rateLimit') : retryable ? t('common.networkError') : t('auth.err.invalidRecoveryLink'),
+  };
 }
 
 /** Only Supabase recovery fragments can establish a password reset session. */
@@ -55,7 +58,7 @@ async function establishRecoverySession(fragment: string): Promise<RecoveryResul
     if (error || !data?.session || !data?.user?.id) return recoveryFailure(error);
     return { ok: true, userId: data.user.id };
   } catch {
-    return { ok: false, retryable: true, message: CONNECTION_ERROR };
+    return { ok: false, retryable: true, message: t('common.networkError') };
   }
 }
 
@@ -80,10 +83,10 @@ async function updateRecoveredPassword(
       return recoveryFailure(updated.error);
     }
     const message = updated.error?.code === 'same_password'
-      ? 'Choose a password different from your current password.'
-      : authErrorMessage(updated.error ?? {}, 'Couldn’t update your password. Try again.');
+      ? t('auth.err.samePassword')
+      : authErrorMessage(updated.error ?? {}, t('auth.err.updatePasswordFailed'));
     return { ok: false, retryable: true, message };
   } catch {
-    return { ok: false, retryable: true, message: CONNECTION_ERROR };
+    return { ok: false, retryable: true, message: t('common.networkError') };
   }
 }

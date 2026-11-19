@@ -1,6 +1,7 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import type { FallOfWicket } from '../types';
@@ -8,24 +9,25 @@ import type { FallOfWicket } from '../types';
 /** Each wicket as a small card: the score and over it fell at, and who was out. Scrolls sideways. */
 export function FallOfWicketsSection({ wickets }: { wickets: FallOfWicket[] }) {
   const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation();
   if (wickets.length === 0) return null;
   return (
     <View style={styles.section}>
       <Text accessibilityRole="header" style={styles.title}>
-        Fall of wickets
+        {t('match.scorecard.fallOfWickets')}
       </Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scroll} contentContainerStyle={styles.cards}>
         {wickets.map((wicket) => (
           <View
             key={wicket.score}
             accessible
-            accessibilityLabel={`${wicket.name}, ${wicket.score} after ${wicket.over} overs`}
+            accessibilityLabel={t('match.scorecard.wicketFallA11y', { name: wicket.name, score: wicket.score, over: wicket.over })}
             style={styles.card}
           >
             <View style={styles.scoreRow}>
               <Text style={styles.score}>{wicket.score}</Text>
               <Text muted style={styles.over}>
-                {wicket.over} ov
+                {t('match.ovShort', { overs: wicket.over })}
               </Text>
             </View>
             <Text style={styles.name}>{wicket.name}</Text>

@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { dp, radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import type { MatchTabId } from '../types';
@@ -47,10 +48,20 @@ export function UnderlineTabs<T extends string>({ tabs, selected, onSelect }: Un
 
 type Props = { matchId: string; selected: MatchTabId };
 
+const TAB_KEY: Record<MatchTabId, 'match.tabs.live' | 'match.tabs.scorecard' | 'match.tabs.overs' | 'match.tabs.wagon' | 'match.tabs.info'> = {
+  live: 'match.tabs.live',
+  scorecard: 'match.tabs.scorecard',
+  overs: 'match.tabs.overs',
+  wagon: 'match.tabs.wagon',
+  info: 'match.tabs.info',
+};
+
 /** Live, Scorecard, Overs, Wagon and Info as underline tabs under the match header. */
 export function MatchTabs({ matchId, selected }: Props) {
   const { openTab } = useMatchRoutes(matchId);
-  return <UnderlineTabs tabs={matchTabs} selected={selected} onSelect={(tab) => tab !== selected && openTab(tab)} />;
+  const { t } = useTranslation();
+  const tabs = matchTabs.map((tab) => ({ ...tab, label: t(TAB_KEY[tab.id]) }));
+  return <UnderlineTabs tabs={tabs} selected={selected} onSelect={(tab) => tab !== selected && openTab(tab)} />;
 }
 
 const createStyles = (colors: Palette) =>

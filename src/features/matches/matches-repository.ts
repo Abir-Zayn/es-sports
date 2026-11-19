@@ -1,5 +1,6 @@
-import { format, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 
+import { formatDate, getLocale, translate, type Locale } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 import type { AvatarTone } from '@/theme';
 import type { Fixture, FixtureSide, FixtureState } from '@/types/cricket';
@@ -44,7 +45,7 @@ export const formatOvers = (balls?: number | null, limit?: number | null) => {
   return limit ? String(limit) : undefined;
 };
 
-export function matchRowToFixture(row: RawMatchRow): Fixture {
+export function matchRowToFixture(row: RawMatchRow, locale: Locale = getLocale()): Fixture {
   const isCompleted = row.status === 'completed';
   const isLive = row.status === 'live';
   const state: FixtureState = isLive ? 'live' : isCompleted ? 'result' : 'upcoming';
@@ -56,9 +57,9 @@ export function matchRowToFixture(row: RawMatchRow): Fixture {
 
   try {
     const parsed = parseISO(dateIso ?? new Date().toISOString());
-    date = format(parsed, 'yyyy-MM-dd');
-    day = format(parsed, 'EEE, d MMM');
-    time = format(parsed, 'h:mm a');
+    date = formatDate(parsed, 'yyyy-MM-dd', 'en');
+    day = formatDate(parsed, 'EEE, d MMM', locale);
+    time = formatDate(parsed, 'h:mm a', locale);
   } catch {
     date = new Date().toISOString().slice(0, 10);
     day = date;
@@ -78,27 +79,27 @@ export function matchRowToFixture(row: RawMatchRow): Fixture {
   const toneB = (row.team_b_tone === 'blue' || row.team_b_tone === 'neutral' ? row.team_b_tone : 'yellow') as AvatarTone;
 
   const sideA: FixtureSide = {
-    team: { short: row.team_a_short || 'T1', name: row.team_a_name || 'Team 1', tone: toneA },
+    team: { short: row.team_a_short || 'T1', name: row.team_a_name || translate(locale, 'matches.team1Fallback'), tone: toneA },
     score: scoreA,
     overs: oversA,
     emphasised: isCompleted ? isWinnerA : true,
   };
 
   const sideB: FixtureSide = {
-    team: { short: row.team_b_short || 'T2', name: row.team_b_name || 'Team 2', tone: toneB },
+    team: { short: row.team_b_short || 'T2', name: row.team_b_name || translate(locale, 'matches.team2Fallback'), tone: toneB },
     score: scoreB,
     overs: oversB,
     emphasised: isCompleted ? isWinnerB : true,
   };
 
   const note = isCompleted
-    ? (row.result_summary || (isWinnerA ? `${row.team_a_name} won` : isWinnerB ? `${row.team_b_name} won` : 'Match tied'))
-    : row.title || 'Halishahar Ground';
+    ? (row.result_summary || (isWinnerA ? translate(locale, 'matches.teamWon', { team: row.team_a_name }) : isWinnerB ? translate(locale, 'matches.teamWon', { team: row.team_b_name }) : translate(locale, 'matches.matchTied')))
+    : row.title || translate(locale, 'matches.defaultVenue');
 
   return {
     id: row.id,
     state,
-    title: row.title ?? `${row.team_a_name} vs ${row.team_b_name}`,
+    title: row.title ?? translate(locale, 'match.vsTitle', { teamA: row.team_a_name, teamB: row.team_b_name }),
     date,
     day,
     time: isLive ? undefined : time,
@@ -118,15 +119,26 @@ function fallbackMatches(status: 'scheduled' | 'completed' | 'upcoming'): Fixtur
     .sort((a, b) => b.date.localeCompare(a.date));
 }
 
-/** Reads real-time matches from Supabase; falls back to sample data when offline. */
-export async function fetchMatches(
+/** Maps raw match rows into Fixture objects for the given locale, falling back to samples if null. */
+export function mapMatchRowsToFixtures(
+  rows: RawMatchRow[] | null,
+  status: 'scheduled' | 'completed' | 'upcoming',
+  locale: Locale = getLocale(),
+): Fixture[] {
+  const normalizedStatus = status === 'upcoming' ? 'scheduled' : status;
+  if (!rows || rows.length === 0) return fallbackMatches(normalizedStatus);
+  return rows.map((row) => matchRowToFixture(row, locale));
+}
+
+/** Fetches raw real-time match rows from Supabase, or null when offline / empty. */
+export async function fetchMatchRows(
   status: 'scheduled' | 'completed' | 'upcoming',
   signal?: AbortSignal,
-): Promise<Fixture[]> {
+): Promise<RawMatchRow[] | null> {
   const normalizedStatus = status === 'upcoming' ? 'scheduled' : status;
   try {
     if (!supabase || typeof supabase.from !== 'function') {
-      return fallbackMatches(normalizedStatus);
+      return null;
     }
     const orderCol = normalizedStatus === 'scheduled' ? 'scheduled_at' : 'completed_at';
     const ascending = normalizedStatus === 'scheduled';
@@ -139,11 +151,20 @@ export async function fetchMatches(
 
     const { data, error } = signal ? await query.abortSignal(signal) : await query;
     if (error || !data || data.length === 0) {
-      return fallbackMatches(normalizedStatus);
+      return null;
     }
 
-    return (data as RawMatchRow[]).map(matchRowToFixture);
+    return data as RawMatchRow[];
   } catch {
-    return fallbackMatches(normalizedStatus);
+    return null;
   }
+}
+
+/** Reads real-time matches from Supabase; falls back to sample data when offline. */
+export async function fetchMatches(
+  status: 'scheduled' | 'completed' | 'upcoming',
+  signal?: AbortSignal,
+): Promise<Fixture[]> {
+  const rows = await fetchMatchRows(status, signal);
+  return mapMatchRowsToFixtures(rows, status, getLocale());
 }

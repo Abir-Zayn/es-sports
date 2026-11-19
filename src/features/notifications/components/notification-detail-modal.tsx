@@ -1,15 +1,16 @@
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
+import { useTranslation, type TranslationKey } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import type { AppNotification, InviteStatus } from '../types';
 
-const statusLabels: Record<Exclude<InviteStatus, 'pending'>, string> = {
-  accepted: 'Accepted',
-  declined: 'Declined',
-  cancelled: 'No longer open',
-  expired: 'Expired',
+const statusKey: Record<Exclude<InviteStatus, 'pending'>, TranslationKey> = {
+  accepted: 'invitations.statusAccepted',
+  declined: 'invitations.statusDeclined',
+  cancelled: 'invitations.statusNoLongerOpen',
+  expired: 'invitations.statusExpired',
 };
 
 type Props = {
@@ -22,12 +23,13 @@ type Props = {
 
 /** Shows the full notification details, with Accept/Decline for open invites and the answer for responses. */
 export function NotificationDetailModal({ item, busy = false, error, onClose, onRespond }: Props) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   if (!item) return null;
 
   const invite = item.meta?.invite;
   const canRespond = item.kind === 'invite' && invite?.status === 'pending' && Boolean(onRespond);
-  const statusLabel = invite && invite.status !== 'pending' ? statusLabels[invite.status] : null;
+  const statusLabel = invite && invite.status !== 'pending' ? t(statusKey[invite.status]) : null;
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
@@ -44,16 +46,16 @@ export function NotificationDetailModal({ item, busy = false, error, onClose, on
           {canRespond && onRespond ? (
             <View style={styles.actions}>
               <Button
-                label="Accept"
+                label={t('invitations.accept')}
                 disabled={busy}
-                accessibilityLabel="Accept invitation"
+                accessibilityLabel={t('notifications.acceptModalA11y')}
                 onPress={() => onRespond('accepted')}
               />
               <Button
-                label="Decline"
+                label={t('invitations.decline')}
                 variant="secondary"
                 disabled={busy}
-                accessibilityLabel="Decline invitation"
+                accessibilityLabel={t('notifications.declineModalA11y')}
                 onPress={() => onRespond('declined')}
               />
             </View>
@@ -62,11 +64,11 @@ export function NotificationDetailModal({ item, busy = false, error, onClose, on
           ) : null}
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Close notification"
+            accessibilityLabel={t('notifications.closeModalA11y')}
             onPress={onClose}
             style={styles.close}
           >
-            <Text style={styles.closeText}>Close</Text>
+            <Text style={styles.closeText}>{t('common.close')}</Text>
           </Pressable>
         </View>
       </View>

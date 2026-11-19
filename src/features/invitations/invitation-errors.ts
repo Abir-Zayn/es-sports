@@ -1,4 +1,5 @@
 import { errorCode } from '@/features/scoring/data/scoring-errors';
+import { t } from '@/i18n';
 
 /** Why an invitation call failed, in words for the person. `closed` means the invitation is over: refetch, never retry. */
 export class InvitationError extends Error {
@@ -18,19 +19,19 @@ const CLOSED_CODES = new Set(['EI001', 'EI003']);
 export function invitationMessage(error: unknown): string {
   switch (errorCode(error)) {
     case 'EI001':
-      return 'This invitation is no longer open.';
+      return t('invitations.err.closed');
     case 'EI002':
-      return 'An invitation is already pending.';
+      return t('invitations.err.pending');
     case 'EI003':
-      return 'This invitation can no longer be accepted.';
+      return t('invitations.err.cannotAccept');
     case 'ET002':
-      return 'This player already plays for another team in this tournament. A player can play for one team per tournament.';
+      return t('invitations.err.alreadyInTournament');
     case '42501':
-      return 'You are not allowed to do that.';
+      return t('invitations.err.forbidden');
     case '22023':
-      return 'That person cannot be invited right now.';
+      return t('invitations.err.cannotInvite');
     default:
-      return 'Could not reach the server. Check your connection and try again.';
+      return t('invitations.err.network');
   }
 }
 

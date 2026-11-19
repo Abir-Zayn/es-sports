@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppAvatar, SegmentedControl, Text, type SegmentedOption } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { initialsOf } from '@/lib/initials';
 import { dp, radius, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
@@ -12,6 +13,7 @@ import type { MatchInfoData } from '../types';
 export function SquadsSection({ squads }: { squads: MatchInfoData['squads'] }) {
   const router = useRouter();
   const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation();
   const [selected, setSelected] = useState(squads[0].team.short);
   const squad = squads.find((s) => s.team.short === selected) ?? squads[0];
   const options: SegmentedOption<string>[] = squads.map((s) => ({ id: s.team.short, label: s.team.name }));
@@ -19,12 +21,12 @@ export function SquadsSection({ squads }: { squads: MatchInfoData['squads'] }) {
   return (
     <View style={styles.section}>
       <Text accessibilityRole="header" style={styles.title}>
-        Squads
+        {t('match.info.squadsTitle')}
       </Text>
-      <SegmentedControl options={options} selected={selected} onSelect={setSelected} height={dp(40)} accessibilityLabel="Team" />
+      <SegmentedControl options={options} selected={selected} onSelect={setSelected} height={dp(40)} accessibilityLabel={t('match.info.teamA11y')} />
 
       <Text muted style={styles.heading}>
-        PLAYING XI
+        {t('match.info.playingXi')}
       </Text>
       <View style={styles.grid}>
         {squad.playingXi.map((player) => (
@@ -49,7 +51,7 @@ export function SquadsSection({ squads }: { squads: MatchInfoData['squads'] }) {
       </View>
 
       <Text muted style={[styles.heading, styles.benchHeading]}>
-        BENCH
+        {t('match.info.bench')}
       </Text>
       <View style={styles.bench}>
         {squad.bench.map((name) => (

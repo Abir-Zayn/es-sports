@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, InitialsAvatar, SegmentedControl, Text, TextField } from '@/components/ui';
 import { useAuth } from '@/features/auth';
+import { useTranslation } from '@/i18n';
 import { initialsOf } from '@/lib/initials';
 import { dp, sizes, useThemedStyles } from '@/theme';
 import type { BattingStyle, BloodGroup, PlayingRole } from '@/types/profile';
@@ -14,24 +15,23 @@ import { BloodGroupChip } from './components/blood-group-chip';
 import { PlayingRoleOption } from './components/playing-role-option';
 import { ScreenHeader } from './components/screen-header';
 import { createEditProfileStyles } from './edit-profile-styles';
-import { battingLabels, bloodGroups, roleLabels } from './labels';
+import { battingLabels, battingShortLabel, bloodGroups, roleLabels } from './labels';
 import { profileSchema, stripSeparators } from './profile-schema';
 import { useProfile } from './profile-provider';
 
 type FieldErrors = { fullName?: string; area?: string; district?: string; phone?: string; nationalId?: string };
 
 const roles = Object.keys(roleLabels) as PlayingRole[];
-const battingOptions = (Object.keys(battingLabels) as BattingStyle[]).map((id) => ({
-  id,
-  label: id === 'right' ? 'Right-hand' : 'Left-hand',
-}));
+const battingIds = Object.keys(battingLabels) as BattingStyle[];
 
 /** Name, area, district, phone, National ID, blood group, photo and playing style. Saving returns to Profile; leaving with unsaved edits asks first. */
 export function EditProfileForm() {
   const router = useRouter();
   const { session } = useAuth();
   const { profile, saveProfile } = useProfile();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createEditProfileStyles);
+  const battingOptions = battingIds.map((id) => ({ id, label: battingShortLabel(id) }));
   const areaRef = useRef<ComponentRef<typeof TextInput>>(null);
   const districtRef = useRef<ComponentRef<typeof TextInput>>(null);
   const phoneRef = useRef<ComponentRef<typeof TextInput>>(null);
@@ -64,9 +64,9 @@ export function EditProfileForm() {
 
   // Covers the header button, the Android back button and the back gesture.
   const allowLeave = usePreventRemove(dirty, ({ repeat }) => {
-    Alert.alert('Discard changes?', 'Your edits have not been saved.', [
-      { text: 'Keep editing', style: 'cancel' },
-      { text: 'Discard', style: 'destructive', onPress: repeat },
+    Alert.alert(t('profile.edit.discardTitle'), t('profile.edit.discardBody'), [
+      { text: t('profile.edit.keepEditing'), style: 'cancel' },
+      { text: t('profile.edit.discard'), style: 'destructive', onPress: repeat },
     ]);
   });
 
@@ -103,7 +103,7 @@ export function EditProfileForm() {
       allowLeave();
       router.back();
     } catch {
-      setFormError('Couldn’t save your profile. Try again.');
+      setFormError(t('profile.edit.saveError'));
       setSaving(false);
       inFlight.current = false;
     }
@@ -112,20 +112,20 @@ export function EditProfileForm() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScreenHeader
-        title="Edit Profile"
-        trailing={<Button label="Save" size="compact" disabled={!dirty} loading={saving} onPress={save} />}
+        title={t('profile.edit.title')}
+        trailing={<Button label={t('common.save')} size="compact" disabled={!dirty} loading={saving} onPress={save} />}
       />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.photo}>
-            <InitialsAvatar label={initialsOf(fullName.trim() || profile.fullName)} imageUri={avatarUri} size={dp(96)} accessibilityLabel="Profile picture" />
+            <InitialsAvatar label={initialsOf(fullName.trim() || profile.fullName)} imageUri={avatarUri} size={dp(96)} accessibilityLabel={t('profile.edit.pictureA11y')} />
             <View style={styles.photoActions}>
               <Pressable accessibilityRole="button" hitSlop={sizes.hitSlop} onPress={pickPhoto} style={styles.photoButton}>
-                <Text style={styles.link}>{avatarUri ? 'Change photo' : 'Add photo'}</Text>
+                <Text style={styles.link}>{avatarUri ? t('profile.edit.changePhoto') : t('profile.edit.addPhoto')}</Text>
               </Pressable>
               {avatarUri ? (
                 <Pressable accessibilityRole="button" hitSlop={sizes.hitSlop} onPress={() => setAvatarUri(undefined)} style={styles.photoButton}>
-                  <Text style={styles.remove}>Remove</Text>
+                  <Text style={styles.remove}>{t('profile.edit.removePhoto')}</Text>
                 </Pressable>
               ) : null}
             </View>
@@ -139,7 +139,7 @@ export function EditProfileForm() {
 
           <View style={styles.fields}>
             <TextField
-              label="Full name"
+              label={t('profile.edit.fullName')}
               value={fullName}
               editable={!saving}
               onChangeText={setFullName}
@@ -152,31 +152,31 @@ export function EditProfileForm() {
             />
             <TextField
               ref={areaRef}
-              label="Area"
+              label={t('profile.edit.area')}
               value={area}
               editable={!saving}
               onChangeText={setArea}
               error={errors.area}
-              placeholder="e.g. Halishahar"
+              placeholder={t('profile.edit.areaPlaceholder')}
               autoCapitalize="words"
               returnKeyType="next"
               onSubmitEditing={() => districtRef.current?.focus()}
             />
             <TextField
               ref={districtRef}
-              label="District"
+              label={t('profile.edit.district')}
               value={district}
               editable={!saving}
               onChangeText={setDistrict}
               error={errors.district}
-              placeholder="e.g. Chattogram"
+              placeholder={t('profile.edit.districtPlaceholder')}
               autoCapitalize="words"
               returnKeyType="next"
               onSubmitEditing={() => phoneRef.current?.focus()}
             />
             <TextField
               ref={phoneRef}
-              label="Phone number"
+              label={t('profile.edit.phone')}
               value={phone}
               editable={!saving}
               onChangeText={setPhone}
@@ -192,34 +192,34 @@ export function EditProfileForm() {
             <View style={styles.field}>
               <TextField
                 ref={nationalIdRef}
-                label="National ID number"
+                label={t('profile.edit.nid')}
                 value={nationalId}
                 editable={!saving}
                 onChangeText={setNationalId}
                 error={errors.nationalId}
-                placeholder="10, 13 or 17 digits"
+                placeholder={t('profile.edit.nidPlaceholder')}
                 keyboardType="number-pad"
                 autoComplete="off"
                 maxLength={21}
                 returnKeyType="done"
               />
               <Text variant="caption" muted>
-                Private. Only you can see your full number.
+                {t('profile.edit.nidHint')}
               </Text>
             </View>
             <View style={styles.readOnly}>
-              <TextField label="Email" value={session?.user.email ?? ''} editable={false} />
+              <TextField label={t('profile.personal.email')} value={session?.user.email ?? ''} editable={false} />
               <Text variant="caption" muted>
-                Change your email in Settings.
+                {t('profile.edit.emailHint')}
               </Text>
             </View>
           </View>
 
           <View style={styles.group}>
             <Text variant="caption" muted>
-              Blood group
+              {t('profile.edit.bloodGroup')}
             </Text>
-            <View style={styles.chips} accessibilityRole="radiogroup" accessibilityLabel="Blood group">
+            <View style={styles.chips} accessibilityRole="radiogroup" accessibilityLabel={t('profile.edit.bloodGroup')}>
               {bloodGroups.map((id) => (
                 <BloodGroupChip key={id} id={id} selected={id === bloodGroup} onPress={() => setBloodGroup(id === bloodGroup ? '' : id)} />
               ))}
@@ -228,9 +228,9 @@ export function EditProfileForm() {
 
           <View style={styles.group}>
             <Text variant="caption" muted>
-              Playing role
+              {t('profile.edit.playingRole')}
             </Text>
-            <View style={styles.roles} accessibilityRole="radiogroup" accessibilityLabel="Playing role">
+            <View style={styles.roles} accessibilityRole="radiogroup" accessibilityLabel={t('profile.edit.playingRole')}>
               {roles.map((id) => (
                 <View key={id} style={styles.roleCell}>
                   <PlayingRoleOption role={id} selected={id === role} onPress={() => setRole(id)} />
@@ -241,9 +241,9 @@ export function EditProfileForm() {
 
           <View style={styles.group}>
             <Text variant="caption" muted>
-              Batting style
+              {t('profile.edit.battingStyle')}
             </Text>
-            <SegmentedControl options={battingOptions} selected={battingStyle} onSelect={setBattingStyle} height={dp(44)} accessibilityLabel="Batting style" />
+            <SegmentedControl options={battingOptions} selected={battingStyle} onSelect={setBattingStyle} height={dp(44)} accessibilityLabel={t('profile.edit.battingStyle')} />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

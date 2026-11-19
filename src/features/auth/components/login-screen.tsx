@@ -3,6 +3,7 @@ import { useRef, useState, type ComponentRef } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { Button, PasswordField, Text, TextField } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { AuthLayout } from './auth-layout';
@@ -14,6 +15,7 @@ import { SocialOptions } from './social-options';
 type FieldErrors = { email?: string; password?: string };
 
 export function LoginScreen() {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const passwordRef = useRef<ComponentRef<typeof TextInput>>(null);
   const [email, setEmail] = useState('');
@@ -55,22 +57,22 @@ export function LoginScreen() {
     setLoading(true);
     setNotice(null);
     const result = await resendConfirmation(confirmationEmail);
-    if (result.ok) setNotice('Check your inbox. Confirm your email, then return here to log in.');
+    if (result.ok) setNotice(t('auth.login.resentNotice'));
     else setFormError(result.message);
     setLoading(false);
     inFlight.current = false;
   }
 
   return (
-    <AuthLayout scrollable title="Back on strike." subtitle="Log in to run your tournament.">
+    <AuthLayout scrollable title={t('auth.login.title')} subtitle={t('auth.login.subtitle')}>
       <View style={styles.form}>
         <TextField
-          label="Email"
+          label={t('auth.email')}
           value={email}
           editable={!loading}
           onChangeText={setEmail}
           error={errors.email}
-          placeholder="you@example.com"
+          placeholder={t('auth.emailPlaceholder')}
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
@@ -81,7 +83,7 @@ export function LoginScreen() {
         />
         <PasswordField
           ref={passwordRef}
-          placeholder="Add password"
+          placeholder={t('auth.passwordPlaceholder')}
           value={password}
           editable={!loading}
           onChangeText={setPassword}
@@ -91,7 +93,7 @@ export function LoginScreen() {
         />
         <Text variant="caption" style={styles.forgot}>
           <Link href="/forgot-password" style={styles.forgotAction}>
-            Forgot password?
+            {t('auth.login.forgot')}
           </Link>
         </Text>
         {formError ? (
@@ -100,12 +102,12 @@ export function LoginScreen() {
           </Text>
         ) : null}
         {notice ? <Text variant="caption" accessibilityLiveRegion="polite">{notice}</Text> : null}
-        <Button label="Log in" onPress={submit} loading={loading} />
-        {confirmationEmail ? <Button label="Resend confirmation email" variant="secondary" onPress={resend} disabled={loading} /> : null}
+        <Button label={t('auth.login.submit')} onPress={submit} loading={loading} />
+        {confirmationEmail ? <Button label={t('auth.login.resend')} variant="secondary" onPress={resend} disabled={loading} /> : null}
       </View>
 
       <SocialOptions />
-      <AuthSwitchLink prompt="Don’t have an account?" action="Create one" href="/sign-up" />
+      <AuthSwitchLink prompt={t('auth.login.noAccount')} action={t('auth.login.createOne')} href="/sign-up" />
     </AuthLayout>
   );
 }

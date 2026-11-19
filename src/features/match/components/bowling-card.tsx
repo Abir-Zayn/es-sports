@@ -1,4 +1,5 @@
 import { StatsTable, type StatsColumn } from '@/components/match/stats-table';
+import { useTranslation } from '@/i18n';
 import { dp } from '@/theme';
 
 import { economy } from '../format';
@@ -14,9 +15,10 @@ const columns: StatsColumn[] = [
 
 /** An innings' bowling figures. */
 export function BowlingCard({ bowlers }: { bowlers: BowlerLine[] }) {
+  const { t } = useTranslation();
   return (
     <StatsTable
-      nameHeading="BOWLER"
+      nameHeading={t('match.live.bowlerHeading')}
       columns={columns}
       rows={bowlers.map((b) => ({
         key: b.name,

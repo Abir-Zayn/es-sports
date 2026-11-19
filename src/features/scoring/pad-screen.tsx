@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Alert, StyleSheet } from 'react-native';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { typography, useThemedStyles, type Palette } from '@/theme';
 
 import { CreaseSummary } from './components/crease-summary';
@@ -12,7 +13,7 @@ import { ScoreSummary } from './components/score-summary';
 import { ScorerFrame, ScorerHeader, ScorerNotice } from './components/scorer-ui';
 import { ScoringKeypad } from './components/scoring-keypad';
 import { SyncBadge } from './components/sync-badge';
-import { computeResult } from './data/match-result';
+import { formatMatchResult } from './data/match-result';
 import { applyDelivery } from './engine/score-delivery';
 import { HandoverSection } from './handover/components/handover-section';
 import { localEventId, useScorer } from './scorer-provider';
@@ -23,8 +24,9 @@ export function ScorerPadScreen() {
   const { score, setup, dispatch, history, pendingShot, sync, savedId } = useScorer();
   const routes = useScorerRoutes();
   const s = useThemedStyles(styles);
+  const { t, locale } = useTranslation();
   const [extra, setExtra] = useState<ExtraKind | null>(null);
-  if (!score) return <ScorerFrame><ScorerNotice>Choose the toss and opening players first.</ScorerNotice><Button label="Set up match" onPress={() => routes.replace('setup')} /></ScorerFrame>;
+  if (!score) return <ScorerFrame><ScorerNotice>{t('scoring.pad.needSetup')}</ScorerNotice><Button label={t('scoring.pad.setUpMatch')} onPress={() => routes.replace('setup')} /></ScorerFrame>;
   const record = (input: DeliveryInput) => {
     try {
       const id = localEventId();
@@ -33,39 +35,41 @@ export function ScorerPadScreen() {
       setExtra(null);
       if (setup.recordShots && ['runs', 'no-ball'].includes(input.kind) && input.runs > 0) routes.push('shot');
       else if (next.awaitingBowler) routes.push('over');
-    } catch (error) { Alert.alert('Could not record ball', error instanceof Error ? error.message : 'Try again.'); }
+    } catch (error) {
+      Alert.alert(t('scoring.pad.recordErrorTitle'), error instanceof Error ? error.message : t('scoring.pad.recordErrorFallback'));
+    }
   };
   const undo = () => dispatch({ type: 'undo', id: localEventId() });
   const disabled = score.complete || score.awaitingBowler || pendingShot !== null;
   const unsaved = sync.mode === 'synced' && (sync.status !== 'idle' || sync.pending > 0);
   const leave = () => sync.mode === 'local'
-    ? Alert.alert('Leave local scoring?', 'This reference match is not saved and will reset when you leave.', [
-      { text: 'Keep scoring', style: 'cancel' }, { text: 'Leave', onPress: routes.leave },
+    ? Alert.alert(t('scoring.pad.leaveLocalTitle'), t('scoring.pad.leaveLocalBody'), [
+      { text: t('scoring.pad.keepScoring'), style: 'cancel' }, { text: t('scoring.pad.leave'), onPress: routes.leave },
     ])
     : unsaved
-      ? Alert.alert('Still saving', 'Some balls have not reached the server yet. They keep sending while the app is open.', [
-        { text: 'Keep scoring', style: 'cancel' }, { text: 'Leave anyway', style: 'destructive', onPress: routes.leave },
+      ? Alert.alert(t('scoring.pad.stillSavingTitle'), t('scoring.pad.stillSavingBody'), [
+        { text: t('scoring.pad.keepScoring'), style: 'cancel' }, { text: t('scoring.pad.leaveAnyway'), style: 'destructive', onPress: routes.leave },
       ])
       : routes.leave();
   const footer = score.complete ? <>
-    <Text style={s.result}>{score.innings === 1 ? 'Innings complete' : computeResult(score)?.result_summary ?? 'Match complete'}</Text>
-    {score.innings === 1 ? <Button label="Set up the chase" onPress={() => routes.replace('setup')} />
-      : <Button label="Match summary" onPress={() => routes.push('result')} />}
-    <Button label="Undo last ball" variant="secondary" disabled={!history.length} onPress={undo} />
+    <Text style={s.result}>{score.innings === 1 ? t('scoring.pad.inningsComplete') : formatMatchResult(score, locale) ?? t('match.matchComplete')}</Text>
+    {score.innings === 1 ? <Button label={t('scoring.pad.setUpChase')} onPress={() => routes.replace('setup')} />
+      : <Button label={t('scoring.pad.matchSummary')} onPress={() => routes.push('result')} />}
+    <Button label={t('scoring.pad.undoLastBall')} variant="secondary" disabled={!history.length} onPress={undo} />
   </> : pendingShot ? <>
-    <Button label="Finish shot direction" onPress={() => routes.push('shot')} />
-    <Button label="Undo last ball" variant="ghost" onPress={undo} />
+    <Button label={t('scoring.pad.finishShot')} onPress={() => routes.push('shot')} />
+    <Button label={t('scoring.pad.undoLastBall')} variant="ghost" onPress={undo} />
   </> : score.awaitingBowler ? <>
-    <Button label="Choose next bowler" onPress={() => routes.push('over')} />
-    <Button label="Undo last ball" variant="ghost" onPress={undo} />
+    <Button label={t('scoring.pad.chooseNextBowler')} onPress={() => routes.push('over')} />
+    <Button label={t('scoring.pad.undoLastBall')} variant="ghost" onPress={undo} />
   </> : <ScoringKeypad disabled={disabled} canUndo={history.length > 0} onUndo={undo} onRuns={(runs) => record({ kind: 'runs', runs })}
     onWicket={() => routes.push('wicket')} onExtra={(label) => {
-      if (label === 'DEAD') Alert.alert('Dead ball', 'No runs or deliveries recorded.');
+      if (label === 'DEAD') Alert.alert(t('scoring.pad.deadBallTitle'), t('scoring.pad.deadBallBody'));
       else setExtra(({ WD: 'wide', NB: 'no-ball', BYE: 'bye', LB: 'leg-bye' } as Record<string, ExtraKind>)[label]);
     }} />;
   return <ScorerFrame footer={footer}>
-    <ScorerHeader title="Scoring" subtitle={`${setup.title} · ${score.innings === 1 ? '1st' : '2nd'} innings`} onBack={leave}
-      trailing={<AppIconTile icon={Radio} accessibilityLabel="Open stream overlay" onPress={() => routes.push('overlay')} />} />
+    <ScorerHeader title={t('scoring.pad.title')} subtitle={t('scoring.pad.subtitle', { title: setup.title, innings: t(score.innings === 1 ? 'scoring.pad.innings1' : 'scoring.pad.innings2') })} onBack={leave}
+      trailing={<AppIconTile icon={Radio} accessibilityLabel={t('scoring.pad.streamOverlayA11y')} onPress={() => routes.push('overlay')} />} />
     <SyncBadge sync={sync} />
     {setup.preset && sync.mode === 'synced'
       ? <HandoverSection matchId={savedId} ready={!unsaved} onLeave={routes.leave} /> : null}
@@ -73,7 +77,7 @@ export function ScorerPadScreen() {
     <ScoreSummary score={score} />
     <CreaseSummary score={score} disabled={disabled} onSwap={() => dispatch({ type: 'swap', id: localEventId() })} />
     <OverBalls deliveries={score.currentOver} number={Math.floor(score.balls / 6) + 1} />
-    {score.freeHit ? <Text style={s.freeHit}>Free hit on the next legal delivery</Text> : null}
+    {score.freeHit ? <Text style={s.freeHit}>{t('scoring.pad.freeHitBanner')}</Text> : null}
     {extra ? <ExtrasSheet key={extra} kind={extra} onClose={() => setExtra(null)} onConfirm={record} /> : null}
   </ScorerFrame>;
 }

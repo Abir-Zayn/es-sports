@@ -1,3 +1,4 @@
+import { t } from '@/i18n';
 import { traceApi } from '@/lib/api-log';
 import { supabase } from '@/lib/supabase';
 
@@ -11,13 +12,13 @@ const DAY_MS = 24 * HOUR_MS;
 
 export function formatSentLabel(createdAt: string, now = Date.now()): string {
   const created = Date.parse(createdAt);
-  if (!Number.isFinite(created)) return 'Recently';
+  if (!Number.isFinite(created)) return t('invitations.time.recently');
   const diff = Math.max(0, now - created);
-  if (diff < MINUTE_MS) return 'Just now';
-  if (diff < HOUR_MS) return `${Math.floor(diff / MINUTE_MS)}m ago`;
-  if (diff < DAY_MS) return `${Math.floor(diff / HOUR_MS)}h ago`;
+  if (diff < MINUTE_MS) return t('invitations.time.justNow');
+  if (diff < HOUR_MS) return t('invitations.time.minutesAgo', { count: Math.floor(diff / MINUTE_MS) });
+  if (diff < DAY_MS) return t('invitations.time.hoursAgo', { count: Math.floor(diff / HOUR_MS) });
   const days = Math.floor(diff / DAY_MS);
-  return days === 1 ? 'Yesterday' : `${days}d ago`;
+  return days === 1 ? t('invitations.time.yesterday') : t('invitations.time.daysAgo', { count: days });
 }
 
 function toKind(dbKind: string): InvitationKind {
@@ -50,13 +51,13 @@ export function toInvitation(row: InvitationRow, lookups: InvitationLookups): In
     id: row.id,
     kind: toKind(row.kind),
     tournamentId: row.tournament_id,
-    tournamentName: row.tournament_id ? (lookups.tournaments[row.tournament_id] ?? 'Tournament') : '',
+    tournamentName: row.tournament_id ? (lookups.tournaments[row.tournament_id] ?? t('invitations.tournamentFallback')) : '',
     teamId: row.team_id,
-    teamName: row.team_id ? (lookups.teams[row.team_id] ?? 'Team') : null,
+    teamName: row.team_id ? (lookups.teams[row.team_id] ?? t('invitations.teamFallback')) : null,
     fromUserId: row.from_user,
     toUserId: row.to_user,
-    fromName: lookups.profiles[row.from_user] ?? 'Organizer',
-    toName: lookups.profiles[row.to_user] ?? 'Invited user',
+    fromName: lookups.profiles[row.from_user] ?? t('invitations.organizerFallback'),
+    toName: lookups.profiles[row.to_user] ?? t('invitations.invitedUserFallback'),
     direction: isSent ? 'sent' : 'incoming',
     sentLabel: formatSentLabel(row.created_at, now),
     status: toStatus(row, now),

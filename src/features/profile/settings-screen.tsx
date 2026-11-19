@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import Bell from 'lucide-react-native/icons/bell';
 import FileText from 'lucide-react-native/icons/file-text';
 import Info from 'lucide-react-native/icons/info';
+import Languages from 'lucide-react-native/icons/languages';
 import Lock from 'lucide-react-native/icons/lock';
 import LogOut from 'lucide-react-native/icons/log-out';
 import Mail from 'lucide-react-native/icons/mail';
@@ -13,8 +14,8 @@ import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, SettingsGroup, SettingsRow, Text } from '@/components/ui';
-import { useAuth } from '@/features/auth';
-import { signOut } from '@/features/auth';
+import { signOut, useAuth } from '@/features/auth';
+import { useTranslation } from '@/i18n';
 import { comingSoon } from '@/lib/coming-soon';
 import { dp, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
@@ -36,6 +37,7 @@ export function SettingsScreen() {
   const router = useRouter();
   const { session } = useAuth();
   const { colors } = useTheme();
+  const { t, locale } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const [loggingOut, setLoggingOut] = useState(false);
   const { rows: accountRows, error: accountError } = useAccountRows();
@@ -54,29 +56,36 @@ export function SettingsScreen() {
   }
 
   function confirmDelete() {
-    Alert.alert('Delete your account?', 'This permanently removes your profile and cannot be undone.', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('settings.deleteTitle'), t('settings.deleteBody'), [
+      { text: t('common.cancel'), style: 'cancel' },
       // TODO: call a Supabase Edge Function that deletes the user with the service role key. Required by Google Play.
-      { text: 'Delete account', style: 'destructive', onPress: () => comingSoon('Account deletion') },
+      { text: t('settings.deleteAccount'), style: 'destructive', onPress: () => comingSoon(t('settings.deleteSoon')) },
     ]);
   }
 
   return (
     <SafeAreaView style={styles.safe}>
-      <ScreenHeader title="Settings" />
+      <ScreenHeader title={t('settings.title')} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.group}>
-          <GroupTitle>Account</GroupTitle>
+          <GroupTitle>{t('settings.account')}</GroupTitle>
           {/* One list: the rows touch, separated only by hairlines. */}
           <SettingsGroup>
             {[
-              <SettingsRow key="email" icon={Mail} label="Email" value={session?.user.email ?? ''} />,
-              <SettingsRow key="password" icon={Lock} label="Change password" onPress={() => comingSoon('Changing your password')} />,
+              <SettingsRow key="email" icon={Mail} label={t('settings.email')} value={session?.user.email ?? ''} />,
+              <SettingsRow key="password" icon={Lock} label={t('settings.changePassword')} onPress={() => comingSoon(t('settings.changePasswordSoon'))} />,
               ...accountRows,
-              <SettingsRow key="notifications" icon={Bell} label="Notifications" onPress={() => comingSoon('Notifications')} />,
-              <SettingsRow key="terms" icon={FileText} label="Terms and Conditions" onPress={() => router.push('/terms')} />,
-              <SettingsRow key="privacy" icon={ShieldCheck} label="Privacy Policy" onPress={() => router.push('/privacy')} />,
-              <SettingsRow key="version" icon={Info} label="Version" value={Constants.expoConfig?.version ?? ''} />,
+              <SettingsRow
+                key="language"
+                icon={Languages}
+                label={t('settings.language')}
+                value={locale === 'bn' ? t('language.currentValueBn') : t('language.currentValueEn')}
+                onPress={() => router.push('/language')}
+              />,
+              <SettingsRow key="notifications" icon={Bell} label={t('settings.notifications')} onPress={() => comingSoon(t('settings.notifications'))} />,
+              <SettingsRow key="terms" icon={FileText} label={t('settings.terms')} onPress={() => router.push('/terms')} />,
+              <SettingsRow key="privacy" icon={ShieldCheck} label={t('settings.privacy')} onPress={() => router.push('/privacy')} />,
+              <SettingsRow key="version" icon={Info} label={t('settings.version')} value={Constants.expoConfig?.version ?? ''} />,
             ]}
           </SettingsGroup>
           {accountError ? (
@@ -87,14 +96,14 @@ export function SettingsScreen() {
         </View>
 
         <View style={styles.actions}>
-          <Text variant="bodySm" muted>Appearance follows your device settings.</Text>
+          <Text variant="bodySm" muted>{t('settings.appearanceNote')}</Text>
           {error ? (
             <Text variant="caption" style={styles.error} accessibilityLiveRegion="polite">
               {error}
             </Text>
           ) : null}
           <Button
-            label="Log out"
+            label={t('profile.logOut')}
             variant="secondary"
             loading={loggingOut}
             leading={<LogOut size={sizes.icon} color={colors.text} />}
@@ -102,7 +111,7 @@ export function SettingsScreen() {
           />
           <Pressable accessibilityRole="button" onPress={confirmDelete} hitSlop={sizes.hitSlop} style={styles.delete}>
             <Trash size={sizes.iconSmall} color={colors.dangerSoftText} />
-            <Text style={styles.deleteLabel}>Delete account</Text>
+            <Text style={styles.deleteLabel}>{t('settings.deleteAccount')}</Text>
           </Pressable>
         </View>
       </ScrollView>

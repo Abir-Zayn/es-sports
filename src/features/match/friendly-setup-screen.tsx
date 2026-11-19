@@ -9,6 +9,7 @@ import { createFriendlyMatch, FriendlySetupExpiredError } from '@/features/scori
 import { buildMatchRows, FRIENDLY_REF_PREFIX } from '@/features/scoring/data/match-rows';
 import { localEventId } from '@/features/scoring/local-id';
 import { useMe } from '@/features/tournament/roster';
+import { t as tGlobal, useTranslation } from '@/i18n';
 import { appLink, shareText } from '@/lib/share';
 import { dp, radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
@@ -27,13 +28,14 @@ import { uploadTeamImage } from './friendly/team-images';
 import { toScorerSetup } from './friendly/to-scorer-setup';
 import type { FriendlyMatchSetup, FriendlySide, FriendlyTossResult } from './types';
 
-const errorText = (error: unknown) => (error instanceof Error ? error.message : 'Something went wrong. Try again.');
+const errorText = (error: unknown) => (error instanceof Error ? error.message : tGlobal('friendly.fallbackError'));
 
 /** Two teams, a format and a scorer on one screen, then the toss and straight into scoring. */
 export function FriendlySetupScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const s = useThemedStyles(styles);
+  const { t } = useTranslation();
   const me = useMe();
   const [setup, setSetup] = useState<FriendlyMatchSetup>(() => newFriendly(`${FRIENDLY_REF_PREFIX}${localEventId()}`, me.id, new Date()));
   const [sheet, setSheet] = useState<FriendlySheet>(null);
@@ -98,7 +100,12 @@ export function FriendlySetupScreen() {
       if (!mounted.current) return;
       setTossing(false);
       if (scorer) {
-        void shareText(`${me.name || 'Your teammate'} made you the scorer for ${teamLabel(tossed, 'teamA')} vs ${teamLabel(tossed, 'teamB')} on esSports: ${appLink(`scorer/${matchId.current}`)}`);
+        void shareText(t('friendly.shareScorerInvite', {
+          name: me.name || t('friendly.teammateFallback'),
+          teamA: teamLabel(tossed, 'teamA'),
+          teamB: teamLabel(tossed, 'teamB'),
+          link: appLink(`scorer/${matchId.current}`),
+        }));
       }
       router.replace({ pathname: scorer ? '/match/[id]' : '/scorer/[id]', params: { id: matchId.current } });
     } catch (error) {
@@ -106,8 +113,7 @@ export function FriendlySetupScreen() {
       const expired = error instanceof FriendlySetupExpiredError;
       if (expired) matchId.current = localEventId();
       if (mounted.current) {
-        setSaveError(expired ? 'This setup was paused too long to save. Tap start again.'
-          : 'Could not save this match or its images. Check your connection and image size, then try again.');
+        setSaveError(expired ? t('friendly.saveExpiredError') : t('friendly.saveFailedError'));
       }
     } finally {
       saveLock.current = false;
@@ -118,21 +124,21 @@ export function FriendlySetupScreen() {
   return <View style={[s.screen, { paddingTop: insets.top }]}>
     <View style={s.header}>
       <View style={s.titles}>
-        <Text accessibilityRole="header" style={s.title}>Friendly Match Setup</Text>
-        <Text muted style={s.step}>Step 1 of 2 · Teams & format, then the toss</Text>
+        <Text accessibilityRole="header" style={s.title}>{t('friendly.title')}</Text>
+        <Text muted style={s.step}>{t('friendly.step')}</Text>
       </View>
-      <AppIconTile icon={X} size={sizes.iconButton} borderRadius={radius.pill} accessibilityLabel="Close friendly match setup" onPress={close} />
+      <AppIconTile icon={X} size={sizes.iconButton} borderRadius={radius.pill} accessibilityLabel={t('friendly.closeA11y')} onPress={close} />
     </View>
     <View style={s.progress}><View style={[s.bar, s.barOn]} /><View style={s.bar} /></View>
     <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + dp(120) }]} keyboardShouldPersistTaps="handled">
       <SavedFriendlies userId={me.id} />
       <FriendlyMatchupHero teamA={setup.teamA} teamB={setup.teamB} nameA={teamLabel(setup, 'teamA')} nameB={teamLabel(setup, 'teamB')}
         overs={setup.overs} playersPerSide={setup.playersPerSide} />
-      <Text accessibilityRole="header" muted style={s.section}>Format</Text>
+      <Text accessibilityRole="header" muted style={s.section}>{t('friendly.sectionFormat')}</Text>
       <FriendlyFormatCard overs={setup.overs} playersPerSide={setup.playersPerSide} error={shown.format}
         onOvers={(overs) => setSetup({ ...setup, overs })} onPlayersPerSide={(n) => setSetup(withPlayersPerSide(setup, n))} />
-      <Text accessibilityRole="header" muted style={s.section}>Squads</Text>
-      {sides.map((side: FriendlySide) => <FriendlyTeamCard key={side} label={side === 'teamA' ? 'Team A' : 'Team B'}
+      <Text accessibilityRole="header" muted style={s.section}>{t('friendly.sectionSquads')}</Text>
+      {sides.map((side: FriendlySide) => <FriendlyTeamCard key={side} label={side === 'teamA' ? t('friendly.teamA') : t('friendly.teamB')}
         squad={setup[side]} playersPerSide={setup.playersPerSide} error={notice?.side === side ? notice.message : shown[side]}
         onRename={(name) => setSetup(renameTeam(setup, side, name))}
         onImage={(imageUri, imageMimeType) => setSetup((current) => ({ ...current, [side]: { ...current[side], imageUri, imageMimeType } }))}
@@ -141,15 +147,15 @@ export function FriendlySetupScreen() {
         }}
         onRemove={(p) => setSetup(removePlayer(setup, side, p.id))}
         onFind={() => open({ kind: 'find', side })} onQuickAdd={() => open({ kind: 'guest', side })}
-        onAddMe={me.id && !inSquad(me.id) ? () => change((c) => addPlayer(c, side, { id: localEventId(), name: me.name || 'Me', role: 'All-rounder', userId: me.id, avatarUrl: me.avatarUrl })) : undefined} />)}
-      <Text accessibilityRole="header" muted style={s.section}>Scorer</Text>
-      <ScorerAssignmentRow name={scorer ? scorer.name : 'You'} avatarUrl={scorer ? scorer.avatarUrl : me.avatarUrl} error={shown.scorer}
-        detail={scorer ? 'Only this person can enter scores. They will receive a link.' : 'Only you enter scores. Pick an app user in a squad to hand it over.'}
+        onAddMe={me.id && !inSquad(me.id) ? () => change((c) => addPlayer(c, side, { id: localEventId(), name: me.name || t('friendly.me'), role: 'All-rounder', userId: me.id, avatarUrl: me.avatarUrl })) : undefined} />)}
+      <Text accessibilityRole="header" muted style={s.section}>{t('friendly.sectionScorer')}</Text>
+      <ScorerAssignmentRow name={scorer ? scorer.name : t('friendly.you')} avatarUrl={scorer ? scorer.avatarUrl : me.avatarUrl} error={shown.scorer}
+        detail={scorer ? t('friendly.scorerAssignedDetail') : t('friendly.scorerSelfDetail')}
         onPress={() => open({ kind: 'scorer' })} />
-      {attempted && Object.keys(problems).length > 0 ? <Text style={s.error} accessibilityLiveRegion="polite">Fix the highlighted parts to go to the toss.</Text> : null}
+      {attempted && Object.keys(problems).length > 0 ? <Text style={s.error} accessibilityLiveRegion="polite">{t('friendly.fixProblems')}</Text> : null}
     </ScrollView>
     <View style={[s.footer, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
-      <Button label="Proceed to Toss" onPress={() => { setAttempted(true); if (Object.keys(problems).length === 0) setTossing(true); }} />
+      <Button label={t('friendly.proceedToToss')} onPress={() => { setAttempted(true); if (Object.keys(problems).length === 0) setTossing(true); }} />
     </View>
     <FriendlySheets sheet={sheet} error={sheetError} meId={me.id} setup={setup} onClose={() => setSheet(null)}
       onAddMember={(side, user, role) => { if (change((c) => addPlayer(c, side, { id: localEventId(), name: user.name, role, userId: user.id, avatarUrl: user.avatarUrl }))) setSheet(null); }}

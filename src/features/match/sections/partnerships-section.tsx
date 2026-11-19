@@ -1,24 +1,32 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
+import { countLabel } from '../live/live-view';
 import type { Partnership } from '../types';
 
 /** Runs added for each wicket as proportional bars. The stand still in progress is highlighted and starred. */
 export function PartnershipsSection({ partnerships }: { partnerships: Partnership[] }) {
   const styles = useThemedStyles(createStyles);
+  const { t, locale } = useTranslation();
   const max = Math.max(...partnerships.map((p) => p.runs), 1);
   return (
     <View style={styles.section}>
       <Text accessibilityRole="header" style={styles.title}>
-        Partnerships
+        {t('match.scorecard.partnerships')}
       </Text>
       {partnerships.map((p) => (
         <View
           key={p.wicket}
           accessible
-          accessibilityLabel={`${p.wicket} wicket, ${p.pair}, ${p.runs} runs${p.live ? ', not out' : ''}`}
+          accessibilityLabel={t('match.scorecard.partnershipA11y', {
+            wicket: p.wicket,
+            pair: p.pair,
+            runsText: countLabel(p.runs, 'run', locale),
+            liveSuffix: p.live ? t('match.scorecard.notOutSuffix') : '',
+          })}
           style={styles.item}
         >
           <View style={styles.row}>

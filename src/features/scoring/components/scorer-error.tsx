@@ -1,9 +1,10 @@
 import { Alert } from 'react-native';
 
 import { Button } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 
 import type { OutboxStoppedError } from '../data/outbox';
-import { isNotAllowed } from '../data/outbox-errors';
+import { isNotAllowed, plural } from '../data/outbox-errors';
 import { outboxes } from '../data/outboxes';
 import { ScoringMovedNotice } from '../handover/components/scoring-moved-notice';
 import { ScorerFrame, ScorerNotice } from './scorer-ui';
@@ -15,19 +16,19 @@ import { ScorerFrame, ScorerNotice } from './scorer-ui';
  * is discarded without the person choosing to.
  */
 export function ScorerError({ message, stopped, onRetry }: { message: string; stopped?: OutboxStoppedError; onRetry: () => void }) {
+  const { t } = useTranslation();
   // Keeping the server's score means throwing away this phone's unsent changes, so ask first.
   const discard = (pending: OutboxStoppedError) => Alert.alert(
-    'Discard unsent changes?',
-    `${pending.pending} change${pending.pending === 1 ? '' : 's'} on this phone will be deleted and the match will open `
-      + 'with the score saved online. This cannot be undone.',
-    [{ text: 'Cancel', style: 'cancel' }, { text: 'Discard', style: 'destructive', onPress: () => {
+    t('scoring.error.discardTitle'),
+    t('scoring.error.discardBody', { changes: plural(pending.pending) }),
+    [{ text: t('common.cancel'), style: 'cancel' }, { text: t('scoring.error.discardBtn'), style: 'destructive', onPress: () => {
       outboxes.discard(pending.userId, pending.matchId);
       onRetry();
     } }],
   );
   return <ScorerFrame>
     {isNotAllowed(stopped) ? <ScoringMovedNotice stopped={stopped} /> : <ScorerNotice>{message}</ScorerNotice>}
-    <Button label="Try again" onPress={onRetry} />
-    {stopped ? <Button label="Discard unsent changes" variant="secondary" onPress={() => discard(stopped)} /> : null}
+    <Button label={t('common.retry')} onPress={onRetry} />
+    {stopped ? <Button label={t('scoring.error.discardAllBtn')} variant="secondary" onPress={() => discard(stopped)} /> : null}
   </ScorerFrame>;
 }
