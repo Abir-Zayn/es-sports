@@ -151,4 +151,5 @@ export const enScoringHandover = {
   'handover.takeover.currentScorerFallback': 'The current scorer',
   'handover.takeover.confirmBtn': 'Take over',
   'handover.takeover.btn': 'Take over scoring',
+  'handover.resume.btn': 'Continue scoring',
 } as const;

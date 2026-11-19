@@ -4,6 +4,8 @@ import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-n
 
 import { Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
+import { isUuid } from '@/features/scoring/data/match-repository';
+import { ResumeScoringAction } from '@/features/scoring/handover/components/resume-scoring-action';
 import { comingSoon } from '@/lib/coming-soon';
 import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
@@ -54,6 +56,7 @@ function LiveBody({ view, matchId }: { view: LiveMatchViewData; matchId: string 
       {view.source === 'sample' ? (
         <Text muted style={styles.note}>{t('match.live.previewNote')}</Text>
       ) : null}
+      {view.source === 'stored' && view.header.status !== 'completed' && isUuid(matchId) ? <ResumeScoringAction matchId={matchId} /> : null}
       {view.header.toss && view.header.status !== 'scheduled' ? <Text muted style={styles.note}>{view.header.toss}</Text> : null}
       {view.stream ? (
         <StreamLinkCard label={view.stream.label} source={view.stream.source} onPress={() => comingSoon(t('match.liveStreamFeature'))} />
