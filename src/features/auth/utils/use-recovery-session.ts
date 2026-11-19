@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useTranslation } from '@/i18n';
 
-import { openRecoverySession } from './password-recovery';
+import { openRecoverySession } from '../server/password-recovery';
 
 type State = { status: 'checking' } | { status: 'ready'; userId: string }
   | { status: 'error'; message: string; retryable: boolean };

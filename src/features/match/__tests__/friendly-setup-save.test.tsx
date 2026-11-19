@@ -5,8 +5,8 @@ import type { ReactNode } from 'react';
 import { createFriendlyMatch, FriendlySetupExpiredError } from '@/features/scoring/data/friendly-create';
 import { ThemeProvider } from '@/theme';
 
-import { FriendlySetupScreen } from '../friendly-setup-screen';
-import { sweepOrphanTeamImagesDaily } from '../friendly/team-image-sweep';
+import { FriendlySetupScreen } from '../screens/friendly-setup-screen';
+import { sweepOrphanTeamImagesDaily } from '../server/team-image-sweep';
 
 const ME = '11111111-1111-4111-8111-111111111111';
 const mockReplace = jest.fn();
@@ -14,11 +14,11 @@ jest.mock('@/features/scoring/data/friendly-create', () => ({
   createFriendlyMatch: jest.fn(),
   FriendlySetupExpiredError: class FriendlySetupExpiredError extends Error {},
 }));
-jest.mock('../friendly/team-image-sweep', () => ({ sweepOrphanTeamImagesDaily: jest.fn().mockResolvedValue(undefined) }));
-jest.mock('../friendly/team-images', () => ({
+jest.mock('../server/team-image-sweep', () => ({ sweepOrphanTeamImagesDaily: jest.fn().mockResolvedValue(undefined) }));
+jest.mock('../server/team-images', () => ({
   uploadTeamImage: jest.fn().mockResolvedValue('https://example.com/team.png'),
 }));
-jest.mock('../friendly/search-players', () => ({ searchPlayers: jest.fn().mockResolvedValue([]) }));
+jest.mock('../server/search-players', () => ({ searchPlayers: jest.fn().mockResolvedValue([]) }));
 jest.mock('../components/saved-friendlies', () => ({ SavedFriendlies: () => null }));
 jest.mock('@/lib/share', () => ({ shareText: jest.fn().mockResolvedValue(undefined), appLink: (path: string) => `essports://${path}` }));
 jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn() }));

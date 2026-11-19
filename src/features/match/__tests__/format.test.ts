@@ -1,4 +1,4 @@
-import { economy, oversToBalls, strikeRate } from '../format';
+import { economy, oversToBalls, strikeRate } from '../utils/format';
 
 describe('match figures', () => {
   it('counts overs as balls', () => {

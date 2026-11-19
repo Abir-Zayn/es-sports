@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Card, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth';
-import { searchPlayers, suggestPlayers } from '@/features/match/friendly/search-players';
+import { searchPlayers, suggestPlayers } from '@/features/match/server/search-players';
 import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { tournamentErrorText } from '../../data/tournament-errors';

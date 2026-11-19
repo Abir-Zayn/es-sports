@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { dp, sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
 import type { MatchTabId } from '../types';
-import { useMatchRoutes } from '../use-match-routes';
+import { useMatchRoutes } from '../utils/use-match-routes';
 import { MatchCompactHeader } from './match-compact-header';
 import { MatchTabs } from './match-tabs';
 

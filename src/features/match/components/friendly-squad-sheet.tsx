@@ -8,7 +8,7 @@ import { useTranslation } from '@/i18n';
 import { initialsOf } from '@/lib/initials';
 import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import { roleLabel } from '../live/match-details';
+import { roleLabel } from '../utils/match-details';
 import type { FriendlyPlayer, FriendlyTeamSquad } from '../types';
 
 type Props = {

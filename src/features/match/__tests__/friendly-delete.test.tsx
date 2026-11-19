@@ -3,8 +3,8 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import { ThemeProvider } from '@/theme';
 
 import { DeleteMatchSheet } from '../components/delete-match-sheet';
-import { canDeleteSaved } from '../components/saved-friendlies';
-import { deleteFriendlyMatch, DeleteFriendlyError, isDeleteConfirmed } from '../friendly/delete-friendly';
+import { canDeleteSaved } from '../utils/saved-friendlies';
+import { deleteFriendlyMatch, DeleteFriendlyError, isDeleteConfirmed } from '../server/delete-friendly';
 
 const mockRpc = jest.fn();
 const mockList = jest.fn();

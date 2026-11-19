@@ -5,7 +5,7 @@ import { Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import { dp, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
-import { economy, strikeRate } from '../format';
+import { economy, strikeRate } from '../utils/format';
 import type { BowlerLine, LiveBatter } from '../types';
 
 const batterColumns: StatsColumn[] = [

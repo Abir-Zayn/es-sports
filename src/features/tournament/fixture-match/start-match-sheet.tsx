@@ -5,7 +5,7 @@ import { ActivityIndicator, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth';
-import { searchPlayers } from '@/features/match/friendly/search-players';
+import { searchPlayers } from '@/features/match/server/search-players';
 import { spacing, useTheme } from '@/theme';
 
 import { tournamentErrorText } from '../data/tournament-errors';

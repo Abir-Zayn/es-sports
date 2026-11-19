@@ -7,7 +7,7 @@ import { useTranslation } from '@/i18n';
 import { spacing, useThemedStyles, type Palette } from '@/theme';
 
 import { AuthLayout } from './auth-layout';
-import { newPasswordSchema, saveRecoveredPassword } from '../utils/password-recovery';
+import { newPasswordSchema, saveRecoveredPassword } from '../server/password-recovery';
 
 export function RecoveredPasswordForm({ userId }: { userId: string }) {
   const { t } = useTranslation();

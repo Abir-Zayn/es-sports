@@ -5,7 +5,7 @@ import { useTranslation } from '@/i18n';
 import { dp, radius, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import type { MatchTabId } from '../types';
-import { matchTabs, useMatchRoutes } from '../use-match-routes';
+import { matchTabs, useMatchRoutes } from '../utils/use-match-routes';
 
 export type UnderlineTabItem<T extends string> = { id: T; label: string };
 

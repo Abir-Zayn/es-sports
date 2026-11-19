@@ -1,3 +1,3 @@
-import { MatchLiveScreen } from '@/features/match/match-live-screen';
+import { MatchLiveScreen } from '@/features/match';
 
 export default MatchLiveScreen;

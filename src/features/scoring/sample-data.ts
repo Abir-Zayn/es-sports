@@ -1,4 +1,4 @@
-import { matchInfo } from '@/features/match/sample-info';
+import { matchInfo } from '@/features/match/utils/sample-info';
 
 import type { MatchSetup, ScorerTeam, TeamCode } from './types';
 

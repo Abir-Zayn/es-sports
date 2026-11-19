@@ -5,7 +5,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, SegmentedControl, Text, type SegmentedOption } from '@/components/ui';
-import { useOpenMatch } from '@/features/match/use-match-routes';
+import { useOpenMatch } from '@/features/match/utils/use-match-routes';
 import { comingSoon } from '@/lib/coming-soon';
 import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { HeadToHeadScope } from '@/types/cricket';

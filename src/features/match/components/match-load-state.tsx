@@ -4,7 +4,7 @@ import { Button, Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import { spacing, useTheme } from '@/theme';
 
-import { MatchNotFoundError } from '../use-live-match-data';
+import { MatchNotFoundError } from '../server/use-live-match-data';
 
 type Props = {
   /** The spectator query while it has no match to show yet. */

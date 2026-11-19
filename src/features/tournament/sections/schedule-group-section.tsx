@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { FixtureTile } from '@/components/match/fixture-tile';
 import { Text } from '@/components/ui';
-import { useOpenMatch } from '@/features/match/use-match-routes';
+import { useOpenMatch } from '@/features/match/utils/use-match-routes';
 import { spacing, typography, useThemedStyles, type Palette } from '@/theme';
 import type { Fixture } from '@/types/cricket';
 

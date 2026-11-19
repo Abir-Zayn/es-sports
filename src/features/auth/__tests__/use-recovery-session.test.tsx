@@ -1,10 +1,10 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import { StrictMode, type ReactNode } from 'react';
 
-import { openRecoverySession } from '../utils/password-recovery';
+import { openRecoverySession } from '../server/password-recovery';
 import { useRecoverySession } from '../utils/use-recovery-session';
 
-jest.mock('../utils/password-recovery', () => ({
+jest.mock('../server/password-recovery', () => ({
   INVALID_RECOVERY_LINK: 'Invalid recovery link', openRecoverySession: jest.fn(),
 }));
 

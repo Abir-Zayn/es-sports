@@ -1,3 +1,3 @@
-import { MatchInfoScreen } from '@/features/match/match-info-screen';
+import { MatchInfoScreen } from '@/features/match';
 
 export default MatchInfoScreen;
