@@ -2,7 +2,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 import { supabase } from '@/lib/supabase';
 
-import { linkGoogleAccount, signInWithGoogle } from '../utils/google-auth';
+import { linkGoogleAccount, signInWithGoogle } from '../server/google-auth';
 
 jest.mock('@/lib/env', () => ({ env: { EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: 'web-id.apps.googleusercontent.com' } }));
 jest.mock('@/lib/supabase', () => ({
@@ -91,7 +91,7 @@ describe('a build without the native Google module', () => {
     jest.doMock('@/lib/env', () => ({ env: { EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: 'web-id.apps.googleusercontent.com' } }));
     jest.doMock('@/lib/supabase', () => ({ supabase: { auth: { signInWithIdToken: jest.fn() } } }));
     // eslint-disable-next-line @typescript-eslint/no-require-imports -- loads a fresh copy after resetModules
-    const fresh = require('../utils/google-auth') as typeof import('../utils/google-auth');
+    const fresh = require('../server/google-auth') as typeof import('../server/google-auth');
     expect(await fresh.signInWithGoogle()).toMatchObject({ ok: false, message: expect.stringContaining('not Expo Go') });
   });
 });
@@ -112,7 +112,7 @@ describe('Expo Go', () => {
     jest.doMock('@/lib/env', () => ({ env: { EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: 'web-id.apps.googleusercontent.com' } }));
     jest.doMock('@/lib/supabase', () => ({ supabase: { auth: { signInWithIdToken: jest.fn() } } }));
     // eslint-disable-next-line @typescript-eslint/no-require-imports -- loads a fresh copy after resetModules
-    const fresh = require('../utils/google-auth') as typeof import('../utils/google-auth');
+    const fresh = require('../server/google-auth') as typeof import('../server/google-auth');
     expect(await fresh.signInWithGoogle()).toMatchObject({ ok: false, message: expect.stringContaining('not Expo Go') });
     expect(load).not.toHaveBeenCalled();
   });

@@ -1,7 +1,7 @@
 import { t } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 
-import { authErrorMessage } from './auth-errors';
+import { authErrorMessage } from '../utils/auth-errors';
 import { signInSchema } from './sign-in';
 
 export async function resendConfirmation(email: string): Promise<{ ok: true } | { ok: false; message: string }> {

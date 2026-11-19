@@ -1,8 +1,8 @@
 // Types shared across the auth feature and the screens that use it.
 import type { z } from 'zod';
 
-import type { signInSchema } from '../utils/sign-in';
-import type { signUpSchema } from '../utils/sign-up';
+import type { signInSchema } from '../server/sign-in';
+import type { signUpSchema } from '../server/sign-up';
 
 export type LinkedAccounts = {
   /** Signed up with an email and password. */

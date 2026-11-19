@@ -5,9 +5,9 @@ import { Button, Text, TextField } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import { spacing, useThemedStyles, type Palette } from '@/theme';
 
-import { AuthLayout } from './auth-layout';
-import { AuthSwitchLink } from './auth-switch-link';
-import { resetRequestSchema, sendResetEmail } from '../utils/send-reset-email';
+import { AuthLayout } from '../components/auth-layout';
+import { AuthSwitchLink } from '../components/auth-switch-link';
+import { resetRequestSchema, sendResetEmail } from '../server/send-reset-email';
 
 type FieldErrors = { email?: string };
 

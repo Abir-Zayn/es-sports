@@ -6,11 +6,11 @@ import { Button, PasswordField, Text, TextField } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import { spacing, useThemedStyles, type Palette } from '@/theme';
 
-import { AuthLayout } from './auth-layout';
-import { AuthSwitchLink } from './auth-switch-link';
-import { resendConfirmation } from '../utils/resend-confirmation';
-import { signInSchema, signInWithEmail } from '../utils/sign-in';
-import { SocialOptions } from './social-options';
+import { AuthLayout } from '../components/auth-layout';
+import { AuthSwitchLink } from '../components/auth-switch-link';
+import { resendConfirmation } from '../server/resend-confirmation';
+import { signInSchema, signInWithEmail } from '../server/sign-in';
+import { SocialOptions } from '../components/social-options';
 
 type FieldErrors = { email?: string; password?: string };
 

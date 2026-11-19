@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { t } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 
-import { authErrorMessage } from './auth-errors';
+import { authErrorMessage } from '../utils/auth-errors';
 import { signUpSchema } from './sign-up';
 
 export const INVALID_RECOVERY_LINK = 'This reset link is invalid or has expired. Request a new link and try again.';

@@ -26,9 +26,9 @@ jest.mock('react-native-safe-area-context', () => {
 });
 jest.mock('@/components/navigation/bottom-nav', () => ({ BOTTOM_NAV_CLEARANCE: 100 }));
 jest.mock('@/features/auth/components/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'u1', email: 'player@example.com' } } }) }));
-jest.mock('@/features/auth/utils/sign-out', () => ({ signOut: jest.fn() }));
-jest.mock('@/features/auth/utils/google-auth', () => ({ linkGoogleAccount: jest.fn(), signInWithGoogle: jest.fn() }));
-jest.mock('@/features/auth/utils/linked-accounts', () => ({ loadLinkedAccounts: jest.fn() }));
+jest.mock('@/features/auth/server/sign-out', () => ({ signOut: jest.fn() }));
+jest.mock('@/features/auth/server/google-auth', () => ({ linkGoogleAccount: jest.fn(), signInWithGoogle: jest.fn() }));
+jest.mock('@/features/auth/server/linked-accounts', () => ({ loadLinkedAccounts: jest.fn() }));
 jest.mock('@/features/profile/profile-provider', () => ({
   useProfile: () => ({
     ...jest.requireActual('../sample-data').sampleProfile,
