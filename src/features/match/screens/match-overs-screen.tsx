@@ -6,12 +6,12 @@ import { AppTabs, Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import { sizes } from '@/theme';
 
-import { MatchLoadState, StaleMatchNote } from './components/match-load-state';
-import { MatchScreenFrame } from './components/match-screen-frame';
-import { OverCard } from './components/over-card';
-import { RunsPerOverChart } from './components/runs-per-over-chart';
-import type { OversData } from './types';
-import { useLiveMatchData } from './use-live-match-data';
+import { MatchLoadState, StaleMatchNote } from '../components/match-load-state';
+import { MatchScreenFrame } from '../components/match-screen-frame';
+import { OverCard } from '../components/over-card';
+import { RunsPerOverChart } from '../components/runs-per-over-chart';
+import type { OversData } from '../types';
+import { useLiveMatchData } from '../server/use-live-match-data';
 
 /** Ball-by-ball for the real match: a runs-per-over chart, then every over with its balls, newest first. */
 export function MatchOversScreen() {

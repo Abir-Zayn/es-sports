@@ -7,16 +7,16 @@ import { useTranslation } from '@/i18n';
 import { comingSoon } from '@/lib/coming-soon';
 import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import { LiveBattersCard, LiveBowlerCard } from './components/live-scoring-tables';
-import { LiveHero } from './components/live-hero';
-import { MatchLoadState, StaleMatchNote } from './components/match-load-state';
-import { MatchScreenFrame } from './components/match-screen-frame';
-import { MatchTabs } from './components/match-tabs';
-import { StreamLinkCard } from './components/stream-link-card';
-import { ThisOverCard } from './components/this-over-card';
-import type { LiveMatchViewData } from './live/live-view';
-import { useLiveMatchData } from './use-live-match-data';
-import { useMatchRoutes } from './use-match-routes';
+import { LiveBattersCard, LiveBowlerCard } from '../components/live-scoring-tables';
+import { LiveHero } from '../components/live-hero';
+import { MatchLoadState, StaleMatchNote } from '../components/match-load-state';
+import { MatchScreenFrame } from '../components/match-screen-frame';
+import { MatchTabs } from '../components/match-tabs';
+import { StreamLinkCard } from '../components/stream-link-card';
+import { ThisOverCard } from '../components/this-over-card';
+import type { LiveMatchViewData } from '../utils/live-view';
+import { useLiveMatchData } from '../server/use-live-match-data';
+import { useMatchRoutes } from '../utils/use-match-routes';
 
 /** The match as it happens: scores and chase or result, batters, bowler and the over being bowled. */
 export function MatchLiveScreen() {

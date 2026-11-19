@@ -4,7 +4,7 @@ import Svg, { Circle, Line, Path, Rect, Text as SvgText } from 'react-native-svg
 import { useTheme } from '@/theme';
 
 import type { Shot } from '../types';
-import { matchesFilter, shotsPath, WHEEL_SIZE, type ShotFilter } from './wagon-geometry';
+import { matchesFilter, shotsPath, WHEEL_SIZE, type ShotFilter } from '../utils/wagon-geometry';
 
 // The field is green in both themes, so these do not follow the palette.
 const FIELD = '#0F2A1C';

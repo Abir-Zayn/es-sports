@@ -5,7 +5,7 @@ import { Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import { dp, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
-import { strikeRate } from '../format';
+import { strikeRate } from '../utils/format';
 import type { Innings } from '../types';
 
 const columns: StatsColumn[] = [

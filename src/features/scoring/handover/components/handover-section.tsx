@@ -3,7 +3,7 @@ import { Alert, StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth';
-import { searchPlayers } from '@/features/match/friendly/search-players';
+import { searchPlayers } from '@/features/match/server/search-players';
 import { UserSearchSheet, type UserSummary } from '@/features/tournament/roster';
 import { translate, useTranslation, type Locale } from '@/i18n';
 import { spacing, typography, useTheme } from '@/theme';

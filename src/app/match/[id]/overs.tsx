@@ -1,3 +1,3 @@
-import { MatchOversScreen } from '@/features/match/match-overs-screen';
+import { MatchOversScreen } from '@/features/match';
 
 export default MatchOversScreen;

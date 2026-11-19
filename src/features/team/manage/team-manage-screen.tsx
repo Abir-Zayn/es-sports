@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppIconTile, Button, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth';
 import { cancelInvitation, invitationErrorText, sendTeamPlayerInvite } from '@/features/invitations';
-import { searchPlayers } from '@/features/match/friendly/search-players';
+import { searchPlayers } from '@/features/match';
 import { UserSearchSheet } from '@/features/tournament/roster';
 import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 

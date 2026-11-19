@@ -7,7 +7,7 @@ import { InitialsAvatar, Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import type { LiveMatchViewData } from '../live/live-view';
+import type { LiveMatchViewData } from '../utils/live-view';
 import type { LiveSide } from '../types';
 
 type Props = {

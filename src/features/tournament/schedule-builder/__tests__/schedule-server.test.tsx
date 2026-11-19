@@ -11,7 +11,7 @@ import type { ScheduledMatch } from '../types';
 
 jest.mock('@/lib/supabase', () => ({ supabase: jest.requireActual('../../__fixtures__/supabase-fake').fake }));
 const mockOpenMatch = jest.fn();
-jest.mock('@/features/match/use-match-routes', () => ({ useOpenMatch: () => mockOpenMatch }));
+jest.mock('@/features/match/utils/use-match-routes', () => ({ useOpenMatch: () => mockOpenMatch }));
 
 const T = 'f5c00000-0000-4000-8000-000000000001';
 const alpha = { id: 'a', name: 'Alpha', short_name: 'ALP' };

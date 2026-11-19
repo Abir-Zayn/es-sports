@@ -1,5 +1,5 @@
 // TODO: replace with data from Supabase once the project and tables exist. Sample values from the design file.
-import type { OversData } from './types';
+import type { OversData } from '../types';
 
 export const oversData: OversData = {
   inningsLabel: 'Strikers · 2nd innings',

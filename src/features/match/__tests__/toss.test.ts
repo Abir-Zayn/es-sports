@@ -1,5 +1,5 @@
-import { newFriendly, renameTeam } from '../friendly-rules';
-import { battingFirstSide, decideToss, flipCoin, teamLabel, tossWinner } from '../toss';
+import { newFriendly, renameTeam } from '../utils/friendly-rules';
+import { battingFirstSide, decideToss, flipCoin, teamLabel, tossWinner } from '../utils/toss';
 
 describe('coin toss', () => {
   it('lands by the random draw', () => {

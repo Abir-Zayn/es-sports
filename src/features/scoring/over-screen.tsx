@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
-import { countLabel } from '@/features/match/live/live-view';
+import { countLabel } from '@/features/match/utils/live-view';
 import { useTranslation } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
 

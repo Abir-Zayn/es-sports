@@ -1,4 +1,4 @@
-import { searchPlayers } from '../search-players';
+import { searchPlayers } from '../server/search-players';
 
 const mockRequest = {
   select: jest.fn(), ilike: jest.fn(), eq: jest.fn(), order: jest.fn(), limit: jest.fn(),

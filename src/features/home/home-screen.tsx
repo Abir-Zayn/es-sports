@@ -4,7 +4,7 @@ import { RefreshControl, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BOTTOM_NAV_CLEARANCE } from '@/components/navigation/bottom-nav';
-import { useOpenMatch } from '@/features/match/use-match-routes';
+import { useOpenMatch } from '@/features/match';
 import { useNotifications } from '@/features/notifications';
 import { useProfile } from '@/features/profile/profile-provider';
 import { useOpenTeam } from '@/features/team';

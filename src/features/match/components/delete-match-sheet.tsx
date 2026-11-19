@@ -6,7 +6,7 @@ import { Sheet } from '@/features/tournament/roster';
 import { useTranslation } from '@/i18n';
 import { spacing, useThemedStyles, type Palette } from '@/theme';
 
-import { deleteConfirmWord, isDeleteConfirmed } from '../friendly/delete-friendly';
+import { deleteConfirmWord, isDeleteConfirmed } from '../server/delete-friendly';
 
 type Props = {
   visible: boolean;

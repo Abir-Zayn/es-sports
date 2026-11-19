@@ -4,12 +4,12 @@ import type { ReactNode } from 'react';
 import { ThemeProvider } from '@/theme';
 
 import { seedEvents, seedMatch, seedPlayers } from '../__fixtures__/seed-match';
-import { buildLiveView } from '../live/build-live-view';
-import type { LiveMatchViewData } from '../live/live-view';
-import { sampleLiveView } from '../live/sample-live-view';
-import { MatchInfoScreen } from '../match-info-screen';
-import { MatchOversScreen } from '../match-overs-screen';
-import { MatchScorecardScreen } from '../match-scorecard-screen';
+import { buildLiveView } from '../utils/build-live-view';
+import type { LiveMatchViewData } from '../utils/live-view';
+import { sampleLiveView } from '../utils/sample-live-view';
+import { MatchInfoScreen } from '../screens/match-info-screen';
+import { MatchOversScreen } from '../screens/match-overs-screen';
+import { MatchScorecardScreen } from '../screens/match-scorecard-screen';
 
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('expo-router', () => ({
@@ -21,7 +21,7 @@ jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: ({ children }: { children: ReactNode }) => children,
 }));
 let mockView: LiveMatchViewData | undefined;
-jest.mock('../use-live-match-data', () => ({
+jest.mock('../server/use-live-match-data', () => ({
   useLiveMatchData: () => ({ data: mockView, isRefetching: false, refetch: jest.fn() }),
 }));
 

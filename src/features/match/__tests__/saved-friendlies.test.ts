@@ -1,4 +1,4 @@
-import { resumableFriendlies } from '../components/saved-friendlies';
+import { resumableFriendlies } from '../utils/saved-friendlies';
 
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 

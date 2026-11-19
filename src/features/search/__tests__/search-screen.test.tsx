@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
-import { searchPlayers } from '@/features/match/friendly/search-players';
+import { searchPlayers } from '@/features/match';
 import { ThemeProvider } from '@/theme';
 
 import { clearSearches } from '../recent-history';
@@ -12,7 +12,7 @@ const mockPush = jest.fn();
 const mockBack = jest.fn();
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush, back: mockBack, replace: jest.fn(), canGoBack: () => true }) }));
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) }));
-jest.mock('@/features/match/friendly/search-players', () => ({ searchPlayers: jest.fn() }));
+jest.mock('@/features/match/server/search-players', () => ({ searchPlayers: jest.fn() }));
 
 const ID = '5e1f0000-0000-4000-8000-000000000001';
 const tanvir = { id: ID, name: 'Tanvir Ahmed', area: 'Halishahar', avatarUrl: null };

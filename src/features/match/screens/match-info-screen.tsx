@@ -5,13 +5,13 @@ import { isUuid } from '@/features/scoring/data/match-repository';
 import { TakeoverAction } from '@/features/scoring/handover/components/takeover-action';
 import { useTranslation } from '@/i18n';
 
-import { MatchDetailsList } from './components/match-details-list';
-import { MatchLoadState, StaleMatchNote } from './components/match-load-state';
-import { MatchScreenFrame } from './components/match-screen-frame';
-import { TossBanner } from './components/toss-banner';
-import { SquadsSection } from './sections/squads-section';
-import { WatchLiveSection } from './sections/watch-live-section';
-import { useLiveMatchData } from './use-live-match-data';
+import { MatchDetailsList } from '../components/match-details-list';
+import { MatchLoadState, StaleMatchNote } from '../components/match-load-state';
+import { MatchScreenFrame } from '../components/match-screen-frame';
+import { TossBanner } from '../components/toss-banner';
+import { SquadsSection } from '../components/squads-section';
+import { WatchLiveSection } from '../components/watch-live-section';
+import { useLiveMatchData } from '../server/use-live-match-data';
 
 /** Match info for the real match: the toss, format and timing, where to watch, and both squads with the bench. */
 export function MatchInfoScreen() {

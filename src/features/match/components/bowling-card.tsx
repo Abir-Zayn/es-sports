@@ -2,7 +2,7 @@ import { StatsTable, type StatsColumn } from '@/components/match/stats-table';
 import { useTranslation } from '@/i18n';
 import { dp } from '@/theme';
 
-import { economy } from '../format';
+import { economy } from '../utils/format';
 import type { BowlerLine } from '../types';
 
 const columns: StatsColumn[] = [

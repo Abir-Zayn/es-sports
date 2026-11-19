@@ -8,7 +8,7 @@ import { useTranslation } from '@/i18n';
 import { initialsOf } from '@/lib/initials';
 import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import { OVERS_OPTIONS, oversPerBowler, SIDE_MAX, SIDE_MIN } from '../friendly/friendly-rules';
+import { OVERS_OPTIONS, oversPerBowler, SIDE_MAX, SIDE_MIN } from '../utils/friendly-rules';
 
 type FormatProps = {
   overs: number;

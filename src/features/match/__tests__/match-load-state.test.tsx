@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import { ThemeProvider } from '@/theme';
 
 import { MatchLoadState, StaleMatchNote } from '../components/match-load-state';
-import { MatchNotFoundError } from '../use-live-match-data';
+import { MatchNotFoundError } from '../server/use-live-match-data';
 
 jest.mock('@/features/scoring/data/match-repository', () => ({}));
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));

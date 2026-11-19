@@ -1,7 +1,7 @@
 // TODO: replace with data from Supabase once the project and tables exist. Sample values from the design file.
 import { kings, strikers } from '@/features/tournament/sample-teams';
 
-import type { MatchInfoData, SquadPlayer } from './types';
+import type { MatchInfoData, SquadPlayer } from '../types';
 
 const p = (name: string, role: string): SquadPlayer => ({ name, role });
 

@@ -9,7 +9,7 @@ import { Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import { SQUAD_MAX } from '../friendly/friendly-rules';
+import { SQUAD_MAX } from '../utils/friendly-rules';
 import type { FriendlyPlayer, FriendlyTeamSquad } from '../types';
 import { FriendlySquadSheet } from './friendly-squad-sheet';
 import { TeamImagePicker } from './team-image-picker';
