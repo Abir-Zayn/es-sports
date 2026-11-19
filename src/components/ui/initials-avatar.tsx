@@ -41,10 +41,10 @@ export function InitialsAvatar({
   accessibilityLabel,
 }: Props) {
   const { colors } = useTheme();
-  const [failed, setFailed] = useState(false);
+  const [failedUri, setFailedUri] = useState<string | null>(null);
   const borderRadius = shape === 'square' ? Math.round(size * SQUARE_RADIUS_RATIO) : size / 2;
 
-  if (imageUri && !failed) {
+  if (imageUri && failedUri !== imageUri) {
     const labelled = accessibilityLabel !== undefined;
     return (
       <View
@@ -54,7 +54,7 @@ export function InitialsAvatar({
         importantForAccessibility={labelled ? 'yes' : 'no-hide-descendants'}
         style={{ width: size, height: size, borderRadius, borderColor, borderWidth, overflow: 'hidden', flexShrink: 0 }}
       >
-        <Image source={{ uri: imageUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" onError={() => setFailed(true)} />
+        <Image source={{ uri: imageUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" onError={() => setFailedUri(imageUri)} />
       </View>
     );
   }

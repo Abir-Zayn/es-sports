@@ -21,7 +21,7 @@ export function PlayingXiEditor({ setup, onChange }: { setup: MatchSetup; onChan
   return <ScorerSection title={t('scoring.xi.title')}>
     <View style={s.card}>
       {teamCodes.map((code) => <View key={code} style={s.row}>
-        <InitialsAvatar label={setup.teams[code].team.short} tone={setup.teams[code].team.tone} size={sizes.avatar} />
+        <InitialsAvatar label={setup.teams[code].team.short} tone={setup.teams[code].team.tone} imageUri={setup.teams[code].team.avatarUri} size={sizes.avatar} />
         <View style={s.text}><Text style={s.name}>{setup.teams[code].team.name}</Text>
           <Text style={s.confirmed}>{t('scoring.xi.confirmed', { count: setup.playingXi[code].length })}</Text></View>
         <Button label={t('common.edit')} size="compact" variant="ghost" accessibilityLabel={t('scoring.xi.editA11y', { team: setup.teams[code].team.name })} onPress={() => open(code)} />

@@ -48,11 +48,18 @@ describe('points table rules', () => {
   });
 
   it('reads one tournament from the standings view and numbers the rows', async () => {
-    fake.results.tournament_standings = { data: [row('A', 2, 1, 1, 0, -0.707), row('C', 2, 1, 0, 1, 0.814)], error: null };
+    fake.results.tournament_standings = {
+      data: [
+        { ...row('A', 2, 1, 1, 0, -0.707), logo_url: 'https://example.com/a.jpg' },
+        { ...row('C', 2, 1, 0, 1, 0.814), logo_url: 'https://example.com/c.jpg' },
+      ],
+      error: null,
+    };
     const rows = await fetchStandings(T);
     expect(fake.calls('tournament_standings', 'eq')).toContainEqual(['tournament_id', T]);
     expect(rows.map((r) => `${r.pos}.${r.team.short} ${r.points} ${r.nrr}`)).toEqual(['1.C 3 +0.814', '2.A 2 -0.707']);
-    expect(rows[0]).toMatchObject({ played: 2, won: 1, lost: 0, noResult: 1 });
+    expect(rows[0]).toMatchObject({ played: 2, won: 1, lost: 0, noResult: 1, team: { avatarUri: 'https://example.com/c.jpg' } });
+    expect(rows[1].team.avatarUri).toBe('https://example.com/a.jpg');
   });
 });
 

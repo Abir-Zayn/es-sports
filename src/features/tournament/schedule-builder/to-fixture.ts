@@ -6,8 +6,16 @@ import type { Fixture, TeamInfo } from '@/types/cricket';
 import { timeLabel } from './slots';
 import type { ScheduledMatch, SideRef } from './types';
 
-const teamInfo = (side: SideRef): TeamInfo =>
-  side.kind === 'team' ? { short: side.team.short, name: side.team.name, tone: 'neutral' } : { short: 'TBD', name: side.label, tone: 'neutral' };
+const teamInfo = (side: SideRef): TeamInfo => (
+  side.kind === 'team'
+    ? {
+      short: side.team.short,
+      name: side.team.name,
+      tone: side.team.tone ?? 'neutral',
+      ...(side.team.logoUrl ? { avatarUri: side.team.logoUrl } : {}),
+    }
+    : { short: 'TBD', name: side.label, tone: 'neutral' }
+);
 
 /** A scheduled match as the shared match tile shows it: number and stage (or group), date, time and venue (or why it is off). */
 export function toFixture(match: ScheduledMatch, venue: string, group?: string): Fixture {

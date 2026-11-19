@@ -33,7 +33,7 @@ export type EnteredTeam = {
 
 // One string literal, so the client can type the rows from it.
 const TOURNAMENT_COLUMNS = 'id, owner_id, name, city, venue, start_date, end_date, match_format, overs, competition, teams_planned, groups_planned, advance_per_group, ball, side_format, players_per_side, min_squad, max_squad, registration_opens, registration_deadline, profile_url, cover_url, deleted_at, closed_at';
-const TEAM_COLUMNS = 'id, name, short_name, tone, logo_url, area, district';
+const TEAM_COLUMNS = 'id, name, short_name, tone, logo_url, cover_url, area, district';
 type TournamentRow = {
   id: string; owner_id: string | null; name: string; city: string; venue: string; start_date: string; end_date: string;
   match_format: string; overs: number; competition: string; teams_planned: number; groups_planned: number; advance_per_group: number | null; ball: string; side_format: string; players_per_side: number;

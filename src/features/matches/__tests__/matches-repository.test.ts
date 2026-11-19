@@ -41,16 +41,22 @@ describe('matches repository & mapping', () => {
     created_at: '2026-11-01T09:00:00Z',
   };
 
-  it('maps a completed match row into a result fixture with scores and result note', () => {
-    const fixture = matchRowToFixture(sampleCompletedRow);
+  it('maps a completed match row into a result fixture with scores, logos and result note', () => {
+    const fixture = matchRowToFixture({
+      ...sampleCompletedRow,
+      team_a_image_url: 'https://example.com/hss.png',
+      team_b_image_url: 'https://example.com/agt.png',
+    });
     expect(fixture.id).toBe('match-real-1');
     expect(fixture.state).toBe('result');
     expect(fixture.sides[0].team.name).toBe('Halishahar Strikers');
+    expect(fixture.sides[0].team.avatarUri).toBe('https://example.com/hss.png');
     expect(fixture.sides[0].score).toBe('165/4');
     expect(fixture.sides[0].overs).toBe('20');
     expect(fixture.sides[0].emphasised).toBe(true);
 
     expect(fixture.sides[1].team.name).toBe('Agrabad Tigers');
+    expect(fixture.sides[1].team.avatarUri).toBe('https://example.com/agt.png');
     expect(fixture.sides[1].score).toBe('140/8');
     expect(fixture.sides[1].overs).toBe('20');
     expect(fixture.sides[1].emphasised).toBe(false);

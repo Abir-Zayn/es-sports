@@ -98,6 +98,19 @@ describe('team routes', () => {
     expect(screen.getByText('RST')).toBeTruthy();
   });
 
+  it('shows the team cover photo on the overview when cover_url is set', async () => {
+    mockParams = { id: REAL };
+    mockTeamReads.mockImplementation((table: string) => ({
+      select: () => ({
+        eq: () => (table === 'teams'
+          ? { maybeSingle: async () => ({ data: { ...team, logo_url: 'https://example.com/logo.jpg', cover_url: 'https://example.com/cover.jpg' }, error: null }) }
+          : Promise.resolve({ data: [], error: null })),
+      }),
+    }));
+    await show(<Route />);
+    expect(await screen.findByLabelText('Real Strikers cover')).toBeTruthy();
+  });
+
   it('says so when a real team does not exist, still not the sample', async () => {
     mockParams = { id: REAL };
     mockTeamReads.mockImplementation(() => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }) }));

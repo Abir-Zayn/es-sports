@@ -120,3 +120,28 @@ export async function updateTournament(tournamentId: string, edit: TournamentEdi
   }));
   if (error) throw toTournamentError(error);
 }
+
+export type TeamPhotoUrls = { logoUrl: string | null; coverUrl: string | null };
+export type PreviousTeamPhotos = { previousLogoUrl: string | null; previousCoverUrl: string | null };
+
+/** Updates a team's profile and cover photo URLs and returns the previous URLs so stale storage files can be removed. */
+export async function updateTournamentTeamImages(
+  tournamentId: string,
+  teamId: string,
+  photos: TeamPhotoUrls,
+): Promise<PreviousTeamPhotos> {
+  const { data, error } = await traceApi('tournament.updateTeamImages', { tournamentId, teamId }, () =>
+    supabase.rpc('update_tournament_team_images', {
+      p_tournament: tournamentId,
+      p_team: teamId,
+      p_logo_url: photos.logoUrl,
+      p_cover_url: photos.coverUrl,
+    }),
+  );
+  if (error) throw toTournamentError(error);
+  const row = Array.isArray(data) ? data[0] : data;
+  return {
+    previousLogoUrl: row?.previous_logo_url ?? null,
+    previousCoverUrl: row?.previous_cover_url ?? null,
+  };
+}

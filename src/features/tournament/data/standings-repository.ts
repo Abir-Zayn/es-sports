@@ -8,7 +8,7 @@ import type { PointsRow } from '@/types/cricket';
 import { toTournamentError } from './tournament-errors';
 
 type StandingRow = {
-  team_id: string | null; name: string | null; short_name: string | null; tone: string | null;
+  team_id: string | null; name: string | null; short_name: string | null; tone: string | null; logo_url?: string | null;
   played: number | null; won: number | null; lost: number | null; tied: number | null; points: number | null;
   nrr: number | null;
 };
@@ -49,6 +49,7 @@ export function toPointsRow(row: StandingRow, index: number): PointsRow {
     team: {
       short: row.short_name ?? '--', name: row.name ?? 'Team',
       tone: tones.find((tone) => tone === row.tone) ?? 'neutral',
+      ...(row.logo_url ? { avatarUri: row.logo_url } : {}),
     },
     played: row.played ?? 0, won: row.won ?? 0, lost: row.lost ?? 0, noResult: row.tied ?? 0,
     nrr: formatNrr(row.nrr), points: row.points ?? 0,
@@ -60,7 +61,7 @@ export type StandingsRow = PointsRow & { teamId: string | null };
 /** One row per entered team, in table order. */
 export async function fetchStandings(tournamentId: string): Promise<StandingsRow[]> {
   const { data, error } = await traceApi('tournament.standings', { tournamentId }, () => supabase.from('tournament_standings')
-    .select('team_id, name, short_name, tone, played, won, lost, tied, points, nrr').eq('tournament_id', tournamentId).limit(ROW_LIMIT));
+    .select('team_id, name, short_name, tone, logo_url, played, won, lost, tied, points, nrr').eq('tournament_id', tournamentId).limit(ROW_LIMIT));
   if (error) throw toTournamentError(error);
   return orderStandings(data ?? []).map((row, i) => ({ ...toPointsRow(row, i), teamId: row.team_id }));
 }

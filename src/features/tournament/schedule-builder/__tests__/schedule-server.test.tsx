@@ -7,6 +7,7 @@ import { fake } from '../../__fixtures__/supabase-fake';
 import { RealTournamentMatches } from '../../real/real-tournament-matches';
 import { cancelPublishedMatch, fetchSchedule, movePublishedMatch, publishSchedule } from '../schedule-repository';
 import { schedulePayload } from '../schedule-server';
+import { toFixture } from '../to-fixture';
 import type { ScheduledMatch } from '../types';
 
 jest.mock('@/lib/supabase', () => ({ supabase: jest.requireActual('../../__fixtures__/supabase-fake').fake }));
@@ -14,8 +15,8 @@ const mockOpenMatch = jest.fn();
 jest.mock('@/features/match/utils/use-match-routes', () => ({ useOpenMatch: () => mockOpenMatch }));
 
 const T = 'f5c00000-0000-4000-8000-000000000001';
-const alpha = { id: 'a', name: 'Alpha', short_name: 'ALP' };
-const bravo = { id: 'b', name: 'Bravo', short_name: 'BRV' };
+const alpha = { id: 'a', name: 'Alpha', short_name: 'ALP', tone: 'blue', logo_url: 'https://example.com/alpha.png' };
+const bravo = { id: 'b', name: 'Bravo', short_name: 'BRV', tone: 'yellow', logo_url: null };
 const row = (id: string, number: number, extra: object = {}) => ({
   id, number, stage: 'League', round: 0, home_label: null, away_label: null, match_date: '2999-11-10', start_min: 540 + (number - 1) * 240,
   status: 'scheduled', cancel_reason: null, match_id: null, home: alpha, away: bravo, ...extra,
@@ -40,7 +41,17 @@ describe('the schedule of a published tournament', () => {
     const schedule = await fetchSchedule(T);
     expect(schedule).toMatchObject({ mode: 'manual', settings: { perDay: 3, firstStartMin: 600 } });
     const [one, two, final] = schedule?.matches ?? [];
-    expect(one).toMatchObject({ id: 'f1', home: { kind: 'team', team: { name: 'Alpha', short: 'ALP' } }, started: false });
+    expect(one).toMatchObject({
+      id: 'f1',
+      home: { kind: 'team', team: { name: 'Alpha', short: 'ALP', tone: 'blue', logoUrl: 'https://example.com/alpha.png' } },
+      away: { kind: 'team', team: { name: 'Bravo', short: 'BRV', tone: 'yellow', logoUrl: null } },
+      started: false,
+    });
+    expect(toFixture(one, 'Main Ground').sides[0].team).toMatchObject({
+      short: 'ALP',
+      tone: 'blue',
+      avatarUri: 'https://example.com/alpha.png',
+    });
     expect(one.cancelled).toBeUndefined();
     expect(two.cancelled).toEqual({ reason: 'Rain' });
     expect(final).toMatchObject({ stage: 'Final', home: { kind: 'tbd', label: 'Winner of Match 1' } });

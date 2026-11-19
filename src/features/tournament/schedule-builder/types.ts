@@ -1,6 +1,8 @@
+import type { AvatarTone } from '@/theme';
+
 import type { TournamentDraft } from '../create/draft';
 
-export type ScheduleTeam = { id: string; name: string; short: string };
+export type ScheduleTeam = { id: string; name: string; short: string; tone?: AvatarTone; logoUrl?: string | null };
 
 /** One side of a match: a known team, or a place decided by earlier results, e.g. "Winner of Match 9". */
 export type SideRef = { kind: 'team'; team: ScheduleTeam } | { kind: 'tbd'; label: string };

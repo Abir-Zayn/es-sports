@@ -7,7 +7,7 @@ import type { NewTeamInput } from './team-rules';
 
 export type TeamRole = 'owner' | 'admin' | 'player' | 'staff';
 export type TeamRecord = {
-  id: string; name: string; shortName: string; tone: AvatarTone; logoUrl: string | null; area: string | null; district: string | null;
+  id: string; name: string; shortName: string; tone: AvatarTone; logoUrl: string | null; coverUrl?: string | null; area: string | null; district: string | null;
 };
 /** Whether a member can be picked to play. Injured or resting players stay in the team and in squads. */
 export type Availability = 'available' | 'injured' | 'resting';
@@ -17,8 +17,8 @@ export type TeamMemberRecord = {
 };
 export type MyTeam = TeamRecord & { myRole: TeamRole };
 
-const TEAM_COLUMNS = 'id, name, short_name, tone, logo_url, area, district';
-type TeamRow = { id: string; name: string; short_name: string; tone: string; logo_url: string | null; area: string | null; district: string | null };
+const TEAM_COLUMNS = 'id, name, short_name, tone, logo_url, cover_url, area, district';
+type TeamRow = { id: string; name: string; short_name: string; tone: string; logo_url: string | null; cover_url?: string | null; area: string | null; district: string | null };
 
 const tones: readonly string[] = ['blue', 'yellow', 'neutral'];
 const roles: readonly string[] = ['owner', 'admin', 'player', 'staff'];
@@ -26,7 +26,7 @@ const roles: readonly string[] = ['owner', 'admin', 'player', 'staff'];
 export function toTeam(row: TeamRow): TeamRecord {
   return {
     id: row.id, name: row.name, shortName: row.short_name, tone: tones.includes(row.tone) ? (row.tone as AvatarTone) : 'neutral',
-    logoUrl: row.logo_url, area: row.area, district: row.district,
+    logoUrl: row.logo_url, coverUrl: row.cover_url ?? null, area: row.area, district: row.district,
   };
 }
 

@@ -50,7 +50,7 @@ export function ScorerSetupScreen() {
         <View style={s.teams}>{teamCodes.map((code) => <Pressable key={code}
           accessibilityRole="button" accessibilityState={{ selected: setup.tossWinner === code }}
           onPress={() => configure({ ...setup, tossWinner: code })} style={[s.team, setup.tossWinner === code && s.selected]}>
-          <InitialsAvatar label={teams[code].team.short} tone={teams[code].team.tone} size={sizes.avatar} />
+          <InitialsAvatar label={teams[code].team.short} tone={teams[code].team.tone} imageUri={teams[code].team.avatarUri} size={sizes.avatar} />
           <Text style={s.teamName}>{teams[code].team.name}</Text>
         </Pressable>)}</View>
       </ScorerSection>

@@ -51,7 +51,7 @@ function OwnTeams({ tournamentId, userId, takenIds, onCreateTeam, onClose }: Omi
           : choices.length === 0 ? <Text muted>You have no other team to add.</Text>
           : choices.map((team) => (
             <View key={team.id} style={styles.row}>
-              <InitialsAvatar label={team.shortName} tone={team.tone} size={sizes.avatar} shape="square" />
+              <InitialsAvatar label={team.shortName} tone={team.tone} imageUri={team.logoUrl ?? undefined} size={sizes.avatar} shape="square" />
               <Text style={styles.name} numberOfLines={1}>{team.name}</Text>
               <Button label="Add" size="compact" disabled={add.isPending} accessibilityLabel={`Add ${team.name}`} onPress={() => add.mutate(team.id)} />
             </View>

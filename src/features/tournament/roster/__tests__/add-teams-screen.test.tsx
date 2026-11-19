@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import * as ImagePicker from 'expo-image-picker';
 import type { ReactNode } from 'react';
 
 import { ThemeProvider } from '@/theme';
@@ -9,6 +10,7 @@ import { resetRosters } from '../roster-repository';
 
 // These cover the invite flow, hidden in the app for now.
 jest.mock('../permissions', () => ({ ...jest.requireActual('../permissions'), INVITES_ENABLED: true }));
+jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn() }));
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
@@ -116,5 +118,24 @@ describe('add teams screen', () => {
     await fireEvent.press(screen.getAllByRole('button', { name: 'Create team' }).at(-1)!);
     await fireEvent.press(await screen.findByRole('button', { name: 'View Chattogram Strikers squad' }));
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/tournament/squad', params: { tournamentId: 'draft:me', teamId: 'team-1' } });
+  });
+
+  it('uploads and removes team profile and cover photos in the local roster', async () => {
+    jest.mocked(ImagePicker.launchImageLibraryAsync)
+      .mockResolvedValueOnce({ canceled: false, assets: [{ uri: 'file:///team-logo.jpg', width: 200, height: 200 }] })
+      .mockResolvedValueOnce({ canceled: false, assets: [{ uri: 'file:///team-cover.jpg', width: 800, height: 450 }] });
+    await show();
+    await fireEvent.press(screen.getByRole('button', { name: 'Create team' }));
+    await fireEvent.changeText(screen.getByLabelText('Team name'), 'Chattogram Strikers');
+    await fireEvent.press(screen.getAllByRole('button', { name: 'Create team' }).at(-1)!);
+
+    await fireEvent.press(await screen.findByRole('button', { name: 'Edit Chattogram Strikers photos' }));
+    expect(await screen.findByText('Chattogram Strikers photos')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Upload profile photo' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Upload cover photo' }));
+    expect(screen.getByRole('button', { name: 'Remove team profile photo' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Remove team cover photo' })).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Save photos' }));
+    await waitFor(() => expect(screen.queryByText('Chattogram Strikers photos')).toBeNull());
   });
 });

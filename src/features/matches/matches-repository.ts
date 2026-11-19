@@ -9,7 +9,7 @@ import { sampleCompletedMatches } from './sample-completed';
 import { sampleUpcomingMatches } from './sample-upcoming';
 
 export const MATCH_COLUMNS =
-  'id, title, status, scheduled_at, started_at, completed_at, team_a_name, team_a_short, team_a_tone, team_a_runs, team_a_wickets, team_a_balls, team_b_name, team_b_short, team_b_tone, team_b_runs, team_b_wickets, team_b_balls, overs_limit, winner_side, result_summary, created_at';
+  'id, title, status, scheduled_at, started_at, completed_at, team_a_name, team_a_short, team_a_tone, team_a_image_url, team_a_runs, team_a_wickets, team_a_balls, team_b_name, team_b_short, team_b_tone, team_b_image_url, team_b_runs, team_b_wickets, team_b_balls, overs_limit, winner_side, result_summary, created_at';
 
 export type RawMatchRow = {
   id: string;
@@ -21,12 +21,14 @@ export type RawMatchRow = {
   team_a_name: string;
   team_a_short: string;
   team_a_tone: string;
+  team_a_image_url?: string | null;
   team_a_runs: number | null;
   team_a_wickets: number | null;
   team_a_balls: number | null;
   team_b_name: string;
   team_b_short: string;
   team_b_tone: string;
+  team_b_image_url?: string | null;
   team_b_runs: number | null;
   team_b_wickets: number | null;
   team_b_balls: number | null;
@@ -79,14 +81,24 @@ export function matchRowToFixture(row: RawMatchRow, locale: Locale = getLocale()
   const toneB = (row.team_b_tone === 'blue' || row.team_b_tone === 'neutral' ? row.team_b_tone : 'yellow') as AvatarTone;
 
   const sideA: FixtureSide = {
-    team: { short: row.team_a_short || 'T1', name: row.team_a_name || translate(locale, 'matches.team1Fallback'), tone: toneA },
+    team: {
+      short: row.team_a_short || 'T1',
+      name: row.team_a_name || translate(locale, 'matches.team1Fallback'),
+      tone: toneA,
+      ...(row.team_a_image_url ? { avatarUri: row.team_a_image_url } : {}),
+    },
     score: scoreA,
     overs: oversA,
     emphasised: isCompleted ? isWinnerA : true,
   };
 
   const sideB: FixtureSide = {
-    team: { short: row.team_b_short || 'T2', name: row.team_b_name || translate(locale, 'matches.team2Fallback'), tone: toneB },
+    team: {
+      short: row.team_b_short || 'T2',
+      name: row.team_b_name || translate(locale, 'matches.team2Fallback'),
+      tone: toneB,
+      ...(row.team_b_image_url ? { avatarUri: row.team_b_image_url } : {}),
+    },
     score: scoreB,
     overs: oversB,
     emphasised: isCompleted ? isWinnerB : true,
