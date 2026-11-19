@@ -100,7 +100,7 @@ export function inningsScorecard({ rows, innings, team, battingSide, nameOf, inP
     standRuns += total;
     if (r.delivery_kind === 'wicket' && r.out_key) {
       wickets += 1;
-      if (r.dismissal !== 'Run out' && r.dismissal !== 'Unspecified') bowler.wickets += 1;
+      if (r.dismissal !== 'Run out') bowler.wickets += 1;
       Object.assign(batter(r.out_key), { notOut: false, how: dismissalText(r.dismissal, short(r.bowler_key), r.fielder_key ? short(r.fielder_key) : null, locale) });
       fall.push({ score: `${wickets}-${runs}`, over: oversText(legal), name: short(r.out_key) });
       stands.push({ wicket: ordinal(wickets, locale), pair: crease.map(short).join(' & '), runs: standRuns });

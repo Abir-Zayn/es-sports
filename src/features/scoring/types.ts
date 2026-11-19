@@ -29,7 +29,7 @@ export type MatchSetup = {
 };
 export type Batter = ScorerPlayer & { runs: number; balls: number; fours: number; sixes: number; out: boolean };
 export type Bowler = ScorerPlayer & { balls: number; runs: number; wickets: number; maidens: number };
-export type Dismissal = 'Bowled' | 'Caught' | 'LBW' | 'Run out' | 'Stumped' | 'Caught & bowled' | 'Hit wicket' | 'Unspecified';
+export type Dismissal = 'Bowled' | 'Caught' | 'LBW' | 'Run out' | 'Stumped' | 'Caught & bowled' | 'Hit wicket';
 export type DeliveryInput = {
   kind: 'runs' | 'wide' | 'no-ball' | 'bye' | 'leg-bye' | 'wicket' | 'dead';
   /** Runs off the bat, or completed extras in addition to a wide/no-ball penalty. */

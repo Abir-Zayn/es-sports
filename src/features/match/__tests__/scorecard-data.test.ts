@@ -55,15 +55,6 @@ describe('scorecard of the seeded match', () => {
       ['Rashedul Islam', '2', 0, 14, 2], ['Kamrul Islam', '2', 0, 14, 1], ['Shakib Chowdhury', '1', 0, 14, 0], ['Tanvir Ahmed', '1', 0, 10, 1],
     ]);
   });
-
-  it('does not credit an unspecified dismissal to the bowler', () => {
-    const wicket = seedEvents.find((event) => event.delivery_kind === 'wicket' && event.dismissal === 'Bowled');
-    expect(wicket).toBeDefined();
-    const events = seedEvents.map((event) => event === wicket ? { ...event, dismissal: 'Unspecified' as const } : event);
-    const next = buildLiveView(seedMatch, seedPlayers, events);
-    expect(sum(next.innings.flatMap((inning) => inning.bowlers.map((bowler) => bowler.wickets))))
-      .toBe(sum(view.innings.flatMap((inning) => inning.bowlers.map((bowler) => bowler.wickets))) - 1);
-  });
 });
 
 describe('overs and info of the seeded match', () => {
