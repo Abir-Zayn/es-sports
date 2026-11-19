@@ -10,3 +10,4 @@
    - Typecheck: `npx tsc --noEmit`
 5. **Zero-Crash Render Safety:** Never render raw text/numbers outside `<Text>` (avoid `{count && <View />}` which renders `0` and crashes). Use defensive optional chaining (`?.`), safe style math (no `NaN`), and Error Boundaries.
 6. **Compulsory Agent Report:** Provide the 6-point Definition of Done report required in Section 11 of `memory.md`.
+7. **Release Pipeline:** Never build or publish to users from a local checkout. Follow [PIPELINE.md](PIPELINE.md).

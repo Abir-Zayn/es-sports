@@ -6,21 +6,16 @@ Multi-tenant cricket tournament platform. Pilot: HSF Premier League. Android onl
 
 ---
 
-## 📱 Download Android APK (Client Preview)
+## 📱 Download Android APK
 
 > [!IMPORTANT]
-> **Latest Build:** `v1.0.0-preview.2` (EAS Cloud Build `#63229964-0ed0-4318-88c3-02c21da9dfcf`)  
-> **Backend:** Supabase live database connected (`tedgyfczmqqnwrlucsoc`)  
-> **Updates:** Over-the-air updates enabled on the `preview` channel. If you installed `v1.0.0-preview`, install this build once; later fixes arrive automatically.
+> Install the latest **production** APK from expo.dev → abirzayn → esSports → Builds (profile `production`).
+> It replaces any older `preview` APK, which no longer receives updates. After that, new features arrive
+> automatically on the next app launch. How releases work: [PIPELINE.md](PIPELINE.md).
 
-- **Direct APK Download:** [Download esSports-v1.0.0-preview.2.apk (GitHub Release)](https://github.com/Abir-Zayn/es-sports/releases/download/v1.0.0-preview.2/esSports-v1.0.0-preview.2.apk)
-- **GitHub Release Page:** [GitHub Releases - v1.0.0-preview.2](https://github.com/Abir-Zayn/es-sports/releases/tag/v1.0.0-preview.2)
-- **Expo Hosted Build:** [Expo EAS Artifacts](https://expo.dev/accounts/abirzayn/projects/esSports/builds/63229964-0ed0-4318-88c3-02c21da9dfcf)
-
-### Installation Note:
-1. Open the [Direct APK Download Link](https://github.com/Abir-Zayn/es-sports/releases/download/v1.0.0-preview.2/esSports-v1.0.0-preview.2.apk) on your Android device.
-2. Tap the downloaded `.apk` file and tap **Install** (allow "Install from unknown sources" if prompted by your browser). It installs over the previous preview.
-3. Open **esSports** and sign in or sign up with any email & password.
+1. Open the build link on your Android device and download the `.apk`.
+2. Tap it and tap **Install** (allow "Install from unknown sources" if asked).
+3. Open **esSports** and sign in.
 
 ---
 
@@ -111,29 +106,9 @@ design/                Claude-created UI designs (local only, gitignored)
 ## Release
 
 - Release builds enable R8 and resource shrinking (`expo-build-properties`) and strip `console.*`.
-- `runtimeVersion` uses the `appVersion` policy. JS-only fixes ship via EAS Update with staged rollout; any native change needs a new store build.
-- Profiles in `eas.json`: `development`, `preview`, `production`.
-
-### Shipping an over-the-air (OTA) update
-
-Builds from `v1.0.0-preview.2` onward check the `preview` channel for updates. Older APKs (`v1.0.0-preview`) cannot receive updates and must install a newer APK once.
-
-Use OTA only when **all** of these hold:
-
-- Only JavaScript/TypeScript, images or other assets changed.
-- No package with native code was added, removed or upgraded (anything installed with `npx expo install` that has Android code).
-- `version` in `app.json` is unchanged (it sets `runtimeVersion`, so a new version needs a new APK).
-
-Steps:
-
-1. `pnpm typecheck`, `pnpm lint` and `pnpm test` all pass on `main`.
-2. `npx eas-cli@latest update --channel preview --environment preview --message "<what changed>"`
-   The EAS `preview` environment must contain `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_KEY`; without them the update fails at startup. `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` is optional. The `eas.json` build `env` block does not supply variables to updates.
-3. On a phone with the current APK, close and reopen the app twice; the update loads on the next launch after it downloads.
-4. If the update misbehaves, roll back with `npx eas-cli@latest update:rollback` (or republish the previous commit).
-
-Anything else (a native package, app permissions, `app.json` plugin changes, a new `version`) needs a new APK: `npx eas-cli@latest build -p android --profile preview`, then a new GitHub release and README link.
-
+- Releases are automatic on merge to `main`; see [PIPELINE.md](PIPELINE.md). Never build or publish for users from a local checkout.
+- `runtimeVersion` uses the `fingerprint` policy. Profiles in `eas.json`: `development`, `production`.
+- OTA updates read variables from the EAS `production` environment, not from `eas.json`.
 
 ### What’s new release notes
 
@@ -148,4 +123,4 @@ values (
 );
 ```
 
-The `published_at` timestamp defaults to the time the row is added. On a preview device, launch into Home after the OTA has applied and confirm that the sheet opens. Dismiss it, restart the app, and use **Home menu → What’s new** to open it again. If the notes are added after the app launches, reopen the app to trigger a fresh check.
+The `published_at` timestamp defaults to the time the row is added. On a production device, launch into Home after the OTA has applied and confirm that the sheet opens. Dismiss it, restart the app, and use **Home menu → What’s new** to open it again. If the notes are added after the app launches, reopen the app to trigger a fresh check.

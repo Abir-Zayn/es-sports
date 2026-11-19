@@ -1,0 +1,6 @@
+# Native Firebase config comes from the EAS file secret only on EAS; keep it out so local and EAS fingerprints match.
+# shortcut: editing google-services.json will not trigger a new APK; bump app.json version if it ever changes.
+google-services.json
+../eas-environment-secrets/**
+android
+ios

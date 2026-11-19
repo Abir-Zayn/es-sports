@@ -9,3 +9,4 @@
 - Run `npx tsc --noEmit` and `npx expo lint` before declaring done.
 - Zero-Crash Render Safety: No bare text/numbers outside `<Text>`, use defensive optional chaining (`?.`), and wrap screens in Error Boundaries.
 - Follow Definition of Done report format in Section 11 of `memory.md`.
+- Release: never build or publish to users from a local checkout. Follow `PIPELINE.md`.
