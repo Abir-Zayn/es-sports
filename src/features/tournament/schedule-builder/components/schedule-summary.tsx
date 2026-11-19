@@ -42,8 +42,9 @@ export function ScheduleSummary({ status, viewOnly, format, teams, dates, matche
         {viewOnly ? <AppBadge label="View only" /> : null}
       </View>
       <View style={styles.grid}>
-        {stats.map((stat) => (
-          <View key={stat.label} style={styles.stat} accessible accessibilityLabel={`${stat.label}: ${stat.value === '—' ? 'none yet' : stat.value}`}>
+        {stats.map((stat, i) => (
+          // Two columns: the right one (teams, matches) is aligned to the card's right edge.
+          <View key={stat.label} style={[styles.stat, i % 2 === 1 && styles.right]} accessible accessibilityLabel={`${stat.label}: ${stat.value === '—' ? 'none yet' : stat.value}`}>
             <Text style={styles.value} numberOfLines={1}>{stat.value}</Text>
             <Text muted style={styles.label} numberOfLines={1}>{stat.label}</Text>
           </View>
@@ -59,6 +60,7 @@ const createStyles = (_colors: Palette) =>
     badges: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
     grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: spacing.md },
     stat: { width: '50%', gap: spacing.xs, paddingRight: spacing.sm },
+    right: { alignItems: 'flex-end', paddingRight: 0, paddingLeft: spacing.sm },
     value: { ...typography.headlineMd, fontVariant: ['tabular-nums'] },
     label: typography.bodySm,
   });
