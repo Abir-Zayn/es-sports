@@ -9,7 +9,6 @@ export const enScoringHandover = {
   'scoring.result.bestBatter': 'BEST BATTER',
   'scoring.result.bestBowler': 'BEST BOWLER',
   'scoring.result.inningsBreakdown': 'Innings breakdown',
-  'scoring.result.whereRunsCameFrom': 'Where the runs came from',
   'scoring.result.careerUpdated': 'Career updated',
   'scoring.result.careerPlayerA11y': '{{name}}: highest {{highest}}, {{matches}} matches, {{wickets}} wickets, average {{avg}}',
   'scoring.result.careerLinkedNotice': 'Players added from the app get this match on their profile. Guest figures stay with the match.',
@@ -152,10 +151,5 @@ export const enScoringHandover = {
   'handover.resume.btn': 'Continue scoring',
   'scoring.result.batterCol': 'Batter',
   'scoring.result.notOut': 'not out',
-  'scoring.result.noShotsTeam': 'No shot directions were recorded for {{team}}.',
   'scoring.result.batterA11y': '{{name}}, {{runs}} runs off {{balls}} balls, {{fours}} fours, {{sixes}} sixes',
-  'scoring.result.wholeTeam': 'All {{team}}',
-  'scoring.result.teamSwitchA11y': 'Team',
-  'scoring.result.batterFilterA11y': 'Batter',
-  'scoring.result.shotMapA11y': 'Shot map: {{count}} shots for {{who}}',
 } as const;

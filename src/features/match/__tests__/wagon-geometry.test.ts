@@ -1,4 +1,4 @@
-import { matchesFilter, shotsPath, sideSplit } from '../utils/wagon-geometry';
+import { matchesFilter, shotEnd, sideSplit } from '../utils/wagon-geometry';
 import { wagonBatters } from '../utils/sample-wagon';
 
 describe('wagon wheel', () => {
@@ -12,7 +12,13 @@ describe('wagon wheel', () => {
 
   it('handles no shots', () => {
     expect(sideSplit([]).offPercent).toBe(0);
-    expect(shotsPath([], () => true)).toBe('M0 0');
+  });
+
+  it('ends a shot where the scorer placed it: off to the right, straight up the ground, boundaries at the rope', () => {
+    expect(shotEnd({ runs: 4, angle: 0 })).toEqual({ x: 326, y: 170 });
+    const straight = shotEnd({ runs: 1, angle: -90 });
+    expect(straight.x).toBeCloseTo(170);
+    expect(straight.y).toBeCloseTo(100);
   });
 
   it('filters by shot kind', () => {

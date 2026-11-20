@@ -18,7 +18,8 @@ import { useScorer } from './scorer-provider';
 import { useScorerRoutes } from './use-scorer-routes';
 import { BattingTables } from './result/batting-tables';
 import { inningsSides } from './result/innings-sides';
-import { ShotMap } from './result/shot-map';
+import { teamOf, wagonBattersOf } from './result/shot-map-data';
+import { ShotMapCard } from '@/features/match/components/shot-map/shot-map-card';
 import { computeResult, formatMatchResult } from './data/match-result';
 import { useTranslation } from '@/i18n';
 
@@ -122,8 +123,8 @@ export function MatchResultScreen() {
         </View>
       ) : null}
       {showWagon ? (
-        <ShotMap sides={innings} teams={score.teams}
-          empty={(message) => <View style={s.flatNote}><ScorerNotice>{message}</ScorerNotice></View>} />
+        <ShotMapCard batters={wagonBattersOf(innings, score.teams)} teams={innings.map((side) => teamOf(side.code, score.teams))}
+          empty={(message) => <ScorerNotice>{message}</ScorerNotice>} />
       ) : null}
       {showCareers ? (
         <View style={s.section}>
@@ -186,5 +187,4 @@ const styles = (c: Palette) => StyleSheet.create({
   cellMuted: { ...typography.bodyMd, color: c.textMuted, fontVariant: ['tabular-nums'] },
   cellNum: { ...typography.bodyMd, color: c.text, fontVariant: ['tabular-nums'] },
   cellStrong: { ...typography.headlineMd, color: c.text, fontVariant: ['tabular-nums'] },
-  flatNote: { padding: sizes.cardPaddingTight, borderRadius: radius.lg, backgroundColor: c.surface, ...shadows.card },
 });

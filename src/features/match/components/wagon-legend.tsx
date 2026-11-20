@@ -2,30 +2,25 @@ import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
-import { dp, spacing, typography, useTheme } from '@/theme';
+import { dp, radius, spacing, typography, useTheme } from '@/theme';
 
-const RUNS_LINE = '#B5C0BB';
-
-/** Key to the line weights on the wagon wheel. */
+/** Key to the shot colours on the wagon wheel: 1–3 runs, fours and sixes. */
 export function WagonLegend() {
   const { colors } = useTheme();
   const { t } = useTranslation();
+  const items = [
+    { label: t('match.wagon.legendRuns'), color: colors.textMuted, size: dp(6) },
+    { label: t('match.wagon.legendFour'), color: colors.primary, size: dp(8) },
+    { label: t('match.wagon.legendSix'), color: colors.info, size: dp(10) },
+  ];
   return (
-    <View style={styles.row}>
-      <Item label={t('match.wagon.legendRuns')} line={{ height: dp(2), backgroundColor: RUNS_LINE }} />
-      <Item label={t('match.wagon.legendFour')} line={{ height: dp(3), backgroundColor: colors.primary }} />
-      <Item label={t('match.wagon.legendSix')} line={{ height: dp(5), borderRadius: dp(2), backgroundColor: colors.primary }} />
-    </View>
-  );
-}
-
-function Item({ label, line }: { label: string; line: object }) {
-  return (
-    <View style={styles.item}>
-      <View accessibilityElementsHidden style={[styles.line, line]} />
-      <Text muted style={styles.label}>
-        {label}
-      </Text>
+    <View style={styles.row} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      {items.map((item) => (
+        <View key={item.label} style={styles.item}>
+          <View style={{ width: item.size, height: item.size, borderRadius: radius.pill, backgroundColor: item.color }} />
+          <Text muted style={styles.label}>{item.label}</Text>
+        </View>
+      ))}
     </View>
   );
 }
@@ -33,6 +28,5 @@ function Item({ label, line }: { label: string; line: object }) {
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'center', gap: spacing.lg },
   item: { flexDirection: 'row', alignItems: 'center', gap: dp(6) },
-  line: { width: dp(16) },
   label: typography.labelSm,
 });

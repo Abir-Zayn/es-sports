@@ -126,7 +126,7 @@ describe('scoring a friendly to the end', () => {
     expect(screen.getByRole('tab', { name: '4s · 1' })).toBeTruthy();
     await fireEvent.press(screen.getByRole('tab', { name: '6s · 1' }));
     expect(screen.getByLabelText('Shot map: 1 shots for Kings')).toBeTruthy();
-    await fireEvent.press(screen.getByRole('tab', { name: 'King 1' }));
+    await fireEvent.press(screen.getByRole('tab', { name: 'King 1 10*' }));
     expect(screen.getByLabelText('Shot map: 1 shots for King 1')).toBeTruthy();
 
     // The switch on the right moves to the other side, which hit no recorded shots.

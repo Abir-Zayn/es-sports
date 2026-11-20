@@ -11,7 +11,6 @@ export const bnScoringHandover: Record<keyof typeof enScoringHandover, string> =
   'scoring.result.bestBatter': 'সেরা ব্যাটার',
   'scoring.result.bestBowler': 'সেরা বোলার',
   'scoring.result.inningsBreakdown': 'ইনিংসের হিসাব',
-  'scoring.result.whereRunsCameFrom': 'রান যেভাবে এসেছে',
   'scoring.result.careerUpdated': 'ক্যারিয়ার আপডেট',
   'scoring.result.careerPlayerA11y': '{{name}}: সর্বোচ্চ {{highest}}, {{matches}} ম্যাচ, {{wickets}} উইকেট, গড় {{avg}}',
   'scoring.result.careerLinkedNotice': 'অ্যাপ থেকে যুক্ত খেলোয়াড়দের প্রোফাইলে এই ম্যাচটি যুক্ত হয়েছে। গেস্টদের হিসাব শুধু এই ম্যাচেই থাকে।',
@@ -154,10 +153,5 @@ export const bnScoringHandover: Record<keyof typeof enScoringHandover, string> =
   'handover.resume.btn': 'স্কোরিং চালিয়ে যান',
   'scoring.result.batterCol': 'ব্যাটার',
   'scoring.result.notOut': 'নট আউট',
-  'scoring.result.noShotsTeam': '{{team}}-এর কোনো শটের দিক রেকর্ড হয়নি।',
   'scoring.result.batterA11y': '{{name}}, {{balls}} বলে {{runs}} রান, {{fours}}টি চার, {{sixes}}টি ছক্কা',
-  'scoring.result.wholeTeam': 'সব {{team}}',
-  'scoring.result.teamSwitchA11y': 'দল',
-  'scoring.result.batterFilterA11y': 'ব্যাটার',
-  'scoring.result.shotMapA11y': 'শট ম্যাপ: {{who}}-এর {{count}}টি শট',
 };

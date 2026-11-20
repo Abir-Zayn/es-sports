@@ -92,7 +92,11 @@ export type OversData = {
 /** One scoring shot: runs and its direction in degrees clockwise from the right-hand (off) side of the wheel; the left-hand side is leg. */
 export type Shot = { runs: number; angle: number };
 
-export type WagonBatter = { id: string; name: string; line: string; shots: Shot[] };
+/** The side a batter's shots belong to, for the shot map's team switch. */
+export type ShotMapTeam = { key: string; name: string; short: string };
+
+/** One batter's directed shots. `score` is the runs with * when not out, e.g. "18*"; `team` is absent in sample data. */
+export type WagonBatter = { id: string; name: string; line: string; shots: Shot[]; score?: string; team?: ShotMapTeam };
 
 export type MatchInfoData = {
   /** Null before the toss. */
