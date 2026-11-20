@@ -43,4 +43,13 @@ describe('toFollowTournament', () => {
     expect(toFollowTournament(row, '2026-12-05').meta).toBe('6 teams · T10 · In progress');
     expect(toFollowTournament(row, '2026-11-18').short).toBe('PCC');
   });
+
+  it('carries the cover and the profile image to the card, and leaves them out when not uploaded', () => {
+    const row = { id: 't1', name: 'Port City Cup', city: 'CTG', start_date: '2026-12-02', end_date: '2026-12-20', overs: 10, teams_planned: 6,
+      profile_url: 'https://x/p.jpg', cover_url: 'https://x/c.jpg' };
+    expect(toFollowTournament(row, '2026-11-18')).toMatchObject({ avatarUri: 'https://x/p.jpg', coverUri: 'https://x/c.jpg' });
+    const bare = toFollowTournament({ ...row, profile_url: null, cover_url: null }, '2026-11-18');
+    expect(bare.avatarUri).toBeUndefined();
+    expect(bare.coverUri).toBeUndefined();
+  });
 });

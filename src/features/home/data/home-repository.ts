@@ -12,7 +12,7 @@ import type { Tournament } from '../components/tournament-card';
 const LIVE_COLUMNS =
   'id, title, toss_winner_side, toss_decision, overs_limit, team_a_name, team_a_short, team_a_tone, team_a_image_url, team_a_runs, team_a_wickets, team_a_balls, team_b_name, team_b_short, team_b_tone, team_b_image_url, team_b_runs, team_b_wickets, team_b_balls, tournaments(name)';
 const UPCOMING_COLUMNS = 'id, scheduled_at, team_a_name, team_b_name, tournaments(name, venue)';
-const TOURNAMENT_COLUMNS = 'id, name, city, start_date, end_date, overs, teams_planned, profile_url';
+const TOURNAMENT_COLUMNS = 'id, name, city, start_date, end_date, overs, teams_planned, profile_url, cover_url';
 
 const HOME_LIMIT = 6;
 const tones: readonly string[] = ['blue', 'yellow', 'neutral'];
@@ -118,13 +118,13 @@ export async function fetchUpcomingFixtures(signal: AbortSignal): Promise<Upcomi
   return (await fetchUpcomingFixtureRows(signal)).map((row) => toUpcomingMatch(row));
 }
 
-export type TournamentRow = { id: string; name: string; city: string; start_date: string; end_date: string; overs: number; teams_planned: number; profile_url: string | null };
+export type TournamentRow = { id: string; name: string; city: string; start_date: string; end_date: string; overs: number; teams_planned: number; profile_url: string | null; cover_url?: string | null };
 
 export function toFollowTournament(row: TournamentRow, today: string, locale: Locale = getLocale()): Tournament {
   const tr = (key: Parameters<typeof translate>[1], params?: Parameters<typeof translate>[2]) => translate(locale, key, params);
   const starts = row.start_date > today ? tr('home.repo.startsOn', { date: formatDate(row.start_date, 'd MMM', locale) }) : tr('home.repo.inProgress');
   return {
-    id: row.id, short: shortOf(row.name), name: row.name, tone: 'blue', avatarUri: row.profile_url ?? undefined,
+    id: row.id, short: shortOf(row.name), name: row.name, tone: 'blue', avatarUri: row.profile_url ?? undefined, coverUri: row.cover_url ?? undefined,
     meta: [tr('home.repo.teamsCount', { count: row.teams_planned }), `T${row.overs}`, starts].join(' · '),
   };
 }
