@@ -33,8 +33,10 @@ export type ScheduledMatch = Pairing & {
   startMin: number;
   /** A published match the owner called off, with the reason the teams were given. Absent means scheduled. */
   cancelled?: { reason: string };
-  /** Scoring has begun, so the match can no longer move or be cancelled. */
+  /** Start match was pressed (the XIs are set), so it can no longer be cancelled; it can still move until it is over. */
   started?: boolean;
+  /** The linked match is completed, so nothing about it can change. */
+  finished?: boolean;
   match?: LinkedMatch;
 };
 

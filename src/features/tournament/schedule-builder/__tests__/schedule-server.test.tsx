@@ -88,7 +88,7 @@ describe('the schedule of a published tournament', () => {
     fake.rpcResult = { data: null, error: { code: 'ET006', message: 'raw' } };
     await expect(movePublishedMatch(T, 'f1', '2999-11-12', 600)).rejects.toThrow('does not fit the schedule');
     fake.rpcResult = { data: null, error: { code: 'ET004', message: 'raw' } };
-    await expect(cancelPublishedMatch(T, 'f1', 'Rain')).rejects.toThrow('has started');
+    await expect(cancelPublishedMatch(T, 'f1', 'Rain')).rejects.toThrow('under way or over');
   });
 });
 
