@@ -7,6 +7,7 @@ import { dp, sizes, spacing, useTheme, useThemedStyles, type Palette } from '@/t
 
 import { oversLabel, type TournamentDraft } from '../create/draft';
 import { isUuid } from '@/features/scoring/data/uuid';
+import { ResumeScoringAction } from '@/features/scoring/handover/components/resume-scoring-action';
 
 import { StartMatchSheet } from '../fixture-match/start-match-sheet';
 import { canStartFixture } from '../fixture-match/start-fixture';
@@ -114,7 +115,8 @@ export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isS
         onSave={(date, startMin) => (editing ? builder.move(editing.id, date, startMin) : Promise.resolve(null))}
         onRemove={!live && builder.mode === 'manual' && editing ? () => builder.remove(editing.id) : undefined}
         onStart={live && editing && isUuid(tournamentId) && canStartFixture(editing, isStaff || isOwner) ? () => { setStarting(editing); setEditing(null); } : undefined}
-        onCancelMatch={live && editing && isOwner ? (reason) => builder.cancelMatch(editing.id, reason) : undefined}
+        onCancelMatch={live && editing && isOwner && !editing.started ? (reason) => builder.cancelMatch(editing.id, reason) : undefined}
+        continueScoring={editing?.match && !editing.finished ? <ResumeScoringAction matchId={editing.match.id} onOpen={() => setEditing(null)} /> : undefined}
         onClose={() => setEditing(null)}
       />
       {starting ? <StartMatchSheet key={starting.id} tournamentId={tournamentId} match={starting} playersPerSide={setup.playersPerSide} onClose={() => setStarting(null)} /> : null}

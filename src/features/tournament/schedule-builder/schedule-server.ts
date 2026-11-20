@@ -36,7 +36,7 @@ export function toScheduledMatch(row: FixtureRow): ScheduledMatch {
   return {
     id: row.id, number: row.number, stage: stages.find((s) => s === row.stage) ?? 'League', round: row.round,
     home: side(row.home, row.home_label), away: side(row.away, row.away_label), date: row.match_date, startMin: row.start_min,
-    cancelled: row.status === 'cancelled' ? { reason: row.cancel_reason ?? '' } : undefined, started: row.match_id !== null, match: row.match ?? undefined,
+    cancelled: row.status === 'cancelled' ? { reason: row.cancel_reason ?? '' } : undefined, started: row.match_id !== null, finished: row.match?.status === 'completed', match: row.match ?? undefined,
   };
 }
 

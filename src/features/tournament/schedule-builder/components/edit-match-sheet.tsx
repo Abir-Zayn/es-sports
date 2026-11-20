@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { ScrollView } from 'react-native';
 
 import { Button, Text, TextField } from '@/components/ui';
@@ -20,13 +20,16 @@ type Props = {
   /** Calls off a published match; resolves to why it could not, or null. */
   onCancelMatch?: (reason: string) => Promise<string | null>;
   onStart?: () => void;
+  /** Shown on a started match that is not over yet, e.g. "Continue scoring" for whoever may score it. */
+  continueScoring?: ReactNode;
   readOnly?: boolean;
   onClose: () => void;
 };
 
 /**
  * Moves one match to another tournament day or start time, and for a published schedule cancels it with a reason
- * the teams are shown. A started or cancelled match only shows what happened.
+ * the teams are shown. A started match can still move until it is over, and can be continued; a finished or
+ * cancelled match only shows what happened.
  */
 export function EditMatchSheet(props: Props) {
   const { match, onClose } = props;
@@ -37,7 +40,7 @@ export function EditMatchSheet(props: Props) {
   );
 }
 
-function EditMatchBody({ match, days, onSave, onRemove, onCancelMatch, onStart, readOnly, onClose }: Props & { match: ScheduledMatch }) {
+function EditMatchBody({ match, days, onSave, onRemove, onCancelMatch, onStart, continueScoring, readOnly, onClose }: Props & { match: ScheduledMatch }) {
   const { colors } = useTheme();
   const [date, setDate] = useState(match.date);
   const [startMin, setStartMin] = useState(match.startMin);
@@ -55,11 +58,11 @@ function EditMatchBody({ match, days, onSave, onRemove, onCancelMatch, onStart, 
     else onClose();
   }
 
-  if (match.cancelled || match.started) {
+  if (match.cancelled || match.finished) {
     return (
       <>
         <Text muted>{summary}</Text>
-        <Text>{match.cancelled ? `Cancelled: ${match.cancelled.reason}` : 'This match has started, so it can no longer change.'}</Text>
+        <Text>{match.cancelled ? `Cancelled: ${match.cancelled.reason}` : 'This match is over, so it can no longer change.'}</Text>
       </>
     );
   }
@@ -83,9 +86,11 @@ function EditMatchBody({ match, days, onSave, onRemove, onCancelMatch, onStart, 
       {readOnly ? null : <WhenChips days={days} date={date} startMin={startMin}
         onDate={(next) => { setDate(next); setError(null); }} onStart={(next) => { setStartMin(next); setError(null); }} />}
       {error ? <Text accessibilityRole="alert" style={{ color: colors.dangerSoftText }}>{error}</Text> : null}
+      {match.started ? <Text muted>{readOnly ? 'This match is set up and not over yet.' : 'This match is set up and not over yet. You can still change its time.'}</Text> : null}
+      {match.started ? continueScoring : null}
       {onStart ? <Button label="Start match" variant="secondary" disabled={busy} onPress={onStart} /> : null}
       {readOnly ? null : <Button label="Save" loading={busy} onPress={() => void run(() => onSave(date, startMin))} />}
-      {onCancelMatch ? <Button label="Cancel this match" variant="ghost" disabled={busy} onPress={() => { setError(null); setReason(''); }} /> : null}
+      {onCancelMatch && !match.started ? <Button label="Cancel this match" variant="ghost" disabled={busy} onPress={() => { setError(null); setReason(''); }} /> : null}
       {onRemove ? <Button label="Remove match" variant="ghost" disabled={busy} onPress={() => { onRemove(); onClose(); }} /> : null}
     </ScrollView>
   );
