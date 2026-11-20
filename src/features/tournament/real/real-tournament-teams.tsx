@@ -8,7 +8,7 @@ import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type Pal
 
 import { fetchTournamentTeams, tournamentKey, type TournamentRecord } from '../data/tournament-repository';
 import { fillRatio, groupTeams, teamsSummary } from '../teams/group-teams';
-import { GroupsSection } from '../teams/groups-section';
+import { RoundsPanel } from '../rounds/rounds-panel';
 import { TeamsGroup } from '../teams/teams-group';
 import { TeamsSkeleton } from '../teams/teams-skeleton';
 
@@ -50,12 +50,12 @@ export function RealTournamentTeams({ tournament, canManage, isOwner, onManage }
           <Text muted style={styles.center}>{canManage ? 'Add teams to fill the line-up.' : 'Teams appear here once they join.'}</Text>
         </Card>
       ) : null}
-      {tournament.groupsPlanned > 1 ? <GroupsSection tournament={tournament} teams={teams.data} isOwner={isOwner} /> : (
+      <RoundsPanel tournament={tournament} teams={teams.data} isOwner={isOwner} singleLeague={(
         <>
           <TeamsGroup title={eliminated.length > 0 ? 'Still in' : undefined} teams={active} onOpen={openTeam} />
           <TeamsGroup title="Eliminated" teams={eliminated} onOpen={openTeam} />
         </>
-      )}
+      )} />
       {canManage ? <Button label="Add teams" variant="secondary" onPress={onManage} /> : null}
     </>
   );

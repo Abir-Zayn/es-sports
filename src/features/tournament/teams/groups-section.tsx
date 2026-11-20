@@ -6,32 +6,39 @@ import { Button, Card, Text } from '@/components/ui';
 import { useOpenTeam } from '@/features/team';
 import { spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
+import { drawRound, isDrawn, swapRoundTeams, type RoundView } from '../data/rounds-repository';
 import { tournamentErrorText } from '../data/tournament-errors';
 import { tournamentKey, type EnteredTeam, type TournamentRecord } from '../data/tournament-repository';
-import { drawTournamentGroups, swapTournamentGroupTeams } from '../data/tournament-writes';
 import { ChoiceChips } from '../schedule-builder/components/choice-chips';
 import { groupName, splitIntoGroups } from './group-teams';
 import { TeamsGroup } from './teams-group';
 
-type Props = { tournament: TournamentRecord; teams: EnteredTeam[]; isOwner: boolean };
+type Props = {
+  tournament: TournamentRecord; teams: EnteredTeam[]; round: RoundView;
+  /** The owner may draw, redraw or swap: the round is the latest and none of its matches has started. */
+  canChange: boolean;
+};
 
-/** Teams by group. The owner draws the groups once every team has joined, then may swap two teams or redraw. */
-export function GroupsSection({ tournament: t, teams, isOwner }: Props) {
+/** One group round's teams by group. The owner draws the groups (in round 0 once every team has joined), then may swap two teams or redraw. */
+export function GroupsSection({ tournament: t, teams: entered, round, canChange }: Props) {
   const styles = useThemedStyles(createStyles);
   const openTeam = useOpenTeam();
   const client = useQueryClient();
-  const perGroup = t.teamsPlanned / t.groupsPlanned;
-  const [advance, setAdvance] = useState(t.advancePerGroup ?? Math.min(2, perGroup - 1));
+  const teams = entered.filter((e) => round.teamIds.includes(e.team.id)).map((e) => ({ ...e, group: round.groupOf.get(e.team.id) ?? null }));
+  const size = round.round === 0 ? t.teamsPlanned : round.teamIds.length;
+  const perGroup = Math.floor(size / round.groups);
+  const [advance, setAdvance] = useState(round.advance ?? Math.max(1, Math.min(2, perGroup - 1)));
   const [swapping, setSwapping] = useState(false);
   const [picked, setPicked] = useState<EnteredTeam | null>(null);
+  // Rounds live under the tournament key, so this refreshes them too.
   const refresh = () => void client.invalidateQueries({ queryKey: tournamentKey(t.id) });
-  const draw = useMutation({ mutationFn: () => drawTournamentGroups(t.id, advance), onSuccess: refresh });
+  const draw = useMutation({ mutationFn: () => drawRound(t.id, round.round, advance), onSuccess: refresh });
   const swap = useMutation({
-    mutationFn: (pair: [string, string]) => swapTournamentGroupTeams(t.id, ...pair),
+    mutationFn: ([a, b]: [string, string]) => swapRoundTeams(t.id, round.round, a, b),
     onSettled: () => { setPicked(null); refresh(); },
   });
-  const groups = splitIntoGroups(teams, t.groupsPlanned);
-  const full = teams.length === t.teamsPlanned;
+  const groups = isDrawn(round) ? splitIntoGroups(teams, round.groups) : null;
+  const full = teams.length === size;
   const error = draw.error ?? swap.error;
 
   function pick(entry: EnteredTeam) {
@@ -50,12 +57,12 @@ export function GroupsSection({ tournament: t, teams, isOwner }: Props) {
           }} />
       )) : (
         <Card style={styles.gap}>
-          <Text style={styles.title}>{`${t.groupsPlanned} groups of ${perGroup}`}</Text>
-          <Text muted>{full ? 'Every team has joined. The groups are drawn at random.' : `The draw opens once all ${t.teamsPlanned} teams have joined.`}</Text>
+          <Text style={styles.title}>{`${round.groups} groups of ${perGroup}`}</Text>
+          <Text muted>{full ? 'Every team has joined. The groups are drawn at random.' : `The draw opens once all ${size} teams have joined.`}</Text>
         </Card>
       )}
-      {t.advancePerGroup && groups ? <Text muted>{`Top ${t.advancePerGroup} of each group go through to the next stage.`}</Text> : null}
-      {isOwner && full ? (
+      {round.advance && groups ? <Text muted>{`Top ${round.advance} of each group go through to the next stage.`}</Text> : null}
+      {canChange && full && round.groups > 1 ? (
         <Card style={styles.gap}>
           <ChoiceChips label="Teams that go through from each group" value={advance} onChange={setAdvance}
             choices={Array.from({ length: perGroup - 1 }, (_, i) => ({ value: i + 1, label: String(i + 1), spoken: `Top ${i + 1} of each group` }))} />

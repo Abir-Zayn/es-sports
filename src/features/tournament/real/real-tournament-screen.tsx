@@ -54,7 +54,7 @@ export function RealTournamentScreen({ id, section }: Props) {
   else if (section === 'matches') body = <RealTournamentMatches tournament={record} canSchedule={role === 'owner'} canStart={role !== null} onSchedule={schedule} />;
   else if (section === 'table') body = <RealTournamentTable tournament={record} />;
   else if (section === 'stats') body = <RealTournamentStats tournament={record} />;
-  else body = <RealKnockout tournament={record} />;
+  else body = <RealKnockout tournament={record} isOwner={role === 'owner'} />;
   const format = record ? `${oversLabel(record.overs)}${record.closedAt ? ' · Completed' : ''}` : '';
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>

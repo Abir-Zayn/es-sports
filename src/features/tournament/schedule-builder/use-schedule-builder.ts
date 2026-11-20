@@ -2,10 +2,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { tournamentErrorText } from '../data/tournament-errors';
-import { generatePairings, pairingProblem } from './generate';
+import { groupMatchProblem } from './generate';
+import { drawSchedule } from './round-draw';
 import { cancelPublishedMatch, fetchSchedule, movePublishedMatch, publishSchedule, ScheduleError } from './schedule-repository';
-import { byKickoff, moveProblem, placeMatches } from './slots';
-import type { Competition, Schedule, ScheduledMatch, ScheduleMode, ScheduleTeam, SlotSettings, StageName } from './types';
+import { byKickoff, moveProblem } from './slots';
+import type { Competition, RoundPlan, Schedule, ScheduledMatch, ScheduleMode, ScheduleTeam, SlotSettings, StageName } from './types';
 
 export const scheduleKey = (tournamentId: string) => ['tournament-schedule', tournamentId] as const;
 const DEFAULT_SETTINGS: SlotSettings = { perDay: 2, firstStartMin: 9 * 60 };
@@ -20,7 +21,7 @@ type Input = {
   days: string[];
   isOwner: boolean;
   /** Team ids per group. Undefined for a single league; null while the groups are still to be drawn. */
-  groupIds?: string[][] | null;
+  plan?: RoundPlan;
 };
 
 /** A match the owner adds by hand. */
@@ -34,7 +35,7 @@ const playsIn = (m: ScheduledMatch, teamId: string) => [m.home, m.away].some((s)
  * until the owner decides. Once published and unchanged, the owner moves or cancels single matches straight away
  * (the owner panel), and the teams playing are told.
  */
-export function useScheduleBuilder({ tournamentId, teams, competition, overs, days, isOwner, groupIds }: Input) {
+export function useScheduleBuilder({ tournamentId, teams, competition, overs, days, isOwner, plan }: Input) {
   const queryClient = useQueryClient();
   const saved = useQuery({ queryKey: scheduleKey(tournamentId), queryFn: () => fetchSchedule(tournamentId) });
   const [editedMode, setEditedMode] = useState<ScheduleMode | null>(null);
@@ -53,6 +54,8 @@ export function useScheduleBuilder({ tournamentId, teams, competition, overs, da
   const outOfDate =
     playing.length > 0 &&
     (playing.some((m) => [m.home, m.away].some((s) => s.kind === 'team' && !teamIds.has(s.team.id))) ||
+      playing.some((m) => plan?.kind === 'groups' && m.stage === 'League' && m.round === plan.round &&
+        m.home.kind === 'team' && m.away.kind === 'team' && Boolean(groupMatchProblem(m.home.team.id, m.away.team.id, plan.groupIds))) ||
       (mode === 'auto' && teams.some((t) => !playing.some((m) => playsIn(m, t.id)))));
 
   const store = (schedule: Schedule | null) => queryClient.setQueryData(scheduleKey(tournamentId), schedule);
@@ -88,19 +91,23 @@ export function useScheduleBuilder({ tournamentId, teams, competition, overs, da
 
   /** Draws every match again from the teams and settings, replacing any hand-made changes. */
   function draw() {
-    const refused = groupIds === null ? 'Draw the groups on the Groups tab first.' : pairingProblem(teams.length, competition);
-    if (refused) return setProblem(refused);
-    const placed = placeMatches(generatePairings(teams, competition, groupIds ?? undefined), days, settings, overs);
-    setProblem(placed.problem);
-    if (!placed.problem) edit(placed.matches);
+    const drawn = drawSchedule(plan, teams, competition, matches, days, settings, overs);
+    setProblem(drawn.problem);
+    if (drawn.matches) edit(drawn.matches);
   }
 
   /** Adds one match by hand, or returns why it cannot go there. */
   function add(match: NewMatch): string | null {
     if (match.home.id === match.away.id) return 'Pick two different teams.';
+    if (plan?.kind === 'groups' && match.stage !== 'League') return 'Schedule league matches for this group round.';
+    if (plan?.kind === 'knockout' && (match.stage === 'League' || !plan.slots.includes(match.home.id) || !plan.slots.includes(match.away.id))) {
+      return 'Pick knockout teams from this round.';
+    }
+    const groupProblem = match.stage === 'League' ? groupMatchProblem(match.home.id, match.away.id, plan?.groupIds) : null;
+    if (groupProblem) return groupProblem;
     const number = matches.reduce((max, m) => Math.max(max, m.number), 0) + 1;
     const added: ScheduledMatch = {
-      id: `new-${number}`, number, stage: match.stage, round: stageRound[match.stage], date: match.date, startMin: match.startMin,
+      id: `new-${number}`, number, stage: match.stage, round: match.stage === 'League' ? plan?.round ?? 0 : stageRound[match.stage], date: match.date, startMin: match.startMin,
       home: { kind: 'team', team: match.home }, away: { kind: 'team', team: match.away },
     };
     const refused = moveProblem([...playing, added], added.id, match.date, match.startMin, overs);

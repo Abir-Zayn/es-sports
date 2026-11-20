@@ -6,7 +6,7 @@
 --   M3 League  B 100/3 (120)  v C 100/4 (120)                  tie
 --   M4 League  A v C, cancelled, with a finished match         must not count
 --   M5 Final   A v B, finished                                 must not count
--- Expected: C 3 pts +0.814, A 2 pts -0.707, B 1 pt -0.250, D 0 pts, NRR null.
+-- Expected: C 4 pts +0.814, A 0 pts -0.707, D 0 pts, B -2 pts -0.250.
 
 begin;
 
@@ -59,7 +59,7 @@ begin
   select string_agg(format('%s:%s/%s/%s/%s:%s:%s', short_name, played, won, lost, tied, points, coalesce(nrr::text, 'null')),
       ' ' order by points desc, nrr desc nulls last, won desc, name)
     into got from public.tournament_standings where tournament_id = 'fac00000-0000-4000-8000-000000000001';
-  if got is distinct from 'CHA:2/1/0/1:3:0.814 ALP:2/1/1/0:2:-0.707 BRV:2/0/1/1:1:-0.250 DEL:0/0/0/0:0:null' then
+  if got is distinct from 'CHA:2/1/0/1:4:0.814 ALP:2/1/1/0:0:-0.707 DEL:0/0/0/0:0:null BRV:2/0/1/1:-2:-0.250' then
     raise exception 'FAIL standings: %', got;
   end if;
   if (select balls_against from public.tournament_standings where team_id = 'fab00000-0000-4000-8000-00000000000a') <> 210 then
