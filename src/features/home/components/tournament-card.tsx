@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
@@ -5,7 +6,7 @@ import { InitialsAvatar, Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import { dp, radius, shadows, spacing, typography, useTheme, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
 
-export type Tournament = { id: string; short: string; name: string; meta: string; tone: AvatarTone; avatarUri?: string };
+export type Tournament = { id: string; short: string; name: string; meta: string; tone: AvatarTone; avatarUri?: string; coverUri?: string };
 
 export const TOURNAMENT_CARD_WIDTH = dp(250);
 const BANNER_HEIGHT = dp(96);
@@ -25,10 +26,14 @@ export function TournamentCard({ tournament, onPress }: Props) {
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
       <View style={styles.banner}>
-        <Svg width={TOURNAMENT_CARD_WIDTH} height={BANNER_HEIGHT} viewBox="0 0 250 96" style={styles.art}>
+        {tournament.coverUri ? (
+          // The organiser's cover photo fills the banner; without one, the brand artwork shows.
+          <Image source={{ uri: tournament.coverUri }} style={StyleSheet.absoluteFill} contentFit="cover" transition={150}
+            accessibilityIgnoresInvertColors />
+        ) : <Svg width={TOURNAMENT_CARD_WIDTH} height={BANNER_HEIGHT} viewBox="0 0 250 96" style={styles.art}>
           <Path d="M-10 80 C70 60 150 20 260 -6 L260 22 C160 44 80 82 -10 100 Z" fill={colors.primary} />
           <Path d="M-10 104 C80 86 166 50 260 28 L260 40 C170 62 86 96 -10 112 Z" fill={colors.primaryDeep} />
-        </Svg>
+        </Svg>}
       </View>
       <View style={styles.logo}>
         <InitialsAvatar
