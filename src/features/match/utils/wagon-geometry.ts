@@ -28,15 +28,10 @@ function reach(runs: number): number {
   return 70;
 }
 
-/** SVG path of lines from the pitch to where each shot ended, for the shots that pass `keep`. */
-export function shotsPath(shots: Shot[], keep: (shot: Shot) => boolean): string {
-  const segments = shots.filter(keep).map((shot) => {
-    const radians = (shot.angle * Math.PI) / 180;
-    const x = CENTRE + reach(shot.runs) * Math.cos(radians);
-    const y = CENTRE + reach(shot.runs) * Math.sin(radians);
-    return `M${CENTRE} ${CENTRE} L${x.toFixed(1)} ${y.toFixed(1)}`;
-  });
-  return segments.length > 0 ? segments.join(' ') : 'M0 0';
+/** Where a shot is drawn to end: boundaries reach the rope, singles stop short. */
+export function shotEnd(shot: Shot): { x: number; y: number } {
+  const radians = (shot.angle * Math.PI) / 180;
+  return { x: CENTRE + reach(shot.runs) * Math.cos(radians), y: CENTRE + reach(shot.runs) * Math.sin(radians) };
 }
 
 /** Runs scored on each side of the wicket. The right-hand half of the wheel is the off side. */

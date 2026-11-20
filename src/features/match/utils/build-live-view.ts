@@ -57,16 +57,22 @@ function side(setup: MatchSetup, code: TeamCode, figures: Figures | null, battin
 
 const batterLine = (b: Batter) => `${b.runs}${b.out ? '' : '*'} (${b.balls}) · ${b.fours}×4, ${b.sixes}×6`;
 
-function wagonBattersOf(score: ScoreState): WagonBatter[] {
+function wagonBattersOf(score: ScoreState, setup: MatchSetup): WagonBatter[] {
   const first = score.previousInnings;
-  const shots = [...(first?.shots ?? []), ...score.shots];
-  const lookup = (id: string) => score.batters[id] ?? first?.batters[id];
-  const order = [...new Set(shots.map((s) => s.batterId))];
-  return order.flatMap((id) => {
-    const batter = lookup(id);
+  const team = (code: TeamCode) => ({ key: code, name: setup.teams[code].team.name, short: setup.teams[code].team.short });
+  // Each innings' batters, tagged with the side they batted for, first innings first.
+  const innings = [
+    ...(first ? [{ code: first.team, batters: first.batters, shots: first.shots }] : []),
+    { code: score.battingTeam, batters: score.batters, shots: score.shots },
+  ];
+  return innings.flatMap(({ code, batters, shots }) => [...new Set(shots.map((s) => s.batterId))].flatMap((id) => {
+    const batter = batters[id];
     if (!batter) return [];
-    return [{ id, name: batter.name, line: batterLine(batter), shots: shots.filter((s) => s.batterId === id).map(({ runs, angle }) => ({ runs, angle })) }];
-  });
+    return [{
+      id: `${code}:${id}`, name: batter.name, line: batterLine(batter), score: `${batter.runs}${batter.out ? '' : '*'}`, team: team(code),
+      shots: shots.filter((s) => s.batterId === id).map(({ runs, angle }) => ({ runs, angle })),
+    }];
+  }));
 }
 
 function summaryOf(setup: MatchSetup, score: ScoreState, status: LiveStatus, toss: string | null, locale: Locale): string {
@@ -125,7 +131,7 @@ export function buildLiveView(
       bowler: bowler ? { name: bowler.name, overs: oversText(bowler.balls), maidens: bowler.maidens, runs: bowler.runs, wickets: bowler.wickets } : null,
     },
     recentOvers: oversOf(rows, score.innings, nameOf, score.complete || status === 'completed', locale),
-    wagonBatters: wagonBattersOf(score),
+    wagonBatters: wagonBattersOf(score, setup),
     stream: null,
     ...cards,
   };
