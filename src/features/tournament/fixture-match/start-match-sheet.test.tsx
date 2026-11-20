@@ -45,3 +45,27 @@ test('selects both XIs and opens scoring when the starter is the scorer', async 
   expect(mockStart).toHaveBeenCalledWith('fixture', 'me', ['A-player'], ['B-player']);
   expect(close).toHaveBeenCalled();
 });
+
+test('"Select squad" picks the XI at random from a bigger squad, skipping unavailable players', async () => {
+  mockFetchSquad.mockImplementation(async (_t: string, teamId: string) => {
+    const players = Array.from({ length: 12 }, (_, i) => ({
+      profileId: `${teamId}-${i + 1}`, name: `${teamId} ${i + 1}`, avatarUrl: null, role: 'player',
+      availability: i === 0 ? 'injured' : 'available', takenBy: null,
+    }));
+    return { teamName: teamId, selectedIds: players.map((p) => p.profileId), candidates: players };
+  });
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
+  await render(<ThemeProvider><QueryClientProvider client={client}>
+    <StartMatchSheet tournamentId="t" match={match} playersPerSide={10} onClose={jest.fn()} />
+  </QueryClientProvider></ThemeProvider>);
+  await fireEvent.press(await screen.findByRole('button', { name: 'A: 0/10' }));
+  // 11 of 12 are available, so 10 of the 11 are drawn; the injured player is never picked.
+  const select = screen.getByRole('checkbox', { name: 'Select squad: picks 10 of 11 players at random' });
+  await fireEvent.press(select);
+  expect(screen.getByText('10/10 players selected')).toBeTruthy();
+  expect(select.props.accessibilityState).toMatchObject({ checked: true });
+  expect(screen.queryByRole('button', { name: 'Remove A 1' })).toBeNull();
+  // Unticking clears the XI again.
+  await fireEvent.press(select);
+  expect(screen.getByText('0/10 players selected')).toBeTruthy();
+});
