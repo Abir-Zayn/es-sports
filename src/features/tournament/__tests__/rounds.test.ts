@@ -1,6 +1,6 @@
 import type { RoundView } from '../data/rounds-repository';
 import type { StandingsRow } from '../data/standings-repository';
-import { bracketSlots, groupChoices, isKnockoutSize, isRoundComplete, rankByPlace, seedOrder, topOfEachGroup } from '../rounds/next-round';
+import { bracketSlots, groupChoices, isKnockoutSize, isRoundComplete, nextStageFor, rankByPlace, seedOrder, topOfEachGroup } from '../rounds/next-round';
 import { knockoutPairings } from '../schedule-builder/generate';
 import { drawSchedule } from '../schedule-builder/round-draw';
 import type { ScheduledMatch } from '../schedule-builder/types';
@@ -70,5 +70,17 @@ describe('rounds in the schedule', () => {
   it('refuses a group round before its draw', () => {
     const drawn = drawSchedule({ round: 1, kind: 'groups', groupIds: null, slots: [] }, [], 'league', [], [], { perDay: 2, firstStartMin: 540 }, 10);
     expect(drawn.problem).toBe('Draw the groups first.');
+  });
+});
+
+describe('the next stage offered first', () => {
+  it('is a knockout for 2, 4 or 8 teams (final, semi-finals, quarter-finals) and groups otherwise', () => {
+    expect([2, 4, 8].map(nextStageFor)).toEqual(['knockout', 'knockout', 'knockout']);
+    expect([3, 5, 6].map(nextStageFor)).toEqual(['groups', 'groups', 'groups']);
+  });
+
+  it('seeds a semi-final across two groups so the group winners can only meet in the final', () => {
+    // Ranked A1, B1, A2, B2: 1 v 4 and 2 v 3.
+    expect(bracketSlots(['A1', 'B1', 'A2', 'B2'])).toEqual(['A1', 'B2', 'B1', 'A2']);
   });
 });

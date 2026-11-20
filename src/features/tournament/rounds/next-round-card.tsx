@@ -10,7 +10,7 @@ import { fetchStandings, standingsKey } from '../data/standings-repository';
 import { tournamentErrorText } from '../data/tournament-errors';
 import { tournamentKey, type EnteredTeam, type TournamentRecord } from '../data/tournament-repository';
 import { ChoiceChips } from '../schedule-builder/components/choice-chips';
-import { bracketSlots, groupChoices, isKnockoutSize, rankByPlace } from './next-round';
+import { bracketSlots, groupChoices, isKnockoutSize, nextStageFor, rankByPlace } from './next-round';
 
 type Props = { tournament: TournamentRecord; teams: EnteredTeam[]; round: RoundView };
 
@@ -25,12 +25,13 @@ export function NextRoundCard({ tournament: t, teams, round }: Props) {
   const client = useQueryClient();
   const table = useQuery({ queryKey: [...standingsKey(t.id), round.round], queryFn: () => fetchStandings(t.id, round.round) });
   const targetChoices = range(2, round.teamIds.length - 1);
-  const [target, setTarget] = useState(Math.min(round.teamIds.length - 1, Math.max(2, (round.advance ?? 1) * round.groups)));
+  const initial = Math.min(round.teamIds.length - 1, Math.max(2, (round.advance ?? 1) * round.groups));
+  const [target, setTarget] = useState(initial);
   const [picked, setPicked] = useState<Set<string> | null>(null);
   const [slots, setSlots] = useState<string[] | null>(null);
   const [swapFrom, setSwapFrom] = useState<number | null>(null);
   const [nextGroups, setNextGroups] = useState<number | null>(null);
-  const [nextKind, setNextKind] = useState<'groups' | 'knockout'>('groups');
+  const [nextKind, setNextKind] = useState<'groups' | 'knockout'>(nextStageFor(initial));
   const advance = useMutation({
     mutationFn: (a: { teams: string[]; groups: number }) => advanceRound(t.id, round.round, a.teams, a.groups),
     onSuccess: () => void client.invalidateQueries({ queryKey: tournamentKey(t.id) }),
@@ -66,7 +67,7 @@ export function NextRoundCard({ tournament: t, teams, round }: Props) {
     <Card style={styles.gap}>
       <Text accessibilityRole="header" style={styles.title}>{`Round ${round.round + 1} is complete`}</Text>
       <ChoiceChips label="Teams that go through" value={target}
-        onChange={(n) => { setTarget(n); setPicked(null); reset(); }}
+        onChange={(n) => { setTarget(n); setNextKind(nextStageFor(n)); setPicked(null); reset(); }}
         choices={targetChoices.map((n) => ({ value: n, label: String(n), spoken: `${n} go through` }))} />
       <Text muted>{`${chosenRanked.length} of ${target} chosen. Ticked from the table; change any you need to.`}</Text>
       <ChoiceChips label="Next stage" value={nextKind} onChange={setNextKind}

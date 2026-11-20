@@ -6,6 +6,9 @@ import type { ScheduledMatch } from '../schedule-builder/types';
 export const KNOCKOUT_SIZES = [2, 4, 8] as const;
 export const isKnockoutSize = (n: number) => (KNOCKOUT_SIZES as readonly number[]).includes(n);
 
+/** The stage to offer first: 2, 4 or 8 teams most often play a knockout (final, semi-finals, quarter-finals). */
+export const nextStageFor = (n: number): 'groups' | 'knockout' => (isKnockoutSize(n) ? 'knockout' : 'groups');
+
 /** The round's league matches exist and every one is finished or cancelled. */
 export function isRoundComplete(round: RoundView, matches: ScheduledMatch[]): boolean {
   const own = matches.filter((m) => m.stage === 'League' && m.round === round.round);
