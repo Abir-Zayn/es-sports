@@ -7,12 +7,18 @@ import { supabase } from '@/lib/supabase';
 import type { PlayerTotals } from './player-stats';
 import { toTournamentError } from './tournament-errors';
 
+export type PlayerTotalsQuery = { tournamentId?: string; since?: string };
+
 export const playerStatsKey = (tournamentId: string) => ['tournament-player-stats', tournamentId] as const;
 
 /** One tournament's players, or with no id every tournament's (the global leaderboard; friendlies never count). */
-export async function fetchPlayerTotals(tournamentId?: string): Promise<PlayerTotals[]> {
-  const { data, error } = await traceApi('tournament.playerStats', { tournamentId: tournamentId ?? 'all' }, () =>
-    supabase.rpc('tournament_player_stats', tournamentId ? { p_tournament: tournamentId } : {}));
+export async function fetchPlayerTotals(query?: string | PlayerTotalsQuery): Promise<PlayerTotals[]> {
+  const { tournamentId, since } = typeof query === 'string' ? { tournamentId: query, since: undefined } : (query ?? {});
+  const args: { p_tournament?: string; p_since?: string } = {};
+  if (tournamentId) args.p_tournament = tournamentId;
+  if (since) args.p_since = since;
+  const { data, error } = await traceApi('tournament.playerStats', { tournamentId: tournamentId ?? 'all', since: since ?? 'all' }, () =>
+    supabase.rpc('tournament_player_stats', args));
   if (error) throw toTournamentError(error);
   return (data ?? []).map((row) => ({
     profileId: row.profile_id, name: row.name, team: row.team_name, teamShort: row.team_short,

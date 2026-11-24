@@ -68,8 +68,8 @@ values
 do $$
 declare got text;
 begin
-  if has_function_privilege('anon', 'public.tournament_player_stats(uuid)', 'execute')
-    or not has_function_privilege('authenticated', 'public.tournament_player_stats(uuid)', 'execute') then
+  if has_function_privilege('anon', 'public.tournament_player_stats(uuid, timestamptz)', 'execute')
+    or not has_function_privilege('authenticated', 'public.tournament_player_stats(uuid, timestamptz)', 'execute') then
     raise exception 'FAIL grants: signed-in users only';
   end if;
   select string_agg(format('%s[%s] m%s i%s %s/%s 4s%s 6s%s out%s hi%s%s(%sb %sov) | b%s r%s w%s d%s best %s/%s(%sov)',
@@ -90,6 +90,15 @@ begin
     from public.tournament_player_stats() where profile_id::text like 'fea00000-%';
   if got is distinct from 'A1 10/0; A2 0/0; B1 1/1; B2 0/0' then
     raise exception 'FAIL global: %', got;
+  end if;
+  -- Time window: p_since keeps matches completed at or after the cutoff and drops earlier ones.
+  select string_agg(format('%s %s/%s', name, runs, wickets), '; ' order by name) into got
+    from public.tournament_player_stats(p_since => now() - interval '1 hour') where profile_id::text like 'fea00000-%';
+  if got is distinct from 'A1 10/0; A2 0/0; B1 1/1; B2 0/0' then
+    raise exception 'FAIL since (recent): %', got;
+  end if;
+  if exists (select 1 from public.tournament_player_stats(p_since => now() + interval '1 hour') where profile_id::text like 'fea00000-%') then
+    raise exception 'FAIL since (future): match before cutoff still counted';
   end if;
   -- A deleted tournament drops out of the global board but still answers for itself.
   update public.tournaments set deleted_at = now() where id = 'fec00000-0000-4000-8000-000000000001';
