@@ -6,6 +6,8 @@ import { ThemeProvider } from '@/theme';
 import { fake } from '../__fixtures__/supabase-fake';
 import type { TournamentRecord } from '../data/tournament-repository';
 import { RealKnockout } from '../knockout/real-knockout';
+import { publishSchedule } from '../schedule-builder/schedule-repository';
+import type { ScheduledMatch } from '../schedule-builder/types';
 import { tournamentSections } from '../sample-data';
 import { sampleKnockoutData } from '../knockout/sample-knockout-data';
 import { TournamentKnockoutScreen } from '../knockout/tournament-knockout-screen';
@@ -139,10 +141,8 @@ describe('real tournament knockout', () => {
   it('splits teams into still in and eliminated, in words not only colour', async () => {
     fake.results.tournament_teams = { data: [team('a', 'Alpha XI', false), team('b', 'Bravo XI', false), team('c', 'Charlie XI', true)], error: null };
     await show();
-    expect(await screen.findByText('2 of 3 teams still in')).toBeTruthy();
-    expect(screen.getByText('Still in · 2')).toBeTruthy();
-    expect(screen.getByText('Eliminated · 1')).toBeTruthy();
-    expect(screen.getByLabelText('Charlie XI, eliminated')).toBeTruthy();
+    expect(await screen.findByText('2 of 3 still in')).toBeTruthy();
+    expect(screen.getByLabelText('Charlie XI, out')).toBeTruthy();
     expect(screen.getByLabelText('Alpha XI, still in')).toBeTruthy();
   });
 
@@ -151,6 +151,35 @@ describe('real tournament knockout', () => {
     await show();
     expect(await screen.findByText('Alpha XI won')).toBeTruthy();
     expect(screen.getByLabelText('Alpha XI, champion')).toBeTruthy();
+    // No knockout matches were drawn, so the bracket explains itself instead of showing an empty tree.
+    expect(screen.getByText('No knockout yet')).toBeTruthy();
+  });
+
+  it('draws the final, the bracket under it and the semi-finals, and lets the owner confirm who goes through', async () => {
+    fake.results.tournament_teams = { data: ['Alpha XI', 'Bravo XI', 'Charlie XI', 'Delta XI'].map((n) => team(n[0].toLowerCase(), n, false)), error: null };
+    const side = (id: string, name: string) => ({ kind: 'team' as const, team: { id, name, short: name.slice(0, 3).toUpperCase() } });
+    const base = { round: 1, date: '2026-11-28', startMin: 600 };
+    const matches: ScheduledMatch[] = [
+      { ...base, id: 'sf1', number: 1, stage: 'Semi-final', home: side('a', 'Alpha XI'), away: side('b', 'Bravo XI'), match: {
+        id: 'm1', status: 'completed', team_a_runs: 150, team_a_wickets: 6, team_a_balls: 120, team_b_runs: 120, team_b_wickets: 9,
+        team_b_balls: 118, overs_limit: 20, winner_side: 'a', result_summary: 'Alpha XI won by 30 runs', completed_at: null } },
+      { ...base, id: 'sf2', number: 2, stage: 'Semi-final', home: side('c', 'Charlie XI'), away: side('d', 'Delta XI') },
+      { ...base, id: 'fin', number: 3, stage: 'Final', date: '2026-11-29', home: { kind: 'tbd', label: 'Winner of SF 1' }, away: { kind: 'tbd', label: 'Winner of SF 2' } },
+    ];
+    await publishSchedule('k2', true, 'manual', { perDay: 2, firstStartMin: 600 }, matches);
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } } });
+    await render(<ThemeProvider><QueryClientProvider client={client}>
+      <RealKnockout tournament={{ id: 'k2', venue: 'Main Ground' } as TournamentRecord} isOwner />
+    </QueryClientProvider></ThemeProvider>);
+
+    expect(await screen.findByLabelText(/^Final, Winner of SF 1 against Winner of SF 2\. Sun, 29 Nov/)).toBeTruthy();
+    expect(screen.getByLabelText('SF 1: Alpha XI 150/6, through against Bravo XI 120/9')).toBeTruthy();
+    expect(screen.getByLabelText('SF 2: Charlie XI against Delta XI')).toBeTruthy();
+    expect(screen.getByText('Alpha XI won by 30 runs')).toBeTruthy();
+    // The field result is in; the owner confirms it, offered the winner first.
+    expect(screen.getByText('Confirm who goes through.')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Alpha XI goes through'));
+    expect(fake.rpc).toHaveBeenCalledWith('confirm_knockout_winner', { p_fixture: 'sf1', p_winner: 'a' });
   });
 
   it('explains the empty state before any team joins', async () => {
@@ -162,7 +191,7 @@ describe('real tournament knockout', () => {
   it('offers a retry when the teams cannot be loaded', async () => {
     fake.results.tournament_teams = { data: null, error: { message: 'down', code: '500' } };
     await show();
-    expect(await screen.findByText('Could not load the teams.')).toBeTruthy();
+    expect(await screen.findByText('Could not load the knockout.')).toBeTruthy();
     expect(screen.getByText('Try again')).toBeTruthy();
   });
 });
