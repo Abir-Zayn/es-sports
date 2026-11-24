@@ -9,6 +9,9 @@ export function errorCode(error: unknown): string | null {
   return typeof error === 'object' && error !== null && 'code' in error && typeof error.code === 'string' ? error.code : null;
 }
 
+const errorText = (error: unknown): string =>
+  typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string' ? error.message.trim() : '';
+
 export function tournamentMessage(error: unknown): string {
   switch (errorCode(error)) {
     case 'ET001': return 'This tournament already has all its teams.';
@@ -21,7 +24,13 @@ export function tournamentMessage(error: unknown): string {
     case 'ET014': return 'This tournament is closed, so it can no longer be changed.';
     case 'ET013': return 'This tournament was deleted more than 3 days ago, so it can no longer be restored.';
     case 'ET012': return 'The scorer must be the tournament owner or a moderator who has the scoring duty.';
-    case 'ET006': return 'That does not fit the schedule: two matches would be on the ground at once, a team would play more than 3 times that day, or the match falls outside the tournament days.';
+    case 'ET006': {
+      // The server names the rule that failed; say that one rather than every rule it could have been.
+      const reason = errorText(error);
+      return reason
+        ? `That does not fit the schedule: ${reason.charAt(0).toLowerCase()}${reason.slice(1).replace(/\.?$/, '.')}`
+        : 'That does not fit the schedule: two matches would be on the ground at once, a team would play more than 3 times that day, or the match falls outside the tournament days.';
+    }
     case '42501': return 'You are not allowed to do that in this tournament.';
     case '22023': return 'Check the details: the dates, team count, squad sizes and team name must fit the rules.';
     case '23505': return 'This id is already used. Go back and try again.';
