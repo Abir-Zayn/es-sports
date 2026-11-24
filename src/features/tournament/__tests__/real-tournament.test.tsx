@@ -126,7 +126,7 @@ describe('a real tournament', () => {
 
   it('shows which real teams are still in on the knockout rather than sample numbers', async () => {
     await show(<RealTournamentScreen id={T} section="knockout" />);
-    expect(await screen.findByText('1 of 1 teams still in')).toBeTruthy();
+    expect(await screen.findByText('1 of 1 still in')).toBeTruthy();
     expect(screen.getByLabelText('Alpha XI, still in')).toBeTruthy();
   });
 
