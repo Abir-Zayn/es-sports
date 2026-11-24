@@ -1,15 +1,19 @@
-import ChevronDown from 'lucide-react-native/icons/chevron-down';
+import ArrowUpDown from 'lucide-react-native/icons/arrow-up-down';
+import CircleDot from 'lucide-react-native/icons/circle-dot';
+import Target from 'lucide-react-native/icons/target';
+import Users from 'lucide-react-native/icons/users';
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
-import { Text } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { useTranslation } from '@/i18n';
-import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
+import { sizes, spacing, useTheme } from '@/theme';
 
 import { otherTeam, playerName } from '../sample-data';
 import type { MatchSetup, TeamCode } from '../types';
 import { ScorerSheet } from './scorer-sheet';
-import { ScorerChoice, ScorerRoleLabel, ScorerSection } from './scorer-ui';
+import { ScorerChoice, ScorerRoleLabel } from './scorer-ui';
+import { SetupGroup, SetupRow } from './setup/setup-parts';
 
 export function normalizeOpeners(setup: MatchSetup, batting: TeamCode): MatchSetup {
   const batters = setup.playingXi[batting];
@@ -22,7 +26,6 @@ export function normalizeOpeners(setup: MatchSetup, batting: TeamCode): MatchSet
 
 export function OpeningPlayers({ setup, batting, onChange }: { setup: MatchSetup; batting: TeamCode; onChange: (setup: MatchSetup) => void }) {
   const { colors } = useTheme();
-  const s = useThemedStyles(styles);
   const { t } = useTranslation();
   const [field, setField] = useState<'strikerId' | 'nonStrikerId' | 'bowlerId' | null>(null);
   const labels = {
@@ -30,26 +33,23 @@ export function OpeningPlayers({ setup, batting, onChange }: { setup: MatchSetup
     nonStrikerId: t('scoring.openers.nonStriker'),
     bowlerId: t('scoring.openers.bowler'),
   };
+  const icons = { strikerId: CircleDot, nonStrikerId: Users, bowlerId: Target };
   const team = field === 'bowlerId' ? otherTeam(batting) : batting;
   const excluded = field === 'strikerId' ? setup.nonStrikerId : field === 'nonStrikerId' ? setup.strikerId : '';
-  return <ScorerSection title={t('scoring.openers.section')}>
-    <View style={s.list}>
-      {(Object.keys(labels) as (keyof typeof labels)[]).map((key) => <Pressable key={key}
-        accessibilityRole="button" accessibilityLabel={t('scoring.openers.chooseA11y', { role: labels[key], name: playerName(setup, setup[key]) })}
-        style={s.row} onPress={() => setField(key)}>
-        <Text muted style={s.label}>{labels[key]}</Text><Text style={s.name}>{playerName(setup, setup[key])}</Text>
-        <ChevronDown size={sizes.iconSmall} color={colors.textMuted} />
-      </Pressable>)}
-    </View>
+  const keys = Object.keys(labels) as (keyof typeof labels)[];
+  return <View style={{ gap: spacing.md }}>
+    <SetupGroup>
+      {keys.map((key, i) => <SetupRow key={key} icon={icons[key]} label={labels[key]} value={playerName(setup, setup[key])}
+        accessibilityLabel={t('scoring.openers.chooseA11y', { role: labels[key], name: playerName(setup, setup[key]) })}
+        onPress={() => setField(key)} last={i === keys.length - 1} />)}
+    </SetupGroup>
+    <Button label={t('scoring.openers.swapEnds')} variant="secondary" size="compact"
+      leading={<ArrowUpDown size={sizes.iconSmall} color={colors.text} />}
+      onPress={() => onChange({ ...setup, strikerId: setup.nonStrikerId, nonStrikerId: setup.strikerId })} />
     <ScorerSheet visible={field !== null} title={t('scoring.openers.sheetTitle', { role: field ? labels[field].toLowerCase() : t('scoring.openers.fallbackPlayer') })} onClose={() => setField(null)}>
       {setup.teams[team].players.filter((p) => setup.playingXi[team].includes(p.id) && p.id !== excluded).map((p) =>
         <ScorerChoice key={p.id} label={p.name} detail={ScorerRoleLabel(p.role, t)} selected={!!field && setup[field] === p.id}
           onPress={() => { if (field) onChange({ ...setup, [field]: p.id }); setField(null); }} />)}
     </ScorerSheet>
-  </ScorerSection>;
+  </View>;
 }
-const styles = (c: Palette) => StyleSheet.create({
-  list: { backgroundColor: c.surface, borderRadius: radius.lg, padding: spacing.sm, gap: spacing.xs },
-  row: { minHeight: dp(48), flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md, paddingHorizontal: sizes.cardPaddingTight, borderRadius: radius.md, backgroundColor: c.surfaceRaised },
-  label: { ...typography.bodySm, width: dp(88) }, name: { ...typography.labelMd, flex: 1 },
-});

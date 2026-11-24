@@ -1,19 +1,25 @@
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 
-import { Button, InitialsAvatar, SegmentedControl, Text } from '@/components/ui';
+import { Button, Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
-import { dp, radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
+import { spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
 import { OpeningPlayers, normalizeOpeners } from './components/opening-players';
 import { PlayingXiEditor } from './components/playing-xi-editor';
-import { ScorerFrame, ScorerHeader, ScorerNotice, ScorerSection } from './components/scorer-ui';
+import { ScorerFrame, ScorerHeader, ScorerNotice } from './components/scorer-ui';
+import { StepHeader } from './components/setup/setup-parts';
+import { TossPicker } from './components/setup/toss-picker';
 import { SwitchRow } from './components/switch-row';
 import { createInnings } from './engine/create-innings';
-import { battingFirst, teamCodes } from './sample-data';
+import { battingFirst, otherTeam, playerName } from './sample-data';
 import { localEventId, useScorer } from './scorer-provider';
 import type { MatchSetup } from './types';
 import { useScorerRoutes } from './use-scorer-routes';
 
+/**
+ * Before the first ball: the toss as a face-off, the playing sides, the openers and the scoring options, numbered in the
+ * order they are settled, with a one-line summary of who opens above the start button.
+ */
 export function ScorerSetupScreen() {
   const { setup, score, dispatch, fixtureRef } = useScorer();
   const tournament = fixtureRef?.startsWith('tournament-') ?? false;
@@ -40,42 +46,44 @@ export function ScorerSetupScreen() {
     <ScorerNotice>{t(score.complete ? 'scoring.setup.completeNotice' : 'scoring.setup.resumeNotice')}</ScorerNotice>
     <Button label={t(score.complete ? 'scoring.setup.viewFinalScore' : 'scoring.setup.resumeScoring')} onPress={() => routes.replace('pad')} />
   </ScorerFrame>;
+
   const decision = t(setup.decision === 'bat' ? 'match.toss.decisionBat' : 'match.toss.decisionBowl');
-  return <ScorerFrame footer={<Button label={t(chase ? 'scoring.setup.startSecondInnings' : 'scoring.setup.startMatch')} onPress={start} />}>
+  const askToss = !chase && !setup.preset;
+  let step = 0;
+  const next = () => (step += 1);
+  const summary = t('scoring.setup.summary', {
+    striker: playerName(normalized, normalized.strikerId), nonStriker: playerName(normalized, normalized.nonStrikerId),
+    bowler: playerName(normalized, normalized.bowlerId),
+  });
+  const footer = <View>
+    <Text style={s.summary} numberOfLines={2} accessibilityLiveRegion="polite">{summary}</Text>
+    <Button label={t(chase ? 'scoring.setup.startSecondInnings' : 'scoring.setup.startMatch')} onPress={start} />
+  </View>;
+
+  return <ScorerFrame footer={footer}>
     <ScorerHeader title={t(chase ? 'scoring.setup.chaseTitle' : setup.preset ? 'scoring.setup.openersTitle' : 'scoring.setup.setupTitle')} subtitle={setup.title} onBack={chase ? routes.toPad : routes.leave} />
-    {chase ? <ScorerNotice>{t('scoring.setup.chaseNotice', { team: teams[batting].team.name, runs: score.runs + 1 })}</ScorerNotice>
-    : setup.preset ? <ScorerNotice>{t('scoring.setup.presetNotice', { tossTeam: teams[setup.tossWinner].team.name, decision, battingTeam: teams[batting].team.name })}</ScorerNotice>
-    : <>
-      <View style={s.tossCard}>
-      <ScorerSection title={t('scoring.setup.whoWonToss')}>
-        <View style={s.teams}>{teamCodes.map((code) => <Pressable key={code}
-          accessibilityRole="button" accessibilityState={{ selected: setup.tossWinner === code }}
-          onPress={() => configure({ ...setup, tossWinner: code })} style={[s.team, setup.tossWinner === code && s.selected]}>
-          <InitialsAvatar label={teams[code].team.short} tone={teams[code].team.tone} imageUri={teams[code].team.avatarUri} size={sizes.avatar} />
-          <Text style={s.teamName}>{teams[code].team.name}</Text>
-        </Pressable>)}</View>
-      </ScorerSection>
-      <ScorerSection title={t('scoring.setup.choseTo')}>
-        <SegmentedControl height={dp(48)} options={[{ id: 'bat', label: t('friendly.toss.batFirst') }, { id: 'bowl', label: t('friendly.toss.bowlFirst') }]}
-          selected={setup.decision} onSelect={(choice) => configure({ ...setup, decision: choice })} />
-        <Text style={s.batting}>{t('scoring.setup.willBatFirst', { team: teams[batting].team.name })}</Text>
-      </ScorerSection>
-      </View>
-      {tournament ? null : <PlayingXiEditor setup={normalized} onChange={configure} />}
-    </>}
+    {chase ? <ScorerNotice>{t('scoring.setup.chaseNotice', { team: teams[batting].team.name, runs: score.runs + 1 })}</ScorerNotice> : null}
+    {setup.preset && !chase ? <ScorerNotice>{t('scoring.setup.presetNotice', { tossTeam: teams[setup.tossWinner].team.name, decision, battingTeam: teams[batting].team.name })}</ScorerNotice> : null}
+    {askToss ? <>
+      <StepHeader step={next()} title={t('scoring.setup.tossStep')} detail={t('scoring.setup.tossDetail')} />
+      <TossPicker setup={setup} batting={batting} onChange={configure} />
+    </> : null}
+    {askToss && !tournament ? <>
+      <StepHeader step={next()} title={t('scoring.xi.title')} detail={t('scoring.xi.detail', { size: setup.playersPerSide })} />
+      <PlayingXiEditor setup={normalized} onChange={configure} />
+    </> : null}
+    <StepHeader step={next()} title={t('scoring.openers.section')}
+      detail={t('scoring.openers.detail', { batting: teams[batting].team.name, bowling: teams[otherTeam(batting)].team.name })} />
     <OpeningPlayers setup={normalized} batting={batting} onChange={configure} />
+    <StepHeader step={next()} title={t('scoring.setup.optionsStep')} />
     <SwitchRow title={t('scoring.setup.recordShotsTitle')} detail={t('scoring.setup.recordShotsDetail')} value={setup.recordShots}
       onChange={(recordShots) => configure({ ...normalized, recordShots })} />
-    {!chase && !setup.preset && !tournament ? <Button label={t('scoring.setup.tryReference')} variant="ghost" onPress={() => {
+    {askToss && !tournament ? <Button label={t('scoring.setup.tryReference')} variant="ghost" onPress={() => {
       dispatch({ type: 'demo', id: localEventId() }); routes.replace('pad');
     }} /> : null}
   </ScorerFrame>;
 }
+
 const styles = (c: Palette) => StyleSheet.create({
-  tossCard: { backgroundColor: c.surface, borderRadius: radius.lg, padding: sizes.cardPaddingTight, gap: spacing.lg, ...shadows.card },
-  teams: { flexDirection: 'row', gap: spacing.md },
-  team: { flex: 1, minHeight: dp(100), padding: spacing.md, gap: spacing.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: c.surfaceRaised, borderWidth: 2, borderColor: 'transparent', borderRadius: radius.md },
-  selected: { borderColor: c.primary, backgroundColor: c.primarySoft },
-  teamName: { ...typography.labelMd, textAlign: 'center' },
-  batting: { ...typography.bodyMd, color: c.link },
+  summary: { ...typography.bodySm, color: c.textMuted, textAlign: 'center', marginBottom: spacing.sm },
 });
