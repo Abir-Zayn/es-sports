@@ -42,10 +42,14 @@ export const bnCommunity: Record<keyof typeof enCommunity, string> = {
   'pitchZone.behind_square': 'পেছনে',
 
   'leaderboard.title': 'লিডারবোর্ড',
-  'leaderboard.allTournaments': 'সব টুর্নামেন্ট',
+  'leaderboard.periodAll': 'সব সময়',
+  'leaderboard.periodMonth': 'এই মাস',
+  'leaderboard.periodWeek': 'এই সপ্তাহ',
   'leaderboard.statTypeA11y': 'পরিসংখ্যান ধরন',
   'leaderboard.loading': 'সেরা খেলোয়াড় লোড হচ্ছে',
   'leaderboard.emptyTitle': 'এখনো কোনো টুর্নামেন্ট ম্যাচ শেষ হয়নি',
+  'leaderboard.emptyTitleMonth': 'এই মাসে এখনো কোনো টুর্নামেন্ট ম্যাচ শেষ হয়নি',
+  'leaderboard.emptyTitleWeek': 'এই সপ্তাহে এখনো কোনো টুর্নামেন্ট ম্যাচ শেষ হয়নি',
   'leaderboard.emptyMessage': 'টুর্নামেন্ট ম্যাচের ফল এলে সেরা খেলোয়াড়দের তালিকা এখানে দেখা যাবে। ফ্রেন্ডলি ম্যাচ এতে যুক্ত হয় না।',
 
   'whatsNew.title': 'নতুন কী আছে',
