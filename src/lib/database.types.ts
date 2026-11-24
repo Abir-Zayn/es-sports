@@ -727,6 +727,7 @@ export type Database = {
           district: string | null
           id: string
           logo_url: string | null
+          registered_at: string | null
           name: string
           short_name: string
           tone: string
@@ -740,6 +741,7 @@ export type Database = {
           district?: string | null
           id: string
           logo_url?: string | null
+          registered_at?: string | null
           name: string
           short_name: string
           tone?: string
@@ -753,6 +755,7 @@ export type Database = {
           district?: string | null
           id?: string
           logo_url?: string | null
+          registered_at?: string | null
           name?: string
           short_name?: string
           tone?: string
@@ -1257,6 +1260,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      delete_team: {
+        Args: { p_team: string }
+        Returns: undefined
+      }
       decline_invitation: { Args: { p_id: string }; Returns: undefined }
       decline_scorer_handover: { Args: { p_id: string }; Returns: undefined }
       delete_friendly_match: { Args: { p_match: string }; Returns: undefined }
@@ -1475,6 +1482,10 @@ export type Database = {
       }
       transfer_team_ownership: {
         Args: { p_profile: string; p_team: string }
+        Returns: undefined
+      }
+      register_team: {
+        Args: { p_team: string }
         Returns: undefined
       }
       void_ball_events_from: {
