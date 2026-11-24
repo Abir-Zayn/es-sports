@@ -1,6 +1,7 @@
 import type { enHallOfFame } from '../en/hall-of-fame';
 
 export const bnHallOfFame: Record<keyof typeof enHallOfFame, string> = {
+  'players.profileFailed': 'খেলোয়াড়ের তথ্য লোড করা যায়নি। সংযোগ দেখে আবার চেষ্টা করুন।',
   'players.loadingCareer': 'ক্যারিয়ার লোড হচ্ছে',
   'players.careerFailed': 'ক্যারিয়ার লোড করা যায়নি। সংযোগ দেখে আবার চেষ্টা করুন।',
   'hallOfFame.period1m': '১ মাস',
@@ -22,7 +23,9 @@ export const bnHallOfFame: Record<keyof typeof enHallOfFame, string> = {
   'hallOfFame.tapToReveal': 'দেখতে ট্যাপ করুন',
   'hallOfFame.loading': 'হল অব ফেম লোড হচ্ছে',
   'hallOfFame.points': 'পয়েন্ট',
-  'hallOfFame.statLine': '{{runs}} রান · {{wickets}} উইকেট · গড় {{average}}',
+  'hallOfFame.runs': 'রান',
+  'hallOfFame.wickets': 'উইকেট',
+  'hallOfFame.average': 'গড়',
   'hallOfFame.hiddenA11y': '{{tier}} কার্ড, {{title}}',
   'hallOfFame.revealedA11y': '{{tier}}: {{name}}, {{points}} পয়েন্ট, {{runs}} রান, {{wickets}} উইকেট, গড় {{average}}',
   'hallOfFame.revealHint': 'খেলোয়াড়কে দেখায়',

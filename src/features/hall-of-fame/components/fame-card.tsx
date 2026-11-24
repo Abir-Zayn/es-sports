@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 
-import { Button, InitialsAvatar, Text } from '@/components/ui';
+import { Button, Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
-import { initialsOf } from '@/lib/initials';
 
 import type { HallWinner } from '../awards';
 import { METALS } from './card-art';
 import { TrophyArt } from './card-emblem';
 import { CardFace } from './card-face';
+import { CardFront } from './card-front';
 import { CARD_TEXT_SCALE } from './card-scale';
 
 export const CARD_RATIO = 1.4;
@@ -47,9 +47,8 @@ export function FameCard({ winner, photo, title, width, onOpenPlayer }: Props) {
   const u = width / 160;
   const tierName = t(tier === 'gold' ? 'hallOfFame.gold' : 'hallOfFame.silver');
   const avg = winner.average == null ? '—' : winner.average.toFixed(1);
-  const score = points.toFixed(1);
   const label = revealed
-    ? t('hallOfFame.revealedA11y', { tier: tierName, name: player.name, points: score, runs: player.runs, wickets: player.wickets, average: avg })
+    ? t('hallOfFame.revealedA11y', { tier: tierName, name: player.name, points: points.toFixed(1), runs: player.runs, wickets: player.wickets, average: avg })
     : t('hallOfFame.hiddenA11y', { tier: tierName, title: title.replace(/\n/g, ' ') });
   const caption = { color: m.ink, fontSize: 7.5 * u, lineHeight: 10 * u };
 
@@ -66,21 +65,7 @@ export function FameCard({ winner, photo, title, width, onOpenPlayer }: Props) {
       </Animated.View>
       {revealed ? (
         <Animated.View style={[styles.side, { borderRadius: 12 * u }, frontStyle]}>
-          <CardFace tier={tier} title={title} u={u}
-            emblem={<View style={{ alignItems: 'center', marginTop: 11 * u }}>
-              <InitialsAvatar label={initialsOf(player.name)} imageUri={photo} size={46 * u} tone="neutral" borderColor={m.deep} borderWidth={2 * u} />
-              <Text maxFontSizeMultiplier={CARD_TEXT_SCALE} style={[styles.score, { color: m.ink, fontSize: 14 * u, lineHeight: 16 * u, marginTop: 3 * u }]}>{score}</Text>
-              <Text maxFontSizeMultiplier={CARD_TEXT_SCALE} style={[styles.caption, caption, { fontSize: 7.5 * u, lineHeight: 9 * u }]}>{t('hallOfFame.points')}</Text>
-            </View>}
-            footer={<>
-              <View style={[styles.banner, { backgroundColor: m.banner, paddingVertical: 3 * u, paddingHorizontal: 8 * u, borderRadius: 3 * u }]}>
-                <Text maxFontSizeMultiplier={CARD_TEXT_SCALE} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}
-                  style={[styles.name, { color: m.bannerInk, fontSize: 12 * u, lineHeight: 15 * u }]}>{player.name.toUpperCase()}</Text>
-              </View>
-              <Text maxFontSizeMultiplier={CARD_TEXT_SCALE} numberOfLines={1} style={[styles.caption, caption, { marginTop: 2 * u }]}>
-                {t('hallOfFame.statLine', { runs: player.runs, wickets: player.wickets, average: avg })}
-              </Text>
-            </>} />
+          <CardFront winner={winner} photo={photo} title={title} tierName={tierName} u={u} />
         </Animated.View>
       ) : null}
     </Pressable>
@@ -96,7 +81,4 @@ const styles = StyleSheet.create({
   card: { shadowColor: '#000000', shadowOpacity: 0.25, shadowRadius: 10, shadowOffset: { width: 0, height: 6 }, elevation: 6 },
   side: { ...FILL, overflow: 'hidden', backfaceVisibility: 'hidden' },
   caption: { fontWeight: '700', letterSpacing: 0.8 },
-  score: { fontWeight: '900', fontVariant: ['tabular-nums'] },
-  banner: { alignSelf: 'stretch', alignItems: 'center' },
-  name: { fontWeight: '800', letterSpacing: 0.5 },
 });

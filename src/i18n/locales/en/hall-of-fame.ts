@@ -1,4 +1,5 @@
 export const enHallOfFame = {
+  'players.profileFailed': 'Could not load this player\'s details. Check your connection and try again.',
   'players.loadingCareer': 'Loading career',
   'players.careerFailed': 'Could not load this career. Check your connection and try again.',
   'hallOfFame.period1m': '1 month',
@@ -20,7 +21,9 @@ export const enHallOfFame = {
   'hallOfFame.tapToReveal': 'Tap to reveal',
   'hallOfFame.loading': 'Loading the Hall of fame',
   'hallOfFame.points': 'PTS',
-  'hallOfFame.statLine': '{{runs}} R · {{wickets}} W · AVG {{average}}',
+  'hallOfFame.runs': 'Runs',
+  'hallOfFame.wickets': 'Wkts',
+  'hallOfFame.average': 'Avg',
   'hallOfFame.hiddenA11y': '{{tier}} card, {{title}}',
   'hallOfFame.revealedA11y': '{{tier}}: {{name}}, {{points}} points, {{runs}} runs, {{wickets}} wickets, average {{average}}',
   'hallOfFame.revealHint': 'Reveals the player',

@@ -59,8 +59,12 @@ it('deals gold and silver face down for the last month, reveals a player on tap,
   await fireEvent.press(gold);
   // 212 + 20 × 3 + 212 / 4 = 325.0
   expect(screen.getByText('RAFI HASAN')).toBeTruthy();
+  // The revealed side: figures, brand, tier and the player's team; no award title, stars or shield.
   expect(screen.getByText('325.0')).toBeTruthy();
-  expect(screen.getByText('212 R · 3 W · AVG 53.0')).toBeTruthy();
+  expect(screen.getByText('212')).toBeTruthy();
+  expect(screen.getByText('53.0')).toBeTruthy();
+  expect(screen.getByText('ES-SPORTS')).toBeTruthy();
+  expect(screen.getByText('ALPHA XI')).toBeTruthy();
   const revealed = screen.getByLabelText('Gold: Rafi Hasan, 325.0 points, 212 runs, 3 wickets, average 53.0');
   expect(mockPush).not.toHaveBeenCalled();
   const profile = { pathname: '/player/[id]', params: { id: 'id-Rafi Hasan', name: 'Rafi Hasan' } };
