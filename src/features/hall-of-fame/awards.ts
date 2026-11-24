@@ -17,13 +17,14 @@ export function mvpPoints(p: PlayerTotals): number {
 
 /**
  * Gold and silver: the two highest MVP scores, leaving out players with none.
- * Ties go to fewer matches played, then name, so the order never flickers between loads.
+ * Ties go to fewer matches played, then name, then account id, so the order never flickers between loads.
  */
 export function pickWinners(players: PlayerTotals[]): HallWinner[] {
   return players
     .map((player) => ({ player, points: mvpPoints(player) }))
     .filter((entry) => entry.points > 0)
-    .sort((a, b) => b.points - a.points || a.player.matches - b.player.matches || a.player.name.localeCompare(b.player.name))
+    .sort((a, b) => b.points - a.points || a.player.matches - b.player.matches 
+      || a.player.name.localeCompare(b.player.name) || a.player.profileId.localeCompare(b.player.profileId))
     .slice(0, TIERS.length)
     .map((entry, i) => ({ ...entry, tier: TIERS[i], average: qualifiedAverage(entry.player) }));
 }

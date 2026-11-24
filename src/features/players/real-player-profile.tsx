@@ -41,7 +41,14 @@ export function RealPlayerProfile({ id, name }: { id: string; name?: string }) {
     : { id, fullName: fallbackName, role: 'batter', battingStyle: 'right' };
 
   return <>
-    <PlayerHeroCard player={{ profile: bio, totals: emptyCareer, shots: [], recent: [], isSample: false }} />
+    {/* Role and batting style show only once the real profile arrives, never the placeholder defaults. */}
+    <PlayerHeroCard player={{ profile: bio, totals: emptyCareer, shots: [], recent: [], isSample: false }} showDetails={Boolean(profile.data)} />
+    {profile.isError ? (
+      <View style={{ gap: spacing.md }} accessibilityLiveRegion="polite">
+        <Text muted>{t('players.profileFailed')}</Text>
+        <Button label={t('common.retry')} variant="secondary" size="compact" onPress={() => void profile.refetch()} />
+      </View>
+    ) : null}
     {career.status === 'loading' ? (
       <ActivityIndicator color={colors.link} accessibilityLabel={t('players.loadingCareer')} />
     ) : career.status === 'error' ? (

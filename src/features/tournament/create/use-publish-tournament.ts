@@ -5,7 +5,7 @@ import { Platform } from 'react-native';
 import { localEventId } from '@/features/scoring/local-id';
 
 import { removeTournamentImages, uploadTournamentImage } from '../data/tournament-images';
-import { TournamentError } from '../data/tournament-errors';
+import { refusedByServer } from '../data/tournament-errors';
 import { createTournament, updateTournament } from '../data/tournament-writes';
 import { myTournamentsKey, tournamentKey } from '../data/tournament-repository';
 import type { TournamentDraft } from './draft';
@@ -62,7 +62,7 @@ async function savePhotos(userId: string, id: string, draft: TournamentDraft): P
       registrationOpens: draft.registrationOpens, registrationDeadline: draft.registrationDeadline, coverUrl, profileUrl,
     });
   } catch (error) {
-    if (!sent || !(error instanceof TournamentError) || error.code !== null) await removeTournamentImages(userId, id, uploaded);
+    if (!sent || refusedByServer(error)) await removeTournamentImages(userId, id, uploaded);
     throw error;
   }
 }

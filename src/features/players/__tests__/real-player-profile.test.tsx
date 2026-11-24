@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { fake } from '@/features/tournament/__fixtures__/supabase-fake';
 import { ThemeProvider } from '@/theme';
@@ -47,4 +47,15 @@ it('loads a real account from the server: their details, photo and career, with 
   expect(screen.queryByText(/^(Won|Lost)$/)).toBeNull();
   expect(fake.calls('profiles', 'eq')).toContainEqual(['id', ID]);
   expect(fake.calls('player_match_figures', 'eq')).toContainEqual(['profile_id', ID]);
+});
+
+it('says when the player details fail and retries them, without showing placeholder role details', async () => {
+  fake.results.profiles = { data: null, error: { code: '', message: 'Network request failed' } };
+  await show();
+  expect(await screen.findByText("Could not load this player's details. Check your connection and try again.")).toBeTruthy();
+  expect(screen.getByText('Rafi Hasan')).toBeTruthy();
+  expect(screen.queryByText('Batter')).toBeNull();
+  fake.results.profiles = { data: { id: ID, full_name: 'Rafi Hasan', avatar_url: null, area: null, district: null, role: 'keeper', batting_style: 'right' }, error: null };
+  await fireEvent.press(screen.getAllByText('Try again')[0]);
+  expect(await screen.findByText('Keeper')).toBeTruthy();
 });

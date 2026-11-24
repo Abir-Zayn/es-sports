@@ -30,6 +30,15 @@ export function tournamentMessage(error: unknown): string {
   }
 }
 
+/**
+ * True only when the server answered and refused: Postgres codes are 5 characters, PostgREST's start with PGRST.
+ * A lost connection, timeout or abort has an empty or network code, and the change may still have been saved.
+ */
+export function refusedByServer(error: unknown): boolean {
+  const code = errorCode(error);
+  return code !== null && /^([0-9A-Z]{5}|PGRST\d+)$/.test(code);
+}
+
 export function toTournamentError(error: unknown): TournamentError {
   return error instanceof TournamentError ? error : new TournamentError(tournamentMessage(error), errorCode(error));
 }
