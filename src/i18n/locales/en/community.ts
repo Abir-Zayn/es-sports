@@ -40,10 +40,14 @@ export const enCommunity = {
   'pitchZone.behind_square': 'Behind',
 
   'leaderboard.title': 'Leaderboards',
-  'leaderboard.allTournaments': 'All tournaments',
+  'leaderboard.periodAll': 'All time',
+  'leaderboard.periodMonth': 'This month',
+  'leaderboard.periodWeek': 'This week',
   'leaderboard.statTypeA11y': 'Stat type',
   'leaderboard.loading': 'Loading top players',
   'leaderboard.emptyTitle': 'No completed tournament matches yet',
+  'leaderboard.emptyTitleMonth': 'No completed tournament matches this month',
+  'leaderboard.emptyTitleWeek': 'No completed tournament matches this week',
   'leaderboard.emptyMessage': 'Top players appear here once tournament results come in. Friendly matches do not count.',
 
   'whatsNew.title': 'What’s new',

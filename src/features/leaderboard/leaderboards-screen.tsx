@@ -4,36 +4,43 @@ import { useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AppIconTile, AppTabs, Button, SegmentedControl, Text, type SegmentedOption } from '@/components/ui';
+import { AppIconTile, AppTabs, Button, SegmentedControl, Text, type AppTab, type SegmentedOption } from '@/components/ui';
 import { RankedBoard } from '@/features/tournament/components/ranked-board';
 import { tournamentErrorText } from '@/features/tournament/data/tournament-errors';
 import { useTranslation } from '@/i18n';
 import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 import type { StatMode } from '@/types/cricket';
 
-import { useLeaderboard } from './use-leaderboard';
+import { useLeaderboard, type LeaderboardPeriod } from './use-leaderboard';
 
-const ALL = 'all';
-
-/** Top players across every tournament (friendlies never count), or within one picked tournament. */
+/** Top players across every tournament (friendlies never count), filtered by All time, This month, or This week. */
 export function LeaderboardsScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
-  const [scope, setScope] = useState<string>(ALL);
+  const [period, setPeriod] = useState<LeaderboardPeriod>('all');
   const [mode, setMode] = useState<StatMode>('bat');
   const [categoryId, setCategoryId] = useState<Record<StatMode, string>>({ bat: 'runs', bowl: 'wickets' });
-  const { tournaments, totals, boards } = useLeaderboard(scope === ALL ? null : scope);
+  const { totals, boards } = useLeaderboard(period);
 
+  const periodTabs: AppTab<LeaderboardPeriod>[] = [
+    { id: 'all', label: t('leaderboard.periodAll') },
+    { id: 'month', label: t('leaderboard.periodMonth') },
+    { id: 'week', label: t('leaderboard.periodWeek') },
+  ];
   const modeOptions: SegmentedOption<StatMode>[] = [
     { id: 'bat', label: t('profile.career.batting') },
     { id: 'bowl', label: t('profile.career.bowling') },
   ];
-  const scopeTabs = [{ id: ALL, label: t('leaderboard.allTournaments') }, ...(tournaments.data ?? []).map((item) => ({ id: item.id, label: item.name }))];
   const categories = boards[mode];
   const board = categories.find((c) => c.id === categoryId[mode]) ?? categories[0];
-  const refresh = () => void Promise.all([tournaments.refetch(), totals.refetch()]);
+  const emptyTitle = period === 'week'
+    ? t('leaderboard.emptyTitleWeek')
+    : period === 'month'
+      ? t('leaderboard.emptyTitleMonth')
+      : t('leaderboard.emptyTitle');
+  const refresh = () => void totals.refetch();
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -47,7 +54,7 @@ export function LeaderboardsScreen() {
         refreshControl={<RefreshControl refreshing={totals.isRefetching} onRefresh={refresh} tintColor={colors.link} />}
       >
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll} contentContainerStyle={styles.chips}>
-          <AppTabs tabs={scopeTabs} selected={scope} onSelect={setScope} />
+          <AppTabs tabs={periodTabs} selected={period} onSelect={setPeriod} />
         </ScrollView>
         <SegmentedControl options={modeOptions} selected={mode} onSelect={setMode} height={sizes.iconButton} accessibilityLabel={t('leaderboard.statTypeA11y')} />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll} contentContainerStyle={styles.chips}>
@@ -63,11 +70,11 @@ export function LeaderboardsScreen() {
           </View>
         ) : (totals.data ?? []).length === 0 ? (
           <View style={styles.status}>
-            <Text style={styles.emptyTitle}>{t('leaderboard.emptyTitle')}</Text>
+            <Text style={styles.emptyTitle}>{emptyTitle}</Text>
             <Text muted>{t('leaderboard.emptyMessage')}</Text>
           </View>
         ) : board ? (
-          <RankedBoard key={`${scope}-${board.id}`} board={board} />
+          <RankedBoard key={`${period}-${board.id}`} board={board} />
         ) : null}
       </ScrollView>
     </SafeAreaView>
