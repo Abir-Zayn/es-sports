@@ -1,0 +1,27 @@
+import type { enHallOfFame } from '../en/hall-of-fame';
+
+export const bnHallOfFame: Record<keyof typeof enHallOfFame, string> = {
+  'players.loadingCareer': 'ক্যারিয়ার লোড হচ্ছে',
+  'players.careerFailed': 'ক্যারিয়ার লোড করা যায়নি। সংযোগ দেখে আবার চেষ্টা করুন।',
+  'hallOfFame.period1m': '১ মাস',
+  'hallOfFame.period3m': '৩ মাস',
+  'hallOfFame.period6m': '৬ মাস',
+  'hallOfFame.period1y': '১ বছর',
+  'hallOfFame.title1m': 'মাসের\nসেরা\nখেলোয়াড়',
+  'hallOfFame.title3m': 'ত্রৈমাসিক\nসেরা\nখেলোয়াড়',
+  'hallOfFame.title6m': 'ছয় মাসের\nসেরা\nখেলোয়াড়',
+  'hallOfFame.title1y': 'বছরের\nসেরা\nখেলোয়াড়',
+  'hallOfFame.gold': 'গোল্ড',
+  'hallOfFame.silver': 'সিলভার',
+  'hallOfFame.tapToReveal': 'দেখতে ট্যাপ করুন',
+  'hallOfFame.loading': 'হল অব ফেম লোড হচ্ছে',
+  'hallOfFame.points': 'পয়েন্ট',
+  'hallOfFame.statLine': '{{runs}} রান · {{wickets}} উইকেট · গড় {{average}}',
+  'hallOfFame.hiddenA11y': '{{tier}} কার্ড, {{title}}',
+  'hallOfFame.revealedA11y': '{{tier}}: {{name}}, {{points}} পয়েন্ট, {{runs}} রান, {{wickets}} উইকেট, গড় {{average}}',
+  'hallOfFame.revealHint': 'খেলোয়াড়কে দেখায়',
+  'hallOfFame.openHint': 'খেলোয়াড়ের প্রোফাইল খোলে',
+  'hallOfFame.rule': 'টুর্নামেন্ট ম্যাচের MVP পয়েন্টে র‍্যাঙ্ক: প্রতি রানে ১, প্রতি উইকেটে ২০, সাথে ৩ ইনিংসের পর ব্যাটিং গড়।',
+  'hallOfFame.emptyTitle': 'এই সময়ে কোনো টুর্নামেন্ট ম্যাচ শেষ হয়নি',
+  'hallOfFame.emptyMessage': 'টুর্নামেন্টের ফলাফল এলে গোল্ড ও সিলভার খেলোয়াড়রা এখানে দেখা যাবে। ফ্রেন্ডলি ম্যাচ গণনা হয় না।',
+};

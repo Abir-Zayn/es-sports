@@ -2,6 +2,7 @@ import type { TranslationDict } from '../en';
 import { bnAuth } from './auth';
 import { bnCommon } from './common';
 import { bnCommunity } from './community';
+import { bnHallOfFame } from './hall-of-fame';
 import { bnHome } from './home';
 import { bnLegal } from './legal';
 import { bnMatch } from './match';
@@ -18,6 +19,7 @@ export const bn: TranslationDict = {
   ...bnHome,
   ...bnProfile,
   ...bnCommunity,
+  ...bnHallOfFame,
   ...bnNotifications,
   ...bnMatch,
   ...bnMatchFriendly,
