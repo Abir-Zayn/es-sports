@@ -13,7 +13,6 @@ export function PlayerRecentMatches({ matches }: { matches: readonly Performance
         <View style={styles.marker}><View style={styles.dot} /></View>
         <View style={styles.details}>
           <View style={styles.line}><Text style={styles.opponent}>{match.opponent}</Text><Text style={styles.date}>{match.date}</Text></View>
-          <Text style={styles.result}>{match.won ? t('profile.recent.wonWord') : t('profile.recent.lostWord')}</Text>
           <View style={styles.figures}>
             {match.bat ? <Text style={styles.figure}>{t('players.battingPrefix', { value: match.bat })}</Text> : null}
             {match.bowl ? <Text style={styles.figure}>{t('players.bowlingPrefix', { value: match.bowl })}</Text> : null}
@@ -29,6 +28,6 @@ const createStyles = (c: Palette) => StyleSheet.create({
   marker: { width: dp(12), alignItems: 'center', paddingTop: dp(6) }, dot: { width: dp(9), height: dp(9), borderRadius: radius.pill, backgroundColor: c.outline },
   details: { flex: 1, borderBottomWidth: 1, borderColor: c.border, paddingBottom: spacing.lg, gap: spacing.xs },
   line: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.sm }, opponent: { ...typography.labelMd, color: c.text, flexShrink: 1 },
-  date: { ...typography.bodySm, color: c.textMuted }, result: { ...typography.bodySm, color: c.textMuted },
+  date: { ...typography.bodySm, color: c.textMuted },
   figures: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }, figure: { ...typography.bodySm, color: c.text, fontVariant: ['tabular-nums'] },
 });

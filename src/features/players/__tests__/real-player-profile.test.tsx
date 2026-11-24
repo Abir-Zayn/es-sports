@@ -43,6 +43,8 @@ it('loads a real account from the server: their details, photo and career, with 
   expect(screen.getByText('Bowler')).toBeTruthy();
   expect(screen.getByText('vs Agrabad Titans')).toBeTruthy();
   expect(screen.queryByText('Sample career data')).toBeNull();
+  // The career shows the player's own figures, not whether their team won.
+  expect(screen.queryByText(/^(Won|Lost)$/)).toBeNull();
   expect(fake.calls('profiles', 'eq')).toContainEqual(['id', ID]);
   expect(fake.calls('player_match_figures', 'eq')).toContainEqual(['profile_id', ID]);
 });
