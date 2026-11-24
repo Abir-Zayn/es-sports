@@ -40,7 +40,11 @@ it('deals gold and silver face down for the last month, reveals a player on tap,
   fake.results.profiles = { data: [{ id: 'id-Rafi Hasan', avatar_url: 'https://example.com/rafi.jpg' }], error: null };
   const before = Date.now();
   await show();
+  // Card-sized placeholders hold the layout while the winners load.
+  expect(screen.getByLabelText('Loading the Hall of fame')).toBeTruthy();
   const gold = await screen.findByLabelText('Gold card, Player of the month');
+  expect(screen.getByText('The two most valuable players in tournament matches over the last month.')).toBeTruthy();
+  expect(screen.queryByText('View career')).toBeNull();
   expect(screen.getByLabelText('Silver card, Player of the month')).toBeTruthy();
   expect(screen.queryByText('RAFI HASAN')).toBeNull();
   expect(screen.queryByText(/TANVIR/)).toBeNull();
@@ -59,8 +63,12 @@ it('deals gold and silver face down for the last month, reveals a player on tap,
   expect(screen.getByText('212 R · 3 W · AVG 53.0')).toBeTruthy();
   const revealed = screen.getByLabelText('Gold: Rafi Hasan, 325.0 points, 212 runs, 3 wickets, average 53.0');
   expect(mockPush).not.toHaveBeenCalled();
+  const profile = { pathname: '/player/[id]', params: { id: 'id-Rafi Hasan', name: 'Rafi Hasan' } };
+  // Once revealed, a visible button opens the career; a second tap on the card does too.
+  await fireEvent.press(screen.getByText('View career'));
+  expect(mockPush).toHaveBeenLastCalledWith(profile);
   await fireEvent.press(revealed);
-  expect(mockPush).toHaveBeenCalledWith({ pathname: '/player/[id]', params: { id: 'id-Rafi Hasan', name: 'Rafi Hasan' } });
+  expect(mockPush).toHaveBeenCalledTimes(2);
 });
 
 it('switches to a 1 year window, retitles the cards, and says so when nothing was played', async () => {

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 
-import { InitialsAvatar, Text } from '@/components/ui';
+import { Button, InitialsAvatar, Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import { initialsOf } from '@/lib/initials';
 
@@ -10,6 +10,7 @@ import type { HallWinner } from '../awards';
 import { METALS } from './card-art';
 import { TrophyArt } from './card-emblem';
 import { CardFace } from './card-face';
+import { CARD_TEXT_SCALE } from './card-scale';
 
 export const CARD_RATIO = 1.4;
 const FLIP_MS = 600;
@@ -53,39 +54,45 @@ export function FameCard({ winner, photo, title, width, onOpenPlayer }: Props) {
   const caption = { color: m.ink, fontSize: 7.5 * u, lineHeight: 10 * u };
 
   return (
+    <View style={[styles.slot, { width }]}>
     <Pressable accessibilityRole="button" accessibilityLabel={label}
       accessibilityHint={t(revealed ? 'hallOfFame.openHint' : 'hallOfFame.revealHint')}
       onPress={() => (revealed ? onOpenPlayer() : setRevealed(true))}
-      style={[styles.card, { width, height: width * CARD_RATIO, borderRadius: 12 * u }]}>
+      style={({ pressed }) => [styles.card, { width, height: width * CARD_RATIO, borderRadius: 12 * u }, pressed && styles.pressed]}>
       <Animated.View style={[styles.side, { borderRadius: 12 * u }, backStyle]}>
         <CardFace tier={tier} title={title} u={u}
           emblem={<View style={{ marginTop: 12 * u }}><TrophyArt tier={tier} size={56 * u} /></View>}
-          footer={<Text style={[styles.caption, caption]}>{`${tierName} · ${t('hallOfFame.tapToReveal')}`.toUpperCase()}</Text>} />
+          footer={<Text maxFontSizeMultiplier={CARD_TEXT_SCALE} style={[styles.caption, caption]}>{`${tierName} · ${t('hallOfFame.tapToReveal')}`.toUpperCase()}</Text>} />
       </Animated.View>
       {revealed ? (
         <Animated.View style={[styles.side, { borderRadius: 12 * u }, frontStyle]}>
           <CardFace tier={tier} title={title} u={u}
             emblem={<View style={{ alignItems: 'center', marginTop: 11 * u }}>
               <InitialsAvatar label={initialsOf(player.name)} imageUri={photo} size={46 * u} tone="neutral" borderColor={m.deep} borderWidth={2 * u} />
-              <Text style={[styles.score, { color: m.ink, fontSize: 14 * u, lineHeight: 16 * u, marginTop: 3 * u }]}>{score}</Text>
-              <Text style={[styles.caption, caption, { fontSize: 6.5 * u, lineHeight: 8 * u }]}>{t('hallOfFame.points')}</Text>
+              <Text maxFontSizeMultiplier={CARD_TEXT_SCALE} style={[styles.score, { color: m.ink, fontSize: 14 * u, lineHeight: 16 * u, marginTop: 3 * u }]}>{score}</Text>
+              <Text maxFontSizeMultiplier={CARD_TEXT_SCALE} style={[styles.caption, caption, { fontSize: 7.5 * u, lineHeight: 9 * u }]}>{t('hallOfFame.points')}</Text>
             </View>}
             footer={<>
               <View style={[styles.banner, { backgroundColor: m.banner, paddingVertical: 3 * u, paddingHorizontal: 8 * u, borderRadius: 3 * u }]}>
-                <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}
+                <Text maxFontSizeMultiplier={CARD_TEXT_SCALE} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}
                   style={[styles.name, { color: m.bannerInk, fontSize: 12 * u, lineHeight: 15 * u }]}>{player.name.toUpperCase()}</Text>
               </View>
-              <Text numberOfLines={1} style={[styles.caption, caption, { marginTop: 2 * u }]}>
+              <Text maxFontSizeMultiplier={CARD_TEXT_SCALE} numberOfLines={1} style={[styles.caption, caption, { marginTop: 2 * u }]}>
                 {t('hallOfFame.statLine', { runs: player.runs, wickets: player.wickets, average: avg })}
               </Text>
             </>} />
         </Animated.View>
       ) : null}
     </Pressable>
+    {/* The second tap on the card also opens the profile; the button makes that visible. */}
+    {revealed ? <Button label={t('hallOfFame.viewCareer')} variant="secondary" onPress={onOpenPlayer} /> : null}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  slot: { gap: 12 },
+  pressed: { opacity: 0.9 },
   card: { shadowColor: '#000000', shadowOpacity: 0.25, shadowRadius: 10, shadowOffset: { width: 0, height: 6 }, elevation: 6 },
   side: { ...FILL, overflow: 'hidden', backfaceVisibility: 'hidden' },
   caption: { fontWeight: '700', letterSpacing: 0.8 },

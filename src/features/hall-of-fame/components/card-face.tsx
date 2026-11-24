@@ -6,6 +6,7 @@ import { Text } from '@/components/ui';
 
 import type { Tier } from '../awards';
 import { CardArt, METALS } from './card-art';
+import { CARD_TEXT_SCALE } from './card-scale';
 import { Shield } from './card-emblem';
 
 type Props = {
@@ -28,9 +29,9 @@ export function CardFace({ tier, title, u, emblem, footer }: Props) {
     <View style={[StyleSheet.absoluteFill, styles.face, { paddingVertical: 10 * u, paddingHorizontal: 12 * u }]}>
       <CardArt tier={tier} watermark={title} />
       <View style={styles.title}>
-        <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.heavy, big, { paddingRight: 18 * u }]}>{lead}</Text>
-        <Text numberOfLines={1} style={[styles.heavy, styles.right, { color: m.ink, fontSize: 11 * u, lineHeight: 11 * u, marginRight: 22 * u }]}>{join}</Text>
-        <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.heavy, styles.right, big]}>{last}</Text>
+        <Text maxFontSizeMultiplier={CARD_TEXT_SCALE} numberOfLines={1} adjustsFontSizeToFit style={[styles.heavy, big, { paddingRight: 18 * u }]}>{lead}</Text>
+        <Text maxFontSizeMultiplier={CARD_TEXT_SCALE} numberOfLines={1} style={[styles.heavy, styles.right, { color: m.ink, fontSize: 11 * u, lineHeight: 11 * u, marginRight: 22 * u }]}>{join}</Text>
+        <Text maxFontSizeMultiplier={CARD_TEXT_SCALE} numberOfLines={1} adjustsFontSizeToFit style={[styles.heavy, styles.right, big]}>{last}</Text>
       </View>
       <View style={[styles.stars, { gap: 6 * u }]}>
         {[0, 1, 2].map((i) => (
