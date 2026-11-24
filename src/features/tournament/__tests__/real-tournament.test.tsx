@@ -81,6 +81,29 @@ describe('a real tournament', () => {
     expect(screen.getByText('6 a side · squads of 8 to 10')).toBeTruthy();
   });
 
+  it('shows neither the cover nor the profile photo inside the tournament; those belong on the Home card', async () => {
+    fake.results.tournaments = { data: { ...tournament, cover_url: 'https://example.com/cover.jpg', profile_url: 'https://example.com/logo.jpg' }, error: null };
+    await show(<RealTournamentScreen id={T} section="overview" />);
+    expect(await screen.findByText('Main Ground, Chattogram')).toBeTruthy();
+    const tree = JSON.stringify(screen.toJSON());
+    expect(tree).not.toContain('cover.jpg');
+    expect(tree).not.toContain('logo.jpg');
+  });
+
+  it('lays the overview out as status, format, teams, organisers and the organiser tools', async () => {
+    const soon = new Date(); soon.setDate(soon.getDate() + 3);
+    const key = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    fake.results.tournaments = { data: { ...tournament, start_date: key(soon), end_date: key(soon) }, error: null };
+    await show(<RealTournamentScreen id={T} section="overview" />);
+    expect(await screen.findByLabelText('Upcoming. Starts in 3 days')).toBeTruthy();
+    expect(screen.getByLabelText('Overs: 20 overs')).toBeTruthy();
+    expect(screen.getByLabelText('Format: Round robin')).toBeTruthy();
+    expect(screen.getByLabelText('Olivia Orga, Organiser')).toBeTruthy();
+    expect(screen.getByLabelText('Moderator Mo, Moderator')).toBeTruthy();
+    expect(await screen.findByRole('progressbar')).toBeTruthy();
+    expect(screen.getByText('ORGANISER TOOLS')).toBeTruthy();
+  });
+
   it('lets staff open team and staff management with the real id', async () => {
     await show(<RealTournamentScreen id={T} section="overview" />);
     await fireEvent.press(await screen.findByRole('button', { name: 'Manage teams and staff' }));

@@ -127,6 +127,12 @@ describe('create tournament form', () => {
     await fireEvent.changeText(await screen.findByLabelText('Tournament name'), 'New Cup');
     await waitFor(() => expect(save).toHaveBeenCalledWith('organizer', { ...emptyDraft, name: 'New Cup' }), { timeout: 3000 });
   });
+  it('has no Create tournament button on the organizer desk; creation starts from the + button', async () => {
+    load.mockResolvedValue(null); await show(<TournamentDraftsScreen />);
+    expect(await screen.findByText('Organizer desk')).toBeTruthy();
+    await waitFor(() => expect(load).toHaveBeenCalled());
+    expect(screen.queryByRole('button', { name: 'Create tournament' })).toBeNull();
+  });
   it('links the tournaments tab to creation and reopens a draft', async () => {
     load.mockResolvedValue(valid); await show(<TournamentDraftsScreen />);
     await fireEvent.press(await screen.findByRole('button', { name: `Continue setup for ${valid.name}` }));
