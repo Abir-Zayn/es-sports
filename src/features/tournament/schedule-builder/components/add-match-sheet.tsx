@@ -15,6 +15,8 @@ type Props = {
   visible: boolean;
   teams: ScheduleTeam[];
   groupIds?: string[][] | null;
+  /** The stage it opens on, e.g. the first knockout stage of a knockout round. */
+  defaultStage?: StageName;
   days: string[];
   firstStartMin: number;
   /** Adds the match, returning why it cannot, or null once it is in. */
@@ -31,11 +33,11 @@ export function AddMatchSheet({ visible, onClose, ...rest }: Props) {
   );
 }
 
-function AddMatchBody({ teams, groupIds, days, firstStartMin, onAdd, onClose }: Omit<Props, 'visible'>) {
+function AddMatchBody({ teams, groupIds, defaultStage = 'League', days, firstStartMin, onAdd, onClose }: Omit<Props, 'visible'>) {
   const { colors } = useTheme();
   const [homeId, setHomeId] = useState<string | null>(null);
   const [awayId, setAwayId] = useState<string | null>(null);
-  const [stage, setStage] = useState<StageName>('League');
+  const [stage, setStage] = useState<StageName>(defaultStage);
   const [group, setGroup] = useState<number | null>(null);
   const [date, setDate] = useState(days[0] ?? '');
   const [startMin, setStartMin] = useState(firstStartMin);

@@ -10,7 +10,7 @@ import { fetchStandings, standingsKey } from '../data/standings-repository';
 import { tournamentErrorText } from '../data/tournament-errors';
 import { tournamentKey, type EnteredTeam, type TournamentRecord } from '../data/tournament-repository';
 import { ChoiceChips } from '../schedule-builder/components/choice-chips';
-import { bracketSlots, groupChoices, isKnockoutSize, nextStageFor, rankByPlace } from './next-round';
+import { bracketSlots, groupChoices, isKnockoutSize, nextStageFor, rankByPlace, shuffled } from './next-round';
 
 type Props = { tournament: TournamentRecord; teams: EnteredTeam[]; round: RoundView };
 
@@ -80,6 +80,10 @@ export function NextRoundCard({ tournament: t, teams, round }: Props) {
       {ready && knockout ? (
         <View style={styles.gap}>
           <Text style={styles.label}>Pairings · tap two teams to swap them</Text>
+          <View style={styles.pair}>
+            <View style={styles.grow}><Button label="Shuffle" variant="secondary" size="compact" onPress={() => { setSlots(shuffled(order)); setSwapFrom(null); }} /></View>
+            <View style={styles.grow}><Button label="Seeded order" variant="secondary" size="compact" disabled={!slots} onPress={reset} /></View>
+          </View>
           {range(0, order.length / 2 - 1).map((p) => (
             <View key={p} style={styles.pair}>
               {[2 * p, 2 * p + 1].map((i) => (
@@ -111,6 +115,7 @@ const createStyles = (colors: Palette) => StyleSheet.create({
   title: typography.headlineMd,
   label: { ...typography.labelMd, color: colors.textMuted },
   pair: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
+  grow: { flex: 1 },
   slot: { flex: 1, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.surfaceRaised, borderWidth: 1.5, borderColor: 'transparent' },
   slotOn: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
   error: { color: colors.danger },

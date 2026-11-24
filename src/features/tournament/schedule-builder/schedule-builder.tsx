@@ -1,4 +1,5 @@
 import { format, parseISO } from 'date-fns';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -17,9 +18,11 @@ import { ConfirmSheet } from '../roster/components/confirm-sheet';
 import { GroupsSection } from '../teams/groups-section';
 import { AddMatchSheet } from './components/add-match-sheet';
 import { EditMatchSheet } from './components/edit-match-sheet';
+import { RoundPlanCard } from './components/round-plan-card';
 import { ScheduleControls } from './components/schedule-controls';
 import { ScheduleDay } from './components/schedule-day';
 import { ScheduleSummary, type ScheduleStatus } from './components/schedule-summary';
+import { knockoutStage } from './generate';
 import type { RoundPlan, ScheduledMatch, ScheduleTeam } from './types';
 import { useScheduleBuilder } from './use-schedule-builder';
 
@@ -55,6 +58,13 @@ export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isS
   const [adding, setAdding] = useState(false);
   const [confirmRedraw, setConfirmRedraw] = useState(false);
   const { matches, saved, publish, live } = builder;
+  const router = useRouter();
+  const plan = setup.plan;
+  // A later round with no matches yet gets its own draw that keeps earlier rounds; Add match offers only its teams.
+  const planMatches = plan ? matches.filter((m) => (plan.kind === 'knockout' ? m.stage !== 'League' : m.stage === 'League' && m.round === plan.round)) : matches;
+  const freshRound = Boolean(plan && plan.round > 0 && planMatches.length === 0 && (plan.kind === 'knockout' || plan.groupIds));
+  const addTeams = plan?.kind === 'knockout' && plan.round > 0 ? teams.filter((t) => plan.slots.includes(t.id)) : teams;
+  const outOfDays = Boolean(builder.problem?.startsWith('No days are left'));
   const playingDays = [...new Set(matches.map((m) => m.date))];
   const locked = live && matches.some((m) => m.started && (!setup.plan || (setup.plan.kind === 'groups' ? m.stage === 'League' && m.round === setup.plan.round : m.stage !== 'League')));
   const published = Boolean(saved.data?.publishedAt);
@@ -86,12 +96,16 @@ export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isS
             <Text muted>{ids.map((id) => teams.find((team) => team.id === id)?.name ?? 'Team').join(' · ')}</Text>
           </Card>
         )) : null}
+        {isOwner && freshRound && plan ? <RoundPlanCard plan={plan} teams={teams} onDraw={builder.draw} /> : null}
         {isOwner ? (
-          <ScheduleControls mode={builder.mode} settings={builder.settings} hasMatches={matches.length > 0} locked={locked}
+          <ScheduleControls mode={builder.mode} settings={builder.settings} hasMatches={planMatches.length > 0} locked={locked}
             onMode={builder.changeMode} onSettings={builder.changeSettings} onAdd={() => setAdding(true)}
-            onDraw={() => (matches.length > 0 ? setConfirmRedraw(true) : builder.draw())} />
+            onDraw={() => (planMatches.length > 0 ? setConfirmRedraw(true) : builder.draw())} />
         ) : null}
         {builder.problem ? <Text accessibilityRole="alert" style={styles.error}>{builder.problem}</Text> : null}
+        {builder.problem && outOfDays && isOwner && isUuid(tournamentId) ? (
+          <Button label="Change tournament dates" variant="secondary" onPress={() => router.push({ pathname: '/tournament/edit', params: { tournamentId } })} />
+        ) : null}
         {builder.outOfDate ? (
           <Text accessibilityRole="alert" style={styles.warning}>
             The teams have changed since this schedule was made. Draw it again or fix the matches before publishing.
@@ -135,11 +149,12 @@ export function ScheduleBuilder({ tournamentId, setup, days, teams, isOwner, isS
         onClose={() => setEditing(null)}
       />
       {starting ? <StartMatchSheet key={starting.id} tournamentId={tournamentId} match={starting} playersPerSide={setup.playersPerSide} onClose={() => setStarting(null)} /> : null}
-      <AddMatchSheet visible={adding} teams={teams} groupIds={setup.plan?.kind === 'groups' ? setup.plan.groupIds : undefined} days={days} firstStartMin={builder.settings.firstStartMin} onAdd={builder.add} onClose={() => setAdding(false)} />
+      <AddMatchSheet visible={adding} teams={addTeams} groupIds={plan?.kind === 'groups' ? plan.groupIds : undefined}
+        defaultStage={plan?.kind === 'knockout' && plan.round > 0 ? knockoutStage(plan.slots.length) : undefined} days={days} firstStartMin={builder.settings.firstStartMin} onAdd={builder.add} onClose={() => setAdding(false)} />
       <ConfirmSheet
         visible={confirmRedraw}
         title="Redraw schedule?"
-        message="Every match is drawn again from the teams and settings. Matches you moved or added by hand are replaced."
+        message={plan && plan.round > 0 ? "This round's matches are drawn again. Earlier rounds stay as they are." : 'Every match is drawn again from the teams and settings. Matches you moved or added by hand are replaced.'}
         confirmLabel="Redraw"
         busy={false}
         error={null}

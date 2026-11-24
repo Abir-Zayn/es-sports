@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -20,6 +21,7 @@ type Props = { tournament: TournamentRecord; teams: EnteredTeam[]; isOwner: bool
  * this one is done. A one-group tournament still in its first round shows `singleLeague` instead of groups.
  */
 export function RoundsPanel({ tournament: t, teams, isOwner, singleLeague }: Props) {
+  const router = useRouter();
   const rounds = useQuery({ queryKey: roundsKey(t.id), queryFn: () => fetchTournamentRounds(t.id) });
   const schedule = useQuery({ queryKey: scheduleKey(t.id), queryFn: () => fetchSchedule(t.id) });
   if (rounds.isPending || schedule.isPending) return <Text muted>Loading rounds…</Text>;
@@ -41,6 +43,9 @@ export function RoundsPanel({ tournament: t, teams, isOwner, singleLeague }: Pro
         <GroupsSection tournament={t} teams={teams} round={groupsRound} canChange={isOwner && latest === groupsRound && !started} />
       )}
       {latest.kind === 'knockout' ? <Text muted>The knockout has started. Follow it on the Knockout tab.</Text> : null}
+      {isOwner && latest.kind === 'knockout' && !matches.some((m) => m.stage !== 'League') ? (
+        <Button label="Schedule knockout" onPress={() => router.push({ pathname: '/tournament/schedule', params: { tournamentId: t.id } })} />
+      ) : null}
       {isOwner && latest.kind === 'groups' && isRoundComplete(latest, matches) ? <NextRoundCard tournament={t} teams={teams} round={latest} /> : null}
     </View>
   );

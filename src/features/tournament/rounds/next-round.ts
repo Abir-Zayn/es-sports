@@ -50,3 +50,13 @@ export const bracketSlots = (ranked: string[]) => seedOrder(ranked.length).map((
 
 /** Group counts that split `n` teams evenly with at least 3 in each, up to 8 groups. */
 export const groupChoices = (n: number) => [1, 2, 3, 4, 5, 6, 7, 8].filter((g) => n % g === 0 && n >= 3 * g);
+
+/** The same teams in a random order (Fisher-Yates); `random` is injectable for tests. */
+export function shuffled<T>(items: readonly T[], random: () => number = Math.random): T[] {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
