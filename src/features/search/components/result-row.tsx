@@ -23,6 +23,7 @@ export function ResultRow({ row, onPress }: Props) {
       <InitialsAvatar
         label={row.short}
         tone={row.tone}
+        imageUri={row.imageUri}
         shape={row.shape}
         size={sizes.avatar}
         borderColor={plain ? colors.outline : undefined}

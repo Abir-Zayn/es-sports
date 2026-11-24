@@ -12,7 +12,8 @@ type Mode = 'bat' | 'bowl';
 type Props = {
   batting: BattingStats;
   bowling: BowlingStats;
-  onFindTeam: () => void;
+  /** Shown as a "Find a team" button on an empty career; left out on someone else's profile. */
+  onFindTeam?: () => void;
 };
 
 const modes: { id: Mode; labelKey: TranslationKey; icon: number }[] = [
@@ -63,7 +64,7 @@ export function CareerStats({ batting, bowling, onFindTeam }: Props) {
             <Text muted style={styles.emptyText}>
               {t('profile.career.empty')}
             </Text>
-            <Button label={t('profile.career.findTeam')} size="compact" onPress={onFindTeam} />
+            {onFindTeam ? <Button label={t('profile.career.findTeam')} size="compact" onPress={onFindTeam} /> : null}
           </View>
         ) : (
           <>

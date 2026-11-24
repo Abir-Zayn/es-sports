@@ -5,7 +5,7 @@ import type { AvatarTone } from '@/theme';
 import type { TournamentDraft } from '../create/draft';
 import { toTournamentError } from './tournament-errors';
 
-/** The columns `create_tournament` reads. Empty registration dates are null; images stay on the device. */
+/** The columns `create_tournament` reads. Empty registration dates are null; images are saved after, with `update_tournament`. */
 export function draftToPayload(id: string, draft: TournamentDraft) {
   return {
     id,

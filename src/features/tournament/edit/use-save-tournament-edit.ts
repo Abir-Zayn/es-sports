@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { removeTournamentImages, uploadTournamentImage } from '../data/tournament-images';
 import { myTournamentsKey, tournamentKey, type TournamentRecord } from '../data/tournament-repository';
-import { TournamentError } from '../data/tournament-errors';
+import { refusedByServer } from '../data/tournament-errors';
 import { updateTournament } from '../data/tournament-writes';
 import type { EditForm } from './edit-form';
 
@@ -32,7 +32,7 @@ export function useSaveTournamentEdit(t: TournamentRecord, userId: string) {
         await updateTournament(t.id, { ...form, coverUrl, profileUrl });
       } catch (error) {
         // Only a refusal from the server proves the row was not changed; after a lost reply the new images may be in use.
-        const refused = !sent || !(error instanceof TournamentError) || error.code !== null;
+        const refused = !sent || refusedByServer(error);
         if (refused) await removeTournamentImages(userId, t.id, uploaded);
         throw error;
       }

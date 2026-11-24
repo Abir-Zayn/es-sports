@@ -13,7 +13,8 @@ const ROLE_KEYS: Record<PlayingRole, TranslationKey> = {
   keeper: 'profile.role.keeper',
 };
 
-export function PlayerHeroCard({ player }: { player: PlayerCareer }) {
+/** `showDetails` false hides role, batting style and area, e.g. while a real profile has not loaded. */
+export function PlayerHeroCard({ player, showDetails = true }: { player: PlayerCareer; showDetails?: boolean }) {
   const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const bio = player.profile;
@@ -27,11 +28,11 @@ export function PlayerHeroCard({ player }: { player: PlayerCareer }) {
         {player.jerseyNumber != null ? <Text style={styles.number}>#{player.jerseyNumber}</Text> : null}
       </View>
     </View>
-    <View style={styles.pills}>
+    {showDetails ? <View style={styles.pills}>
       <Text style={styles.pill}>{t(ROLE_KEYS[bio.role])}</Text>
       <Text style={styles.pill}>{bio.battingStyle === 'left' ? t('profile.batting.left') : t('profile.batting.right')}</Text>
       {location ? <Text style={styles.pill}>{location}</Text> : null}
-    </View>
+    </View> : null}
     {player.isSample ? <Text style={styles.note}>{t('players.sampleNote')}</Text> : null}
   </View>;
 }

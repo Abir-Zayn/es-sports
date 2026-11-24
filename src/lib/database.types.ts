@@ -1447,7 +1447,7 @@ export type Database = {
         Returns: string
       }
       tournament_player_stats: {
-        Args: { p_tournament?: string }
+        Args: { p_since?: string; p_tournament?: string }
         Returns: {
           balls_bowled: number
           balls_faced: number

@@ -1,6 +1,7 @@
 import { enAuth } from './auth';
 import { enCommon } from './common';
 import { enCommunity } from './community';
+import { enHallOfFame } from './hall-of-fame';
 import { enHome } from './home';
 import { enLegal } from './legal';
 import { enMatch } from './match';
@@ -17,6 +18,7 @@ export const en = {
   ...enHome,
   ...enProfile,
   ...enCommunity,
+  ...enHallOfFame,
   ...enNotifications,
   ...enMatch,
   ...enMatchFriendly,
