@@ -99,7 +99,9 @@ export function moveProblem(matches: ScheduledMatch[], id: string, date: string,
     return `A ${overs}-over match starting then would run past ${timeLabel(DAY_END_MIN)}.`;
   }
   const sameDay = matches.filter((m) => m.id !== id && m.date === date);
-  if (sameDay.some((m) => Math.abs(m.startMin - startMin) < slot)) return 'Another match is on the ground at that time.';
+  // A finished match has left the ground; it still counts towards a team's matches that day below.
+  const onGround = sameDay.filter((m) => !m.finished && m.match?.status !== 'completed');
+  if (onGround.some((m) => Math.abs(m.startMin - startMin) < slot)) return 'Another match is on the ground at that time.';
   for (const key of [sideKey(match.home), sideKey(match.away)]) {
     const count = sameDay.filter((m) => sideKey(m.home) === key || sideKey(m.away) === key).length;
     if (count >= MAX_TEAM_MATCHES_PER_DAY) {

@@ -86,6 +86,16 @@ describe('placing matches', () => {
     const busyDay = [make(1, 7 * 60, t2), make(2, 11 * 60, t3), make(3, 15 * 60, t4), make(4, 19 * 60, t2)];
     expect(moveProblem(busyDay, 'm4', '2026-11-01', 19 * 60, 20)).toBe('A team in this match already plays 3 matches that day.');
   });
+
+  it('lets a match move onto the slot of one already played, which has left the ground', () => {
+    const [t1, t2, t3, t4] = teams(4);
+    const side = (team: ScheduleTeam) => ({ kind: 'team' as const, team });
+    const played: ScheduledMatch = { id: 'sf', number: 7, stage: 'Semi-final', round: 1, date: '2026-11-25', startMin: 100, home: side(t1), away: side(t2), finished: true };
+    const final: ScheduledMatch = { id: 'final', number: 9, stage: 'Final', round: 2, date: '2026-11-26', startMin: 40, home: side(t3), away: side(t4) };
+    expect(moveProblem([played, final], 'final', '2026-11-25', 100, 4)).toBeNull();
+    // Still refused while that match is to be played, or under way.
+    expect(moveProblem([{ ...played, finished: false }, final], 'final', '2026-11-25', 100, 4)).toBe('Another match is on the ground at that time.');
+  });
 });
 
 describe('ground time from overs', () => {
