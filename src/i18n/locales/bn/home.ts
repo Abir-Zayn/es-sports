@@ -45,6 +45,7 @@ export const bnHome: Record<keyof typeof enHome, string> = {
   'home.drawer.calendar': 'ক্যালেন্ডার',
   'home.drawer.leaderboards': 'লিডারবোর্ড',
   'home.drawer.hallOfFame': 'হল অব ফেম',
+  'home.drawer.teams': 'দলসমূহ',
   'home.drawer.grounds': 'মাঠসমূহ',
   'home.drawer.shareApp': 'অ্যাপ শেয়ার করুন',
   'home.drawer.blogs': 'ক্রিকেট ব্লগ',

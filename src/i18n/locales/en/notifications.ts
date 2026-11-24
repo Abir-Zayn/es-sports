@@ -39,6 +39,9 @@ export const enNotifications = {
 
   'invitations.err.closed': 'This invitation is no longer open.',
   'invitations.err.pending': 'An invitation is already pending.',
+  'invitations.err.tooSoon': 'You can invite this player again 30 minutes after your last invite.',
+  'invitations.err.tooMany': 'This player has already been invited 4 times.',
+  'invitations.err.teamFull': 'A team has at most 16 players, counting open invites.',
   'invitations.err.cannotAccept': 'This invitation can no longer be accepted.',
   'invitations.err.alreadyInTournament':
     'This player already plays for another team in this tournament. A player can play for one team per tournament.',

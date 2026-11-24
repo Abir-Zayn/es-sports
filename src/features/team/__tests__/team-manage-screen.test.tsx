@@ -5,9 +5,8 @@ import { Alert } from 'react-native';
 
 import { ThemeProvider } from '@/theme';
 
-import {
-  canManage, canRemove, canSetAvailability, fetchSentPlayerInvites, removeTeamMember, setMemberAvailability,
-} from '../data/team-management';
+import { deleteTeam, fetchInviteTracker, registerTeam, transferOwnership } from '../data/team-lifecycle';
+import { canManage, canRemove, canSetAvailability, removeTeamMember, setMemberAvailability } from '../data/team-management';
 import { fetchTeam, fetchTeamMembers } from '../data/team-repository';
 import { TeamManageScreen } from '../manage/team-manage-screen';
 
@@ -35,9 +34,12 @@ jest.mock('../data/team-repository', () => ({
   fetchTeam: jest.fn(),
   fetchTeamMembers: jest.fn(),
 }));
+jest.mock('../data/team-lifecycle', () => ({
+  ...jest.requireActual('../data/team-lifecycle'),
+  fetchInviteTracker: jest.fn(), registerTeam: jest.fn(), deleteTeam: jest.fn(), transferOwnership: jest.fn(), setTeamLogo: jest.fn(),
+}));
 jest.mock('../data/team-management', () => ({
   ...jest.requireActual('../data/team-management'),
-  fetchSentPlayerInvites: jest.fn(),
   removeTeamMember: jest.fn(),
   setMemberAvailability: jest.fn(),
 }));
@@ -73,26 +75,86 @@ describe('team management permissions', () => {
 describe('team manage screen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.mocked(fetchTeam).mockResolvedValue({ id: 'team-1', name: 'Alpha XI', shortName: 'AXI', tone: 'neutral', logoUrl: null, area: null, district: null });
+    jest.mocked(fetchTeam).mockResolvedValue({ id: 'team-1', name: 'Alpha XI', shortName: 'AXI', tone: 'neutral', logoUrl: null, area: null, district: null, registeredAt: '2026-11-01T00:00:00Z' });
     jest.mocked(fetchTeamMembers).mockResolvedValue(members);
-    jest.mocked(fetchSentPlayerInvites).mockResolvedValue([{ id: 'inv-1', profileId: 'monir', name: 'Monir Hasan', avatarUrl: null }]);
+    jest.mocked(fetchInviteTracker).mockResolvedValue([{ inviteId: 'inv-1', profileId: 'monir', name: 'Monir Hasan', avatarUrl: null,
+      state: 'pending', sent: 1, lastSentAt: new Date(Date.now() - 10 * 60 * 1000).toISOString() }]);
+    jest.mocked(registerTeam).mockResolvedValue();
+    jest.mocked(deleteTeam).mockResolvedValue();
+    jest.mocked(transferOwnership).mockResolvedValue();
     jest.mocked(removeTeamMember).mockResolvedValue();
     jest.mocked(setMemberAvailability).mockResolvedValue();
     mockSend.mockResolvedValue('inv-2');
   });
 
-  it('shows members and open invites, and removes a player but never the owner', async () => {
+  it('shows members and open invites, and removes a player after confirming, never the owner', async () => {
+    const alert = jest.spyOn(Alert, 'alert');
     await show();
     expect(await screen.findByText('Members · 2')).toBeTruthy();
     expect(await screen.findByText('Monir Hasan')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Remove Lonicav' })).toBeNull();
     await fireEvent.press(screen.getByRole('button', { name: 'Remove Abir Khan' }));
+    expect(alert.mock.calls[0][0]).toBe('Remove Abir Khan?');
+    expect(removeTeamMember).not.toHaveBeenCalled();
+    (alert.mock.calls[0][2] ?? []).find((b) => b.text === 'Remove')?.onPress?.();
     await waitFor(() => expect(removeTeamMember).toHaveBeenCalledWith('team-1', 'abir'));
+    alert.mockRestore();
+  });
+
+  it('tracks an invite as waiting, with re-invite only 30 minutes after the last one', async () => {
+    await show();
+    expect(await screen.findByText('Invited · 1')).toBeTruthy();
+    expect(screen.getByText('Waiting')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Re-invite in 20 min: Monir Hasan' })).toBeDisabled();
+  });
+
+  it('lets a declined player be invited again, and says when none are left', async () => {
+    jest.mocked(fetchInviteTracker).mockResolvedValue([
+      { inviteId: 'inv-1', profileId: 'monir', name: 'Monir Hasan', avatarUrl: null, state: 'declined', sent: 2, lastSentAt: '2026-11-01T00:00:00Z' },
+      { inviteId: 'inv-2', profileId: 'tanvir', name: 'Tanvir Ahmed', avatarUrl: null, state: 'expired', sent: 4, lastSentAt: '2026-11-01T00:00:00Z' },
+    ]);
+    await show();
+    await fireEvent.press(await screen.findByRole('button', { name: 'Re-invite (2 left): Monir Hasan' }));
+    await waitFor(() => expect(mockSend).toHaveBeenCalledWith('team-1', 'monir'));
+    expect(screen.getByRole('button', { name: 'No re-invites left: Tanvir Ahmed' })).toBeDisabled();
+  });
+
+  it('keeps a draft team from registering until it has 4 players', async () => {
+    jest.mocked(fetchTeam).mockResolvedValue({ id: 'team-1', name: 'Alpha XI', shortName: 'AXI', tone: 'neutral', logoUrl: null, area: null, district: null, registeredAt: null });
+    await show();
+    expect(await screen.findByText('2 of 4 players')).toBeTruthy();
+    expect(screen.getByText('Invite players and wait for them to accept. 2 more needed to register.')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Register team' })).toBeDisabled();
+  });
+
+  it('registers a draft team once it has 4 players', async () => {
+    jest.mocked(fetchTeam).mockResolvedValue({ id: 'team-1', name: 'Alpha XI', shortName: 'AXI', tone: 'neutral', logoUrl: null, area: null, district: null, registeredAt: null });
+    jest.mocked(fetchTeamMembers).mockResolvedValue([...members,
+      { ...members[1], profileId: 'c', name: 'C' }, { ...members[1], profileId: 'd', name: 'D' }]);
+    await show();
+    await fireEvent.press(await screen.findByRole('button', { name: 'Register team' }));
+    await waitFor(() => expect(registerTeam).toHaveBeenCalledWith('team-1'));
+  });
+
+  it('lets the owner hand the team to a member and leave, or delete it after confirming', async () => {
+    const alert = jest.spyOn(Alert, 'alert');
+    await show();
+    await fireEvent.press(await screen.findByRole('button', { name: 'Hand over and leave' }));
+    await fireEvent.press(await screen.findByRole('button', { name: 'Make Abir Khan the owner and leave' }));
+    (alert.mock.calls[0][2] ?? []).find((b) => b.text === 'Hand over and leave')?.onPress?.();
+    await waitFor(() => expect(transferOwnership).toHaveBeenCalledWith('team-1', 'abir'));
+    await waitFor(() => expect(removeTeamMember).toHaveBeenCalledWith('team-1', 'me'));
+    alert.mockClear();
+    await fireEvent.press(screen.getByRole('button', { name: 'Delete team' }));
+    expect(alert.mock.calls[0][0]).toBe('Delete Alpha XI?');
+    (alert.mock.calls[0][2] ?? []).find((b) => b.text === 'Delete team')?.onPress?.();
+    await waitFor(() => expect(deleteTeam).toHaveBeenCalledWith('team-1', null));
+    alert.mockRestore();
   });
 
   it('invites a searched player to the team', async () => {
     await show();
-    await fireEvent.press(await screen.findByRole('button', { name: 'Add member' }));
+    await fireEvent.press(await screen.findByRole('button', { name: 'Invite players' }));
     await fireEvent.changeText(screen.getByLabelText('Search players by name'), 'arafat');
     await fireEvent.press(await screen.findByRole('button', { name: 'Invite Arafat Hossain' }, { timeout: 2000 }));
     await waitFor(() => expect(mockSend).toHaveBeenCalledWith('team-1', 'arafat'));
@@ -101,7 +163,7 @@ describe('team manage screen', () => {
   it('shows the one-team-per-tournament refusal from the server', async () => {
     mockSend.mockRejectedValue(Object.assign(new Error('x'), { code: 'ET002' }));
     await show();
-    await fireEvent.press(await screen.findByRole('button', { name: 'Add member' }));
+    await fireEvent.press(await screen.findByRole('button', { name: 'Invite players' }));
     await fireEvent.changeText(screen.getByLabelText('Search players by name'), 'arafat');
     await fireEvent.press(await screen.findByRole('button', { name: 'Invite Arafat Hossain' }, { timeout: 2000 }));
     expect(await screen.findByText(/already plays for another team in this tournament/)).toBeTruthy();
@@ -125,8 +187,8 @@ describe('team manage screen', () => {
   it('hides adding for a plain player', async () => {
     jest.mocked(fetchTeamMembers).mockResolvedValue([{ ...members[0], role: 'player' }, { ...members[1], role: 'owner' }]);
     await show();
-    expect(await screen.findByText('Only the owner or an admin can add members.')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Add member' })).toBeNull();
+    expect(await screen.findByText('Only the owner or an admin can invite players.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Invite players' })).toBeNull();
   });
   it('lets a player leave the team after confirming, and the owner never', async () => {
     const alert = jest.spyOn(Alert, 'alert');
@@ -141,9 +203,9 @@ describe('team manage screen', () => {
     alert.mockRestore();
   });
 
-  it('gives the owner no leave button', async () => {
+  it('gives the owner Hand over and leave instead of a plain Leave', async () => {
     await show();
-    expect(await screen.findByText('The owner can’t leave the team.')).toBeTruthy();
+    expect(await screen.findByRole('button', { name: 'Hand over and leave' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Leave team' })).toBeNull();
   });
 });

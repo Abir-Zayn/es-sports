@@ -41,6 +41,9 @@ export const bnNotifications: Record<keyof typeof enNotifications, string> = {
 
   'invitations.err.closed': 'এই আমন্ত্রণটি আর খোলা নেই।',
   'invitations.err.pending': 'একটি আমন্ত্রণ ইতিমধ্যেই অপেক্ষমাণ আছে।',
+  'invitations.err.tooSoon': 'শেষ আমন্ত্রণের ৩০ মিনিট পর এই খেলোয়াড়কে আবার আমন্ত্রণ জানাতে পারবেন।',
+  'invitations.err.tooMany': 'এই খেলোয়াড়কে ইতিমধ্যে ৪ বার আমন্ত্রণ জানানো হয়েছে।',
+  'invitations.err.teamFull': 'একটি দলে সর্বোচ্চ ১৬ জন খেলোয়াড়, খোলা আমন্ত্রণসহ।',
   'invitations.err.cannotAccept': 'এই আমন্ত্রণটি আর গ্রহণ করা যাবে না।',
   'invitations.err.alreadyInTournament':
     'এই খেলোয়াড় ইতিমধ্যেই এই টুর্নামেন্টে অন্য একটি দলের হয়ে খেলছেন। এক টুর্নামেন্টে একজন খেলোয়াড় কেবল একটি দলের হয়েই খেলতে পারেন।',

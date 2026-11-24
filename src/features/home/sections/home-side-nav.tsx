@@ -8,6 +8,7 @@ import Newspaper from 'lucide-react-native/icons/newspaper';
 import Share2 from 'lucide-react-native/icons/share-2';
 import Sparkles from 'lucide-react-native/icons/sparkles';
 import User from 'lucide-react-native/icons/user';
+import Users from 'lucide-react-native/icons/users';
 import type { ComponentType } from 'react';
 import { ScrollView, Share, StyleSheet, View } from 'react-native';
 
@@ -25,6 +26,7 @@ type Item = { label: string; labelKey: TranslationKey; icon: ComponentType<{ siz
 export const sideNavItems: Item[] = [
   { label: 'What’s new', labelKey: 'home.drawer.whatsNew', icon: Sparkles, href: '/whats-new' },
   { label: 'My profile', labelKey: 'home.drawer.myProfile', icon: User, href: '/profile' },
+  { label: 'Teams', labelKey: 'home.drawer.teams', icon: Users, href: '/teams' },
   { label: 'Calendar', labelKey: 'home.drawer.calendar', icon: CalendarDays, href: '/calendar' },
   { label: 'Leaderboards', labelKey: 'home.drawer.leaderboards', icon: ChartColumn, href: '/leaderboards' },
   { label: 'Hall of fame', labelKey: 'home.drawer.hallOfFame', icon: Award, href: '/hall-of-fame' },

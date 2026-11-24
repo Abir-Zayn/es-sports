@@ -1,0 +1,1 @@
+export { TeamsScreen as default } from '@/features/team/directory/teams-screen';

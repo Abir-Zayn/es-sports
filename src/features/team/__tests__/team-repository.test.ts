@@ -72,7 +72,7 @@ describe('reading teams', () => {
   it('maps a team row and returns null when there is none', async () => {
     mockEq.mockReturnValueOnce({ maybeSingle: mockMaybeSingle });
     mockMaybeSingle.mockResolvedValueOnce({ data: row, error: null });
-    await expect(fetchTeam('t1')).resolves.toEqual({ id: 't1', name: 'Strikers', shortName: 'HSS', tone: 'blue', logoUrl: null, coverUrl: null, area: null, district: null });
+    await expect(fetchTeam('t1')).resolves.toEqual({ id: 't1', name: 'Strikers', shortName: 'HSS', tone: 'blue', logoUrl: null, coverUrl: null, area: null, district: null, registeredAt: null });
     mockEq.mockReturnValueOnce({ maybeSingle: mockMaybeSingle });
     mockMaybeSingle.mockResolvedValueOnce({ data: null, error: null });
     await expect(fetchTeam('missing')).resolves.toBeNull();

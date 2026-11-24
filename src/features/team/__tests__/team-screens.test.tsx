@@ -47,7 +47,7 @@ describe('create team screen', () => {
     expect(mockRpc).not.toHaveBeenCalled();
   });
 
-  it('suggests the short name, creates the team and opens it', async () => {
+  it('suggests the short name, creates the team and opens its member screen', async () => {
     await show(<CreateTeamScreen />);
     await fireEvent.changeText(screen.getByLabelText('Team name'), 'Chattogram Strikers');
     expect(screen.getByLabelText('Short name').props.value).toBe('CS');
@@ -56,7 +56,7 @@ describe('create team screen', () => {
     const [name, args] = mockRpc.mock.calls[0];
     expect(name).toBe('create_team');
     expect(args).toMatchObject({ p_name: 'Chattogram Strikers', p_short_name: 'CS', p_tone: 'blue' });
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: '/team/[id]', params: { id: args.p_id } }));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: '/team/[id]/manage', params: { id: args.p_id } }));
   });
 
   it('keeps what was typed and retries under the same id after a failure', async () => {
