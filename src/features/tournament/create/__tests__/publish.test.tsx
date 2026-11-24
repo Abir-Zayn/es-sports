@@ -79,4 +79,23 @@ describe('publishing', () => {
     expect(id).toBe('stored-id');
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
   });
+
+  it('uploads the picked cover and profile photo and saves them on the new tournament', async () => {
+    getItem.mockResolvedValue('stored-id');
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = jest.fn(async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(8), headers: { get: () => 'image/jpeg' } })) as unknown as typeof fetch;
+    try {
+      const { result } = await renderHook(() => usePublishTournament('me'), { wrapper: wrapper() });
+      await act(async () => { await result.current.mutateAsync({ ...draft, coverUri: 'file:///cover.jpg', profileUri: 'file:///logo.jpg' }); });
+      expect(fake.storageUploads.map((u) => u.path)).toEqual([
+        expect.stringMatching(/^me\/tournament\/stored-id\/cover-/), expect.stringMatching(/^me\/tournament\/stored-id\/profile-/),
+      ]);
+      expect(fake.rpc).toHaveBeenLastCalledWith('update_tournament', expect.objectContaining({
+        p_tournament: 'stored-id', p_cover_url: expect.stringContaining('/cover-'), p_profile_url: expect.stringContaining('/profile-'),
+      }));
+      expect(clearDraft).toHaveBeenCalledWith('me');
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 });

@@ -4,7 +4,9 @@ import { Platform } from 'react-native';
 
 import { localEventId } from '@/features/scoring/local-id';
 
-import { createTournament } from '../data/tournament-writes';
+import { removeTournamentImages, uploadTournamentImage } from '../data/tournament-images';
+import { TournamentError } from '../data/tournament-errors';
+import { createTournament, updateTournament } from '../data/tournament-writes';
 import { myTournamentsKey, tournamentKey } from '../data/tournament-repository';
 import type { TournamentDraft } from './draft';
 import { clearDraft, draftQueryKey } from './draft-storage';
@@ -37,6 +39,34 @@ export async function publishIdFor(userId: string): Promise<string> {
   return id;
 }
 
+/**
+ * `create_tournament` takes no images, so the picked cover and profile photo are uploaded into the new tournament's
+ * folder and saved with `update_tournament`. Fresh uploads are deleted only when the save was surely refused.
+ */
+async function savePhotos(userId: string, id: string, draft: TournamentDraft): Promise<void> {
+  if (!draft.coverUri && !draft.profileUri) return;
+  const uploaded: string[] = [];
+  const upload = async (uri: string, kind: 'cover' | 'profile') => {
+    if (!uri) return null;
+    const url = await uploadTournamentImage(userId, id, kind, uri);
+    uploaded.push(url);
+    return url;
+  };
+  let sent = false;
+  try {
+    const coverUrl = await upload(draft.coverUri, 'cover');
+    const profileUrl = await upload(draft.profileUri, 'profile');
+    sent = true;
+    await updateTournament(id, {
+      overs: draft.overs, startDate: draft.startDate, endDate: draft.endDate,
+      registrationOpens: draft.registrationOpens, registrationDeadline: draft.registrationDeadline, coverUrl, profileUrl,
+    });
+  } catch (error) {
+    if (!sent || !(error instanceof TournamentError) || error.code !== null) await removeTournamentImages(userId, id, uploaded);
+    throw error;
+  }
+}
+
 /** Publishes the draft to the server, then removes it from this device. Resolves to the new tournament's id. */
 export function usePublishTournament(userId: string) {
   const queryClient = useQueryClient();
@@ -44,8 +74,10 @@ export function usePublishTournament(userId: string) {
     mutationFn: async (draft: TournamentDraft) => {
       const id = await publishIdFor(userId);
       await createTournament(id, draft);
+      // A failed photo save keeps the id and draft, so a retry reaches the same tournament and tries the photos again.
+      await savePhotos(userId, id, draft);
       await forget(userId);
-      // The draft is consumed. The photos stay on this device only, so they go with it.
+      // The draft is consumed; its photos are on the server now.
       await clearDraft(userId).catch(() => undefined);
       return id;
     },
