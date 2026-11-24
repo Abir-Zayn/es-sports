@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
@@ -34,7 +33,6 @@ export function RealTournamentOverview({ tournament: t, staff, canManage, isOwne
   return (
     <>
       <TournamentWinnerCard tournament={t} />
-      {t.coverUrl ? <Image source={{ uri: t.coverUrl }} style={styles.cover} contentFit="cover" accessibilityLabel={`${t.name} cover`} /> : null}
       <View style={styles.card}>
         {rows.map((row) => (
           <View key={row.label} style={styles.row}>
@@ -56,5 +54,4 @@ const createStyles = (colors: Palette) => StyleSheet.create({
   card: { backgroundColor: colors.surface, borderRadius: radius.lg, paddingHorizontal: sizes.cardPadding, paddingVertical: spacing.sm, ...shadows.card },
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md, paddingVertical: spacing.md },
   value: { flexShrink: 1, textAlign: 'right' },
-  cover: { width: '100%', aspectRatio: 1.88, borderRadius: radius.lg },
 });
