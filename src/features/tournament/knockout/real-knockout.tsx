@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
@@ -28,6 +29,7 @@ export function RealKnockout({ tournament: t, isOwner = false }: Props) {
   const styles = useThemedStyles(createStyles);
   const client = useQueryClient();
   const openMatch = useOpenMatch();
+  const router = useRouter();
   const [picked, setPicked] = useState<KnockoutStage | null>(null);
   const teams = useQuery({ queryKey: [...tournamentKey(t.id), 'teams'], queryFn: () => fetchTournamentTeams(t.id) });
   const rounds = useQuery({ queryKey: roundsKey(t.id), queryFn: () => fetchTournamentRounds(t.id) });
@@ -83,8 +85,11 @@ export function RealKnockout({ tournament: t, isOwner = false }: Props) {
         <Card style={styles.gap}>
           <Text accessibilityRole="header" style={styles.title}>No knockout yet</Text>
           <Text muted>{latest?.kind === 'knockout'
-            ? 'The knockout is set. The owner schedules its matches from the Matches tab.'
+            ? (isOwner ? 'The teams and pairings are set. Draw the matches, up to the final, on the schedule.' : 'The knockout is set. Its matches appear here once the organiser schedules them.')
             : 'Knockout matches appear here once the group rounds are done and the owner draws them.'}</Text>
+          {isOwner && latest?.kind === 'knockout' ? (
+            <Button label="Schedule knockout" onPress={() => router.push({ pathname: '/tournament/schedule', params: { tournamentId: t.id } })} />
+          ) : null}
         </Card>
       ) : (
         <>

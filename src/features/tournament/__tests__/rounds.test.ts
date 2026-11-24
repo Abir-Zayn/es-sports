@@ -1,6 +1,6 @@
 import type { RoundView } from '../data/rounds-repository';
 import type { StandingsRow } from '../data/standings-repository';
-import { bracketSlots, groupChoices, isKnockoutSize, isRoundComplete, nextStageFor, rankByPlace, seedOrder, topOfEachGroup } from '../rounds/next-round';
+import { bracketSlots, groupChoices, isKnockoutSize, isRoundComplete, nextStageFor, rankByPlace, seedOrder, shuffled, topOfEachGroup } from '../rounds/next-round';
 import { knockoutPairings } from '../schedule-builder/generate';
 import { drawSchedule } from '../schedule-builder/round-draw';
 import type { ScheduledMatch } from '../schedule-builder/types';
@@ -67,6 +67,16 @@ describe('rounds in the schedule', () => {
     expect(added.every((m) => m.date > '2030-01-02')).toBe(true);
   });
 
+  it('places a later round only on days still to come, and says so when none are left', () => {
+    const before = [played(1, 0, '2030-01-01'), played(2, 0, '2030-01-02')];
+    const days = ['2030-01-01', '2030-01-02', '2030-01-03', '2030-01-04', '2030-01-05'];
+    const plan = { round: 1, kind: 'knockout' as const, groupIds: null, slots: ['a', 'b', 'c', 'd'] };
+    const drawn = drawSchedule(plan, ['a', 'b', 'c', 'd'].map(team), 'league', before, days, { perDay: 2, firstStartMin: 540 }, 10, '2030-01-04');
+    expect((drawn.matches ?? []).filter((m) => m.stage !== 'League').every((m) => m.date >= '2030-01-04')).toBe(true);
+    const over = drawSchedule(plan, ['a', 'b', 'c', 'd'].map(team), 'league', before, days.slice(0, 2), { perDay: 2, firstStartMin: 540 }, 10, '2030-01-04');
+    expect(over).toEqual({ matches: null, problem: 'No days are left for this round: the tournament ends on 2 Jan. Move the end date in Edit tournament, then draw again.' });
+  });
+
   it('refuses a group round before its draw', () => {
     const drawn = drawSchedule({ round: 1, kind: 'groups', groupIds: null, slots: [] }, [], 'league', [], [], { perDay: 2, firstStartMin: 540 }, 10);
     expect(drawn.problem).toBe('Draw the groups first.');
@@ -82,5 +92,15 @@ describe('the next stage offered first', () => {
   it('seeds a semi-final across two groups so the group winners can only meet in the final', () => {
     // Ranked A1, B1, A2, B2: 1 v 4 and 2 v 3.
     expect(bracketSlots(['A1', 'B1', 'A2', 'B2'])).toEqual(['A1', 'B2', 'B1', 'A2']);
+  });
+});
+
+describe('shuffling the knockout pairings', () => {
+  it('keeps the same teams in a new order', () => {
+    const order = ['a', 'b', 'c', 'd'];
+    const out = shuffled(order, () => 0);
+    expect(out).not.toEqual(order);
+    expect([...out].sort()).toEqual(order);
+    expect(order).toEqual(['a', 'b', 'c', 'd']);
   });
 });

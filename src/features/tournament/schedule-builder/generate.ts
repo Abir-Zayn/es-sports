@@ -13,7 +13,7 @@ export function groupMatchProblem(home: string, away: string, groups?: string[][
 }
 
 /** The knockout round named by how many sides are left in it. */
-function knockoutStage(sides: number): StageName {
+export function knockoutStage(sides: number): StageName {
   if (sides >= 16) return 'Round of 16';
   if (sides === 8) return 'Quarter-final';
   if (sides === 4) return 'Semi-final';

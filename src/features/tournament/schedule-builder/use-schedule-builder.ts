@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
+import { localDateKey } from '../create/draft';
 import { tournamentErrorText } from '../data/tournament-errors';
 import { groupMatchProblem } from './generate';
 import { drawSchedule } from './round-draw';
@@ -91,7 +92,7 @@ export function useScheduleBuilder({ tournamentId, teams, competition, overs, da
 
   /** Draws every match again from the teams and settings, replacing any hand-made changes. */
   function draw() {
-    const drawn = drawSchedule(plan, teams, competition, matches, days, settings, overs);
+    const drawn = drawSchedule(plan, teams, competition, matches, days, settings, overs, localDateKey(new Date()));
     setProblem(drawn.problem);
     if (drawn.matches) edit(drawn.matches);
   }
