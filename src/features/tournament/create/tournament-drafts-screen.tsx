@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import ArrowRight from 'lucide-react-native/icons/arrow-right';
 import FileText from 'lucide-react-native/icons/file-text';
-import Plus from 'lucide-react-native/icons/plus';
 import { useCallback } from 'react';
 import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -89,9 +88,7 @@ export function TournamentDraftsScreen() {
           </Card>
           {deletion.isError ? <Text accessibilityRole="alert">Could not delete your draft. Please try again.</Text> : null}
         </View>
-      ) : (
-        <Button label="Create tournament" leading={<Plus size={sizes.iconSmall} color={colors.primaryText} />} onPress={openSetup} />
-      )}
+      ) : null /* New tournaments start from the + button in the bottom bar. */}
       <MyTournamentsSection userId={userId} />
     </ScrollView>
   );
