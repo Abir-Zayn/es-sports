@@ -1,16 +1,18 @@
+import ChevronRight from 'lucide-react-native/icons/chevron-right';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Button, InitialsAvatar, Text } from '@/components/ui';
+import { AppBadge, Button, InitialsAvatar, Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
-import { radius, shadows, sizes, spacing, typography, useThemedStyles, type Palette } from '@/theme';
+import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { teamCodes } from '../sample-data';
 import type { MatchSetup, TeamCode } from '../types';
 import { ScorerSheet } from './scorer-sheet';
-import { ScorerChoice, ScorerNotice, ScorerRoleLabel, ScorerSection } from './scorer-ui';
+import { ScorerChoice, ScorerNotice, ScorerRoleLabel } from './scorer-ui';
 
 export function PlayingXiEditor({ setup, onChange }: { setup: MatchSetup; onChange: (setup: MatchSetup) => void }) {
+  const { colors } = useTheme();
   const s = useThemedStyles(styles);
   const { t } = useTranslation();
   const size = setup.playersPerSide;
@@ -18,14 +20,22 @@ export function PlayingXiEditor({ setup, onChange }: { setup: MatchSetup; onChan
   const [selected, setSelected] = useState<string[]>([]);
   const open = (team: TeamCode) => { setSelected(setup.playingXi[team]); setEditing(team); };
   const toggle = (id: string) => setSelected((ids) => ids.includes(id) ? ids.filter((p) => p !== id) : [...ids, id]);
-  return <ScorerSection title={t('scoring.xi.title')}>
+  return <View>
     <View style={s.card}>
-      {teamCodes.map((code) => <View key={code} style={s.row}>
-        <InitialsAvatar label={setup.teams[code].team.short} tone={setup.teams[code].team.tone} imageUri={setup.teams[code].team.avatarUri} size={sizes.avatar} />
-        <View style={s.text}><Text style={s.name}>{setup.teams[code].team.name}</Text>
-          <Text style={s.confirmed}>{t('scoring.xi.confirmed', { count: setup.playingXi[code].length })}</Text></View>
-        <Button label={t('common.edit')} size="compact" variant="ghost" accessibilityLabel={t('scoring.xi.editA11y', { team: setup.teams[code].team.name })} onPress={() => open(code)} />
-      </View>)}
+      {teamCodes.map((code, i) => {
+        const count = setup.playingXi[code].length;
+        const ready = count === size;
+        return <Pressable key={code} accessibilityRole="button" accessibilityLabel={t('scoring.xi.editA11y', { team: setup.teams[code].team.name })}
+          accessibilityHint={t('scoring.xi.countA11y', { count, size })} onPress={() => open(code)}
+          style={({ pressed }) => [s.row, i === 0 && s.divider, pressed && s.pressed]}>
+          <InitialsAvatar label={setup.teams[code].team.short} tone={setup.teams[code].team.tone} imageUri={setup.teams[code].team.avatarUri} size={sizes.avatar} />
+          <View style={s.text}><Text style={s.name} numberOfLines={1}>{setup.teams[code].team.name}</Text>
+            <Text style={s.count}>{t('scoring.xi.count', { count, size })}</Text></View>
+          <AppBadge label={ready ? t('scoring.xi.ready') : t('scoring.xi.pickMore', { count: size - count })}
+            backgroundColor={ready ? colors.successSoft : colors.accentSoft} color={ready ? colors.success : colors.accent} />
+          <ChevronRight size={sizes.iconSmall} color={colors.textMuted} />
+        </Pressable>;
+      })}
     </View>
     <ScorerSheet visible={editing !== null} title={t('scoring.xi.sheetTitle', { selected: selected.length, size })} onClose={() => setEditing(null)}>
       <ScorerNotice>{t('scoring.xi.sheetNotice', { size })}</ScorerNotice>
@@ -36,11 +46,13 @@ export function PlayingXiEditor({ setup, onChange }: { setup: MatchSetup; onChan
         setEditing(null);
       }} />
     </ScorerSheet>
-  </ScorerSection>;
+  </View>;
 }
 const styles = (c: Palette) => StyleSheet.create({
-  card: { borderRadius: radius.lg, backgroundColor: c.surface, ...shadows.card, paddingVertical: spacing.sm },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm, paddingHorizontal: sizes.cardPaddingTight },
-  text: { flex: 1, minWidth: 0, gap: spacing.xs }, name: typography.labelMd,
-  confirmed: { ...typography.bodySm, color: c.link },
+  card: { borderRadius: radius.lg, backgroundColor: c.surface, ...shadows.card, paddingHorizontal: sizes.cardPaddingTight },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: dp(64), paddingVertical: spacing.md },
+  divider: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: c.border },
+  pressed: { opacity: 0.6 },
+  text: { flex: 1, minWidth: 0, gap: dp(2) }, name: typography.labelMd,
+  count: { ...typography.bodySm, color: c.textMuted },
 });
