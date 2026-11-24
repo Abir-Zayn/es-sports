@@ -26,6 +26,12 @@ export function invitationMessage(error: unknown): string {
       return t('invitations.err.cannotAccept');
     case 'ET002':
       return t('invitations.err.alreadyInTournament');
+    case 'EI005':
+      return t('invitations.err.tooSoon');
+    case 'EI006':
+      return t('invitations.err.tooMany');
+    case 'ET021':
+      return t('invitations.err.teamFull');
     case '42501':
       return t('invitations.err.forbidden');
     case '22023':

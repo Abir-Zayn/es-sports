@@ -8,6 +8,8 @@ import type { NewTeamInput } from './team-rules';
 export type TeamRole = 'owner' | 'admin' | 'player' | 'staff';
 export type TeamRecord = {
   id: string; name: string; shortName: string; tone: AvatarTone; logoUrl: string | null; coverUrl?: string | null; area: string | null; district: string | null;
+  /** When the team reached 4 players and registered; null while it is a draft. Absent on rows that did not read it. */
+  registeredAt?: string | null;
 };
 /** Whether a member can be picked to play. Injured or resting players stay in the team and in squads. */
 export type Availability = 'available' | 'injured' | 'resting';
@@ -15,10 +17,10 @@ export const availabilities: readonly Availability[] = ['available', 'injured', 
 export type TeamMemberRecord = {
   profileId: string; name: string; avatarUrl: string | null; role: TeamRole; isCaptain: boolean; availability: Availability;
 };
-export type MyTeam = TeamRecord & { myRole: TeamRole };
+export type MyTeam = TeamRecord & { myRole: TeamRole; /** How many members the team has. */ members?: number };
 
-const TEAM_COLUMNS = 'id, name, short_name, tone, logo_url, cover_url, area, district';
-type TeamRow = { id: string; name: string; short_name: string; tone: string; logo_url: string | null; cover_url?: string | null; area: string | null; district: string | null };
+const TEAM_COLUMNS = 'id, name, short_name, tone, logo_url, cover_url, area, district, registered_at';
+type TeamRow = { id: string; name: string; short_name: string; tone: string; logo_url: string | null; cover_url?: string | null; area: string | null; district: string | null; registered_at?: string | null };
 
 const tones: readonly string[] = ['blue', 'yellow', 'neutral'];
 const roles: readonly string[] = ['owner', 'admin', 'player', 'staff'];
@@ -26,7 +28,7 @@ const roles: readonly string[] = ['owner', 'admin', 'player', 'staff'];
 export function toTeam(row: TeamRow): TeamRecord {
   return {
     id: row.id, name: row.name, shortName: row.short_name, tone: tones.includes(row.tone) ? (row.tone as AvatarTone) : 'neutral',
-    logoUrl: row.logo_url, coverUrl: row.cover_url ?? null, area: row.area, district: row.district,
+    logoUrl: row.logo_url, coverUrl: row.cover_url ?? null, area: row.area, district: row.district, registeredAt: row.registered_at ?? null,
   };
 }
 
@@ -66,9 +68,11 @@ export async function fetchTeamMembers(teamId: string): Promise<TeamMemberRecord
 
 /** Teams the account belongs to, with its role in each. */
 export async function fetchMyTeams(userId: string): Promise<MyTeam[]> {
-  const { data, error } = await traceApi('team.mine', { userId }, () => supabase.from('team_members').select(`role, teams(${TEAM_COLUMNS})`).eq('profile_id', userId));
+  const { data, error } = await traceApi('team.mine', { userId }, () => supabase.from('team_members')
+    .select(`role, teams(${TEAM_COLUMNS}, team_members(count))`).eq('profile_id', userId));
   if (error) throw toTeamError(error);
-  return (data ?? []).flatMap((row) => (row.teams ? [{ ...toTeam(row.teams), myRole: toRole(row.role) }] : []))
+  return (data ?? []).flatMap((row) => (row.teams
+    ? [{ ...toTeam(row.teams), myRole: toRole(row.role), members: row.teams.team_members?.[0]?.count ?? 0 }] : []))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 

@@ -1,152 +1,118 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import ChevronLeft from 'lucide-react-native/icons/chevron-left';
-import LogOut from 'lucide-react-native/icons/log-out';
 import UserPlus from 'lucide-react-native/icons/user-plus';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconTile, Button, Text } from '@/components/ui';
-import { useAuth } from '@/features/auth';
-import { cancelInvitation, invitationErrorText, sendTeamPlayerInvite } from '@/features/invitations';
+import { invitationErrorText } from '@/features/invitations';
 import { searchPlayers } from '@/features/match';
 import { UserSearchSheet } from '@/features/tournament/roster';
 import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
 import { teamErrorText } from '../data/team-errors';
-import {
-  canManage, fetchSentPlayerInvites, removeTeamMember, sentPlayerInvitesKey, setMemberAvailability, teamMembersKey,
-} from '../data/team-management';
-import { fetchTeam, fetchTeamMembers, myTeamsKey, teamKey, type Availability, type TeamMemberRecord } from '../data/team-repository';
+import { TEAM_MAX } from '../data/team-lifecycle';
+import type { TeamMemberRecord } from '../data/team-repository';
 import { AvailabilitySheet } from './availability-sheet';
-import { MemberList, PendingInviteList } from './team-member-lists';
+import { InviteTracker } from './invite-tracker';
+import { TeamExitActions } from './team-exit-actions';
+import { MemberList } from './team-member-lists';
+import { TeamStatusCard } from './team-status-card';
+import { useTeamManage } from './use-team-manage';
 
 /**
- * One team's members. Owners and admins invite players by name or user id, cancel open invites, remove members and
- * mark them injured or resting. A member can set their own status.
+ * One team's members. The owner or an admin sets its picture, invites players by name or user id (and again after
+ * 30 minutes), tracks who has not joined, registers the team at 4 players and removes members. Members set their own
+ * status and leave; the owner hands the team over first, or deletes it.
  */
 export function TeamManageScreen() {
   const router = useRouter();
   const { id = '' } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
-  const styles = useThemedStyles(createStyles);
-  const queryClient = useQueryClient();
-  const meId = useAuth().session?.user.id ?? '';
+  const s = useThemedStyles(styles);
+  const m = useTeamManage(id);
   const [adding, setAdding] = useState(false);
   const [statusFor, setStatusFor] = useState<TeamMemberRecord | null>(null);
-
-  const team = useQuery({ queryKey: teamKey(id), queryFn: () => fetchTeam(id), enabled: Boolean(id) });
-  const members = useQuery({ queryKey: teamMembersKey(id), queryFn: () => fetchTeamMembers(id), enabled: Boolean(id) });
-  const myRole = members.data?.find((member) => member.profileId === meId)?.role ?? null;
-  const manager = canManage(myRole);
-  const invites = useQuery({
-    queryKey: sentPlayerInvitesKey(id, meId), queryFn: () => fetchSentPlayerInvites(id, meId), enabled: Boolean(id && meId) && manager,
-  });
-
-  const refresh = () => {
-    void queryClient.invalidateQueries({ queryKey: teamMembersKey(id) });
-    void queryClient.invalidateQueries({ queryKey: sentPlayerInvitesKey(id, meId) });
-    void queryClient.invalidateQueries({ queryKey: myTeamsKey(meId) });
-  };
-  const invite = useMutation({ mutationFn: (userId: string) => sendTeamPlayerInvite(id, userId), onSuccess: refresh });
-  const remove = useMutation({ mutationFn: (profileId: string) => removeTeamMember(id, profileId), onSuccess: refresh });
-  const cancel = useMutation({ mutationFn: (inviteId: string) => cancelInvitation(inviteId), onSuccess: refresh });
-  const availability = useMutation({
-    mutationFn: (a: { profileId: string; value: Availability }) => setMemberAvailability(id, a.profileId, a.value),
-    onSuccess: () => { setStatusFor(null); refresh(); },
-  });
-  // The server cascades the player out of every tournament squad of this team.
-  const leave = useMutation({
-    mutationFn: () => removeTeamMember(id, meId),
-    onSuccess: () => { refresh(); router.replace('/team/manage'); },
-  });
-  const busy = invite.isPending || remove.isPending || cancel.isPending || availability.isPending || leave.isPending;
-  const actionError = remove.error ? teamErrorText(remove.error) : cancel.error ? invitationErrorText(cancel.error) : null;
-  const teamName = team.data?.name ?? 'this team';
-  const confirmLeave = () => Alert.alert(`Leave ${teamName}?`,
-    'You’ll also be taken out of its squads in every tournament. To come back, the owner or an admin has to invite you again.', [
+  const [picked, setPicked] = useState<string | null>(null);
+  const [logoError, setLogoError] = useState('');
+  const memberList = m.members.data ?? [];
+  const tracked = m.invites.data ?? [];
+  const waiting = tracked.filter((i) => i.state === 'pending').length;
+  const full = memberList.length + waiting >= TEAM_MAX;
+  const teamName = m.team.data?.name ?? 'this team';
+  // While the search sheet is open it shows invite errors itself; the screen shows those of re-invites from the list.
+  const actionError = [m.remove, m.cancel, m.register, adding ? null : m.invite].map((x) => x?.error).find(Boolean);
+  const exitError = [m.leave, m.handOver, m.deleteTeam].map((x) => x.error).find(Boolean);
+  // Members and anyone already invited are left out of the search (re-invite them from the list); so are you.
+  const excludeIds = [m.meId, ...memberList.map((x) => x.profileId), ...tracked.map((x) => x.profileId)];
+  const confirmRemove = (member: TeamMemberRecord) => Alert.alert(`Remove ${member.name}?`,
+    `${member.name} is told they were removed from ${teamName}.`, [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Leave team', style: 'destructive', onPress: () => leave.mutate() },
+      { text: 'Remove', style: 'destructive', onPress: () => m.remove.mutate(member.profileId) },
     ]);
-  // Members and people already invited are left out of the search; so are you.
-  const excludeIds = [meId, ...(members.data ?? []).map((m) => m.profileId), ...(invites.data ?? []).map((i) => i.profileId)];
+  const pickLogo = (uri: string) => {
+    setPicked(uri);
+    m.logo.mutate(uri, { onSettled: () => setPicked(null), onError: (e) => setLogoError(teamErrorText(e)) });
+  };
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
+    <View style={[s.screen, { paddingTop: insets.top }]}>
+      <View style={s.header}>
         <AppIconTile icon={ChevronLeft} size={sizes.iconButton} borderRadius={radius.pill} accessibilityLabel="Back"
-          onPress={() => (router.canGoBack() ? router.back() : router.replace('/team/manage'))} />
-        <View style={styles.titles}>
-          <Text accessibilityRole="header" style={styles.title}>Team members</Text>
-          {team.data ? <Text muted numberOfLines={1} style={styles.subtitle}>{team.data.name}</Text> : null}
-        </View>
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/teams'))} />
+        <Text accessibilityRole="header" style={s.title}>Team</Text>
       </View>
-      {members.isPending ? (
-        <ActivityIndicator color={colors.link} accessibilityLabel="Loading members" style={styles.status} />
-      ) : members.isError ? (
-        <View style={styles.failed}>
-          <Text muted accessibilityLiveRegion="polite">{teamErrorText(members.error)}</Text>
-          <Button label="Try again" variant="secondary" onPress={() => void members.refetch()} />
+      {m.members.isPending || m.team.isPending ? (
+        <ActivityIndicator color={colors.link} accessibilityLabel="Loading the team" style={s.status} />
+      ) : m.members.isError || !m.team.data ? (
+        <View style={s.failed}>
+          <Text muted accessibilityLiveRegion="polite">{m.members.isError ? teamErrorText(m.members.error) : 'This team could not be found.'}</Text>
+          <Button label="Try again" variant="secondary" onPress={() => { void m.team.refetch(); void m.members.refetch(); }} />
         </View>
       ) : (
-        <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}>
-          {manager ? (
-            <Button label="Add member" leading={<UserPlus size={dp(18)} color={colors.primaryText} />} disabled={busy}
-              onPress={() => { invite.reset(); setAdding(true); }} />
-          ) : (
-            <Text muted>Only the owner or an admin can add members.</Text>
-          )}
-          {actionError ? <Text accessibilityRole="alert" style={styles.error}>{actionError}</Text> : null}
-          <Text style={styles.heading}>{`Members · ${members.data.length}`}</Text>
-          <MemberList members={members.data} myRole={myRole} meId={meId} busy={busy} onRemove={(m) => remove.mutate(m.profileId)}
-            onSetAvailability={(m) => { availability.reset(); setStatusFor(m); }} />
-          {manager ? <PendingInviteList invites={invites.data ?? []} busy={busy} onCancel={(i) => cancel.mutate(i.id)} /> : null}
-          {myRole === 'owner' ? (
-            <Text muted variant="caption">The owner can’t leave the team.</Text>
-          ) : myRole ? (
-            <View style={styles.leave}>
-              {leave.isError ? <Text accessibilityRole="alert" style={styles.error}>{teamErrorText(leave.error)}</Text> : null}
-              <Button label="Leave team" variant="secondary" loading={leave.isPending} disabled={busy}
-                leading={<LogOut size={dp(18)} color={colors.danger} />} onPress={confirmLeave} />
-            </View>
-          ) : null}
+        <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + spacing.xxl }]}>
+          <TeamStatusCard team={m.team.data} members={memberList.length} invited={waiting} manager={m.manager}
+            logo={{ uri: picked, saving: m.logo.isPending, onPick: pickLogo, onError: setLogoError }}
+            register={{ busy: m.register.isPending, onRegister: () => m.register.mutate() }} />
+          {logoError ? <Text accessibilityRole="alert" style={s.error}>{logoError}</Text> : null}
+          {m.manager ? (
+            <Button label={full ? `Team is full (${TEAM_MAX} players)` : 'Invite players'} disabled={m.busy || full}
+              leading={<UserPlus size={dp(18)} color={colors.primaryText} />} onPress={() => { m.invite.reset(); setAdding(true); }} />
+          ) : <Text muted>Only the owner or an admin can invite players.</Text>}
+          {actionError ? <Text accessibilityRole="alert" style={s.error}>
+            {m.invite.error || m.cancel.error ? invitationErrorText(actionError) : teamErrorText(actionError)}</Text> : null}
+          <Text accessibilityRole="header" style={s.heading}>{`Members · ${memberList.length}`}</Text>
+          <MemberList members={memberList} myRole={m.myRole} meId={m.meId} busy={m.busy} onRemove={confirmRemove}
+            onSetAvailability={(member) => { m.availability.reset(); setStatusFor(member); }} />
+          {m.manager ? <InviteTracker invites={tracked} busy={m.busy} now={m.now}
+            onCancel={(i) => m.cancel.mutate(i.inviteId)} onReinvite={(i) => m.invite.mutate(i.profileId)} /> : null}
+          <TeamExitActions teamName={teamName} myRole={m.myRole} meId={m.meId} members={memberList} busy={m.busy}
+            error={exitError ? teamErrorText(exitError) : null} onLeave={() => m.leave.mutate()}
+            onHandOver={(member) => m.handOver.mutate(member)} onDelete={() => m.deleteTeam.mutate()} />
         </ScrollView>
       )}
-      <AvailabilitySheet
-        member={statusFor}
-        busy={availability.isPending}
-        error={availability.isError ? teamErrorText(availability.error) : null}
-        onChoose={(value) => statusFor && availability.mutate({ profileId: statusFor.profileId, value })}
-        onClose={() => setStatusFor(null)}
-      />
-      <UserSearchSheet
-        visible={adding}
-        title={`Add to ${team.data?.name ?? 'team'}`}
-        hint="They get an invite and join the squad as a player once they accept. A player can play for one team in each tournament."
-        excludeIds={excludeIds}
-        search={searchPlayers}
-        inviting={invite.isPending}
-        error={invite.isError ? invitationErrorText(invite.error) : null}
-        onInvite={(user) => invite.mutate(user.id, { onSuccess: () => setAdding(false) })}
-        onClose={() => setAdding(false)}
-      />
+      <AvailabilitySheet member={statusFor} busy={m.availability.isPending}
+        error={m.availability.isError ? teamErrorText(m.availability.error) : null}
+        onChoose={(value) => statusFor && m.availability.mutate({ profileId: statusFor.profileId, value }, { onSuccess: () => setStatusFor(null) })}
+        onClose={() => setStatusFor(null)} />
+      <UserSearchSheet visible={adding} title={`Invite to ${teamName}`}
+        hint="Search by name or paste their user ID. They join once they accept. A team registers at 4 players and holds up to 16."
+        excludeIds={excludeIds} search={searchPlayers} inviting={m.invite.isPending}
+        error={m.invite.isError ? invitationErrorText(m.invite.error) : null}
+        onInvite={(user) => m.invite.mutate(user.id, { onSuccess: () => setAdding(false) })} onClose={() => setAdding(false)} />
     </View>
   );
 }
 
-const createStyles = (colors: Palette) =>
-  StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.background },
-    header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter, paddingVertical: spacing.md },
-    titles: { flex: 1, minWidth: 0 },
-    title: typography.headlineLg,
-    subtitle: typography.bodySm,
-    content: { paddingHorizontal: sizes.gutter, paddingTop: spacing.sm, gap: spacing.lg, maxWidth: dp(600), width: '100%', alignSelf: 'center' },
-    status: { paddingVertical: spacing.xxl },
-    failed: { alignItems: 'center', gap: spacing.md, padding: spacing.xl },
-    heading: typography.headlineMd,
-    error: { color: colors.dangerSoftText },
-    leave: { gap: spacing.sm, marginTop: spacing.lg },
-  });
+const styles = (c: Palette) => StyleSheet.create({
+  screen: { flex: 1, backgroundColor: c.background },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: sizes.gutter, paddingVertical: spacing.md },
+  title: { flex: 1, ...typography.headlineLg },
+  content: { paddingHorizontal: sizes.gutter, paddingTop: spacing.sm, gap: spacing.lg, maxWidth: dp(600), width: '100%', alignSelf: 'center' },
+  status: { paddingVertical: spacing.xxl },
+  failed: { alignItems: 'center', gap: spacing.md, padding: spacing.xl },
+  heading: typography.headlineMd,
+  error: { color: c.dangerSoftText },
+});

@@ -15,6 +15,9 @@ export function teamMessage(error: unknown): string {
     case '22023': return 'Check the team details: the name is 2 to 40 characters and the short name 2 to 4 letters or digits.';
     case '23505': return 'This team id is already used. Go back and try again.';
     case 'P0002': return 'This team could not be found.';
+    case 'ET020': return 'A team needs 4 players to register. Invite more players and wait for them to accept.';
+    case 'ET021': return 'A team has at most 16 players, counting open invites.';
+    case 'ET022': return 'This team is entered in a tournament. Take it out of the tournament before deleting it.';
     default: return 'Could not reach the server. Check your connection and try again.';
   }
 }

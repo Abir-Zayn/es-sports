@@ -10,7 +10,9 @@ import { useAuth } from '@/features/auth';
 import { localEventId } from '@/features/scoring/local-id';
 import { dp, radius, sizes, spacing, typography, useThemedStyles, type AvatarTone, type Palette } from '@/theme';
 
+import { TeamLogoPicker } from '../components/team-logo-picker';
 import { teamErrorText } from '../data/team-errors';
+import { setTeamLogo } from '../data/team-lifecycle';
 import { createTeam, myTeamsKey } from '../data/team-repository';
 import { cleanShortName, suggestShortName, teamProblem, type NewTeamInput } from '../data/team-rules';
 
@@ -36,12 +38,19 @@ export function CreateTeamScreen() {
   const [tone, setTone] = useState<AvatarTone>('blue');
   const [area, setArea] = useState('');
   const [problem, setProblem] = useState<string | null>(null);
+  const [logoUri, setLogoUri] = useState<string | null>(null);
+  const [logoError, setLogoError] = useState('');
   const input: NewTeamInput = { name, shortName, tone, area };
   const mutation = useMutation({
-    mutationFn: () => createTeam(teamId, input),
+    mutationFn: async () => {
+      await createTeam(teamId, input);
+      // The team exists even if its picture fails; it can be added again from the member screen.
+      if (logoUri) await setTeamLogo(teamId, logoUri, null).catch(() => undefined);
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: myTeamsKey(userId) });
-      router.replace({ pathname: '/team/[id]', params: { id: teamId } });
+      // A new team is a draft: straight to inviting its players.
+      router.replace({ pathname: '/team/[id]/manage', params: { id: teamId } });
     },
   });
   const goBack = () => (router.canGoBack() ? router.back() : router.replace('/home'));
@@ -68,6 +77,8 @@ export function CreateTeamScreen() {
         <Text accessibilityRole="header" style={styles.title}>Create team</Text>
       </View>
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]} keyboardShouldPersistTaps="handled">
+        <TeamLogoPicker uri={logoUri} shortName={shortName} tone={tone} onPick={setLogoUri} onError={setLogoError} />
+        {logoError ? <Text accessibilityRole="alert" style={styles.error}>{logoError}</Text> : null}
         <TextField label="Team name" value={name} onChangeText={changeName} placeholder="e.g. Chattogram Strikers" maxLength={40} autoCapitalize="words" />
         <TextField label="Short name" value={shortName} onChangeText={changeShortName} placeholder="e.g. CS" maxLength={4} autoCapitalize="characters" />
         <View style={styles.group}>
@@ -77,7 +88,7 @@ export function CreateTeamScreen() {
         <TextField label="Area (optional)" value={area} onChangeText={setArea} placeholder="e.g. Halishahar" maxLength={60} />
         {shown ? <Text accessibilityRole="alert" style={styles.error}>{shown}</Text> : null}
         <Button label="Create team" loading={mutation.isPending} disabled={!userId} onPress={submit} />
-        <Text variant="caption" muted>You become the owner. People join your team by invitation.</Text>
+        <Text variant="caption" muted>You become the owner. Invite at least 3 players next; once they accept, register the team (4 to 16 players).</Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );

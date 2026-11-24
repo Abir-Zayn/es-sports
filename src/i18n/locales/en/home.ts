@@ -43,6 +43,7 @@ export const enHome = {
   'home.drawer.calendar': 'Calendar',
   'home.drawer.leaderboards': 'Leaderboards',
   'home.drawer.hallOfFame': 'Hall of fame',
+  'home.drawer.teams': 'Teams',
   'home.drawer.grounds': 'Grounds',
   'home.drawer.shareApp': 'Share the app',
   'home.drawer.blogs': 'Cricket blogs',

@@ -47,7 +47,7 @@ describe('home side nav', () => {
     await show();
     expect(screen.getByText('Tanvir Rahman')).toBeTruthy();
     expect(sideNavItems.map((item) => item.label)).toEqual([
-      'What’s new', 'My profile', 'Calendar', 'Leaderboards', 'Hall of fame', 'Grounds', 'Share the app', 'Cricket blogs', 'Choose language',
+      'What’s new', 'My profile', 'Teams', 'Calendar', 'Leaderboards', 'Hall of fame', 'Grounds', 'Share the app', 'Cricket blogs', 'Choose language',
     ]);
     for (const item of sideNavItems) expect(screen.getByRole('button', { name: item.label })).toBeTruthy();
   });

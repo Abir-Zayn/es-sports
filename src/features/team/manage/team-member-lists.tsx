@@ -1,10 +1,10 @@
 import { StyleSheet, View } from 'react-native';
 
-import { Button, Text } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { PersonRow } from '@/features/tournament/roster';
-import { spacing, typography, useThemedStyles } from '@/theme';
+import { spacing, useThemedStyles } from '@/theme';
 
-import { availabilityLabel, canRemove, canSetAvailability, type SentPlayerInvite } from '../data/team-management';
+import { availabilityLabel, canRemove, canSetAvailability } from '../data/team-management';
 import type { TeamMemberRecord, TeamRole } from '../data/team-repository';
 
 const roleLabel: Record<TeamRole, string> = { owner: 'Owner', admin: 'Admin', player: 'Player', staff: 'Staff' };
@@ -56,31 +56,8 @@ export function MemberList({ members, myRole, meId, busy, onRemove, onSetAvailab
   );
 }
 
-type InvitesProps = { invites: SentPlayerInvite[]; busy: boolean; onCancel: (invite: SentPlayerInvite) => void };
-
-/** Player invitations this account sent that are still open, each with Cancel. */
-export function PendingInviteList({ invites, busy, onCancel }: InvitesProps) {
-  const styles = useThemedStyles(createStyles);
-  if (invites.length === 0) return null;
-  return (
-    <View style={styles.list}>
-      <Text style={styles.heading}>Waiting for an answer</Text>
-      {invites.map((invite) => (
-        <PersonRow
-          key={invite.id}
-          user={{ id: invite.profileId, name: invite.name, area: null, avatarUrl: invite.avatarUrl }}
-          badge={{ label: 'Invited', tone: 'muted' }}
-          trailing={<Button label="Cancel" variant="secondary" size="compact" disabled={busy}
-            accessibilityLabel={`Cancel invite to ${invite.name}`} onPress={() => onCancel(invite)} />}
-        />
-      ))}
-    </View>
-  );
-}
-
 const createStyles = () =>
   StyleSheet.create({
     list: { gap: spacing.xs },
     actions: { flexDirection: 'row', gap: spacing.xs },
-    heading: typography.headlineMd,
   });
