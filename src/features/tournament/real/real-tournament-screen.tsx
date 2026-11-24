@@ -58,7 +58,7 @@ export function RealTournamentScreen({ id, section }: Props) {
   const format = record ? `${oversLabel(record.overs)}${record.closedAt ? ' · Completed' : ''}` : '';
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <TournamentCompactHeader short={initials(record?.name ?? '')} name={record?.name ?? 'Tournament'} tone="blue" avatarUri={record?.profileUrl ?? undefined} format={format} onBack={goBack} />
+      <TournamentCompactHeader short={initials(record?.name ?? '')} name={record?.name ?? 'Tournament'} tone="blue" format={format} onBack={goBack} />
       <TournamentSectionTabs tournamentId={id} selected={section} />
       <View style={styles.body}>{body}</View>
     </ScrollView>
