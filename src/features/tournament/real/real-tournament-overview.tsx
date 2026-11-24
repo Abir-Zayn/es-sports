@@ -3,55 +3,78 @@ import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
-import { radius, shadows, sizes, spacing, useThemedStyles, type Palette } from '@/theme';
+import { formatDate } from '@/i18n';
+import { spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
-import { formatDate, oversLabel } from '../create/draft';
+import { localDateKey, oversLabel } from '../create/draft';
 import { describeRules } from '../create/squad-formats';
 import { fetchTournamentTeams, tournamentKey, type StaffRecord, type TournamentRecord } from '../data/tournament-repository';
+import { FactTiles, OverviewCard, PersonRow, StatusCard, TeamsProgress } from './overview/overview-cards';
+import { dateRange, overviewStatus } from './overview/overview-status';
 import { CloseTournamentButton, TournamentWinnerCard } from './tournament-close-card';
 
 type Props = { tournament: TournamentRecord; staff: StaffRecord[]; canManage: boolean; isOwner: boolean; userId: string; onManage: () => void };
 
-/** The details chosen when the tournament was created, who runs it and how many teams have joined. */
+/**
+ * Where the tournament stands, its rules, the teams that joined and who runs it, then the organiser's tools.
+ * No tournament images here: the cover and profile photo belong on the Home card.
+ */
 export function RealTournamentOverview({ tournament: t, staff, canManage, isOwner, userId, onManage }: Props) {
   const styles = useThemedStyles(createStyles);
   const router = useRouter();
   const teams = useQuery({ queryKey: [...tournamentKey(t.id), 'teams'], queryFn: () => fetchTournamentTeams(t.id) });
-  const dates = t.startDate === t.endDate ? formatDate(t.startDate) : `${formatDate(t.startDate)} to ${formatDate(t.endDate)}`;
-  const moderators = staff.filter((member) => member.role === 'moderator').map((member) => member.user.name);
-  const rows = [
-    { label: 'Dates', value: dates },
-    { label: 'Venue', value: `${t.venue}, ${t.city}` },
-    { label: 'Overs', value: oversLabel(t.overs) },
-    { label: 'Ball', value: t.ball },
-    { label: 'Teams', value: teams.data ? `${teams.data.length} of ${t.teamsPlanned} joined` : `${t.teamsPlanned} planned` },
-    { label: 'Squads', value: describeRules({ playersPerSide: t.playersPerSide, minSquad: t.minSquad, maxSquad: t.maxSquad }) },
-    { label: 'Organiser', value: staff.find((member) => member.role === 'owner')?.user.name ?? '' },
-    { label: 'Moderators', value: moderators.join(', ') },
-    { label: 'Registration closes', value: t.registrationDeadline ? formatDate(t.registrationDeadline) : '' },
-  ].filter((row) => row.value !== '');
+  const today = localDateKey(new Date());
+  const status = overviewStatus(t, today);
+  const owner = staff.find((member) => member.role === 'owner');
+  const moderators = staff.filter((member) => member.role === 'moderator');
+  const registration = !t.registrationDeadline
+    ? ''
+    : t.registrationDeadline < today ? 'Registration closed' : `Registration closes ${formatDate(t.registrationDeadline, 'd MMM')}`;
+  const showTools = !t.closedAt && (canManage || isOwner);
+
   return (
     <>
       <TournamentWinnerCard tournament={t} />
-      <View style={styles.card}>
-        {rows.map((row) => (
-          <View key={row.label} style={styles.row}>
-            <Text muted>{row.label}</Text>
-            <Text style={styles.value}>{row.value}</Text>
-          </View>
-        ))}
-      </View>
-      {canManage && !t.closedAt ? <Button label="Manage teams and staff" onPress={onManage} /> : null}
-      {isOwner && !t.closedAt ? (
-        <Button label="Edit tournament" variant="secondary" onPress={() => router.push({ pathname: '/tournament/edit', params: { tournamentId: t.id } })} />
+      <StatusCard status={status} dates={dateRange(t.startDate, t.endDate, (d, p) => formatDate(d, p))}
+        venue={`${t.venue}, ${t.city}`} registration={registration} />
+
+      <OverviewCard title="Format">
+        <FactTiles facts={[
+          { label: 'Overs', value: oversLabel(t.overs) },
+          { label: 'Ball', value: t.ball },
+          { label: t.groupsPlanned > 1 ? 'Groups' : 'Format', value: t.groupsPlanned > 1 ? String(t.groupsPlanned) : 'Round robin' },
+        ]} />
+        <Text muted>{describeRules({ playersPerSide: t.playersPerSide, minSquad: t.minSquad, maxSquad: t.maxSquad })}</Text>
+      </OverviewCard>
+
+      <OverviewCard title="Teams">
+        <TeamsProgress joined={teams.data ? teams.data.length : null} planned={t.teamsPlanned} />
+      </OverviewCard>
+
+      {owner || moderators.length > 0 ? (
+        <OverviewCard title="Organisers">
+          {owner ? <PersonRow person={owner.user} role="Organiser" /> : null}
+          {moderators.map((member) => <PersonRow key={member.user.id} person={member.user} role="Moderator" />)}
+        </OverviewCard>
       ) : null}
-      {isOwner ? <CloseTournamentButton tournament={t} userId={userId} /> : null}
+
+      {showTools ? (
+        <View style={styles.tools}>
+          <Text accessibilityRole="header" style={styles.toolsHeading}>{'Organiser tools'.toUpperCase()}</Text>
+          {canManage ? <Button label="Manage teams and staff" onPress={onManage} /> : null}
+          {isOwner ? (
+            <Button label="Edit tournament" variant="secondary" onPress={() => router.push({ pathname: '/tournament/edit', params: { tournamentId: t.id } })} />
+          ) : null}
+        </View>
+      ) : null}
+      {/* Closing is final, so it sits apart from the everyday tools. */}
+      {isOwner ? <View style={styles.close}><CloseTournamentButton tournament={t} userId={userId} /></View> : null}
     </>
   );
 }
 
 const createStyles = (colors: Palette) => StyleSheet.create({
-  card: { backgroundColor: colors.surface, borderRadius: radius.lg, paddingHorizontal: sizes.cardPadding, paddingVertical: spacing.sm, ...shadows.card },
-  row: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md, paddingVertical: spacing.md },
-  value: { flexShrink: 1, textAlign: 'right' },
+  tools: { gap: spacing.md },
+  toolsHeading: { ...typography.labelUppercase, color: colors.textMuted },
+  close: { marginTop: spacing.lg },
 });
