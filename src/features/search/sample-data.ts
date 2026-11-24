@@ -14,6 +14,8 @@ export type SearchRow = {
   role?: PlayingRole;
   tone: AvatarTone;
   shape: 'circle' | 'square';
+  /** A real uploaded picture, shown instead of the initials. */
+  imageUri?: string | null;
 };
 
 export type SearchGroup = { id: SearchGroupId; title: string; rows: SearchRow[] };

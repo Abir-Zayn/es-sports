@@ -25,7 +25,7 @@ export function usePlayerResults(query: string, enabled: boolean) {
   });
   const badge = t('search.playerBadge');
   const rows: SearchRow[] = (search.data ?? []).map((player) => ({
-    id: player.id, short: initialsOf(player.name), name: player.name, meta: player.area ?? badge, badge, tone: 'neutral', shape: 'circle',
+    id: player.id, short: initialsOf(player.name), name: player.name, meta: player.area ?? badge, badge, tone: 'neutral', shape: 'circle', imageUri: player.avatarUrl,
   }));
   // Waiting also covers the debounce gap, so "No results" never flashes while the person is still typing.
   const waiting = enabled && query.trim().length >= 2 && (settled !== query.trim() || search.isFetching);
