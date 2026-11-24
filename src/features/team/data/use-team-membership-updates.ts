@@ -25,6 +25,9 @@ export function keysFor(table: 'team_members' | 'tournament_squads', row: Row): 
  * Keeps team and squad screens in step with the server: when anyone joins, leaves or is removed from a team, or a
  * squad changes, the matching queries are refetched. Mount once while signed in.
  */
+// A fresh channel name per subscription: Supabase reuses a channel by name, and one already subscribed rejects new listeners.
+let opened = 0;
+
 export function useTeamMembershipUpdates(userId: string | undefined) {
   const client = useQueryClient();
   useEffect(() => {
@@ -37,7 +40,8 @@ export function useTeamMembershipUpdates(userId: string | undefined) {
       timer = setTimeout(() => flush(client, pending, () => { timer = undefined; }), SETTLE_MS);
     };
     // Delete events cannot be filtered server-side, so both tables are watched whole; the rows are tiny.
-    const channel = supabase.channel(`team-membership:${userId}`)
+    opened += 1;
+    const channel = supabase.channel(`team-membership:${userId}:${opened}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'team_members' },
         (payload) => queue(keysFor('team_members', { ...(payload.old as Row), ...(payload.new as Row) })))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tournament_squads' },
