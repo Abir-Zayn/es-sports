@@ -35,3 +35,17 @@ test('refreshes the schedule, table and top players after changes, coalesces upd
   expect(mockRemove).toHaveBeenCalledWith(channel);
   jest.useRealTimers();
 });
+
+test('opens a channel under a new name each time, so a quick remount never reuses one already subscribed', async () => {
+  const channel = { on: mockOn, subscribe: mockSubscribe };
+  mockChannel.mockReset().mockReturnValue(channel);
+  mockOn.mockReturnValue(channel);
+  mockSubscribe.mockReturnValue(channel);
+  const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={new QueryClient()}>{children}</QueryClientProvider>;
+  const first = await renderHook(() => useTournamentMatchUpdates('cup'), { wrapper });
+  await first.unmount();
+  await renderHook(() => useTournamentMatchUpdates('cup'), { wrapper });
+  const [a, b] = mockChannel.mock.calls.map(([name]) => name as string);
+  expect(a).toMatch(/^tournament-matches:cup:\d+$/);
+  expect(b).not.toBe(a);
+});

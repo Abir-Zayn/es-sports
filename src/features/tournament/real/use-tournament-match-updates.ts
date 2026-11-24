@@ -7,6 +7,10 @@ import { playerStatsKey } from '../data/player-stats-repository';
 import { standingsKey } from '../data/standings-repository';
 import { scheduleKey } from '../schedule-builder/use-schedule-builder';
 
+// Supabase hands back an existing channel for a name already in use, and adding listeners to one that is subscribed
+// throws. Removal is async, so a quick remount (tab switch, React's dev double effect) needs a fresh name each time.
+let opened = 0;
+
 /**
  * Refreshes the schedule, the points table and the top players when a match of this tournament changes. Rapid score changes are
  * coalesced, and both the timer and the channel go on unmount. `scope` keeps two screens' channels apart.
@@ -16,7 +20,8 @@ export function useTournamentMatchUpdates(tournamentId: string, scope = 'matches
   useEffect(() => {
     if (typeof supabase.channel !== 'function') return;
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const channel = supabase.channel(`tournament-${scope}:${tournamentId}`)
+    opened += 1;
+    const channel = supabase.channel(`tournament-${scope}:${tournamentId}:${opened}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'matches', filter: `tournament_id=eq.${tournamentId}` }, () => {
         if (timer) return;
         timer = setTimeout(() => {
