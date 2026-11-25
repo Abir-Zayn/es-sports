@@ -6,7 +6,7 @@ import { ThemeProvider } from '@/theme';
 import { seedEvents, seedMatch, seedPlayers } from '../__fixtures__/seed-match';
 import { buildLiveView } from '../utils/build-live-view';
 import type { LiveMatchViewData } from '../utils/live-view';
-import { sampleLiveView } from '../utils/sample-live-view';
+import { sampleLiveView } from '../__fixtures__/sample-live-view';
 import { MatchInfoScreen } from '../screens/match-info-screen';
 import { MatchOversScreen } from '../screens/match-overs-screen';
 import { MatchScorecardScreen } from '../screens/match-scorecard-screen';
@@ -77,10 +77,9 @@ describe('info tab', () => {
     expect(screen.queryByText('Watch live')).toBeNull();
   });
 
-  it('keeps the scorer preview and streams for the sample match', async () => {
+  it('lists the streams of a match that has them', async () => {
     mockView = sampleLiveView();
     await show(<MatchInfoScreen />);
-    expect(screen.getByText('Scorer panel · preview')).toBeTruthy();
     expect(screen.getByText('Watch live')).toBeTruthy();
   });
 

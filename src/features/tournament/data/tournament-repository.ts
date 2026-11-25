@@ -1,3 +1,4 @@
+import { isUuid } from '@/features/scoring/data/uuid';
 import { toTeam, type TeamRecord } from '@/features/team';
 import { traceApi } from '@/lib/api-log';
 import { supabase } from '@/lib/supabase';
@@ -65,6 +66,7 @@ export const toPerson = (id: string, profile: ProfileRow): PersonRecord => ({
 
 /** The tournament, or null when it does not exist. */
 export async function fetchTournament(id: string): Promise<TournamentRecord | null> {
+  if (!isUuid(id)) return null;
   const { data, error } = await traceApi('tournament.fetch', { id }, () => supabase.from('tournaments').select(TOURNAMENT_COLUMNS).eq('id', id).maybeSingle());
   if (error) throw toTournamentError(error);
   return data ? toTournament(data) : null;

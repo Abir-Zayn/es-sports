@@ -1,6 +1,7 @@
+import { initialSetup } from '@/features/scoring/__fixtures__/test-setup';
 import { newSession, scorerReducer, type ScorerSession } from '../../session-reducer';
 
-const begin = () => scorerReducer(newSession(), { type: 'start', id: 'start' });
+const begin = () => scorerReducer(newSession(initialSetup), { type: 'start', id: 'start' });
 const record = (state: ScorerSession, runs = 4, id = 'delivery') =>
   scorerReducer(state, { type: 'delivery', input: { kind: 'runs', runs }, id });
 

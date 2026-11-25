@@ -1,4 +1,4 @@
-import { initialSetup } from '../../sample-data';
+import { initialSetup } from '@/features/scoring/__fixtures__/test-setup';
 import { createInnings } from '../create-innings';
 import { applyDelivery, chooseBowler } from '../score-delivery';
 

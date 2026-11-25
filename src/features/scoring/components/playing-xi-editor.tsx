@@ -6,7 +6,7 @@ import { AppBadge, Button, InitialsAvatar, Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import { teamCodes } from '../sample-data';
+import { teamCodes } from '@/features/scoring/setup-defaults';
 import type { MatchSetup, TeamCode } from '../types';
 import { ScorerSheet } from './scorer-sheet';
 import { ScorerChoice, ScorerNotice, ScorerRoleLabel } from './scorer-ui';

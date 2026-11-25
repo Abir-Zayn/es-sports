@@ -1,6 +1,6 @@
 import { sideOf } from '@/features/scoring/data/sides';
 import type { BallEventRow, MatchRow, PlayerRow } from '@/features/scoring/data/types';
-import { battingFirst, otherTeam } from '@/features/scoring/sample-data';
+import { battingFirst, otherTeam } from '@/features/scoring/setup-defaults';
 import type { MatchSetup, ScoreState } from '@/features/scoring/types';
 import { getLocale, type Locale } from '@/i18n';
 

@@ -4,6 +4,8 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import { fetchIncomingOffers } from '@/features/scoring/handover/handover-repository';
 import { ThemeProvider } from '@/theme';
 
+import { sampleCompletedMatches as mockCompleted } from '../__fixtures__/completed';
+import { sampleUpcomingMatches as mockUpcoming } from '../__fixtures__/upcoming';
 import { MatchesScreen } from '../matches-screen';
 
 const mockPush = jest.fn();
@@ -12,6 +14,12 @@ jest.mock('expo-router', () => ({
   useFocusEffect: (effect: () => void) => { jest.requireActual('react').useEffect(effect, [effect]); },
 }));
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
+// The rows are stand-ins: the mapped fixtures are what the screen shows.
+jest.mock('../matches-repository', () => ({
+  ...jest.requireActual('../matches-repository'),
+  fetchMatchRows: jest.fn(async () => []),
+  mapMatchRowsToFixtures: (_rows: unknown, status: string) => (status === 'completed' ? mockCompleted : mockUpcoming),
+}));
 jest.mock('@/features/auth/components/auth-provider', () => ({ useAuth: () => ({ session: { user: { id: 'u-sam' } } }) }));
 jest.mock('@/features/scoring/handover/handover-repository', () => ({ fetchIncomingOffers: jest.fn() }));
 jest.mock('react-native-safe-area-context', () => ({

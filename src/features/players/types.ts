@@ -7,5 +7,4 @@ export type PlayerCareer = {
   totals: CareerTotals;
   shots: readonly { runs: number; angle: number }[];
   recent: readonly Performance[];
-  isSample: boolean;
 };

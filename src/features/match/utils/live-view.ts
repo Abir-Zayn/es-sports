@@ -6,8 +6,8 @@ export type LiveStatus = 'live' | 'completed' | 'scheduled';
 
 /** Everything the spectator screens show for one match, whatever it was loaded from. */
 export type LiveMatchViewData = {
-  /** `stored` is a saved match, `staged` a friendly set up on this phone but not started, `sample` the preview. */
-  source: 'stored' | 'staged' | 'sample';
+  /** `stored` is a saved match, `staged` a friendly set up on this phone but not started. */
+  source: 'stored' | 'staged';
   header: {
     /** Uppercase line on the hero, e.g. "FRIENDLY · HALISHAHAR STRIKERS VS AGRABAD TIGERS". */
     label: string;

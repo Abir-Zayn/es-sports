@@ -1,4 +1,3 @@
-import { TournamentTableScreen } from '@/features/tournament/tournament-table-screen';
-import { withRealTournament } from '@/features/tournament/real/with-real-tournament';
+import { tournamentRoute } from '@/features/tournament/real/with-real-tournament';
 
-export default withRealTournament(TournamentTableScreen, 'table');
+export default tournamentRoute('table');

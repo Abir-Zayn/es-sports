@@ -10,7 +10,6 @@ import { PlayerHeroCard } from './components/player-hero-card';
 import { PlayerPitchZones } from './components/player-pitch-zones';
 import { PlayerRecentMatches } from './components/player-recent-matches';
 import { RealPlayerProfile } from './real-player-profile';
-import { findSamplePlayer } from './sample-players';
 import { usePlayerProfile } from './use-player-profile';
 import { isUuid } from '@/features/scoring/data/uuid';
 
@@ -23,8 +22,8 @@ export function PlayerProfileScreen() {
   const styles = useThemedStyles(createStyles);
   const id = params.id ?? '';
   const player = usePlayerProfile(id, params.name, params.role);
-  // A real account (e.g. from search or the Hall of fame) loads from the server; sample players and names stay local.
-  const real = isUuid(id) && !findSamplePlayer(id);
+  // A real account (e.g. from search or the Hall of fame) loads from the server; a squad name without an account stays local.
+  const real = isUuid(id);
   return <View style={styles.screen}>
     <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + spacing.xxl }]}>
       <View style={styles.header}>

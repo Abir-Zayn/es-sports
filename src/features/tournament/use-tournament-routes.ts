@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 
-import type { TournamentSectionId } from './sample-data';
+import type { TournamentSectionId } from './sections';
 
 /** Navigation for one tournament's screens. Switching sections replaces the screen so Back leaves the tournament. */
 export function useTournamentRoutes(id: string) {

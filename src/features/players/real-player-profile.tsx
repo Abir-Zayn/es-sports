@@ -42,7 +42,7 @@ export function RealPlayerProfile({ id, name }: { id: string; name?: string }) {
 
   return <>
     {/* Role and batting style show only once the real profile arrives, never the placeholder defaults. */}
-    <PlayerHeroCard player={{ profile: bio, totals: emptyCareer, shots: [], recent: [], isSample: false }} showDetails={Boolean(profile.data)} />
+    <PlayerHeroCard player={{ profile: bio, totals: emptyCareer, shots: [], recent: [] }} showDetails={Boolean(profile.data)} />
     {profile.isError ? (
       <View style={{ gap: spacing.md }} accessibilityLiveRegion="polite">
         <Text muted>{t('players.profileFailed')}</Text>

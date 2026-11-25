@@ -15,6 +15,5 @@ export * from './components/wagon-wheel';
 export * from './server/search-players';
 export * from './server/use-live-match-data';
 export * from './utils/live-view';
-export * from './utils/sample-info';
 export * from './utils/use-match-routes';
 export type * from './types';

@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { InitialsAvatar, Text } from '@/components/ui';
 import { dp, radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-import type { SearchRow } from '../sample-data';
+import type { SearchRow } from '../types';
 
 type Props = { row: SearchRow; onPress?: () => void };
 

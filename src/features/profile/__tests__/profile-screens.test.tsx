@@ -5,7 +5,7 @@ import { loadLinkedAccounts } from '@/features/auth';
 import { ThemeProvider } from '@/theme';
 
 import { EditProfileScreen } from '../edit-profile-screen';
-import { sampleProfile } from '../sample-data';
+import { sampleProfile } from '../__fixtures__/sample-profile';
 import { ProfileScreen } from '../profile-screen';
 import { SettingsScreen } from '../settings-screen';
 
@@ -31,7 +31,7 @@ jest.mock('@/features/auth/server/google-auth', () => ({ linkGoogleAccount: jest
 jest.mock('@/features/auth/server/linked-accounts', () => ({ loadLinkedAccounts: jest.fn() }));
 jest.mock('@/features/profile/profile-provider', () => ({
   useProfile: () => ({
-    ...jest.requireActual('../sample-data').sampleProfile,
+    ...jest.requireActual('../__fixtures__/sample-profile').sampleProfile,
     status: 'ready',
     reload: jest.fn(),
     saveProfile: jest.fn(),

@@ -1,3 +1,4 @@
+import { isUuid } from '@/features/scoring/data/uuid';
 import { traceApi } from '@/lib/api-log';
 import { supabase } from '@/lib/supabase';
 import type { AvatarTone } from '@/theme';
@@ -47,6 +48,7 @@ export async function createTeam(id: string, input: NewTeamInput): Promise<strin
 
 /** The team, or null when it does not exist. `creatorName` answers for a zoned team, which has no owner. */
 export async function fetchTeam(id: string): Promise<(TeamRecord & { creatorName?: string | null }) | null> {
+  if (!isUuid(id)) return null;
   const { data, error } = await traceApi('team.fetch', { id }, () => supabase.from('teams')
     .select(`${TEAM_COLUMNS}, creator:profiles!teams_created_by_fkey(full_name)`).eq('id', id).maybeSingle());
   if (error) throw toTeamError(error);

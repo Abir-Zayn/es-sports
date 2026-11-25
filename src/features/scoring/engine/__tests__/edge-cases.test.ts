@@ -1,4 +1,4 @@
-import { initialSetup } from '../../sample-data';
+import { initialSetup } from '@/features/scoring/__fixtures__/test-setup';
 import { newSession, scorerReducer } from '../../session-reducer';
 import { createInnings } from '../create-innings';
 import { applyDelivery, chooseBowler } from '../score-delivery';
@@ -56,7 +56,7 @@ describe('scoring boundaries', () => {
   });
 
   it('records a shot direction for bat runs on a no ball', () => {
-    let state = scorerReducer(newSession(), { type: 'start', id: 'start' });
+    let state = scorerReducer(newSession(initialSetup), { type: 'start', id: 'start' });
     state = scorerReducer(state, { type: 'delivery', id: 'nb', input: { kind: 'no-ball', runs: 4 } });
     expect(state.score?.runs).toBe(5);
     expect(state.score?.balls).toBe(0);

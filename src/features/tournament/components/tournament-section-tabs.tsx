@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { AppTabs } from '@/components/ui';
 import { sizes, spacing, useThemedStyles, type Palette } from '@/theme';
 
-import { tournamentSections, type TournamentSectionId } from '../sample-data';
+import { tournamentSections, type TournamentSectionId } from '../sections';
 import { useTournamentRoutes } from '../use-tournament-routes';
 
 type Props = { tournamentId: string; selected: TournamentSectionId };

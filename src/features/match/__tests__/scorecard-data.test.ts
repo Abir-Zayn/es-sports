@@ -1,4 +1,4 @@
-import { initialSetup } from '@/features/scoring/sample-data';
+import { initialSetup } from '@/features/scoring/__fixtures__/test-setup';
 
 import { seedEvents, seedMatch, seedPlayers } from '../__fixtures__/seed-match';
 import { buildLiveView, stagedLiveView } from '../utils/build-live-view';

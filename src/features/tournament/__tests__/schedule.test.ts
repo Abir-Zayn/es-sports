@@ -2,7 +2,7 @@ import { format, parseISO } from 'date-fns';
 
 import type { Fixture } from '@/types/cricket';
 
-import { tournamentFixtures } from '../sample-matches';
+import { tournamentFixtures } from '../__fixtures__/sample-matches';
 import { dateParts } from '@/lib/date-parts';
 
 import { buildSchedule } from '../schedule';

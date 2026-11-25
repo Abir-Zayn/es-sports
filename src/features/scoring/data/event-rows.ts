@@ -42,8 +42,6 @@ export function auditToOp(matchId: string, event: AuditEvent): PersistOp | null 
         ? { kind: 'angle', id: event.deliveryId, angle: event.angle } : null;
     case 'undo':
       return { kind: 'void', fromId: event.deliveryId, id: event.id };
-    case 'demo':
-      return null;
   }
 }
 

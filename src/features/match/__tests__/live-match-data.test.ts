@@ -1,6 +1,6 @@
 import { findSpectatorMatch } from '@/features/scoring/data/match-repository';
 import { clearStagedSetups, stageMatchSetup } from '@/features/scoring/data/staged-setups';
-import { initialSetup } from '@/features/scoring/sample-data';
+import { initialSetup } from '@/features/scoring/__fixtures__/test-setup';
 import { quadrantSplit } from '@/lib/pitch-quadrant';
 
 import { SEED_MATCH_ID as MATCH, seedEvents as events, seedMatch as match, seedPlayers as players } from '../__fixtures__/seed-match';
@@ -105,11 +105,11 @@ describe('loading a match to watch', () => {
     expect(view.summary).toBe('Kings bat first · 8 overs a side');
   });
 
-  it('falls back to the sample match when the lookup fails or finds nothing', async () => {
+  it('says not found, never a sample match, when the lookup fails or finds nothing', async () => {
     find.mockRejectedValue(new Error('offline'));
-    expect((await loadLiveMatch('m12')).source).toBe('sample');
+    await expect(loadLiveMatch('m12')).rejects.toBeInstanceOf(MatchNotFoundError);
     find.mockResolvedValue(null);
-    expect((await loadLiveMatch('unknown')).summary).toBe('Strikers need 27 runs from 21 balls');
+    await expect(loadLiveMatch('unknown')).rejects.toBeInstanceOf(MatchNotFoundError);
   });
 
   it('never shows the sample in place of a saved match id: it fails, so the screen can say so', async () => {

@@ -79,7 +79,7 @@ export function RealTournamentTable({ tournament }: Props) {
 const createStyles = (colors: Palette) =>
   StyleSheet.create({
     gap: { gap: spacing.md },
-    // The table runs edge to edge, like the sample table screen.
+    // The table runs edge to edge.
     flush: { marginHorizontal: -sizes.gutter },
     title: typography.headlineMd,
   });

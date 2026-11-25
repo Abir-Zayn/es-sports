@@ -7,7 +7,6 @@ import { radius, sizes, spacing, typography, useThemedStyles, type Palette } fro
 import type { SyncInfo } from '../use-match-sync';
 
 const LABEL_KEYS = {
-  local: 'scoring.sync.local',
   saving: 'scoring.sync.saving',
   saved: 'scoring.sync.saved',
   error: 'scoring.sync.error',
@@ -16,8 +15,8 @@ const LABEL_KEYS = {
 export function SyncBadge({ sync }: { sync: SyncInfo }) {
   const s = useThemedStyles(styles);
   const { t } = useTranslation();
-  const failed = sync.mode === 'synced' && sync.status === 'error';
-  const key = sync.mode === 'local' ? 'local' : failed ? 'error' : sync.status === 'saving' ? 'saving' : 'saved';
+  const failed = sync.status === 'error';
+  const key = failed ? 'error' : sync.status === 'saving' ? 'saving' : 'saved';
   return (
     <Pressable accessibilityRole={failed ? 'button' : 'text'} accessibilityLiveRegion="polite" disabled={!failed}
       hitSlop={sizes.hitSlop} onPress={sync.retry} style={[s.badge, failed && s.failed]}>

@@ -51,11 +51,9 @@ export const bnScoringHandover: Record<keyof typeof enScoringHandover, string> =
   'scoring.overlay.lastOver': 'ওভার {{number}} · {{runs}} রান',
   'scoring.overlay.thisOver': 'চলতি ওভার · {{runs}} রান',
   'scoring.overlay.noDeliveries': 'এখনো কোনো বল হয়নি',
-  'scoring.overlay.sampleStandings': 'নমুনা পয়েন্ট তালিকা',
-  'scoring.overlay.pointsShort': '{{points}} পয়েন্ট',
+  'scoring.overlay.noStandings': 'টুর্নামেন্টের ম্যাচে এখানে পয়েন্ট তালিকা দেখা যাবে।',
   'scoring.overlay.cameraFeed': 'আপনার ক্যামেরা ফিড',
 
-  'scoring.sync.local': 'লোকাল ড্রাফট · সিঙ্ক করা হয়নি',
   'scoring.sync.saving': 'সংরক্ষণ হচ্ছে…',
   'scoring.sync.saved': 'সংরক্ষিত',
   'scoring.sync.error': 'সংরক্ষণ হয়নি · আবার চেষ্টা করতে ট্যাপ করুন',

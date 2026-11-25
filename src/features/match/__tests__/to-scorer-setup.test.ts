@@ -1,6 +1,6 @@
 import { normalizeOpeners } from '@/features/scoring/components/opening-players';
 import { createInnings } from '@/features/scoring/engine/create-innings';
-import { battingFirst } from '@/features/scoring/sample-data';
+import { battingFirst } from '@/features/scoring/setup-defaults';
 
 import { addPlayer, newFriendly, renameTeam, withPlayersPerSide } from '../utils/friendly-rules';
 import { toScorerSetup } from '../utils/to-scorer-setup';

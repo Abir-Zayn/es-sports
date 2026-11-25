@@ -5,9 +5,6 @@ import { supabase } from '@/lib/supabase';
 import type { AvatarTone } from '@/theme';
 import type { Fixture, FixtureSide, FixtureState } from '@/types/cricket';
 
-import { sampleCompletedMatches } from './sample-completed';
-import { sampleUpcomingMatches } from './sample-upcoming';
-
 export const MATCH_COLUMNS =
   'id, title, status, scheduled_at, started_at, completed_at, team_a_name, team_a_short, team_a_tone, team_a_image_url, team_a_runs, team_a_wickets, team_a_balls, team_b_name, team_b_short, team_b_tone, team_b_image_url, team_b_runs, team_b_wickets, team_b_balls, overs_limit, winner_side, result_summary, created_at';
 
@@ -120,59 +117,36 @@ export function matchRowToFixture(row: RawMatchRow, locale: Locale = getLocale()
   };
 }
 
-function fallbackMatches(status: 'scheduled' | 'completed' | 'upcoming'): Fixture[] {
-  if (status === 'scheduled' || (status as string) === 'upcoming') {
-    return sampleUpcomingMatches
-      .filter((fixture) => fixture.state === 'upcoming')
-      .sort((a, b) => a.date.localeCompare(b.date));
-  }
-  return sampleCompletedMatches
-    .filter((fixture) => fixture.state === 'result')
-    .sort((a, b) => b.date.localeCompare(a.date));
-}
-
-/** Maps raw match rows into Fixture objects for the given locale, falling back to samples if null. */
+/** Maps raw match rows into Fixture objects for the given locale; none when offline or empty. */
 export function mapMatchRowsToFixtures(
   rows: RawMatchRow[] | null,
   status: 'scheduled' | 'completed' | 'upcoming',
   locale: Locale = getLocale(),
 ): Fixture[] {
-  const normalizedStatus = status === 'upcoming' ? 'scheduled' : status;
-  if (!rows || rows.length === 0) return fallbackMatches(normalizedStatus);
+  if (!rows || rows.length === 0) return [];
   return rows.map((row) => matchRowToFixture(row, locale));
 }
 
-/** Fetches raw real-time match rows from Supabase, or null when offline / empty. */
+/** Fetches raw real-time match rows from Supabase. A failed read throws, so the screen can say so and retry. */
 export async function fetchMatchRows(
   status: 'scheduled' | 'completed' | 'upcoming',
   signal?: AbortSignal,
 ): Promise<RawMatchRow[] | null> {
   const normalizedStatus = status === 'upcoming' ? 'scheduled' : status;
-  try {
-    if (!supabase || typeof supabase.from !== 'function') {
-      return null;
-    }
-    const orderCol = normalizedStatus === 'scheduled' ? 'scheduled_at' : 'completed_at';
-    const ascending = normalizedStatus === 'scheduled';
-    const query = supabase
-      .from('matches')
-      .select(MATCH_COLUMNS)
-      .eq('status', normalizedStatus)
-      .order(orderCol, { ascending })
-      .limit(30);
-
-    const { data, error } = signal ? await query.abortSignal(signal) : await query;
-    if (error || !data || data.length === 0) {
-      return null;
-    }
-
-    return data as RawMatchRow[];
-  } catch {
-    return null;
-  }
+  if (!supabase || typeof supabase.from !== 'function') return null;
+  const orderCol = normalizedStatus === 'scheduled' ? 'scheduled_at' : 'completed_at';
+  const query = supabase
+    .from('matches')
+    .select(MATCH_COLUMNS)
+    .eq('status', normalizedStatus)
+    .order(orderCol, { ascending: normalizedStatus === 'scheduled' })
+    .limit(30);
+  const { data, error } = signal ? await query.abortSignal(signal) : await query;
+  if (error) throw error;
+  return (data ?? []) as RawMatchRow[];
 }
 
-/** Reads real-time matches from Supabase; falls back to sample data when offline. */
+/** Reads real-time matches from Supabase; none when offline. */
 export async function fetchMatches(
   status: 'scheduled' | 'completed' | 'upcoming',
   signal?: AbortSignal,

@@ -4,6 +4,8 @@ import { TournamentError } from '../data/tournament-errors';
 import { fetchDeletedTournaments, fetchMyTournaments, fetchTournament, fetchTournamentStaff, fetchTournamentTeams, restoreDaysLeft } from '../data/tournament-repository';
 import { addTournamentTeam, createTournament, createTournamentTeam, deleteTournament, draftToPayload, restoreTournament } from '../data/tournament-writes';
 
+const TID = 'f5c00000-0000-4000-8000-0000000000aa';
+
 jest.mock('@/lib/supabase', () => ({ supabase: jest.requireActual('../__fixtures__/supabase-fake').fake }));
 
 const draft = {
@@ -66,9 +68,9 @@ describe('adding teams', () => {
 describe('reading tournaments', () => {
   it('maps a tournament, turning missing registration dates into empty strings, and returns null when absent', async () => {
     fake.results.tournaments = { data: row, error: null };
-    await expect(fetchTournament('t')).resolves.toMatchObject({ id: 't', teamsPlanned: 8, registrationOpens: '', registrationDeadline: '2026-11-09' });
+    await expect(fetchTournament(TID)).resolves.toMatchObject({ id: 't', teamsPlanned: 8, registrationOpens: '', registrationDeadline: '2026-11-09' });
     fake.results.tournaments = { data: null, error: null };
-    await expect(fetchTournament('t')).resolves.toBeNull();
+    await expect(fetchTournament(TID)).resolves.toBeNull();
   });
 
   it('lists the tournaments I run, newest first, with my role', async () => {
@@ -142,6 +144,6 @@ describe('reading tournaments', () => {
 
   it('throws a plain error when a read fails', async () => {
     fake.results.tournaments = { data: null, error: { code: '42501', message: 'raw' } };
-    await expect(fetchTournament('t')).rejects.toBeInstanceOf(TournamentError);
+    await expect(fetchTournament(TID)).rejects.toBeInstanceOf(TournamentError);
   });
 });

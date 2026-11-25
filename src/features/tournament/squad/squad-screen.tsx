@@ -24,7 +24,7 @@ import { useSquadActions } from './use-squad-actions';
 
 type OpenSheet = { kind: 'member' } | { kind: 'guest' } | { kind: 'remove'; player: TournamentPlayer } | null;
 
-/** A published (uuid) tournament keeps its squads on the server; the sample and drafts stay in memory. */
+/** A published (uuid) tournament keeps its squads on the server; drafts stay in memory. */
 export function SquadScreen() {
   const { tournamentId = '', teamId = '' } = useLocalSearchParams<{ tournamentId?: string; teamId?: string }>();
   return isUuid(tournamentId) ? <ServerSquadScreen tournamentId={tournamentId} teamId={teamId} /> : <LocalSquadScreen />;

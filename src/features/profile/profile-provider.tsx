@@ -3,8 +3,7 @@ import { AppState } from 'react-native';
 
 import { useAuth } from '@/features/auth';
 import type { ProviderProfile } from '@/features/auth';
-import { addPerformances, toBattingStats, toBowlingStats } from '@/lib/career-stats';
-import type { PlayerProfile, ProfileData } from '@/types/profile';
+import type { PlayerProfile } from '@/types/profile';
 
 import type { ProfileInput } from './profile-schema';
 import {
@@ -15,8 +14,6 @@ import {
   uploadAvatar,
   type StoredProfile,
 } from './profile-repository';
-import { careerOf, useLedger } from './career-ledger';
-import { sampleCareer, sampleProfile } from './sample-data';
 
 type Status = 'loading' | 'ready' | 'error';
 
@@ -25,7 +22,8 @@ type LoadResult = { userId: string; stored: StoredProfile } | { userId: string; 
 /** `fill-empty` only fills what is still blank. `overwrite` replaces the current name and photo. */
 export type ImportMode = 'fill-empty' | 'overwrite';
 
-type ProfileContextValue = ProfileData & {
+type ProfileContextValue = {
+  profile: PlayerProfile;
   status: Status;
   reload: () => void;
   /** Saves edits. A picked photo on the device is uploaded; `null` removes the photo. Never touches the auth session. */
@@ -67,7 +65,6 @@ function toPlayerProfile(userId: string, email: string | undefined, stored: Stor
 /**
  * Holds the signed-in player's profile, stored in Supabase. The name and photo are copied from Google only once,
  * at sign-up; after that they belong to the player and are edited here without touching the auth session.
- * Stats, teams and recent matches are still sample data.
  */
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const { session } = useAuth();
@@ -169,26 +166,15 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     [stored, write, userId],
   );
 
-  const ledger = useLedger();
-  const career = useMemo(() => {
-    // Matches finished on this device add to the career; with none, the figures stay as they were.
-    const mine = careerOf(ledger, userId ?? 'me');
-    if (mine.performances.length === 0) return null;
-    const totals = addPerformances(sampleCareer, mine.performances);
-    return { batting: toBattingStats(totals), bowling: toBowlingStats(totals), recent: [...mine.recent, ...sampleProfile.recent] };
-  }, [ledger, userId]);
-
   const value = useMemo<ProfileContextValue>(
     () => ({
-      ...sampleProfile,
-      ...career,
       profile: toPlayerProfile(userId ?? 'me', user?.email, stored),
       status,
       reload,
       saveProfile,
       importFromProvider,
     }),
-    [userId, user?.email, stored, status, reload, saveProfile, importFromProvider, career],
+    [userId, user?.email, stored, status, reload, saveProfile, importFromProvider],
   );
   return <ProfileContext value={value}>{children}</ProfileContext>;
 }

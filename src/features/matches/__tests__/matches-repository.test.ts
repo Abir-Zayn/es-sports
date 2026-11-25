@@ -98,7 +98,7 @@ describe('matches repository & mapping', () => {
     expect(matches[0].state).toBe('result');
   });
 
-  it('falls back to sample matches when supabase query returns empty or errors', async () => {
+  it('returns no matches, never samples, when supabase query returns empty', async () => {
     const mockOrder = jest.fn().mockReturnValue({
       limit: jest.fn().mockResolvedValue({ data: [], error: null }),
     });
@@ -106,9 +106,17 @@ describe('matches repository & mapping', () => {
     const mockSelect = jest.fn().mockReturnValue({ eq: mockEq });
     jest.mocked(supabase.from).mockReturnValue({ select: mockSelect } as never);
 
-    const matches = await fetchMatches('upcoming');
-    expect(matches.length).toBeGreaterThan(0);
-    expect(matches[0].state).toBe('upcoming');
+    await expect(fetchMatches('upcoming')).resolves.toEqual([]);
+  });
+});
+
+describe('a failed matches read', () => {
+  it('throws, so the screen shows its error state instead of an empty list', async () => {
+    const mockOrder = jest.fn().mockReturnValue({
+      limit: jest.fn().mockResolvedValue({ data: null, error: { message: 'offline' } }),
+    });
+    jest.mocked(supabase.from).mockReturnValue({ select: () => ({ eq: () => ({ order: mockOrder }) }) } as never);
+    await expect(fetchMatches('completed')).rejects.toMatchObject({ message: 'offline' });
   });
 });
 

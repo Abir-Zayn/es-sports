@@ -1,12 +1,10 @@
-import { createDemoScore } from './demo-score';
 import { createInnings } from './engine/create-innings';
 import { applyDelivery, chooseBowler, swapEnds } from './engine/score-delivery';
-import { initialSetup } from './sample-data';
+import { initialSetup } from '@/features/scoring/setup-defaults';
 import type { Delivery, DeliveryInput, MatchSetup, OverlaySettings, ScoreState, ShotDraft } from './types';
 
 /** One accepted state change. The match store saves these, so each carries what a saved row needs. */
 export type AuditEvent =
-  | { id: string; type: 'demo' }
   | { id: string; type: 'start'; innings: 1 | 2; strikerId: string; nonStrikerId: string; bowlerId: string }
   | { id: string; type: 'delivery'; deliveryId: string; innings: 1 | 2; nonStrikerId: string; delivery: Delivery }
   | { id: string; type: 'bowler'; innings: 1 | 2; playerId: string }
@@ -28,7 +26,7 @@ export const newSession = (setup: MatchSetup = initialSetup): ScorerSession => (
 });
 export type ScorerAction =
   | { type: 'setup'; value: MatchSetup }
-  | { type: 'start' | 'demo' | 'undo' | 'swap'; id: string }
+  | { type: 'start' | 'undo' | 'swap'; id: string }
   | { type: 'delivery'; input: DeliveryInput; id: string }
   | { type: 'bowler'; playerId: string; id: string }
   | { type: 'shot'; angle?: number; id: string }
@@ -39,7 +37,6 @@ export function scorerReducer(state: ScorerSession, action: ScorerAction): Score
   if (action.type === 'overlay') return { ...state, overlay: action.value };
   if (state.audit.some((event) => event.id === action.id)) return state;
   const log = (event: AuditEvent) => [...state.audit, event];
-  if (action.type === 'demo') return { ...newSession(), score: createDemoScore(), audit: log({ id: action.id, type: 'demo' }) };
   if (action.type === 'start') {
     const score = createInnings(state.setup, state.score ?? undefined);
     return {

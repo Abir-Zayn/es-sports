@@ -11,7 +11,7 @@ import { StepHeader } from './components/setup/setup-parts';
 import { TossPicker } from './components/setup/toss-picker';
 import { SwitchRow } from './components/switch-row';
 import { createInnings } from './engine/create-innings';
-import { battingFirst, otherTeam, playerName } from './sample-data';
+import { battingFirst, otherTeam, playerName } from '@/features/scoring/setup-defaults';
 import { localEventId, useScorer } from './scorer-provider';
 import type { MatchSetup } from './types';
 import { useScorerRoutes } from './use-scorer-routes';
@@ -78,9 +78,6 @@ export function ScorerSetupScreen() {
     <StepHeader step={next()} title={t('scoring.setup.optionsStep')} />
     <SwitchRow title={t('scoring.setup.recordShotsTitle')} detail={t('scoring.setup.recordShotsDetail')} value={setup.recordShots}
       onChange={(recordShots) => configure({ ...normalized, recordShots })} />
-    {askToss && !tournament ? <Button label={t('scoring.setup.tryReference')} variant="ghost" onPress={() => {
-      dispatch({ type: 'demo', id: localEventId() }); routes.replace('pad');
-    }} /> : null}
   </ScorerFrame>;
 }
 

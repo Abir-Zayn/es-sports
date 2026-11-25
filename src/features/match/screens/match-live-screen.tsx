@@ -53,9 +53,6 @@ function LiveBody({ view, matchId }: { view: LiveMatchViewData; matchId: string 
   const [current = null, ...earlier] = view.recentOvers;
   return (
     <View style={styles.body}>
-      {view.source === 'sample' ? (
-        <Text muted style={styles.note}>{t('match.live.previewNote')}</Text>
-      ) : null}
       {view.source === 'stored' && view.header.status !== 'completed' && isUuid(matchId) ? <ResumeScoringAction matchId={matchId} /> : null}
       {view.header.toss && view.header.status !== 'scheduled' ? <Text muted style={styles.note}>{view.header.toss}</Text> : null}
       {view.stream ? (

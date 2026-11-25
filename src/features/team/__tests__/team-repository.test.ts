@@ -14,6 +14,7 @@ jest.mock('@/lib/supabase', () => ({
 
 const input = { name: ' Halishahar Strikers ', shortName: 'HSS', tone: 'blue' as const, area: ' Halishahar ' };
 const row = { id: 't1', name: 'Strikers', short_name: 'HSS', tone: 'blue', logo_url: null, area: null, district: null };
+const T1 = 'a0000000-0000-4000-8000-000000000001';
 
 describe('team rules', () => {
   it('suggests a short name from the words of the name', () => {
@@ -72,10 +73,10 @@ describe('reading teams', () => {
   it('maps a team row and returns null when there is none', async () => {
     mockEq.mockReturnValueOnce({ maybeSingle: mockMaybeSingle });
     mockMaybeSingle.mockResolvedValueOnce({ data: { ...row, creator: { full_name: ' Rana ' } }, error: null });
-    await expect(fetchTeam('t1')).resolves.toEqual({ id: 't1', name: 'Strikers', shortName: 'HSS', tone: 'blue', logoUrl: null, coverUrl: null, area: null, district: null, registeredAt: null, creatorName: 'Rana' });
+    await expect(fetchTeam(T1)).resolves.toEqual({ id: 't1', name: 'Strikers', shortName: 'HSS', tone: 'blue', logoUrl: null, coverUrl: null, area: null, district: null, registeredAt: null, creatorName: 'Rana' });
     mockEq.mockReturnValueOnce({ maybeSingle: mockMaybeSingle });
     mockMaybeSingle.mockResolvedValueOnce({ data: null, error: null });
-    await expect(fetchTeam('missing')).resolves.toBeNull();
+    await expect(fetchTeam('a0000000-0000-4000-8000-00000000dead')).resolves.toBeNull();
   });
 
   it('maps logo_url and cover_url when present', async () => {
@@ -84,7 +85,7 @@ describe('reading teams', () => {
       data: { ...row, logo_url: 'https://example.com/logo.jpg', cover_url: 'https://example.com/cover.jpg' },
       error: null,
     });
-    await expect(fetchTeam('t1')).resolves.toMatchObject({
+    await expect(fetchTeam(T1)).resolves.toMatchObject({
       logoUrl: 'https://example.com/logo.jpg',
       coverUrl: 'https://example.com/cover.jpg',
     });
@@ -93,7 +94,7 @@ describe('reading teams', () => {
   it('falls back to a neutral tone for an unknown colour', async () => {
     mockEq.mockReturnValueOnce({ maybeSingle: mockMaybeSingle });
     mockMaybeSingle.mockResolvedValueOnce({ data: { ...row, tone: 'purple' }, error: null });
-    expect((await fetchTeam('t1'))?.tone).toBe('neutral');
+    expect((await fetchTeam(T1))?.tone).toBe('neutral');
   });
 
   it('lists members owner first, then by name, with a name for people who have none', async () => {

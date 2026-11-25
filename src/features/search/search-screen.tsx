@@ -11,8 +11,8 @@ import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type Pal
 import { RecentSearches } from './components/recent-searches';
 import { ResultRow } from './components/result-row';
 import { clearSearches, saveSearch, useRecentSearches } from './recent-history';
-import { searchAll, searchTabs, type SearchGroup, type SearchGroupId, type SearchRow, type SearchTab } from './sample-data';
-import { usePlayerResults } from './use-player-results';
+import { searchTabs, type SearchGroupId, type SearchRow, type SearchTab } from './types';
+import { useSearchResults } from './use-search-results';
 
 const TAB_LABEL_KEY: Record<SearchTab, TranslationKey> = {
   all: 'search.tabAll',
@@ -38,12 +38,8 @@ export function SearchScreen() {
   const recentSearches = useRecentSearches();
 
   const hasQuery = query.trim().length > 0;
-  // Teams and tournaments are still sample data; players are real accounts, found by name or by a pasted user id.
-  const sample = searchAll(query, tab);
-  const players = usePlayerResults(query, tab === 'all' || tab === 'players');
-  const playerGroups: SearchGroup[] = players.rows.length > 0 ? [{ id: 'players', title: t('search.groupPlayers'), rows: players.rows }] : [];
-  const groups = [...sample.filter((g) => g.id === 'teams'), ...playerGroups, ...sample.filter((g) => g.id === 'tournaments')];
-  const localizedTabs = searchTabs.map((item) => ({ id: item.id, label: t(TAB_LABEL_KEY[item.id]) }));
+  const { groups, waiting, failed } = useSearchResults(query, tab);
+  const localizedTabs = searchTabs.map((id) => ({ id, label: t(TAB_LABEL_KEY[id]) }));
 
   function openResult(row: SearchRow, group: SearchGroupId) {
     saveSearch(query);
@@ -87,10 +83,10 @@ export function SearchScreen() {
 
         {!hasQuery ? <RecentSearches searches={recentSearches} onPick={(value) => { setQuery(value); saveSearch(value); }} onClear={clearSearches} /> : null}
 
-        {hasQuery && players.waiting ? <ActivityIndicator accessibilityLabel={t('search.searching')} color={colors.link} /> : null}
-        {players.failed ? <Text muted accessibilityLiveRegion="polite">{t('search.failed')}</Text> : null}
+        {hasQuery && waiting ? <ActivityIndicator accessibilityLabel={t('search.searching')} color={colors.link} /> : null}
+        {failed ? <Text muted accessibilityLiveRegion="polite">{t('search.failed')}</Text> : null}
 
-        {hasQuery && groups.length === 0 && !players.waiting && !players.failed ? (
+        {hasQuery && groups.length === 0 && !waiting && !failed ? (
           <View style={styles.empty}>
             <Text variant="heading">{t('search.noResults')}</Text>
             <Text muted>{t('search.noResultsHint', { query: query.trim() })}</Text>

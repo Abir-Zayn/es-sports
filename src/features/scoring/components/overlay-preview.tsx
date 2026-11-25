@@ -2,7 +2,6 @@ import { StyleSheet, View } from 'react-native';
 import Svg, { Ellipse, Rect } from 'react-native-svg';
 
 import { Text } from '@/components/ui';
-import { leagueTable } from '@/features/tournament/sample-table';
 import { useTranslation } from '@/i18n';
 import { radius, useThemedStyles, type Palette } from '@/theme';
 
@@ -37,7 +36,7 @@ export function OverlayPreview({ score, graphic, accent }: { score: ScoreState; 
         graphic === 'Over summary' ? <Text style={s.graphicBody}>{score.lastOver
           ? `${t('scoring.overlay.lastOver', { number: score.lastOver.number, runs: score.lastOver.runs })}\n${score.lastOver.deliveries.map((d) => d.label).join('   ')}`
           : `${t('scoring.overlay.thisOver', { runs: score.currentOver.reduce((sum, d) => sum + d.total, 0) })}\n${score.currentOver.map((d) => d.label).join('   ') || t('scoring.overlay.noDeliveries')}`}</Text> :
-          <Text style={s.graphicBody}>{t('scoring.overlay.sampleStandings')}{leagueTable.rows.slice(0, 4).map((r) => `\n${r.pos}. ${r.team.short} · ${t('scoring.overlay.pointsShort', { points: r.points })}`).join('')}</Text>}
+          <Text style={s.graphicBody}>{t('scoring.overlay.noStandings')}</Text>}
     </View> : <Text style={s.camera}>{t('scoring.overlay.cameraFeed')}</Text>}
     <View style={s.scorebug}>
       <View style={[s.brand, { backgroundColor: accent }]}><Text style={s.brandText}>ES</Text></View>

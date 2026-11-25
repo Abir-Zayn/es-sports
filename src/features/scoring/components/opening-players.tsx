@@ -9,7 +9,7 @@ import { Button } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import { sizes, spacing, useTheme } from '@/theme';
 
-import { otherTeam, playerName } from '../sample-data';
+import { otherTeam, playerName } from '@/features/scoring/setup-defaults';
 import type { MatchSetup, TeamCode } from '../types';
 import { ScorerSheet } from './scorer-sheet';
 import { ScorerChoice, ScorerRoleLabel } from './scorer-ui';

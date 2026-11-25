@@ -11,8 +11,7 @@ import { outboxes } from './data/outboxes';
 import { localEventId } from './local-id';
 import type { ScorerSession } from './session-reducer';
 
-/** `local` is the reference match, which is never sent anywhere. */
-export type SyncInfo = OutboxSnapshot & { mode: 'local' | 'synced'; retry: () => void };
+export type SyncInfo = OutboxSnapshot & { retry: () => void };
 
 type Args = { session: ScorerSession; userId: string; matchId: string; fixtureRef: string; saved: SavedMark };
 
@@ -23,19 +22,17 @@ type Args = { session: ScorerSession; userId: string; matchId: string; fixtureRe
  * written when the chase ends (and cleared again if that last ball is undone).
  */
 export function useMatchSync({ session, userId, matchId, fixtureRef, saved }: Args): SyncInfo {
-  const local = session.audit.some((event) => event.type === 'demo');
-  const outbox = useMemo(() => (local ? null : outboxes.outboxFor(userId, matchId, fixtureRef)), [local, userId, matchId, fixtureRef]);
-  const [snapshot, setSnapshot] = useState<OutboxSnapshot>(() => outbox?.status ?? { status: 'idle', pending: 0 });
+  const outbox = useMemo(() => outboxes.outboxFor(userId, matchId, fixtureRef), [userId, matchId, fixtureRef]);
+  const [snapshot, setSnapshot] = useState<OutboxSnapshot>(() => outbox.status);
   const handled = useRef(saved.auditLength);
   const matchCreated = useRef(saved.matchExists);
   const startPending = useRef(saved.matchExists && saved.auditLength === 0);
   const storedResult = useRef(saved.resultKey);
 
   // The outbox outlives this screen, so leaving only stops listening; unsent changes keep going out.
-  useEffect(() => outbox?.subscribe(setSnapshot), [outbox]);
+  useEffect(() => outbox.subscribe(setSnapshot), [outbox]);
 
   useEffect(() => {
-    if (!outbox) return;
     for (; handled.current < session.audit.length; handled.current++) {
       const event = session.audit[handled.current];
       if (event.type === 'start' && !matchCreated.current) {
@@ -65,5 +62,5 @@ export function useMatchSync({ session, userId, matchId, fixtureRef, saved }: Ar
     }
   }, [result, outbox]);
 
-  return { ...snapshot, mode: local ? 'local' : 'synced', retry: () => { outbox?.flush().catch(() => undefined); } };
+  return { ...snapshot, retry: () => { outbox.flush().catch(() => undefined); } };
 }

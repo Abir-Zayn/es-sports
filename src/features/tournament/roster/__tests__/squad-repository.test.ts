@@ -2,6 +2,7 @@ import { createTeam, fetchRoster, inviteTeamOwner, lockRosters, resetRosters, Ro
 import { parseSetup } from '../setup';
 import { addGuestPlayer, addMemberPlayer, claimGuestProfile, findClaim, removePlayer } from '../squad-repository';
 import type { UserSummary } from '../types';
+import { sampleRosters } from '../__fixtures__/sample-rosters';
 
 const me: UserSummary = { id: 'me', name: 'Organiser', area: null, avatarUrl: null };
 const rafi: UserSummary = { id: 'u-rafi', name: 'Rafi Hasan', area: null, avatarUrl: null };
@@ -17,7 +18,7 @@ async function ownedTeam(): Promise<string> {
 }
 
 describe('squad repository (mock)', () => {
-  beforeEach(resetRosters);
+  beforeEach(() => resetRosters(sampleRosters()));
 
   it('adds members and guests, giving each guest a claim link', async () => {
     const teamId = await ownedTeam();

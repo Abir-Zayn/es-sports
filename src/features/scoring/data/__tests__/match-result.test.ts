@@ -1,5 +1,5 @@
 import { createInnings } from '../../engine/create-innings';
-import { initialSetup, scorerTeams } from '../../sample-data';
+import { initialSetup, scorerTeams } from '@/features/scoring/__fixtures__/test-setup';
 import type { ScoreState } from '../../types';
 import { computeResult } from '../match-result';
 

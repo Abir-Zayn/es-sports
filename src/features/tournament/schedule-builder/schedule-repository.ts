@@ -1,5 +1,5 @@
-// Where a tournament's schedule is kept: on the server for a published (uuid) tournament, in memory for the sample
-// and the draft being set up. Both give the same shapes, so the builder does not care which one runs.
+// Where a tournament's schedule is kept: on the server for a published (uuid) tournament, in memory for
+// the draft being set up. Both give the same shapes, so the builder does not care which one runs.
 import { isUuid } from '@/features/scoring/data/uuid';
 
 import { cancelFixture, fetchServerSchedule, publishServerSchedule, rescheduleFixture } from './schedule-server';

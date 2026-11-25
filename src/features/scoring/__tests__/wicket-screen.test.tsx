@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { ThemeProvider } from '@/theme';
 import { createInnings } from '../engine/create-innings';
-import { initialSetup } from '../sample-data';
+import { initialSetup } from '@/features/scoring/__fixtures__/test-setup';
 import { WicketScreen } from '../wicket-screen';
 
 const mockDispatch = jest.fn();

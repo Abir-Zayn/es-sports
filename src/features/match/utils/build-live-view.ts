@@ -2,7 +2,7 @@ import { formatMatchResult } from '@/features/scoring/data/match-result';
 import { setupFromRows } from '@/features/scoring/data/match-rows';
 import { replayEvents } from '@/features/scoring/data/replay';
 import type { BallEventRow, MatchRow, PlayerRow } from '@/features/scoring/data/types';
-import { battingFirst, otherTeam, teamCodes } from '@/features/scoring/sample-data';
+import { battingFirst, otherTeam, teamCodes } from '@/features/scoring/setup-defaults';
 import { newSession } from '@/features/scoring/session-reducer';
 import type { Batter, MatchSetup, ScoreState, TeamCode } from '@/features/scoring/types';
 import { getLocale, translate, type Locale } from '@/i18n';
