@@ -18,7 +18,7 @@ export function HistoryRecordTiles({ record }: { record: TeamRecord }) {
     <View style={styles.row}>
       {tiles.map((tile) => (
         <View key={tile.label} accessible accessibilityLabel={`${tile.label} ${tile.value}`} style={styles.tile}>
-          <Text style={[styles.value, tile.highlight && styles.highlight]}>{tile.value}</Text>
+          <Text style={[styles.value, tile.highlight && styles.highlight]} numberOfLines={1} adjustsFontSizeToFit>{tile.value}</Text>
           <Text muted style={styles.label}>
             {tile.label}
           </Text>

@@ -45,11 +45,12 @@ export async function createTeam(id: string, input: NewTeamInput): Promise<strin
   return data;
 }
 
-/** The team, or null when it does not exist. */
-export async function fetchTeam(id: string): Promise<TeamRecord | null> {
-  const { data, error } = await traceApi('team.fetch', { id }, () => supabase.from('teams').select(TEAM_COLUMNS).eq('id', id).maybeSingle());
+/** The team, or null when it does not exist. `creatorName` answers for a zoned team, which has no owner. */
+export async function fetchTeam(id: string): Promise<(TeamRecord & { creatorName?: string | null }) | null> {
+  const { data, error } = await traceApi('team.fetch', { id }, () => supabase.from('teams')
+    .select(`${TEAM_COLUMNS}, creator:profiles!teams_created_by_fkey(full_name)`).eq('id', id).maybeSingle());
   if (error) throw toTeamError(error);
-  return data ? toTeam(data) : null;
+  return data ? { ...toTeam(data), creatorName: data.creator?.full_name?.trim() || null } : null;
 }
 
 /** Owner first, then admins, players and staff. */

@@ -36,7 +36,7 @@ export function RealTeamScreen({ id, tab }: Props) {
       </View>
     );
   } else if (!record) body = <Text muted>This team could not be found.</Text>;
-  else if (tab === 'overview') body = <Info team={record} members={members.data ?? []} />;
+  else if (tab === 'overview') body = <Info team={record} members={members.data} />;
   else if (tab === 'members') body = <Members members={members.data} loading={members.isPending} failed={members.isError} />;
   else if (tab === 'matches') body = <RealTeamMatches team={record} />;
   else body = <Text muted>Squads are chosen for each match.</Text>;
@@ -53,16 +53,19 @@ export function RealTeamScreen({ id, tab }: Props) {
   );
 }
 
-function Info({ team, members }: { team: TeamRecord; members: TeamMemberRecord[] }) {
+function Info({ team, members }: { team: TeamRecord & { creatorName?: string | null }; members: TeamMemberRecord[] | undefined }) {
   const styles = useThemedStyles(createStyles);
-  const owner = members.find((member) => member.role === 'owner');
-  const captain = members.find((member) => member.isCaptain);
+  const owner = members?.find((member) => member.role === 'owner');
+  const captain = members?.find((member) => member.isCaptain);
+  // Same rule as the server's team_category: a team with an owner member is Regular, otherwise Zoned. Blank until members load.
+  const zoned = members !== undefined && !owner;
   const rows = [
     { label: 'Short name', value: team.shortName },
-    { label: 'Owner', value: owner?.name ?? '' },
+    { label: 'Category', value: members === undefined ? '' : zoned ? 'Zoned' : 'Regular' },
+    { label: 'Owner', value: owner?.name ?? (zoned ? `None · run by ${team.creatorName ?? 'its creator'}` : '') },
     { label: 'Captain', value: captain?.name ?? 'Not chosen' },
     { label: 'Area', value: [team.area, team.district].filter(Boolean).join(', ') },
-    { label: 'Members', value: String(members.length) },
+    { label: 'Members', value: members === undefined ? '' : String(members.length) },
   ].filter((row) => row.value !== '');
   return (
     <>
@@ -77,6 +80,7 @@ function Info({ team, members }: { team: TeamRecord; members: TeamMemberRecord[]
           </View>
         ))}
       </View>
+      {zoned ? <Text variant="caption" muted>Zoned teams have no owner, so their matches stay off the leaderboard and team ranking.</Text> : null}
     </>
   );
 }
