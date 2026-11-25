@@ -3,6 +3,8 @@ import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Button, InitialsAvatar, Text } from '@/components/ui';
 import { fetchMyTeams, myTeamsKey } from '@/features/team';
+import { fetchBusyReasons } from '@/features/team/data/team-sync';
+import { isUuid } from '@/features/scoring/data/uuid';
 import { sizes, spacing, typography, useTheme } from '@/theme';
 
 import { addOwnTeam } from '../roster-source';
@@ -41,6 +43,9 @@ function OwnTeams({ tournamentId, userId, takenIds, onCreateTeam, onClose }: Omi
     },
   });
   const choices = (teams.data ?? []).filter((team) => (team.myRole === 'owner' || team.myRole === 'admin') && !takenIds.includes(team.id));
+  // A draft team, or one still in an unfinished tournament or friendly, cannot join; joining this one does not count.
+  const busy = useQuery({ queryKey: ['team-busy', tournamentId, choices.map((t) => t.id).join(',')],
+    queryFn: () => fetchBusyReasons(choices.map((t) => t.id), tournamentId), enabled: choices.length > 0 && isUuid(tournamentId) });
   return (
     <>
       <Text muted>Choose a team you own or administer. Its owner stays the same.</Text>
@@ -49,13 +54,20 @@ function OwnTeams({ tournamentId, userId, takenIds, onCreateTeam, onClose }: Omi
         {teams.isPending ? <ActivityIndicator color={colors.link} accessibilityLabel="Loading your teams" />
           : teams.isError ? <Text muted>Could not load your teams. Check your connection and try again.</Text>
           : choices.length === 0 ? <Text muted>You have no other team to add.</Text>
-          : choices.map((team) => (
-            <View key={team.id} style={styles.row}>
-              <InitialsAvatar label={team.shortName} tone={team.tone} imageUri={team.logoUrl ?? undefined} size={sizes.avatar} shape="square" />
-              <Text style={styles.name} numberOfLines={1}>{team.name}</Text>
-              <Button label="Add" size="compact" disabled={add.isPending} accessibilityLabel={`Add ${team.name}`} onPress={() => add.mutate(team.id)} />
-            </View>
-          ))}
+          : choices.map((team) => {
+            const reason = busy.data?.[team.id];
+            return (
+              <View key={team.id} style={styles.row}>
+                <InitialsAvatar label={team.shortName} tone={team.tone} imageUri={team.logoUrl ?? undefined} size={sizes.avatar} shape="square" />
+                <View style={styles.names}>
+                  <Text style={styles.name} numberOfLines={1}>{team.name}</Text>
+                  {reason ? <Text style={[styles.reason, { color: colors.dangerSoftText }]}>{reason}</Text> : null}
+                </View>
+                <Button label="Add" size="compact" disabled={add.isPending || Boolean(reason) || busy.isLoading}
+                  accessibilityLabel={reason ? `${team.name} cannot be added: ${reason}` : `Add ${team.name}`} onPress={() => add.mutate(team.id)} />
+              </View>
+            );
+          })}
       </ScrollView>
       <Button label="Create a new team" variant="secondary" onPress={onCreateTeam} />
     </>
@@ -65,5 +77,7 @@ function OwnTeams({ tournamentId, userId, takenIds, onCreateTeam, onClose }: Omi
 const styles = StyleSheet.create({
   list: { flex: 1 },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm },
-  name: { flex: 1, minWidth: 0, ...typography.bodyMd },
+  names: { flex: 1, minWidth: 0, gap: 2 },
+  name: typography.bodyMd,
+  reason: typography.bodySm,
 });

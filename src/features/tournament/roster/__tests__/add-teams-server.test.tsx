@@ -135,8 +135,17 @@ describe('teams and staff of a published tournament', () => {
     await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/team/create'));
   });
 
+  it('does not add a team still playing an unfinished tournament or friendly, and says why', async () => {
+    await show();
+    fake.results.team_members = { data: [{ role: 'owner', teams: team('d', 'Delta') }], error: null };
+    fake.rpc.mockImplementationOnce(async () => ({ data: 'This team is playing in a tournament that has not finished.', error: null }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Add my team' }));
+    expect(await screen.findByRole('button', { name: 'Delta cannot be added: This team is playing in a tournament that has not finished.' })).toBeDisabled();
+  });
+
   it('adds one of my teams through the server', async () => {
     await show();
+    fake.rpcResult = { data: null, error: null }; // team_busy_reason: every team is free
     fake.results.team_members = { data: [{ role: 'owner', teams: team('d', 'Delta') }, { role: 'admin', teams: team('a', 'Alpha') }, { role: 'player', teams: team('e', 'Echo') }], error: null };
     await fireEvent.press(screen.getByRole('button', { name: 'Add my team' }));
     await fireEvent.press(await screen.findByRole('button', { name: 'Add Delta' }));

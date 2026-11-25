@@ -41,7 +41,7 @@ export function RealTeamMatches({ team }: { team: TeamRecord }) {
     return (
       <View style={s.empty}>
         <Text style={s.emptyTitle}>No matches yet</Text>
-        <Text muted style={s.center}>Matches show here once the team plays in a tournament. Friendly matches are not linked to a team.</Text>
+        <Text muted style={s.center}>A finished tournament or friendly shows here once the team owner accepts its sync request.</Text>
       </View>
     );
   }

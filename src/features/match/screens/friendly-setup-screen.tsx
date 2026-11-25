@@ -8,6 +8,7 @@ import { AppIconTile, Button, Text } from '@/components/ui';
 import { createFriendlyMatch, FriendlySetupExpiredError } from '@/features/scoring/data/friendly-create';
 import { buildMatchRows, FRIENDLY_REF_PREFIX } from '@/features/scoring/data/match-rows';
 import { localEventId } from '@/features/scoring/local-id';
+import { errorCode, teamErrorText } from '@/features/team/data/team-errors';
 import { useMe } from '@/features/tournament/roster';
 import { t as tGlobal, useTranslation } from '@/i18n';
 import { appLink, shareText } from '@/lib/share';
@@ -15,6 +16,7 @@ import { dp, radius, sizes, spacing, typography, useThemedStyles, type Palette }
 
 import { FriendlyFormatCard, ScorerAssignmentRow } from '../components/friendly-setup-form';
 import { FriendlyMatchupHero } from '../components/friendly-matchup-hero';
+import { ExistingTeamSheet } from '../components/existing-team-sheet';
 import { FriendlySheets, type FriendlySheet } from '../components/friendly-sheets';
 import { FriendlyTeamCard } from '../components/friendly-team-card';
 import { SavedFriendlies } from '../components/saved-friendlies';
@@ -25,6 +27,7 @@ import {
 import { teamLabel } from '../utils/toss';
 import { sweepOrphanTeamImagesDaily } from '../server/team-image-sweep';
 import { uploadTeamImage } from '../server/team-images';
+import { squadFromTeam, withTeam } from '../utils/existing-team';
 import { toScorerSetup } from '../utils/to-scorer-setup';
 import type { FriendlyMatchSetup, FriendlySide, FriendlyTossResult } from '../types';
 
@@ -50,6 +53,7 @@ export function FriendlySetupScreen() {
   useEffect(() => { if (me.id) void sweepOrphanTeamImagesDaily(me.id); }, [me.id]);
   const [attempted, setAttempted] = useState(false);
   const [notice, setNotice] = useState<{ side: FriendlySide; message: string } | null>(null);
+  const [teamFor, setTeamFor] = useState<FriendlySide | null>(null);
   const problems = friendlyProblems(setup, me.id);
   const shown = attempted ? problems : {};
   const inSquad = (userId: string) => sides.some((side) => setup[side].players.some((p) => p.userId === userId));
@@ -90,13 +94,15 @@ export function FriendlySetupScreen() {
       const ready = { ...tossed };
       for (const side of sides) {
         const squad = ready[side];
-        if (squad.imageUri) {
+        // A linked team's logo is already online; only a picked photo is uploaded.
+        if (squad.imageUri && !squad.imageUri.startsWith('https://')) {
           const imageUri = await uploadTeamImage(me.id, matchId.current, side === 'teamA' ? 'a' : 'b', squad.imageUri, squad.imageMimeType);
           ready[side] = { ...squad, imageUri };
         }
       }
       const rows = buildMatchRows(matchId.current, tossed.id, toScorerSetup(ready, me.id), new Date());
-      await createFriendlyMatch({ ...rows.match, status: 'scheduled', started_at: null }, rows.players, rows.scorers);
+      await createFriendlyMatch({ ...rows.match, status: 'scheduled', started_at: null, team_a_id: ready.teamA.teamId ?? null, team_b_id: ready.teamB.teamId ?? null },
+        rows.players, rows.scorers);
       if (!mounted.current) return;
       setTossing(false);
       if (scorer) {
@@ -113,7 +119,9 @@ export function FriendlySetupScreen() {
       const expired = error instanceof FriendlySetupExpiredError;
       if (expired) matchId.current = localEventId();
       if (mounted.current) {
-        setSaveError(expired ? t('friendly.saveExpiredError') : t('friendly.saveFailedError'));
+        // A linked team that became busy (or a draft) is refused with its reason; say that rather than a generic failure.
+        const busyTeam = errorCode(error) === 'ET023';
+        setSaveError(expired ? t('friendly.saveExpiredError') : busyTeam ? teamErrorText(error) : t('friendly.saveFailedError'));
       }
     } finally {
       saveLock.current = false;
@@ -147,6 +155,7 @@ export function FriendlySetupScreen() {
         }}
         onRemove={(p) => setSetup(removePlayer(setup, side, p.id))}
         onFind={() => open({ kind: 'find', side })} onQuickAdd={() => open({ kind: 'guest', side })}
+        onUseTeam={() => setTeamFor(side)} onUnlink={() => setSetup((c) => ({ ...c, [side]: { ...c[side], teamId: undefined } }))}
         onAddMe={me.id && !inSquad(me.id) ? () => change((c) => addPlayer(c, side, { id: localEventId(), name: me.name || t('friendly.me'), role: 'All-rounder', userId: me.id, avatarUrl: me.avatarUrl })) : undefined} />)}
       <Text accessibilityRole="header" muted style={s.section}>{t('friendly.sectionScorer')}</Text>
       <ScorerAssignmentRow name={scorer ? scorer.name : t('friendly.you')} avatarUrl={scorer ? scorer.avatarUrl : me.avatarUrl} error={shown.scorer}
@@ -161,6 +170,9 @@ export function FriendlySetupScreen() {
       onAddMember={(side, user, role) => { if (change((c) => addPlayer(c, side, { id: localEventId(), name: user.name, role, userId: user.id, avatarUrl: user.avatarUrl }))) setSheet(null); }}
       onAddGuest={(side, input) => { if (change((c) => addPlayer(c, side, { id: localEventId(), ...input }))) setSheet(null); }}
       onPickScorer={(id) => { setSetup({ ...setup, assignedScorerId: id === me.id ? '' : id }); setSheet(null); }} />
+    <ExistingTeamSheet visible={teamFor !== null} meId={me.id} otherTeamId={teamFor ? setup[teamFor === 'teamA' ? 'teamB' : 'teamA'].teamId : undefined}
+      onClose={() => setTeamFor(null)}
+      onPick={(team, members) => { if (teamFor) setSetup((c) => withTeam(c, teamFor, squadFromTeam(team, members, c.playersPerSide, localEventId))); setTeamFor(null); }} />
     <TossCoinModal visible={tossing} names={{ teamA: teamLabel(setup, 'teamA'), teamB: teamLabel(setup, 'teamB') }}
       saving={saving} error={saveError} onClose={closeToss}
       onStart={(toss) => void start(toss)} />

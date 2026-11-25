@@ -102,7 +102,8 @@ export function togglePlaying(setup: FriendlyMatchSetup, side: FriendlySide, pla
 }
 
 export function renameTeam(setup: FriendlyMatchSetup, side: FriendlySide, name: string): FriendlyMatchSetup {
-  return { ...setup, [side]: { ...setup[side], name, short: shortName(name, side === 'teamA' ? 'A' : 'B') } };
+  // A renamed side is no longer that existing team, so the link goes.
+  return { ...setup, [side]: { ...setup[side], teamId: undefined, name, short: shortName(name, side === 'teamA' ? 'A' : 'B') } };
 }
 
 /** Overs each bowler may bowl: a fifth of the innings, rounded up, as the scorer enforces. */

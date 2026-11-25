@@ -10,6 +10,9 @@ export type DeliveryKind = 'runs' | 'wide' | 'no-ball' | 'bye' | 'leg-bye' | 'wi
 
 export type MatchRow = {
   id: string;
+  /** The existing teams that play, for a friendly set up with them. */
+  team_a_id?: string | null;
+  team_b_id?: string | null;
   tournament_id: string | null;
   fixture_ref: string | null;
   created_by: string | null;

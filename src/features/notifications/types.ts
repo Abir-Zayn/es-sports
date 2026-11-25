@@ -1,6 +1,6 @@
 import type { Tables } from '@/lib/database.types';
 
-export type NotificationKind = 'invite' | 'invite_response' | 'system' | 'squad_alert' | 'match_update';
+export type NotificationKind = 'invite' | 'invite_response' | 'system' | 'squad_alert' | 'match_update' | 'team_sync';
 export type NotificationFilterTab = 'all' | 'invites' | 'squad_alerts' | 'match_updates';
 
 /** The columns the app reads; `pushed_at` is server-only bookkeeping for `send-push`. */
@@ -39,6 +39,8 @@ export type MatchUpdateMeta = {
 
 /** A friendly whose scoring was handed to this account: opening the notice opens the scorer. */
 export type ScorerAssignmentMeta = { matchId: string };
+/** A request to add a finished tournament or friendly to a team's record, answered by the team owner. */
+export type TeamSyncMeta = { syncId: string; teamId: string | null; status: 'pending' | 'accepted' | 'declined' | 'expired' };
 
 export type AppNotification = {
   id: string;
@@ -52,5 +54,6 @@ export type AppNotification = {
     invite?: InviteMeta;
     matchUpdate?: MatchUpdateMeta;
     scorerAssignment?: ScorerAssignmentMeta;
+    teamSync?: TeamSyncMeta;
   };
 };
