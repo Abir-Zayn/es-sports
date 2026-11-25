@@ -8,9 +8,20 @@ import { ThemeProvider } from '@/theme';
 import { acceptTeamOwnerInvite, lockRosters, resetRosters } from '../../roster/roster-repository';
 import { addGuestPlayer } from '../../roster/squad-repository';
 import { SquadScreen } from '../squad-screen';
+import { sampleRosters } from '../../roster/__fixtures__/sample-rosters';
 
 let mockParams = { tournamentId: 'hsf-2026', teamId: 'hsf-bb' };
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
+// People come from the real player search; here it finds the fixture people by name.
+jest.mock('@/features/match/server/search-players', () => {
+  const { sampleUsers } = jest.requireActual('../../roster/__fixtures__/sample-users');
+  const left = (exclude: string[]) => sampleUsers.filter((u: { id: string }) => !exclude.includes(u.id));
+  return {
+    searchPlayers: async (query: string, exclude: string[]) =>
+      left(exclude).filter((u: { name: string }) => u.name.toLowerCase().includes(query.trim().toLowerCase())),
+    suggestPlayers: async (exclude: string[]) => left(exclude),
+  };
+});
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
   useLocalSearchParams: () => mockParams,
@@ -45,7 +56,7 @@ async function quickAdd(name: string, reason?: string) {
 
 describe('squad builder', () => {
   beforeEach(async () => {
-    resetRosters();
+    resetRosters(sampleRosters());
     share.mockReset().mockResolvedValue({ action: 'sharedAction', activityType: undefined });
     mockParams = { tournamentId: 'hsf-2026', teamId: 'hsf-bb' };
     await acceptTeamOwnerInvite('hsf-2026', 'hsf-bb', me);

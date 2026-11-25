@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/theme';
 
 import { resetRosters } from '../../roster/roster-repository';
 import { ClaimScreen } from '../claim-screen';
+import { sampleRosters } from '../../roster/__fixtures__/sample-rosters';
 
 let mockToken = 'claim-hsf-p2';
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
@@ -29,7 +30,7 @@ async function show() {
 
 describe('claiming a guest profile', () => {
   beforeEach(() => {
-    resetRosters();
+    resetRosters(sampleRosters());
     mockToken = 'claim-hsf-p2';
   });
 

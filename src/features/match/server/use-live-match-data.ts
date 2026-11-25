@@ -10,7 +10,6 @@ import { getLocale, t, useLocale, type Locale } from '@/i18n';
 import { buildLiveView, stagedLiveView } from '../utils/build-live-view';
 import type { LiveMatchViewData } from '../utils/live-view';
 import { isWatchConnected, watchMatch } from './match-channel';
-import { sampleLiveView } from '../utils/sample-live-view';
 
 /** How often a live match is fetched again while someone watches it and its Realtime channel is not connected. */
 const LIVE_REFRESH_MS = 15_000;
@@ -28,8 +27,7 @@ export class MatchNotFoundError extends Error {
 
 type LiveMatchPayload =
   | { source: 'stored'; match: MatchRow; players: PlayerRow[]; rows: BallEventRow[]; isLive: boolean }
-  | { source: 'staged'; setup: MatchSetup }
-  | { source: 'sample' };
+  | { source: 'staged'; setup: MatchSetup };
 
 async function loadStoredPayload(matchId: string): Promise<Extract<LiveMatchPayload, { source: 'stored' }>> {
   const match = await findSpectatorMatch(matchId);
@@ -47,19 +45,19 @@ async function loadLiveMatchPayload(matchId: string, shownSource?: LiveMatchPayl
     // Not saved yet, offline, signed out, or a log the scorer rules reject: fall through to what this phone knows.
   }
   const staged = stagedSetup(matchId);
-  return staged ? { source: 'staged', setup: staged.setup } : { source: 'sample' };
+  if (!staged) throw new MatchNotFoundError();
+  return { source: 'staged', setup: staged.setup };
 }
 
 function mapLiveMatchPayload(payload: LiveMatchPayload, locale: Locale): LiveMatchViewData {
   if (payload.source === 'stored') return buildLiveView(payload.match, payload.players, payload.rows, locale);
-  if (payload.source === 'staged') return stagedLiveView(payload.setup, locale);
-  return sampleLiveView();
+  return stagedLiveView(payload.setup, locale);
 }
 
 /**
  * The match for the spectator screens. A match id (uuid) names a saved match: it opens that match or fails, so
  * an offline phone never shows another match's score in its place. Any other id is a fixture reference: the
- * saved match for it, else a friendly tossed on this phone but not yet started, else the sample preview.
+ * saved match for it, else a friendly tossed on this phone but not yet started, else not found.
  * `shown` is what the screen already shows: once that is a saved match, a refresh holds to it in the same way.
  */
 export async function loadLiveMatch(matchId: string, shown?: LiveMatchViewData): Promise<LiveMatchViewData> {

@@ -8,11 +8,11 @@ import {
   removeModerator,
   resetRosters,
   RosterError,
-  searchUsers,
   setTeamEliminated,
 } from '../roster-repository';
 import { parseSetup } from '../setup';
 import type { Roster, UserSummary } from '../types';
+import { sampleRosters } from '../__fixtures__/sample-rosters';
 
 const me: UserSummary = { id: 'me', name: 'Organiser', area: null, avatarUrl: null };
 const rafi: UserSummary = { id: 'u-rafi', name: 'Rafi Hasan', area: null, avatarUrl: null };
@@ -27,19 +27,12 @@ async function asAcceptedModerator(id: string): Promise<Roster> {
 }
 
 describe('roster repository (mock)', () => {
-  beforeEach(resetRosters);
+  beforeEach(() => resetRosters(sampleRosters()));
 
   it('makes the first viewer the owner', async () => {
     const roster = await fetchRoster(T, me, parseSetup({ teams: '8' }));
     expect(roster.staff).toEqual([{ user: me, role: 'owner', status: 'accepted' }]);
     expect(roster.maxTeams).toBe(8);
-  });
-
-  it('finds people by name, leaving out those already in the roster', async () => {
-    expect(await searchUsers('r', [])).toEqual([]);
-    const found = await searchUsers('hasan', []);
-    expect(found.map((u) => u.name)).toEqual(['Rafi Hasan', 'Rakibul Hasan']);
-    expect((await searchUsers('hasan', ['u-rafi'])).map((u) => u.id)).toEqual(['u-rakib']);
   });
 
   it('invites and removes moderators, refusing anyone but the owner', async () => {

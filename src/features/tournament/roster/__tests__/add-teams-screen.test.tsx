@@ -7,11 +7,22 @@ import { ThemeProvider } from '@/theme';
 
 import { AddTeamsScreen } from '../add-teams-screen';
 import { resetRosters } from '../roster-repository';
+import { sampleRosters } from '../__fixtures__/sample-rosters';
 
 // These cover the invite flow, hidden in the app for now.
 jest.mock('../permissions', () => ({ ...jest.requireActual('../permissions'), INVITES_ENABLED: true }));
 jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn() }));
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
+// People come from the real player search; here it finds the fixture people by name.
+jest.mock('@/features/match/server/search-players', () => {
+  const { sampleUsers } = jest.requireActual('../__fixtures__/sample-users');
+  const left = (exclude: string[]) => sampleUsers.filter((u: { id: string }) => !exclude.includes(u.id));
+  return {
+    searchPlayers: async (query: string, exclude: string[]) =>
+      left(exclude).filter((u: { name: string }) => u.name.toLowerCase().includes(query.trim().toLowerCase())),
+    suggestPlayers: async (exclude: string[]) => left(exclude),
+  };
+});
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
@@ -42,7 +53,7 @@ async function searchAndInvite(name: string) {
 }
 
 describe('add teams screen', () => {
-  beforeEach(resetRosters);
+  beforeEach(() => resetRosters(sampleRosters()));
 
   it('shows the organiser as owner with room for two moderators and eight teams', async () => {
     await show();

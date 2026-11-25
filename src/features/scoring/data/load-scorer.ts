@@ -1,6 +1,5 @@
 import { t } from '@/i18n';
 
-import { localEventId } from '../local-id';
 import { newSession, type ScorerSession } from '../session-reducer';
 import { computeResult } from './match-result';
 import { canScoreMatch, fetchEvents, fetchPlayers, findMatch, isUuid } from './match-repository';
@@ -33,10 +32,10 @@ export async function loadScorer(routeId: string, userId: string): Promise<Loade
   if (!match) {
     if (isUuid(routeId)) throw new Error(t('match.notFound'));
     const staged = stagedSetup(routeId);
-    // A friendly is only known on the phone that set it up until its first ball, so it cannot fall back to a preview.
-    if (!staged && routeId.startsWith(FRIENDLY_REF_PREFIX)) throw new Error(t('scoring.errors.friendlyNotStarted'));
+    // A friendly is only known on the phone that set it up until its first ball; anything else unknown does not exist.
+    if (!staged) throw new Error(t(routeId.startsWith(FRIENDLY_REF_PREFIX) ? 'scoring.errors.friendlyNotStarted' : 'match.notFound'));
     return {
-      userId, matchId: staged?.matchId ?? localEventId(), fixtureRef: routeId, session: newSession(staged?.setup),
+      userId, matchId: staged.matchId, fixtureRef: routeId, session: newSession(staged.setup),
       saved: { matchExists: false, auditLength: 0, resultKey: null },
     };
   }

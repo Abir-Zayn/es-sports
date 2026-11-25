@@ -38,20 +38,6 @@ export type UpcomingMatch = {
 
 export type StandingRow = { pos: number; team: TeamInfo; played: number; points: number; nrr: string };
 
-export type Performer = {
-  id: string;
-  /** What they lead in, e.g. "Highest runs". */
-  label: string;
-  initials: string;
-  /** Colour of the initials fallback, and the photo when there is one. A team leader uses its team's. */
-  tone?: AvatarTone;
-  imageUri?: string;
-  name: string;
-  team: string;
-  value: string;
-  unit: string;
-};
-
 export type ResultTeam = { team: TeamInfo; score: string; won: boolean };
 
 export type MatchResult = {
@@ -61,31 +47,6 @@ export type MatchResult = {
   /** Outcome line, e.g. "Strikers won by 18 runs". */
   result: string;
   teams: [ResultTeam, ResultTeam];
-};
-
-export type TournamentOverview = {
-  id: string;
-  short: string;
-  name: string;
-  tone: AvatarTone;
-  avatarUri?: string;
-  /** Format, overs, team count and venue as one line. */
-  meta: string;
-  /** Format and overs, e.g. "League + Knockout · T20". */
-  format: string;
-  statusLabel: string;
-  progress: string;
-  /** Matches finished so far and in the whole tournament, for the progress bar. */
-  matchesPlayed: number;
-  matchesTotal: number;
-  teamCount: number;
-  /** Date of the final as shown, e.g. "30 Nov". */
-  finalDate: string;
-  live: { label: string; match: LiveMatch };
-  standings: StandingRow[];
-  performers: Performer[];
-  /** Finished matches, newest first. */
-  results: Fixture[];
 };
 
 export type FixtureState = 'live' | 'upcoming' | 'result';
@@ -130,14 +91,6 @@ export type PointsRow = {
   points: number;
 };
 
-export type PointsTableData = {
-  /** How many teams from the top go through. */
-  qualifyCount: number;
-  qualifyNote: string;
-  rules: string;
-  rows: PointsRow[];
-};
-
 export type StatMode = 'bat' | 'bowl';
 
 export type StatLeader = {
@@ -151,33 +104,6 @@ export type StatLeader = {
   value: string;
   /** The supporting figure, e.g. strike rate or economy. */
   secondary: string;
-};
-
-export type StatBoard = {
-  /** Unit after the podium figure, e.g. "runs". */
-  unit: string;
-  valueHeading: string;
-  secondaryHeading: string;
-  categories: string[];
-  /** Best first. */
-  leaders: StatLeader[];
-};
-
-export type TournamentTeam = { team: TeamInfo; pos: number; captain: string; players: number; points: number };
-
-export type HeadToHeadScope = 'all' | 'season';
-
-export type HeadToHeadStat = { label: string; a: number; b: number };
-
-export type HeadToHeadFigures = { played: number; winsA: number; winsB: number; stats: HeadToHeadStat[] };
-
-export type HeadToHeadMeeting = { id: string; winner: 'a' | 'b'; result: string; meta: string };
-
-export type HeadToHead = {
-  teamA: TeamInfo;
-  teamB: TeamInfo;
-  figures: Record<HeadToHeadScope, HeadToHeadFigures>;
-  meetings: HeadToHeadMeeting[];
 };
 
 /** One of the four zones a scorer taps for a scoring shot, seen from the batter facing the bowler. */

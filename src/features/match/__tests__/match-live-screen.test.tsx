@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { ThemeProvider } from '@/theme';
 
 import type { LiveMatchViewData } from '../utils/live-view';
-import { sampleLiveView } from '../utils/sample-live-view';
+import { sampleLiveView } from '../__fixtures__/sample-live-view';
 import { MatchLiveScreen } from '../screens/match-live-screen';
 import { MatchWagonScreen } from '../screens/match-wagon-screen';
 
@@ -59,11 +59,6 @@ describe('live spectator screen', () => {
     expect(screen.queryByText(/RRR/)).toBeNull();
   });
 
-  it('says when it is showing the preview match', async () => {
-    showing(sampleLiveView());
-    await show(<MatchLiveScreen />);
-    expect(await screen.findByText(/Preview match/)).toBeTruthy();
-  });
 });
 
 describe('wagon screen', () => {

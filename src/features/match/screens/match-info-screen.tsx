@@ -1,6 +1,6 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 
-import { Button, Text } from '@/components/ui';
+import { Text } from '@/components/ui';
 import { isUuid } from '@/features/scoring/data/match-repository';
 import { TakeoverAction } from '@/features/scoring/handover/components/takeover-action';
 import { FriendlySync } from '@/features/team/sync/friendly-sync';
@@ -18,7 +18,6 @@ import { useLiveMatchData } from '../server/use-live-match-data';
 export function MatchInfoScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const matchId = id ?? '';
-  const router = useRouter();
   const { t } = useTranslation();
   const live = useLiveMatchData(matchId);
   const view = live.data;
@@ -39,12 +38,6 @@ export function MatchInfoScreen() {
       {view.source === 'stored' && isUuid(matchId) ? <FriendlySync matchId={matchId} /> : null}
       {info.streams.length > 0 ? <WatchLiveSection streams={info.streams} /> : null}
       <SquadsSection squads={info.squads} />
-      {view.source === 'sample' ? (
-        <>
-          <Button label={t('match.info.scorerPreviewBtn')} onPress={() => router.push({ pathname: '/scorer/[id]', params: { id: matchId } })} />
-          <Text muted variant="caption">{t('match.info.scorerPreviewHint')}</Text>
-        </>
-      ) : null}
     </MatchScreenFrame>
   );
 }

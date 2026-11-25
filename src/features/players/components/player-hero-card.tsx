@@ -33,7 +33,6 @@ export function PlayerHeroCard({ player, showDetails = true }: { player: PlayerC
       <Text style={styles.pill}>{bio.battingStyle === 'left' ? t('profile.batting.left') : t('profile.batting.right')}</Text>
       {location ? <Text style={styles.pill}>{location}</Text> : null}
     </View> : null}
-    {player.isSample ? <Text style={styles.note}>{t('players.sampleNote')}</Text> : null}
   </View>;
 }
 const createStyles = (c: Palette) => StyleSheet.create({
@@ -43,5 +42,4 @@ const createStyles = (c: Palette) => StyleSheet.create({
   name: { ...typography.headlineLg, color: c.text },
   number: { ...typography.labelMd, color: c.link, fontVariant: ['tabular-nums'] }, pills: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   pill: { ...typography.labelSm, backgroundColor: c.surfaceRaised, color: c.textMuted, borderRadius: radius.pill, overflow: 'hidden', paddingHorizontal: spacing.md, paddingVertical: dp(6), textTransform: 'capitalize' },
-  note: { ...typography.bodySm, color: c.textMuted },
 });

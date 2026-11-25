@@ -7,7 +7,8 @@ import { ScorerProvider, useScorer } from '../../scorer-provider';
 import type { ScorerAction } from '../../session-reducer';
 import * as repository from '../match-repository';
 import { buildMatchRows } from '../match-rows';
-import { initialSetup } from '../../sample-data';
+import { stageMatchSetup } from '../staged-setups';
+import { initialSetup } from '@/features/scoring/__fixtures__/test-setup';
 
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('expo-secure-store', () => ({
@@ -48,7 +49,11 @@ async function openScorer() {
   return { hook, send, saved };
 }
 
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => {
+  jest.clearAllMocks();
+  // The match being scored was set up on this phone, as a friendly is before its first ball.
+  stageMatchSetup('m12', '66666666-6666-4666-8666-666666666666', initialSetup);
+});
 
 describe('saving a scoring session', () => {
   it('starts a saved friendly before writing its first innings', async () => {
@@ -85,14 +90,6 @@ describe('saving a scoring session', () => {
     expect(match).toMatchObject({ fixture_ref: 'm12', status: 'live', toss_decision: 'bat', overs_limit: 20 });
     expect(players.filter((player) => player.in_playing_xi)).toHaveLength(22);
     expect(repo.applyOp).toHaveBeenLastCalledWith(match.id, { kind: 'void', fromId: 'b2', id: expect.any(String) }, expect.any(String), 'b2');
-  });
-
-  it('does not save the reference match', async () => {
-    const { send, saved } = await openScorer();
-    await send({ type: 'demo', id: 'demo' });
-    await saved();
-    expect(repo.createMatch).not.toHaveBeenCalled();
-    expect(repo.applyOp).not.toHaveBeenCalled();
   });
 
   it('saves the result when the chase ends, and clears it when that ball is undone', async () => {

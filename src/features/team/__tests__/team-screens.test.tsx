@@ -1,12 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
-import { Text } from 'react-native';
 
 import { ThemeProvider } from '@/theme';
 
 import { CreateTeamScreen } from '../create/create-team-screen';
-import { withRealTeam } from '../real/with-real-team';
+import { teamRoute } from '../real/with-real-team';
 
 const REAL = 'f5b00000-0000-4000-8000-000000000001';
 const mockReplace = jest.fn();
@@ -73,8 +72,7 @@ describe('create team screen', () => {
 });
 
 describe('team routes', () => {
-  const Sample = () => <Text>Sample Strikers page</Text>;
-  const Route = withRealTeam(Sample, 'overview');
+  const Route = teamRoute('overview');
   beforeEach(() => {
     jest.clearAllMocks();
     mockTeamReads.mockImplementation((table: string) => ({
@@ -84,17 +82,17 @@ describe('team routes', () => {
     }));
   });
 
-  it('keeps the sample for a sample id', async () => {
+  it('says not found for an id that is not a team, without asking the server', async () => {
     mockParams = { id: 'CS' };
     await show(<Route />);
-    expect(screen.getByText('Sample Strikers page')).toBeTruthy();
+    expect(await screen.findByText('This team could not be found.')).toBeTruthy();
+    expect(mockTeamReads).not.toHaveBeenCalledWith('teams');
   });
 
-  it('reads the real team for a uuid and never shows the sample in its place', async () => {
+  it('reads the real team for a uuid', async () => {
     mockParams = { id: REAL };
     await show(<Route />);
     expect(await screen.findByText('Real Strikers')).toBeTruthy();
-    expect(screen.queryByText('Sample Strikers page')).toBeNull();
     expect(screen.getByText('RST')).toBeTruthy();
   });
 
@@ -111,19 +109,17 @@ describe('team routes', () => {
     expect(await screen.findByLabelText('Real Strikers cover')).toBeTruthy();
   });
 
-  it('says so when a real team does not exist, still not the sample', async () => {
+  it('says so when a real team does not exist', async () => {
     mockParams = { id: REAL };
     mockTeamReads.mockImplementation(() => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }) }));
     await show(<Route />);
     expect(await screen.findByText('This team could not be found.')).toBeTruthy();
-    expect(screen.queryByText('Sample Strikers page')).toBeNull();
   });
 
   it('does not show a sample squad or matches for a real team', async () => {
     mockParams = { id: REAL };
-    const Squad = withRealTeam(Sample, 'squad');
+    const Squad = teamRoute('squad');
     await show(<Squad />);
     expect(await screen.findByText('Squads are chosen for each match.')).toBeTruthy();
-    expect(screen.queryByText('Sample Strikers page')).toBeNull();
   });
 });

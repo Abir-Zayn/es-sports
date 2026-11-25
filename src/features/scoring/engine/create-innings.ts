@@ -1,6 +1,6 @@
 import { t } from '@/i18n';
 
-import { battingFirst, otherTeam, teamCodes } from '../sample-data';
+import { battingFirst, otherTeam, teamCodes } from '@/features/scoring/setup-defaults';
 import type { MatchSetup, ScoreState, TeamCode } from '../types';
 
 export const MIN_SIDE = 2;

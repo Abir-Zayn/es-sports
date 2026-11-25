@@ -30,7 +30,6 @@ export const bnScoring: Record<keyof typeof enScoring, string> = {
   'scoring.setup.recordShotsDetail': 'ওয়াগন হুইলের জন্য প্রতিটি রানের শটে বাড়তি একটি ট্যাপ',
   'scoring.setup.chaseSavedNotice': 'রান তাড়া শেষ হলে ফল সংরক্ষিত হবে।',
   'scoring.setup.firstInningsNotice': 'স্কোর করার সাথে সাথে আপনার অ্যাকাউন্টে প্রতিটি বল সংরক্ষিত হয়। অসম্পূর্ণ ম্যাচ এখান থেকেই আবার শুরু করতে পারবেন।',
-  'scoring.setup.tryReference': 'নমুনা ম্যাচ দিয়ে দেখুন',
 
   'scoring.pad.title': 'স্কোরিং',
   'scoring.pad.subtitle': '{{title}} · {{innings}}',
@@ -40,8 +39,6 @@ export const bnScoring: Record<keyof typeof enScoring, string> = {
   'scoring.pad.setUpMatch': 'ম্যাচ সেটআপ করুন',
   'scoring.pad.recordErrorTitle': 'বল সংরক্ষণ করা যায়নি',
   'scoring.pad.recordErrorFallback': 'আবার চেষ্টা করুন।',
-  'scoring.pad.leaveLocalTitle': 'লোকাল স্কোরিং ছাড়বেন?',
-  'scoring.pad.leaveLocalBody': 'এই নমুনা ম্যাচটি সংরক্ষিত নয়, চলে গেলে রিসেট হয়ে যাবে।',
   'scoring.pad.keepScoring': 'স্কোরিং চালিয়ে যান',
   'scoring.pad.leave': 'বের হয়ে যান',
   'scoring.pad.stillSavingTitle': 'এখনো সংরক্ষণ হচ্ছে',

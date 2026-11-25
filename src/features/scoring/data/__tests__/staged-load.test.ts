@@ -1,4 +1,4 @@
-import { initialSetup } from '../../sample-data';
+import { initialSetup } from '@/features/scoring/__fixtures__/test-setup';
 import { loadScorer } from '../load-scorer';
 import { buildMatchRows } from '../match-rows';
 import { canScoreMatch, fetchEvents, fetchPlayers, findMatch } from '../match-repository';
@@ -31,9 +31,8 @@ describe('opening a staged friendly', () => {
     await expect(loadScorer('friendly-unknown', 'user-1')).rejects.toThrow('This friendly match was not started. Set it up again.');
   });
 
-  it('still opens a fixture reference with the preview setup', async () => {
-    const loaded = await loadScorer('m12', 'user-1');
-    expect(loaded.session.setup).toBe(initialSetup);
+  it('refuses an unknown fixture reference instead of opening preview teams', async () => {
+    await expect(loadScorer('m12', 'user-1')).rejects.toThrow('This match could not be found.');
   });
 
   it('opens a saved friendly from its match id before the first innings', async () => {

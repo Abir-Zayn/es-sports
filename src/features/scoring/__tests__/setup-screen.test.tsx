@@ -2,7 +2,8 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { ThemeProvider } from '@/theme';
 
-import { initialSetup, playerName } from '../sample-data';
+import { playerName } from '@/features/scoring/setup-defaults';
+import { initialSetup } from '@/features/scoring/__fixtures__/test-setup';
 import { ScorerSetupScreen } from '../setup-screen';
 import type { MatchSetup } from '../types';
 

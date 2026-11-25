@@ -11,7 +11,7 @@ import { TournamentSectionTabs } from '../components/tournament-section-tabs';
 import { oversLabel } from '../create/draft';
 import { tournamentErrorText } from '../data/tournament-errors';
 import { fetchTournament, fetchTournamentStaff, tournamentKey } from '../data/tournament-repository';
-import type { TournamentSectionId } from '../sample-data';
+import type { TournamentSectionId } from '../sections';
 import { RealKnockout } from '../knockout/real-knockout';
 import { useTournamentRoutes } from '../use-tournament-routes';
 import { RealTournamentMatches } from './real-tournament-matches';

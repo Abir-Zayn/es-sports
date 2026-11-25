@@ -60,7 +60,7 @@ export function RealTournamentStats({ tournament }: Props) {
 
 const styles = StyleSheet.create({
   gap: { gap: spacing.lg },
-  // The chips scroll edge to edge while the rest keeps its gutter, as on the sample stats screen.
+  // The chips scroll edge to edge while the rest keeps its gutter.
   chipScroll: { marginHorizontal: -sizes.gutter, flexGrow: 0 },
   chips: { paddingHorizontal: sizes.gutter },
 });

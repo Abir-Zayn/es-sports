@@ -10,6 +10,7 @@ import { createTeam, fetchRoster, resetRosters } from '../../roster/roster-repos
 import { parseSetup } from '../../roster/setup';
 import { resetSchedules } from '../schedule-repository';
 import { ScheduleBuilderScreen } from '../schedule-builder-screen';
+import { sampleRosters } from '../../roster/__fixtures__/sample-rosters';
 
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('expo-router', () => ({
@@ -48,7 +49,7 @@ async function setSlider(label: string, steps: number) {
 
 describe('schedule builder', () => {
   beforeEach(async () => {
-    resetRosters();
+    resetRosters(sampleRosters());
     resetSchedules();
     jest.mocked(loadDraft).mockResolvedValue(setup);
     await fetchRoster('draft:me', me, parseSetup({ teams: '4' }));

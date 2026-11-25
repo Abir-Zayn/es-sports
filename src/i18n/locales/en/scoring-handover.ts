@@ -49,11 +49,9 @@ export const enScoringHandover = {
   'scoring.overlay.lastOver': 'Over {{number}} · {{runs}} runs',
   'scoring.overlay.thisOver': 'This over · {{runs}} runs',
   'scoring.overlay.noDeliveries': 'No deliveries yet',
-  'scoring.overlay.sampleStandings': 'Sample standings',
-  'scoring.overlay.pointsShort': '{{points}} pts',
+  'scoring.overlay.noStandings': 'Standings show here for tournament matches.',
   'scoring.overlay.cameraFeed': 'YOUR CAMERA FEED',
 
-  'scoring.sync.local': 'Local draft · not synced',
   'scoring.sync.saving': 'Saving…',
   'scoring.sync.saved': 'Saved',
   'scoring.sync.error': 'Not saved · tap to retry',

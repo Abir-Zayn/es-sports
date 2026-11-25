@@ -28,7 +28,6 @@ export const enScoring = {
   'scoring.setup.recordShotsDetail': 'One extra tap per scoring shot, for the wagon wheel',
   'scoring.setup.chaseSavedNotice': 'The result is saved when the chase ends.',
   'scoring.setup.firstInningsNotice': 'Balls are saved to your account as you score. You can resume an unfinished match from here.',
-  'scoring.setup.tryReference': 'Try the reference match',
 
   'scoring.pad.title': 'Scoring',
   'scoring.pad.subtitle': '{{title}} · {{innings}}',
@@ -38,8 +37,6 @@ export const enScoring = {
   'scoring.pad.setUpMatch': 'Set up match',
   'scoring.pad.recordErrorTitle': 'Could not record ball',
   'scoring.pad.recordErrorFallback': 'Try again.',
-  'scoring.pad.leaveLocalTitle': 'Leave local scoring?',
-  'scoring.pad.leaveLocalBody': 'This reference match is not saved and will reset when you leave.',
   'scoring.pad.keepScoring': 'Keep scoring',
   'scoring.pad.leave': 'Leave',
   'scoring.pad.stillSavingTitle': 'Still saving',

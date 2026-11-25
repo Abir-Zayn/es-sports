@@ -41,16 +41,12 @@ export function ScorerPadScreen() {
   };
   const undo = () => dispatch({ type: 'undo', id: localEventId() });
   const disabled = score.complete || score.awaitingBowler || pendingShot !== null;
-  const unsaved = sync.mode === 'synced' && (sync.status !== 'idle' || sync.pending > 0);
-  const leave = () => sync.mode === 'local'
-    ? Alert.alert(t('scoring.pad.leaveLocalTitle'), t('scoring.pad.leaveLocalBody'), [
-      { text: t('scoring.pad.keepScoring'), style: 'cancel' }, { text: t('scoring.pad.leave'), onPress: routes.leave },
+  const unsaved = sync.status !== 'idle' || sync.pending > 0;
+  const leave = () => unsaved
+    ? Alert.alert(t('scoring.pad.stillSavingTitle'), t('scoring.pad.stillSavingBody'), [
+      { text: t('scoring.pad.keepScoring'), style: 'cancel' }, { text: t('scoring.pad.leaveAnyway'), style: 'destructive', onPress: routes.leave },
     ])
-    : unsaved
-      ? Alert.alert(t('scoring.pad.stillSavingTitle'), t('scoring.pad.stillSavingBody'), [
-        { text: t('scoring.pad.keepScoring'), style: 'cancel' }, { text: t('scoring.pad.leaveAnyway'), style: 'destructive', onPress: routes.leave },
-      ])
-      : routes.leave();
+    : routes.leave();
   const footer = score.complete ? <>
     <Text style={s.result}>{score.innings === 1 ? t('scoring.pad.inningsComplete') : formatMatchResult(score, locale) ?? t('match.matchComplete')}</Text>
     {score.innings === 1 ? <Button label={t('scoring.pad.setUpChase')} onPress={() => routes.replace('setup')} />
@@ -71,7 +67,7 @@ export function ScorerPadScreen() {
     <ScorerHeader title={t('scoring.pad.title')} subtitle={t('scoring.pad.subtitle', { title: setup.title, innings: t(score.innings === 1 ? 'scoring.pad.innings1' : 'scoring.pad.innings2') })} onBack={leave}
       trailing={<AppIconTile icon={Radio} accessibilityLabel={t('scoring.pad.streamOverlayA11y')} onPress={() => routes.push('overlay')} />} />
     <SyncBadge sync={sync} />
-    {setup.preset && sync.mode === 'synced'
+    {setup.preset
       ? <HandoverSection matchId={savedId} ready={!unsaved} onLeave={routes.leave} /> : null}
     {sync.status === 'error' && sync.error ? <ScorerNotice>{sync.error}</ScorerNotice> : null}
     <ScoreSummary score={score} />

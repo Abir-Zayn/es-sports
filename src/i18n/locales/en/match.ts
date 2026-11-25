@@ -69,7 +69,6 @@ export const enMatch = {
   'match.toss.decisionBowl': 'bowl',
   'match.toss.notYet': 'The toss has not happened yet.',
 
-  'match.live.previewNote': 'Preview match. Live scores show here once this match is being scored.',
   'match.live.atCrease': 'At the crease',
   'match.live.waitFirstBall': 'The crease and the over appear here once the first ball is bowled.',
   'match.live.seeAllOvers': 'See all overs',
@@ -182,8 +181,6 @@ export const enMatch = {
   'match.info.bench': 'BENCH',
   'match.info.watchLive': 'Watch live',
   'match.info.watchOn': 'Watch on {{platform}}',
-  'match.info.scorerPreviewBtn': 'Scorer panel · preview',
-  'match.info.scorerPreviewHint': 'Try match setup and local scoring with the sample squads.',
   'match.role.batter': 'Batter',
   'match.role.bowler': 'Bowler',
   'match.role.allRounder': 'All-rounder',

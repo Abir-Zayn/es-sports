@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/theme';
 
 import { CopyIdButton } from '../components/copy-id-button';
 import { ProfileHeader } from '../sections/profile-header';
-import { sampleProfile } from '../sample-data';
+import { sampleProfile } from '../__fixtures__/sample-profile';
 
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn() }));
 

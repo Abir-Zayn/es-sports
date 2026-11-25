@@ -21,7 +21,6 @@ import { TeamsSection } from './components/teams-section';
 import { UserSearchSheet } from './components/user-search-sheet';
 import { capabilitiesOf, roleIn, serverCapabilities } from './permissions';
 import { repoFor } from './roster-source';
-import { sampleUsers } from './sample-users';
 import { parseSetup, type SetupParams } from './setup';
 import { ownerInviteMessage, shareText } from './share-invite';
 import type { RosterTeam } from './types';
@@ -29,8 +28,6 @@ import { rosterErrorText, useMe, useRoster } from './use-roster';
 import { useRosterActions } from './use-roster-actions';
 
 type OpenSheet = { kind: 'moderator' } | { kind: 'create-team' } | { kind: 'add-own' } | { kind: 'team-owner'; team: RosterTeam } | { kind: 'team-photos'; team: RosterTeam } | { kind: 'disband'; team: RosterTeam } | { kind: 'eliminate'; team: RosterTeam } | { kind: 'lock' } | null;
-
-const suggestSamplePlayers = async (excludeIds: string[]) => sampleUsers.filter((user) => !excludeIds.includes(user.id)).slice(0, 20);
 
 /** Staff, teams and registration of the tournament being set up. What each person may change depends on their role. */
 export function AddTeamsScreen() {
@@ -142,8 +139,8 @@ export function AddTeamsScreen() {
             : 'A moderator helps you add teams and invite team owners.'
         }
         excludeIds={sheet?.kind === 'team-owner' ? ownerIds : staffIds}
-        search={data?.server ? searchPlayers : undefined}
-        suggest={sheet?.kind === 'team-owner' ? (data?.server ? suggestPlayers : suggestSamplePlayers) : undefined}
+        search={searchPlayers}
+        suggest={sheet?.kind === 'team-owner' ? suggestPlayers : undefined}
         inviting={inviteModerator.isPending || inviteOwner.isPending}
         error={inviteModerator.isError || inviteOwner.isError ? rosterErrorText(inviteModerator.error ?? inviteOwner.error) : null}
         onInvite={(user) => {

@@ -1,6 +1,6 @@
 import type { AvatarTone } from '@/theme';
 
-import { teamCodes } from '../sample-data';
+import { teamCodes } from '@/features/scoring/setup-defaults';
 import type { MatchSetup, ScorerTeam, TeamCode } from '../types';
 import { isUuid } from './uuid';
 import { sideOf, teamOf } from './sides';

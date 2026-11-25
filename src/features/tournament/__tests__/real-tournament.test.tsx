@@ -1,13 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
-import { Text } from 'react-native';
 
 import { ThemeProvider } from '@/theme';
 
 import { fake } from '../__fixtures__/supabase-fake';
 import { RealTournamentScreen } from '../real/real-tournament-screen';
-import { withRealTournament } from '../real/with-real-tournament';
+import { tournamentRoute } from '../real/with-real-tournament';
 
 const T = 'f5c00000-0000-4000-8000-000000000001';
 const mockPush = jest.fn();
@@ -53,21 +52,18 @@ beforeEach(() => {
 });
 
 describe('tournament routes', () => {
-  const Sample = () => <Text>Sample HSF Premier League</Text>;
-
-  it('keeps the sample for a sample id', async () => {
+  it('says not found for an id that is not a tournament', async () => {
     mockParams = { id: 't1' };
-    const Route = withRealTournament(Sample, 'overview');
+    const Route = tournamentRoute('overview');
     await show(<Route />);
-    expect(screen.getByText('Sample HSF Premier League')).toBeTruthy();
+    expect(await screen.findByText('This tournament could not be found.')).toBeTruthy();
   });
 
-  it.each(['overview', 'matches', 'table', 'knockout', 'stats', 'teams'] as const)('never shows the sample for a real id on %s', async (section) => {
+  it.each(['overview', 'matches', 'table', 'knockout', 'stats', 'teams'] as const)('reads a real tournament on %s', async (section) => {
     mockParams = { id: T };
-    const Route = withRealTournament(Sample, section);
+    const Route = tournamentRoute(section);
     await show(<Route />);
     expect(await screen.findByText('Port City Cup')).toBeTruthy();
-    expect(screen.queryByText('Sample HSF Premier League')).toBeNull();
   });
 });
 

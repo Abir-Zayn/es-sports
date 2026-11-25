@@ -11,13 +11,9 @@ import {
 } from './permissions';
 import { closeProblem, deadlineProblem, lockProblem, reopenProblem } from './registration';
 import { commit, current, fail, find, newId, wait } from './roster-store';
-import { sampleUsers } from './sample-users';
 import type { NewTeam, Roster, RosterSetup, TeamPhotosInput, UserSummary } from './types';
 
 export { resetRosters, RosterError } from './roster-store';
-
-const SEARCH_MIN = 2;
-const SEARCH_LIMIT = 20;
 
 /**
  * The tournament's roster. With `setup`, the first load creates it and makes `me` its owner, as creating a
@@ -45,17 +41,6 @@ export async function fetchRoster(tournamentId: string, me: UserSummary, setup?:
     teams: [],
     audit: [],
   });
-}
-
-/** People whose name matches, excluding `excludeIds`. Needs at least two characters. */
-export async function searchUsers(query: string, excludeIds: string[], signal?: AbortSignal): Promise<UserSummary[]> {
-  const needle = query.trim().toLowerCase();
-  if (needle.length < SEARCH_MIN) return [];
-  await wait();
-  if (signal?.aborted) throw new DOMException('Search cancelled', 'AbortError');
-  return sampleUsers
-    .filter((user) => !excludeIds.includes(user.id) && user.name.toLowerCase().includes(needle))
-    .slice(0, SEARCH_LIMIT);
 }
 
 export async function inviteModerator(tournamentId: string, actorId: string, user: UserSummary): Promise<Roster> {

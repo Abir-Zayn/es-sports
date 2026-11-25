@@ -1,3 +1,4 @@
+import { initialSetup } from '@/features/scoring/__fixtures__/test-setup';
 import { auditToOp, type PersistOp } from '../event-rows';
 import { newSession, scorerReducer, type ScorerAction, type ScorerSession } from '../../session-reducer';
 import { replayEvents } from '../replay';
@@ -26,7 +27,7 @@ function store(ops: PersistOp[]): BallEventRow[] {
   return rows;
 }
 
-const play = (actions: ScorerAction[]): ScorerSession => actions.reduce(scorerReducer, newSession());
+const play = (actions: ScorerAction[]): ScorerSession => actions.reduce(scorerReducer, newSession(initialSetup));
 const saved = (session: ScorerSession) => store(session.audit.flatMap((event) => auditToOp(MATCH, event) ?? []));
 const runs = (n: number, id: string): ScorerAction => ({ type: 'delivery', input: { kind: 'runs', runs: n }, id });
 const overOfDots = (): ScorerAction[] => [0, 1, 2, 3, 4].map((i) => runs(0, `dot-${i}`));
@@ -52,7 +53,7 @@ describe('saving a session and replaying it', () => {
     ]);
     expect(session.score?.balls).toBe(7);
     expect(session.score?.wickets).toBe(1);
-    expectSameState(replayEvents(newSession(), saved(session)), session);
+    expectSameState(replayEvents(newSession(initialSetup), saved(session)), session);
   });
 
   it('forgets an undone ball and the bowler chosen after it', () => {
@@ -63,27 +64,23 @@ describe('saving a session and replaying it', () => {
     ]);
     const rows = saved(session);
     expect(rows.filter((row) => row.voided_at).map((row) => row.id)).toEqual(['last', 'bowler']);
-    const replayed = replayEvents(newSession(), rows);
+    const replayed = replayEvents(newSession(initialSetup), rows);
     expect(replayed.score?.balls).toBe(5);
     expectSameState(replayed, session);
   });
 
   it('can keep scoring after an undo and replays the replacement ball', () => {
     const session = play([{ type: 'start', id: 'start' }, runs(1, 'x'), { type: 'shot', id: 's' }, { type: 'undo', id: 'u' }, runs(0, 'y')]);
-    const replayed = replayEvents(newSession(), saved(session));
+    const replayed = replayEvents(newSession(initialSetup), saved(session));
     expect(replayed.score?.runs).toBe(0);
     expectSameState(replayed, session);
   });
 
   it('leaves a scoring shot pending when its direction was never saved', () => {
     const session = play([{ type: 'start', id: 'start' }, runs(4, 'b1')]);
-    const replayed = replayEvents(newSession(), saved(session));
+    const replayed = replayEvents(newSession(initialSetup), saved(session));
     expect(replayed.pendingShot?.deliveryId).toBe('b1');
     expectSameState(replayed, session);
-  });
-
-  it('writes nothing for the reference match', () => {
-    expect(saved(play([{ type: 'demo', id: 'demo' }]))).toEqual([]);
   });
 
   it('replays a whole first innings and a finished chase', () => {
@@ -94,11 +91,11 @@ describe('saving a session and replaying it', () => {
     ]).flat();
     const session = play([
       { type: 'start', id: 'start' }, ...firstInnings,
-      { type: 'setup', value: { ...newSession().setup, strikerId: 'CS-0', nonStrikerId: 'CS-1', bowlerId: 'KK-10' } },
+      { type: 'setup', value: { ...newSession(initialSetup).setup, strikerId: 'CS-0', nonStrikerId: 'CS-1', bowlerId: 'KK-10' } },
       { type: 'start', id: 'chase' }, runs(2, 'c1'), { type: 'shot', angle: 90, id: 'c1-shot' },
     ]);
     expect(session.score).toMatchObject({ innings: 2, complete: true, target: 1 });
-    const replayed = replayEvents(newSession(), saved(session));
+    const replayed = replayEvents(newSession(initialSetup), saved(session));
     expect(replayed.score).toMatchObject({ innings: 2, complete: true, runs: 2, previousInnings: { runs: 0, balls: 120 } });
     expectSameState(replayed, session);
   });

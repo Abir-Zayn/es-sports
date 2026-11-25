@@ -71,7 +71,6 @@ export const bnMatch: Record<keyof typeof enMatch, string> = {
   'match.toss.decisionBowl': 'বল',
   'match.toss.notYet': 'টস এখনো হয়নি।',
 
-  'match.live.previewNote': 'প্রিভিউ ম্যাচ। ম্যাচটি স্কোরিং শুরু হলে এখানে লাইভ স্কোর দেখা যাবে।',
   'match.live.atCrease': 'ক্রিজে আছেন',
   'match.live.waitFirstBall': 'প্রথম বল হওয়ার পর এখানে ক্রিজ ও ওভার দেখা যাবে।',
   'match.live.seeAllOvers': 'সব ওভার দেখুন',
@@ -184,8 +183,6 @@ export const bnMatch: Record<keyof typeof enMatch, string> = {
   'match.info.bench': 'বেঞ্চ',
   'match.info.watchLive': 'লাইভ দেখুন',
   'match.info.watchOn': '{{platform}}-এ দেখুন',
-  'match.info.scorerPreviewBtn': 'স্কোরার প্যানেল · প্রিভিউ',
-  'match.info.scorerPreviewHint': 'নমুনা স্কোয়াড নিয়ে ম্যাচ সেটআপ ও লোকাল স্কোরিং পরখ করে দেখুন।',
   'match.role.batter': 'ব্যাটার',
   'match.role.bowler': 'বোলার',
   'match.role.allRounder': 'অলরাউন্ডার',

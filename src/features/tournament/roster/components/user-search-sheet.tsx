@@ -4,9 +4,9 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Button, SearchField, Text } from '@/components/ui';
+import { searchPlayers } from '@/features/match/server/search-players';
 import { dp, radius, spacing, useTheme } from '@/theme';
 
-import { searchUsers } from '../roster-repository';
 import type { UserSummary } from '../types';
 import { PersonRow } from './person-row';
 import { Sheet } from './sheet';
@@ -49,7 +49,7 @@ export function UserSearchSheet({ visible, title, onClose, ...body }: Props) {
   );
 }
 
-function SearchBody({ hint, excludeIds, bookedBy, inviting, error, onInvite, onInviteMany, maxSelect, actionLabel = 'Invite', children, suggest, search: findUsers = searchUsers }: Omit<Props, 'visible' | 'title' | 'onClose'>) {
+function SearchBody({ hint, excludeIds, bookedBy, inviting, error, onInvite, onInviteMany, maxSelect, actionLabel = 'Invite', children, suggest, search: findUsers = searchPlayers }: Omit<Props, 'visible' | 'title' | 'onClose'>) {
   const { colors } = useTheme();
   const [text, setText] = useState('');
   const [query, setQuery] = useState('');
@@ -72,12 +72,12 @@ function SearchBody({ hint, excludeIds, bookedBy, inviting, error, onInvite, onI
   }, [text]);
 
   const search = useQuery({
-    queryKey: ['user-search', findUsers === searchUsers ? 'sample' : 'profiles', query, excludeIds],
+    queryKey: ['user-search', query, excludeIds],
     queryFn: ({ signal }) => findUsers(query, excludeIds, signal),
     enabled: query.length >= 2,
   });
   const suggestions = useQuery({
-    queryKey: ['owner-suggestions', findUsers === searchUsers ? 'sample' : 'profiles', excludeIds],
+    queryKey: ['owner-suggestions', excludeIds],
     queryFn: ({ signal }) => suggest!(excludeIds, signal),
     enabled: Boolean(suggest) && text.trim().length === 0,
     staleTime: 60_000,

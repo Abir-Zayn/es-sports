@@ -1,5 +1,4 @@
-// The in-memory tables behind the roster and squad repositories, until they live in Supabase.
-import { sampleRosters } from './sample-rosters';
+// The in-memory tables behind the roster and squad repositories for a tournament not yet on the server.
 import type { Roster } from './types';
 
 const LATENCY_MS = 200;
@@ -39,11 +38,9 @@ export function allRosters(): Roster[] {
   return [...rosters.values()];
 }
 
-/** Puts the sample tournaments back and forgets every other roster. Tests only. */
-export function resetRosters() {
+/** Forgets every roster and keeps only `seed`. Tests only. */
+export function resetRosters(seed: Roster[] = []) {
   rosters.clear();
   nextId = 1;
-  for (const roster of sampleRosters()) rosters.set(roster.tournamentId, roster);
+  for (const roster of seed) rosters.set(roster.tournamentId, roster);
 }
-
-resetRosters();
