@@ -5,6 +5,7 @@ import { squadFromTeam } from '@/features/match/utils/existing-team';
 import { fake } from '@/features/tournament/__fixtures__/supabase-fake';
 import { ThemeProvider } from '@/theme';
 
+import { fetchMyZonedTeams } from '../data/team-repository';
 import { fetchTeamSyncs } from '../data/team-sync';
 import { toHistory, type HistoryRow } from '../data/team-history';
 import { SyncPanel } from '../sync/sync-panel';
@@ -23,6 +24,15 @@ describe('a team playing a friendly', () => {
       [member('hurt', 'player', 'injured'), member('a', 'owner'), member('coach', 'staff'), member('b', 'player'), member('c', 'player')], 2, () => `p${++n}`);
     expect(squad).toMatchObject({ teamId: 't', name: 'Sylhet Empire', short: 'SE', imageUri: 'https://x/l.png' });
     expect(squad.players.map((p) => [p.userId, p.playing])).toEqual([['a', true], ['b', true], ['c', false], ['hurt', false]]);
+  });
+});
+
+describe('zoned teams in a friendly', () => {
+  it('lists the teams I made that nobody owns, marked with their player count', async () => {
+    const row = (id: string, name: string, roles: string[]) => ({ id, name, short_name: id.toUpperCase(), tone: 'blue', logo_url: null,
+      area: null, district: null, registered_at: '2026-11-01', team_members: roles.map((role) => ({ role })) });
+    fake.results.teams = { data: [row('dkr', 'Dhaka Knight Riders', ['player', 'player']), row('own', 'Owned XI', ['owner', 'player']), row('br', 'Barishal Royals', [])], error: null };
+    expect((await fetchMyZonedTeams('me')).map((t) => [t.name, t.members])).toEqual([['Barishal Royals', 0], ['Dhaka Knight Riders', 2]]);
   });
 });
 

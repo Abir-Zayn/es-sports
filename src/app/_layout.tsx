@@ -13,6 +13,7 @@ import { useTeamMembershipUpdates } from '@/features/team/data/use-team-membersh
 import { AutoOpenWhatsNew } from '@/features/whats-new';
 import { I18nProvider, useLocaleHydrated } from '@/i18n';
 import { watchAppFocus } from '@/lib/app-focus';
+import { watchBackgroundUpdates } from '@/lib/background-updates';
 import { queryClient } from '@/lib/query-client';
 import { ThemeProvider, useTheme } from '@/theme';
 
@@ -28,6 +29,7 @@ function AppShell() {
   useTeamMembershipUpdates(session?.user.id);
   usePushNotifications(session?.user.id, !isLoading && !!session);
   useEffect(() => watchAppFocus(), []);
+  useEffect(() => watchBackgroundUpdates(), []);
 
   // The animated splash starts on the same frame as the native one, so the native one can go.
   const hideNativeSplash = useCallback(() => SplashScreen.hide(), []);

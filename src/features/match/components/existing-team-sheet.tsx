@@ -4,7 +4,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { InitialsAvatar, Text } from '@/components/ui';
 import { teamErrorText } from '@/features/team/data/team-errors';
 import { canManage } from '@/features/team/data/team-management';
-import { fetchMyTeams, fetchTeamMembers, myTeamsKey, type TeamMemberRecord, type TeamRecord } from '@/features/team/data/team-repository';
+import { fetchMyTeams, fetchMyZonedTeams, fetchTeamMembers, myTeamsKey, type TeamMemberRecord, type TeamRecord } from '@/features/team/data/team-repository';
 import { fetchBusyReasons } from '@/features/team/data/team-sync';
 import { Sheet } from '@/features/tournament/roster';
 import { dp, radius, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
@@ -32,12 +32,17 @@ function Teams({ meId, otherTeamId, onPick }: Omit<Props, 'visible' | 'onClose'>
   const { colors } = useTheme();
   const s = useThemedStyles(styles);
   const mine = useQuery({ queryKey: myTeamsKey(meId), queryFn: () => fetchMyTeams(meId), enabled: Boolean(meId) });
-  const runnable = (mine.data ?? []).filter((t) => canManage(t.myRole));
+  // Zoned teams I made count too: nobody owns them, so their creator brings them. They stay out of team rankings.
+  const zoned = useQuery({ queryKey: ['my-zoned-teams', meId], queryFn: () => fetchMyZonedTeams(meId), enabled: Boolean(meId) });
+  const runnable: (TeamRecord & { members?: number; zoned?: boolean })[] = [
+    ...(mine.data ?? []).filter((t) => canManage(t.myRole)),
+    ...(zoned.data ?? []).filter((z) => !mine.data?.some((t) => t.id === z.id)).map((z) => ({ ...z, zoned: true })),
+  ];
   const busy = useQuery({ queryKey: ['team-busy', runnable.map((t) => t.id).join(',')], queryFn: () => fetchBusyReasons(runnable.map((t) => t.id)), enabled: runnable.length > 0 });
   const pick = useMutation({ mutationFn: async (team: TeamRecord) => ({ team, members: await fetchTeamMembers(team.id) }), onSuccess: ({ team, members }) => onPick(team, members) });
 
-  if (mine.isPending || (runnable.length > 0 && busy.isPending)) return <ActivityIndicator color={colors.link} accessibilityLabel="Loading your teams" />;
-  if (mine.isError || busy.isError) return <Text muted>{teamErrorText(mine.error ?? busy.error)}</Text>;
+  if (mine.isPending || zoned.isPending || (runnable.length > 0 && busy.isPending)) return <ActivityIndicator color={colors.link} accessibilityLabel="Loading your teams" />;
+  if (mine.isError || zoned.isError || busy.isError) return <Text muted>{teamErrorText(mine.error ?? zoned.error ?? busy.error)}</Text>;
   if (runnable.length === 0) return <Text muted>You don’t own or run a team yet. Create one from Teams in the side menu.</Text>;
   return (
     <View style={s.list}>
@@ -51,7 +56,7 @@ function Teams({ meId, otherTeamId, onPick }: Omit<Props, 'visible' | 'onClose'>
             <InitialsAvatar label={team.shortName} tone={team.tone} imageUri={team.logoUrl} size={dp(40)} />
             <View style={s.text}>
               <Text style={s.name} numberOfLines={1}>{team.name}</Text>
-              <Text style={reason ? s.reason : s.detail} numberOfLines={2}>{reason ?? `${team.members ?? 0} players`}</Text>
+              <Text style={reason ? s.reason : s.detail} numberOfLines={2}>{reason ?? `${team.members ?? 0} players${team.zoned ? ' · Zoned' : ''}`}</Text>
             </View>
             {pick.isPending && pick.variables?.id === team.id ? <ActivityIndicator color={colors.link} /> : null}
           </Pressable>

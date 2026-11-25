@@ -45,11 +45,12 @@ export async function createTeam(id: string, input: NewTeamInput): Promise<strin
   return data;
 }
 
-/** The team, or null when it does not exist. */
-export async function fetchTeam(id: string): Promise<TeamRecord | null> {
-  const { data, error } = await traceApi('team.fetch', { id }, () => supabase.from('teams').select(TEAM_COLUMNS).eq('id', id).maybeSingle());
+/** The team, or null when it does not exist. `creatorName` answers for a zoned team, which has no owner. */
+export async function fetchTeam(id: string): Promise<(TeamRecord & { creatorName?: string | null }) | null> {
+  const { data, error } = await traceApi('team.fetch', { id }, () => supabase.from('teams')
+    .select(`${TEAM_COLUMNS}, creator:profiles!teams_created_by_fkey(full_name)`).eq('id', id).maybeSingle());
   if (error) throw toTeamError(error);
-  return data ? toTeam(data) : null;
+  return data ? { ...toTeam(data), creatorName: data.creator?.full_name?.trim() || null } : null;
 }
 
 /** Owner first, then admins, players and staff. */
@@ -73,6 +74,16 @@ export async function fetchMyTeams(userId: string): Promise<MyTeam[]> {
   if (error) throw toTeamError(error);
   return (data ?? []).flatMap((row) => (row.teams
     ? [{ ...toTeam(row.teams), myRole: toRole(row.role), members: row.teams.team_members?.[0]?.count ?? 0 }] : []))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** Zoned teams this account made (inside a tournament, so nobody owns them); their creator answers for them. */
+export async function fetchMyZonedTeams(userId: string): Promise<(TeamRecord & { members: number })[]> {
+  const { data, error } = await traceApi('team.myZoned', { userId }, () => supabase.from('teams')
+    .select(`${TEAM_COLUMNS}, team_members(role)`).eq('created_by', userId).limit(100));
+  if (error) throw toTeamError(error);
+  return (data ?? []).filter((row) => !(row.team_members ?? []).some((m) => m.role === 'owner'))
+    .map((row) => ({ ...toTeam(row), members: (row.team_members ?? []).length }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 

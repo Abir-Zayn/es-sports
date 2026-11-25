@@ -16,6 +16,11 @@ Merge a PR into `main`. That's it. `.eas/workflows/release.yml` runs on EAS:
 
 `runtimeVersion` uses the `fingerprint` policy, so an OTA update only reaches APKs with matching native code.
 
+The app checks for an update on every start and whenever it comes back to the foreground (at most every 10 minutes),
+downloads it in the background, and runs it the next time the user returns to the app (`src/lib/background-updates.ts`).
+Database changes (`supabase/migrations`) are not part of this: they go live when applied to Supabase, so apply them
+before merging app code that needs them.
+
 ## Rules
 
 1. **Users only get `main`.** Never run `eas build --profile production` or `eas update --channel production` from a
