@@ -15,6 +15,7 @@ const errorText = (error: unknown): string =>
 export function tournamentMessage(error: unknown): string {
   switch (errorCode(error)) {
     case 'ET001': return 'This tournament already has all its teams.';
+    case 'ET023': return errorText(error) || 'This team is busy in another tournament or friendly that has not finished.';
     case 'ET002': return 'This player already plays for another team in this tournament. A player can play for one team per tournament.';
     case 'ET004': return 'This match is under way or over, so this change is no longer possible.';
     case 'ET005': return 'This team has scheduled matches. Cancel them or redraw the schedule first.';

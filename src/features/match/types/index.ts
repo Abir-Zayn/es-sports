@@ -140,6 +140,8 @@ export type FriendlyPlayer = {
 };
 
 export type FriendlyTeamSquad = {
+  /** An existing team this side plays as; its owner can add the result to the team's record afterwards. */
+  teamId?: string;
   name: string;
   short: string;
   tone: AvatarTone;

@@ -395,6 +395,8 @@ export type Database = {
           started_at: string | null
           status: string
           team_a_balls: number | null
+          team_a_id: string | null
+          team_b_id: string | null
           team_a_image_url: string | null
           team_a_name: string
           team_a_runs: number | null
@@ -431,6 +433,8 @@ export type Database = {
           started_at?: string | null
           status?: string
           team_a_balls?: number | null
+          team_a_id?: string | null
+          team_b_id?: string | null
           team_a_image_url?: string | null
           team_a_name: string
           team_a_runs?: number | null
@@ -467,6 +471,8 @@ export type Database = {
           started_at?: string | null
           status?: string
           team_a_balls?: number | null
+          team_a_id?: string | null
+          team_b_id?: string | null
           team_a_image_url?: string | null
           team_a_name?: string
           team_a_runs?: number | null
@@ -717,6 +723,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      team_syncs: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          match_id: string | null
+          requested_by: string
+          resolved_at: string | null
+          status: string
+          team_id: string
+          tournament_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          match_id?: string | null
+          requested_by: string
+          resolved_at?: string | null
+          status?: string
+          team_id: string
+          tournament_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          match_id?: string | null
+          requested_by?: string
+          resolved_at?: string | null
+          status?: string
+          team_id?: string
+          tournament_id?: string | null
+        }
+        Relationships: []
       }
       teams: {
         Row: {
@@ -1483,6 +1525,18 @@ export type Database = {
       transfer_team_ownership: {
         Args: { p_profile: string; p_team: string }
         Returns: undefined
+      }
+      request_team_sync: {
+        Args: { p_match?: string; p_tournament?: string }
+        Returns: number
+      }
+      respond_team_sync: {
+        Args: { p_accept: boolean; p_sync: string }
+        Returns: undefined
+      }
+      team_busy_reason: {
+        Args: { p_team: string; p_tournament?: string }
+        Returns: string | null
       }
       register_team: {
         Args: { p_team: string }

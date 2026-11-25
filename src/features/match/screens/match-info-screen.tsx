@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, Text } from '@/components/ui';
 import { isUuid } from '@/features/scoring/data/match-repository';
 import { TakeoverAction } from '@/features/scoring/handover/components/takeover-action';
+import { FriendlySync } from '@/features/team/sync/friendly-sync';
 import { useTranslation } from '@/i18n';
 
 import { MatchDetailsList } from '../components/match-details-list';
@@ -35,6 +36,7 @@ export function MatchInfoScreen() {
       )}
       {view.source === 'stored' && isUuid(matchId) ? <TakeoverAction matchId={matchId} /> : null}
       <MatchDetailsList details={info.details} />
+      {view.source === 'stored' && isUuid(matchId) ? <FriendlySync matchId={matchId} /> : null}
       {info.streams.length > 0 ? <WatchLiveSection streams={info.streams} /> : null}
       <SquadsSection squads={info.squads} />
       {view.source === 'sample' ? (

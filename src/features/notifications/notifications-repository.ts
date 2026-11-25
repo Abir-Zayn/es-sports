@@ -2,7 +2,7 @@ import { formatSentLabel, isOpen } from '@/features/invitations';
 import type { Json } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
 
-import type { AppNotification, InviteMeta, InviteStatus, NotificationKind, NotificationRow } from './types';
+import type { AppNotification, InviteMeta, InviteStatus, NotificationKind, NotificationRow, TeamSyncMeta } from './types';
 
 const LIST_LIMIT = 50;
 
@@ -58,7 +58,8 @@ function toNotificationKind(kind: string): NotificationKind {
     kind === 'invite_response' ||
     kind === 'system' ||
     kind === 'squad_alert' ||
-    kind === 'match_update'
+    kind === 'match_update' ||
+    kind === 'team_sync'
   ) {
     return kind;
   }
@@ -95,6 +96,12 @@ export function toAppNotification(
 
   const matchId = asString(data.match_id);
   const scorerAssignment = kind === 'system' && asString(data.type) === 'scorer_assigned' && matchId ? { matchId } : undefined;
+  const syncId = asString(data.sync_id);
+  const syncStatus = asString(data.status);
+  const teamSync: TeamSyncMeta | undefined = kind === 'team_sync' && syncId ? {
+    syncId, teamId,
+    status: syncStatus === 'accepted' || syncStatus === 'declined' || syncStatus === 'expired' ? syncStatus : 'pending',
+  } : undefined;
 
   return {
     id: row.id,
@@ -103,7 +110,7 @@ export function toAppNotification(
     message: row.message,
     sentLabel: formatSentLabel(row.created_at, now),
     isRead: row.read_at !== null,
-    meta: { ...(invite ? { invite } : {}), ...(scorerAssignment ? { scorerAssignment } : {}) },
+    meta: { ...(invite ? { invite } : {}), ...(scorerAssignment ? { scorerAssignment } : {}), ...(teamSync ? { teamSync } : {}) },
   };
 }
 

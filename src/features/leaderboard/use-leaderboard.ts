@@ -35,7 +35,7 @@ export const leaderboardKeys = {
   totals: (period: LeaderboardPeriod) => ['leaderboard', 'totals', period] as const,
 };
 
-/** Global leaderboard across every tournament (friendlies never count), narrowed to `period`. */
+/** Global leaderboard across every tournament, narrowed to `period`. Friendlies and zoned (ownerless) teams never count. */
 export function useLeaderboard(period: LeaderboardPeriod) {
   const totals = useQuery({
     queryKey: leaderboardKeys.totals(period),

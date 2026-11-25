@@ -1,5 +1,5 @@
-// A real team's match history, from the tournament fixtures it played. Friendlies keep team names only, not team
-// ids, so they cannot be told apart from another team of the same name and are left out.
+// A real team's match history: the tournaments and friendlies its owner accepted ("synced"). A competition the
+// owner did not accept, or whose 48-hour request expired, stays out of the team's record though its matches remain.
 import { format, parseISO } from 'date-fns';
 
 import { formatOvers } from '@/features/matches/matches-repository';
@@ -9,6 +9,7 @@ import type { AvatarTone } from '@/theme';
 
 import type { TeamMatch, TeamRecord as HistoryRecord } from '../types';
 import { toTeamError } from './team-errors';
+import { fetchAcceptedSyncs } from './team-sync';
 
 type Side = { id: string; name: string; short_name: string; tone: string | null; logo_url: string | null } | null;
 type Played = {
@@ -17,6 +18,8 @@ type Played = {
   team_b_runs: number | null; team_b_wickets: number | null; team_b_balls: number | null; overs_limit: number; completed_at: string | null;
 };
 export type HistoryRow = {
+  /** True for a friendly: it has no match number or tournament. */
+  friendly?: boolean;
   number: number; stage: string; match_date: string; home_team_id: string | null; away_team_id: string | null;
   tournaments: { name: string } | null; home: Side; away: Side; match: Played | null;
 };
@@ -25,15 +28,39 @@ export const teamHistoryKey = (teamId: string) => ['team-history', teamId] as co
 const LIMIT = 100;
 const tones: readonly string[] = ['blue', 'yellow', 'neutral'];
 
-/** This team's played and live tournament matches, newest first. */
+const MATCH_COLUMNS = 'id, status, team_a_name, team_b_name, winner_side, result_summary, '
+  + 'team_a_runs, team_a_wickets, team_a_balls, team_b_runs, team_b_wickets, team_b_balls, overs_limit, completed_at';
+const TEAM_COLUMNS = 'id, name, short_name, tone, logo_url';
+
+/** This team's played and live matches in the competitions its owner accepted, newest first. */
 export async function fetchTeamHistory(teamId: string): Promise<HistoryRow[]> {
+  const synced = await fetchAcceptedSyncs(teamId);
+  const [fixtures, friendlies] = await Promise.all([
+    synced.tournamentIds.length > 0 ? fetchFixtures(teamId, synced.tournamentIds) : Promise.resolve([]),
+    synced.matchIds.length > 0 ? fetchFriendlies(synced.matchIds) : Promise.resolve([]),
+  ]);
+  return [...fixtures, ...friendlies].sort((a, b) => b.match_date.localeCompare(a.match_date) || b.number - a.number);
+}
+
+async function fetchFriendlies(matchIds: string[]): Promise<HistoryRow[]> {
+  const { data, error } = await traceApi('team.friendlyHistory', { count: matchIds.length }, () => supabase.from('matches')
+    .select(`${MATCH_COLUMNS}, team_a_id, team_b_id, team_a:teams!matches_team_a_id_fkey(${TEAM_COLUMNS}), team_b:teams!matches_team_b_id_fkey(${TEAM_COLUMNS})`)
+    .in('id', matchIds).limit(LIMIT));
+  if (error) throw toTeamError(error);
+  return ((data ?? []) as unknown as (Played & { team_a_id: string | null; team_b_id: string | null; team_a: Side; team_b: Side })[]).map((m) => ({
+    friendly: true, number: 0, stage: 'Friendly', match_date: (m.completed_at ?? '').slice(0, 10), tournaments: null,
+    home_team_id: m.team_a_id, away_team_id: m.team_b_id, home: m.team_a, away: m.team_b, match: m,
+  }));
+}
+
+async function fetchFixtures(teamId: string, tournamentIds: string[]): Promise<HistoryRow[]> {
   const { data, error } = await traceApi('team.history', { teamId }, () => supabase.from('tournament_fixtures')
     .select('number, stage, match_date, home_team_id, away_team_id, tournaments(name), '
       + 'home:teams!tournament_fixtures_home_team_id_fkey(id, name, short_name, tone, logo_url), '
       + 'away:teams!tournament_fixtures_away_team_id_fkey(id, name, short_name, tone, logo_url), '
       + 'match:matches!tournament_fixtures_match_id_fkey(id, status, team_a_name, team_b_name, winner_side, result_summary, '
       + 'team_a_runs, team_a_wickets, team_a_balls, team_b_runs, team_b_wickets, team_b_balls, overs_limit, completed_at)')
-    .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`).not('match_id', 'is', null)
+    .in('tournament_id', tournamentIds).or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`).not('match_id', 'is', null)
     .order('match_date', { ascending: false }).order('number', { ascending: false }).limit(LIMIT));
   if (error) throw toTeamError(error);
   return (data ?? []) as unknown as HistoryRow[];
@@ -58,8 +85,9 @@ export function toHistory(teamId: string, teamName: string, rows: HistoryRow[]):
     const result = m.status === 'live' ? 'live' : m.winner_side === side ? 'W' : m.winner_side ? 'L' : 'T';
     matches.push({
       id: m.id, result,
-      label: [`MATCH ${row.number}`, row.stage === 'League' ? null : row.stage.toUpperCase(), row.tournaments?.name.toUpperCase(),
-        safeDay(row.match_date)].filter(Boolean).join(' · '),
+      label: (row.friendly ? ['FRIENDLY', safeDay(row.match_date)]
+        : [`MATCH ${row.number}`, row.stage === 'League' ? null : row.stage.toUpperCase(), row.tournaments?.name.toUpperCase(), safeDay(row.match_date)])
+        .filter(Boolean).join(' · '),
       opponent: opponent
         ? { short: opponent.short_name, name: opponent.name, tone: (tones.includes(opponent.tone ?? '') ? opponent.tone : 'neutral') as AvatarTone, avatarUri: opponent.logo_url ?? undefined }
         : { short: 'TBD', name: 'To be decided', tone: 'neutral' },

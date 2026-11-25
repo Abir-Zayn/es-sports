@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, Text } from '@/components/ui';
+import { SyncPanel } from '@/features/team/sync/sync-panel';
 import { formatDate } from '@/i18n';
 import { spacing, typography, useThemedStyles, type Palette } from '@/theme';
 
@@ -66,6 +67,11 @@ export function RealTournamentOverview({ tournament: t, staff, canManage, isOwne
             <Button label="Edit tournament" variant="secondary" onPress={() => router.push({ pathname: '/tournament/edit', params: { tournamentId: t.id } })} />
           ) : null}
         </View>
+      ) : null}
+      {/* Once closed, the owner sends the results to each team's record. */}
+      {isOwner && t.closedAt && teams.data && teams.data.length > 0 ? (
+        <SyncPanel target={{ tournamentId: t.id }} teams={teams.data.map(({ team }) => ({
+          id: team.id, name: team.name, short: team.shortName, tone: team.tone, logoUrl: team.logoUrl }))} />
       ) : null}
       {/* Closing is final, so it sits apart from the everyday tools. */}
       {isOwner ? <View style={styles.close}><CloseTournamentButton tournament={t} userId={userId} /></View> : null}

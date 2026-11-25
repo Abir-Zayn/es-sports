@@ -5,7 +5,7 @@ import Users from 'lucide-react-native/icons/users';
 import { useState, type ComponentType } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
-import { Text } from '@/components/ui';
+import { Button, Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
@@ -27,10 +27,13 @@ type Props = {
   onRemove: (player: FriendlyPlayer) => void;
   onFind: () => void;
   onQuickAdd: () => void;
+  /** Play this side as one of your existing teams, or stop. */
+  onUseTeam?: () => void;
+  onUnlink?: () => void;
 };
 
 /** One side of a friendly: image, name and lineup count stacked in the centre, then icon tiles to add players or open the squad. */
-export function FriendlyTeamCard({ label, squad, playersPerSide, error, onAddMe, onRename, onImage, onTogglePlaying, onRemove, onFind, onQuickAdd }: Props) {
+export function FriendlyTeamCard({ label, squad, playersPerSide, error, onAddMe, onRename, onImage, onTogglePlaying, onRemove, onFind, onQuickAdd, onUseTeam, onUnlink }: Props) {
   const s = useThemedStyles(styles);
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -46,6 +49,12 @@ export function FriendlyTeamCard({ label, squad, playersPerSide, error, onAddMe,
       onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
       style={[s.input, focused ? s.inputFocused : null, error ? s.inputError : null]} />
     <Text muted style={s.count}>{t('friendly.team.count', { playing, playersPerSide, total: squad.players.length, squadMax: SQUAD_MAX })}</Text>
+    {squad.teamId ? (
+      <View style={s.linked}>
+        <Text style={s.linkedText} numberOfLines={1}>{`Linked to ${squad.name}`}</Text>
+        {onUnlink ? <Button label="Unlink" variant="ghost" size="compact" accessibilityLabel={`Stop playing ${label} as ${squad.name}`} onPress={onUnlink} /> : null}
+      </View>
+    ) : onUseTeam ? <Button label="Use my team" variant="secondary" size="compact" accessibilityLabel={`Play ${label} as one of my teams`} onPress={onUseTeam} /> : null}
     {error && !squadOpen ? <Text style={s.error} accessibilityLiveRegion="polite">{error}</Text> : null}
     <View style={s.actions}>
       <ActionTile icon={UserSearch} accessibilityLabel={t('friendly.team.findPlayerA11y', { label })} disabled={full} onPress={onFind} />
@@ -81,6 +90,8 @@ const styles = (c: Palette) => StyleSheet.create({
   inputFocused: { borderColor: c.primaryTint },
   inputError: { borderColor: c.danger },
   count: { ...typography.bodySm, textAlign: 'center', fontVariant: ['tabular-nums'] },
+  linked: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  linkedText: { ...typography.labelSm, color: c.link, flexShrink: 1 },
   error: { ...typography.bodySm, color: c.danger, textAlign: 'center' },
   actions: { flexDirection: 'row', justifyContent: 'center', gap: spacing.md, paddingTop: spacing.xs },
   tile: { width: sizes.control, height: sizes.control, alignItems: 'center', justifyContent: 'center', borderRadius: radius.pill, backgroundColor: c.surfaceRaised },

@@ -15,12 +15,13 @@ import { NotificationDetailModal } from './components/notification-detail-modal'
 import { NotificationRow } from './components/notification-row';
 import { NotificationTabs } from './components/notification-tabs';
 import { SquadAlertCard } from './components/squad-alert-card';
+import { TeamSyncCard } from './components/team-sync-card';
 import type { AppNotification, NotificationFilterTab } from './types';
-import { useNotifications } from './use-notifications';
+import { notificationsKey, useNotifications } from './use-notifications';
 
 function matchesTab(item: AppNotification, tab: NotificationFilterTab): boolean {
   if (tab === 'all') return true;
-  if (tab === 'invites') return item.kind === 'invite' || item.kind === 'invite_response';
+  if (tab === 'invites') return item.kind === 'invite' || item.kind === 'invite_response' || item.kind === 'team_sync';
   if (tab === 'squad_alerts') return item.kind === 'squad_alert';
   return item.kind === 'match_update';
 }
@@ -57,6 +58,7 @@ export function NotificationsScreen() {
         />
       );
     }
+    if (item.kind === 'team_sync') return <TeamSyncCard item={item} notificationsKey={notificationsKey} />;
     if (item.kind === 'squad_alert') {
       return (
         <SquadAlertCard
