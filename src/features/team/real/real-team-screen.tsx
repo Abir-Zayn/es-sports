@@ -12,12 +12,13 @@ import { teamErrorText } from '../data/team-errors';
 import { teamMembersKey } from '../data/team-management';
 import { fetchTeam, fetchTeamMembers, teamKey, type TeamMemberRecord, type TeamRecord } from '../data/team-repository';
 import type { TeamTabId } from '../types';
+import { RealTeamMatches } from './real-team-matches';
 
 type Props = { id: string; tab: TeamTabId };
 
 const roleLabel = { owner: 'Owner', admin: 'Admin', player: 'Player', staff: 'Staff' } as const;
 
-/** A real team, read from the server. Squads and matches arrive with tournament fixtures, so those tabs say so. */
+/** A real team, read from the server: its details, members, and the tournament matches it played. */
 export function RealTeamScreen({ id, tab }: Props) {
   const { colors } = useTheme();
   const router = useRouter();
@@ -37,7 +38,8 @@ export function RealTeamScreen({ id, tab }: Props) {
   } else if (!record) body = <Text muted>This team could not be found.</Text>;
   else if (tab === 'overview') body = <Info team={record} members={members.data ?? []} />;
   else if (tab === 'members') body = <Members members={members.data} loading={members.isPending} failed={members.isError} />;
-  else body = <Text muted>{tab === 'squad' ? 'Squads are chosen for each match.' : 'Matches appear here once the team plays in a tournament.'}</Text>;
+  else if (tab === 'matches') body = <RealTeamMatches team={record} />;
+  else body = <Text muted>Squads are chosen for each match.</Text>;
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <TeamCompactHeader

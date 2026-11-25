@@ -14,6 +14,7 @@ export function HistoryMatchCard({ match, onPress }: Props) {
   const styles = useThemedStyles(createStyles);
   const live = match.result === 'live';
   const lost = match.result === 'L';
+  const level = match.result === 'T';
   return (
     <Pressable
       accessibilityRole="button"
@@ -21,8 +22,8 @@ export function HistoryMatchCard({ match, onPress }: Props) {
       onPress={onPress}
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
-      <View style={[styles.badge, live ? styles.badgeLive : lost ? styles.badgeLoss : styles.badgeWin]}>
-        <Text style={[styles.badgeText, live && styles.badgeTextLive, live ? styles.onLive : lost ? styles.onLoss : styles.onWin]}>
+      <View style={[styles.badge, live ? styles.badgeLive : lost ? styles.badgeLoss : level ? styles.badgeLevel : styles.badgeWin]}>
+        <Text style={[styles.badgeText, live && styles.badgeTextLive, live ? styles.onLive : lost ? styles.onLoss : level ? styles.onLevel : styles.onWin]}>
           {live ? 'LIVE' : match.result}
         </Text>
       </View>
@@ -60,11 +61,13 @@ const createStyles = (colors: Palette) =>
     badge: { width: sizes.avatar, height: sizes.avatar, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
     badgeWin: { backgroundColor: colors.primarySoft },
     badgeLoss: { backgroundColor: colors.dangerSoft },
+    badgeLevel: { backgroundColor: colors.surfaceRaised },
     badgeLive: { backgroundColor: colors.live },
     badgeText: typography.labelMd,
     badgeTextLive: { fontSize: sp(10) },
     onWin: { color: colors.link },
     onLoss: { color: colors.dangerSoftText },
+    onLevel: { color: colors.textMuted },
     onLive: { color: colors.onLive },
     text: { flex: 1, minWidth: 0, gap: spacing.xs },
     label: typography.labelUppercase,
