@@ -11,13 +11,15 @@ type Props = {
   team: TeamRecord; members: number; invited: number; manager: boolean;
   logo: { uri: string | null; saving: boolean; onPick: (uri: string) => void; onError: (message: string) => void };
   register: { busy: boolean; onRegister: () => void };
+  /** Opens the name, short name, colour and area editor. */
+  onEdit: () => void;
 };
 
 /**
  * The team at the top of its member screen: its picture (changeable by the owner or an admin), and where it stands.
  * A draft shows how many of the 4 players it has and unlocks Register at 4; a registered team shows its 16-player room.
  */
-export function TeamStatusCard({ team, members, invited, manager, logo, register }: Props) {
+export function TeamStatusCard({ team, members, invited, manager, logo, register, onEdit }: Props) {
   const { colors } = useTheme();
   const s = useThemedStyles(styles);
   const draft = team.registeredAt === null;
@@ -34,6 +36,7 @@ export function TeamStatusCard({ team, members, invited, manager, logo, register
         <AppBadge label={draft ? 'Draft' : 'Registered'} backgroundColor={draft ? colors.accentSoft : colors.successSoft}
           color={draft ? colors.accent : colors.success} />
       </View>
+      {manager ? <Button label="Edit details" variant="ghost" size="compact" accessibilityLabel={`Edit ${team.name} details`} onPress={onEdit} /> : null}
       {draft ? (
         <>
           <View style={s.progressText}>

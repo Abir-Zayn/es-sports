@@ -5,6 +5,7 @@ import { traceApi } from '@/lib/api-log';
 import { supabase } from '@/lib/supabase';
 
 import { toTeamError } from './team-errors';
+import type { NewTeamInput } from './team-rules';
 import { toTeam, type TeamRecord } from './team-repository';
 
 /** A team registers at 4 players and holds at most 16, counting open invites. */
@@ -45,6 +46,14 @@ export async function deleteTeam(teamId: string, logoUrl: string | null): Promis
 /** Makes another member the owner; the previous owner becomes an admin and can then leave. */
 export async function transferOwnership(teamId: string, profileId: string): Promise<void> {
   const { error } = await traceApi('team.transfer', { teamId, profileId }, () => supabase.rpc('transfer_team_ownership', { p_team: teamId, p_profile: profileId }));
+  if (error) throw toTeamError(error);
+}
+
+/** Renames the team or changes its short name, colour or area. The owner or an admin may; the server checks the same rules. */
+export async function updateTeamDetails(teamId: string, input: NewTeamInput): Promise<void> {
+  const { error } = await traceApi('team.updateDetails', { teamId, name: input.name.trim() }, () => supabase.from('teams').update({
+    name: input.name.trim(), short_name: input.shortName, tone: input.tone, area: input.area.trim() || null,
+  }).eq('id', teamId));
   if (error) throw toTeamError(error);
 }
 
