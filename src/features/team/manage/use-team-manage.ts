@@ -6,10 +6,11 @@ import { cancelInvitation, sendTeamPlayerInvite } from '@/features/invitations';
 import { useAuth } from '@/features/auth';
 
 import {
-  deleteTeam, fetchInviteTracker, inviteTrackerKey, registerTeam, setTeamLogo, transferOwnership,
+  deleteTeam, fetchInviteTracker, inviteTrackerKey, registerTeam, setTeamLogo, transferOwnership, updateTeamDetails,
 } from '../data/team-lifecycle';
 import { canManage, removeTeamMember, setMemberAvailability, teamMembersKey } from '../data/team-management';
 import { fetchTeam, fetchTeamMembers, myTeamsKey, teamKey, type Availability, type TeamMemberRecord } from '../data/team-repository';
+import type { NewTeamInput } from '../data/team-rules';
 
 /** The clock the re-invite countdowns read, ticking every 30 seconds. */
 function useNow(stepMs = 30_000): number {
@@ -48,6 +49,7 @@ export function useTeamManage(id: string) {
     mutationFn: (a: { profileId: string; value: Availability }) => setMemberAvailability(id, a.profileId, a.value), onSuccess: refresh,
   });
   const register = useMutation({ mutationFn: () => registerTeam(id), onSuccess: refresh });
+  const edit = useMutation({ mutationFn: (input: NewTeamInput) => updateTeamDetails(id, input), onSuccess: refresh });
   const logo = useMutation({ mutationFn: (uri: string) => setTeamLogo(id, uri, team.data?.logoUrl ?? null), onSuccess: refresh });
   // The server takes the player out of every tournament squad of this team too.
   const leave = useMutation({ mutationFn: () => removeTeamMember(id, meId), onSuccess: leaveScreen });
@@ -57,9 +59,9 @@ export function useTeamManage(id: string) {
   });
   const removeTeam = useMutation({ mutationFn: () => deleteTeam(id, team.data?.logoUrl ?? null), onSuccess: leaveScreen });
 
-  const busy = [invite, cancel, remove, availability, register, logo, leave, handOver, removeTeam].some((m) => m.isPending);
+  const busy = [invite, cancel, remove, availability, register, edit, logo, leave, handOver, removeTeam].some((m) => m.isPending);
   return {
     meId, now, team, members, invites, myRole, manager, busy,
-    invite, cancel, remove, availability, register, logo, leave, handOver, deleteTeam: removeTeam,
+    invite, cancel, remove, availability, register, edit, logo, leave, handOver, deleteTeam: removeTeam,
   };
 }

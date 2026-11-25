@@ -188,6 +188,7 @@ describe('team manage screen', () => {
     jest.mocked(fetchTeamMembers).mockResolvedValue([{ ...members[0], role: 'player' }, { ...members[1], role: 'owner' }]);
     await show();
     expect(await screen.findByText('Only the owner or an admin can invite players.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Edit Alpha XI details' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Invite players' })).toBeNull();
   });
   it('lets a player leave the team after confirming, and the owner never', async () => {
@@ -205,6 +206,7 @@ describe('team manage screen', () => {
 
   it('gives the owner Hand over and leave instead of a plain Leave', async () => {
     await show();
+    expect(await screen.findByRole('button', { name: 'Edit Alpha XI details' })).toBeTruthy();
     expect(await screen.findByRole('button', { name: 'Hand over and leave' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Leave team' })).toBeNull();
   });

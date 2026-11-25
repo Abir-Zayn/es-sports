@@ -15,6 +15,7 @@ import { teamErrorText } from '../data/team-errors';
 import { TEAM_MAX } from '../data/team-lifecycle';
 import type { TeamMemberRecord } from '../data/team-repository';
 import { AvailabilitySheet } from './availability-sheet';
+import { EditTeamSheet } from './edit-team-sheet';
 import { InviteTracker } from './invite-tracker';
 import { TeamExitActions } from './team-exit-actions';
 import { MemberList } from './team-member-lists';
@@ -37,6 +38,7 @@ export function TeamManageScreen() {
   const [statusFor, setStatusFor] = useState<TeamMemberRecord | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
   const [logoError, setLogoError] = useState('');
+  const [editing, setEditing] = useState(false);
   const memberList = m.members.data ?? [];
   const tracked = m.invites.data ?? [];
   const waiting = tracked.filter((i) => i.state === 'pending').length;
@@ -75,7 +77,8 @@ export function TeamManageScreen() {
         <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + spacing.xxl }]}>
           <TeamStatusCard team={m.team.data} members={memberList.length} invited={waiting} manager={m.manager}
             logo={{ uri: picked, saving: m.logo.isPending, onPick: pickLogo, onError: setLogoError }}
-            register={{ busy: m.register.isPending, onRegister: () => m.register.mutate() }} />
+            register={{ busy: m.register.isPending, onRegister: () => m.register.mutate() }}
+            onEdit={() => { m.edit.reset(); setEditing(true); }} />
           {logoError ? <Text accessibilityRole="alert" style={s.error}>{logoError}</Text> : null}
           {m.manager ? (
             <Button label={full ? `Team is full (${TEAM_MAX} players)` : 'Invite players'} disabled={m.busy || full}
@@ -93,6 +96,9 @@ export function TeamManageScreen() {
             onHandOver={(member) => m.handOver.mutate(member)} onDelete={() => m.deleteTeam.mutate()} />
         </ScrollView>
       )}
+      <EditTeamSheet team={editing ? m.team.data ?? null : null} busy={m.edit.isPending}
+        error={m.edit.isError ? teamErrorText(m.edit.error) : null} onClose={() => setEditing(false)}
+        onSave={(input) => m.edit.mutate(input, { onSuccess: () => setEditing(false) })} />
       <AvailabilitySheet member={statusFor} busy={m.availability.isPending}
         error={m.availability.isError ? teamErrorText(m.availability.error) : null}
         onChoose={(value) => statusFor && m.availability.mutate({ profileId: statusFor.profileId, value }, { onSuccess: () => setStatusFor(null) })}

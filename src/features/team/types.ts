@@ -53,7 +53,8 @@ export type MemberTag = 'Captain' | 'Keeper' | 'Invited' | 'Manager' | 'Staff';
 
 export type TeamMember = { name: string; kind: MemberKind; detail: string; tag?: MemberTag };
 
-export type HistoryResult = 'live' | 'W' | 'L';
+/** W won, L lost, T tied or no result. */
+export type HistoryResult = 'live' | 'W' | 'L' | 'T';
 
 export type TeamMatch = {
   id: string;
