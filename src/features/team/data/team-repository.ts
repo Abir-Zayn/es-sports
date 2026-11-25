@@ -76,5 +76,15 @@ export async function fetchMyTeams(userId: string): Promise<MyTeam[]> {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/** Zoned teams this account made (inside a tournament, so nobody owns them); their creator answers for them. */
+export async function fetchMyZonedTeams(userId: string): Promise<(TeamRecord & { members: number })[]> {
+  const { data, error } = await traceApi('team.myZoned', { userId }, () => supabase.from('teams')
+    .select(`${TEAM_COLUMNS}, team_members(role)`).eq('created_by', userId).limit(100));
+  if (error) throw toTeamError(error);
+  return (data ?? []).filter((row) => !(row.team_members ?? []).some((m) => m.role === 'owner'))
+    .map((row) => ({ ...toTeam(row), members: (row.team_members ?? []).length }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
 export const myTeamsKey = (userId: string) => ['my-teams', userId] as const;
 export const teamKey = (teamId: string) => ['team', teamId] as const;
