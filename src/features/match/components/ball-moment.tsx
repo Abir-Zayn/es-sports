@@ -39,8 +39,9 @@ export function BallMoment({ view }: { view: LiveMatchViewData }) {
       setMoment({ id: latest!.order, kind: ballKind(latest!.value) as MomentKind, value: latest!.value });
       AccessibilityInfo.announceForAccessibility(spokenBall(latest!.value));
     }
-    // The first load only records where the match is, so opening a screen never replays the last ball.
-    lastOrder.current = latest?.order ?? lastOrder.current ?? 0;
+    // The first load only records where the match is, so opening a screen never replays the last ball. An innings
+    // emptied by undo goes back to nothing bowled, so the next ball in that slot still plays.
+    lastOrder.current = latest?.order ?? 0;
   }, [latest?.order, latest?.value]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {

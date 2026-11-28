@@ -32,4 +32,13 @@ describe('ball moment', () => {
     await rerender(ui(withOver(5, ['4', '6', '', '', '', ''])));
     expect(await screen.findByTestId('ball-moment-six', { includeHiddenElements: true })).toBeTruthy();
   });
+
+  it('plays a boundary bowled again after undo empties the innings', async () => {
+    const ui = (view: LiveMatchViewData) => <ThemeProvider><BallMoment view={view} /></ThemeProvider>;
+    const empty = { ...withOver(1, ['', '', '', '', '', '']), recentOvers: [] };
+    const { rerender } = await render(ui(withOver(1, ['1', '', '', '', '', ''])));
+    await rerender(ui(empty));
+    await rerender(ui(withOver(1, ['6', '', '', '', '', ''])));
+    expect(await screen.findByTestId('ball-moment-six', { includeHiddenElements: true })).toBeTruthy();
+  });
 });
