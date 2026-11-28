@@ -28,7 +28,8 @@ export function MatchInfoScreen() {
   }
   const { info } = view;
   return (
-    <MatchScreenFrame matchId={matchId} tab="info" title={view.header.title} subtitle={view.header.subtitle}>
+    <MatchScreenFrame matchId={matchId} tab="info" title={view.header.title} subtitle={view.header.subtitle}
+      live={view.header.status === 'live'}>
       <StaleMatchNote query={live} />
       {info.tossNote ? <TossBanner team={info.tossNote.team} decision={info.tossNote.decision} /> : (
         <Text muted>{t('match.toss.notYet')}</Text>

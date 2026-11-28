@@ -22,7 +22,8 @@ export function MatchOversScreen() {
   const view = live.data;
   const played = view?.overs.filter((o) => o.overs.length > 0) ?? [];
   return (
-    <MatchScreenFrame matchId={matchId} tab="overs" title={view?.header.title} subtitle={view?.header.subtitle}>
+    <MatchScreenFrame matchId={matchId} tab="overs" title={view?.header.title} subtitle={view?.header.subtitle}
+      live={view?.header.status === 'live'}>
       <StaleMatchNote query={live} />
       {!view ? (
         <MatchLoadState query={live} label={t('match.loadingOvers')} />
