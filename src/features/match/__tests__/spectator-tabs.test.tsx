@@ -11,6 +11,8 @@ import { MatchInfoScreen } from '../screens/match-info-screen';
 import { MatchOversScreen } from '../screens/match-overs-screen';
 import { MatchScorecardScreen } from '../screens/match-scorecard-screen';
 
+jest.mock('react-native-reanimated', () => require('../__fixtures__/reanimated-stub'));
+
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
