@@ -18,7 +18,8 @@ import { FriendlyFormatCard, ScorerAssignmentRow } from '../components/friendly-
 import { FriendlyMatchupHero } from '../components/friendly-matchup-hero';
 import { ExistingTeamSheet } from '../components/existing-team-sheet';
 import { FriendlySheets, type FriendlySheet } from '../components/friendly-sheets';
-import { FriendlyTeamCard } from '../components/friendly-team-card';
+import { FriendlySideActionsSheet } from '../components/friendly-side-actions-sheet';
+import { FriendlySquadSheet } from '../components/friendly-squad-sheet';
 import { SavedFriendlies } from '../components/saved-friendlies';
 import { TossCoinModal } from '../components/toss-coin-modal';
 import {
@@ -54,6 +55,8 @@ export function FriendlySetupScreen() {
   const [attempted, setAttempted] = useState(false);
   const [notice, setNotice] = useState<{ side: FriendlySide; message: string } | null>(null);
   const [teamFor, setTeamFor] = useState<FriendlySide | null>(null);
+  const [actionsFor, setActionsFor] = useState<FriendlySide | null>(null);
+  const [squadFor, setSquadFor] = useState<FriendlySide | null>(null);
   const problems = friendlyProblems(setup, me.id);
   const shown = attempted ? problems : {};
   const inSquad = (userId: string) => sides.some((side) => setup[side].players.some((p) => p.userId === userId));
@@ -71,10 +74,11 @@ export function FriendlySetupScreen() {
       return false;
     }
   }
-  function open(next: FriendlySheet) {
-    setSheetError(null);
-    setSheet(next);
-  }
+  const open = (next: FriendlySheet) => { setSheetError(null); setSheet(next); };
+  const sideError = (side: FriendlySide) => (notice?.side === side ? notice.message : shown[side]);
+  const unlink = (side: FriendlySide) => setSetup((c) => ({ ...c, [side]: { ...c[side], teamId: undefined } }));
+  const addMe = (side: FriendlySide) => (me.id && !inSquad(me.id) // Offered only while the creator is in neither squad.
+    ? () => change((c) => addPlayer(c, side, { id: localEventId(), name: me.name || t('friendly.me'), role: 'All-rounder', userId: me.id, avatarUrl: me.avatarUrl })) : undefined);
   const close = () => router.canGoBack() ? router.back() : router.replace('/matches');
   /** Leaving the toss starts a new match id. Images of an unsaved one are left to the daily sweep. */
   function closeToss() {
@@ -141,22 +145,13 @@ export function FriendlySetupScreen() {
     <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + dp(120) }]} keyboardShouldPersistTaps="handled">
       <SavedFriendlies userId={me.id} />
       <FriendlyMatchupHero teamA={setup.teamA} teamB={setup.teamB} nameA={teamLabel(setup, 'teamA')} nameB={teamLabel(setup, 'teamB')}
-        overs={setup.overs} playersPerSide={setup.playersPerSide} />
+        overs={setup.overs} playersPerSide={setup.playersPerSide}
+        onImage={(side, imageUri, imageMimeType) => setSetup((current) => ({ ...current, [side]: { ...current[side], imageUri, imageMimeType } }))}
+        onRename={(side, name) => setSetup(renameTeam(setup, side, name))} onMore={setActionsFor}
+        errors={Object.fromEntries(sides.filter((side) => side !== squadFor).map((side) => [side, sideError(side)]))} />
       <Text accessibilityRole="header" muted style={s.section}>{t('friendly.sectionFormat')}</Text>
       <FriendlyFormatCard overs={setup.overs} playersPerSide={setup.playersPerSide} error={shown.format}
         onOvers={(overs) => setSetup({ ...setup, overs })} onPlayersPerSide={(n) => setSetup(withPlayersPerSide(setup, n))} />
-      <Text accessibilityRole="header" muted style={s.section}>{t('friendly.sectionSquads')}</Text>
-      {sides.map((side: FriendlySide) => <FriendlyTeamCard key={side} label={side === 'teamA' ? t('friendly.teamA') : t('friendly.teamB')}
-        squad={setup[side]} playersPerSide={setup.playersPerSide} error={notice?.side === side ? notice.message : shown[side]}
-        onRename={(name) => setSetup(renameTeam(setup, side, name))}
-        onImage={(imageUri, imageMimeType) => setSetup((current) => ({ ...current, [side]: { ...current[side], imageUri, imageMimeType } }))}
-        onTogglePlaying={(p) => {
-          try { setSetup(togglePlaying(setup, side, p.id)); setNotice(null); } catch (error) { setNotice({ side, message: errorText(error) }); }
-        }}
-        onRemove={(p) => setSetup(removePlayer(setup, side, p.id))}
-        onFind={() => open({ kind: 'find', side })} onQuickAdd={() => open({ kind: 'guest', side })}
-        onUseTeam={() => setTeamFor(side)} onUnlink={() => setSetup((c) => ({ ...c, [side]: { ...c[side], teamId: undefined } }))}
-        onAddMe={me.id && !inSquad(me.id) ? () => change((c) => addPlayer(c, side, { id: localEventId(), name: me.name || t('friendly.me'), role: 'All-rounder', userId: me.id, avatarUrl: me.avatarUrl })) : undefined} />)}
       <Text accessibilityRole="header" muted style={s.section}>{t('friendly.sectionScorer')}</Text>
       <ScorerAssignmentRow name={scorer ? scorer.name : t('friendly.you')} avatarUrl={scorer ? scorer.avatarUrl : me.avatarUrl} error={shown.scorer}
         detail={scorer ? t('friendly.scorerAssignedDetail') : t('friendly.scorerSelfDetail')}
@@ -170,6 +165,12 @@ export function FriendlySetupScreen() {
       onAddMember={(side, user, role) => { if (change((c) => addPlayer(c, side, { id: localEventId(), name: user.name, role, userId: user.id, avatarUrl: user.avatarUrl }))) setSheet(null); }}
       onAddGuest={(side, input) => { if (change((c) => addPlayer(c, side, { id: localEventId(), ...input }))) setSheet(null); }}
       onPickScorer={(id) => { setSetup({ ...setup, assignedScorerId: id === me.id ? '' : id }); setSheet(null); }} />
+    <FriendlySideActionsSheet side={actionsFor} setup={setup} onClose={() => setActionsFor(null)} onSearchTeams={setTeamFor} onUnlink={unlink}
+      onFind={(side) => open({ kind: 'find', side })} onQuickAdd={(side) => open({ kind: 'guest', side })} addMe={addMe} onSquad={setSquadFor} />
+    {squadFor ? <FriendlySquadSheet visible title={t('friendly.team.squadTitle', { title: teamLabel(setup, squadFor) })} squad={setup[squadFor]}
+      playersPerSide={setup.playersPerSide} error={sideError(squadFor)} onClose={() => setSquadFor(null)}
+      onTogglePlaying={(p) => { try { setSetup(togglePlaying(setup, squadFor, p.id)); setNotice(null); } catch (error) { setNotice({ side: squadFor, message: errorText(error) }); } }}
+      onRemove={(p) => setSetup(removePlayer(setup, squadFor, p.id))} /> : null}
     <ExistingTeamSheet visible={teamFor !== null} meId={me.id} otherTeamId={teamFor ? setup[teamFor === 'teamA' ? 'teamB' : 'teamA'].teamId : undefined}
       onClose={() => setTeamFor(null)}
       onPick={(team, members) => { if (teamFor) setSetup((c) => withTeam(c, teamFor, squadFromTeam(team, members, c.playersPerSide, localEventId))); setTeamFor(null); }} />

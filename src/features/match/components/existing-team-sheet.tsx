@@ -1,7 +1,8 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
-import { InitialsAvatar, Text } from '@/components/ui';
+import { InitialsAvatar, SearchField, Text } from '@/components/ui';
 import { teamErrorText } from '@/features/team/data/team-errors';
 import { canManage } from '@/features/team/data/team-management';
 import { fetchMyTeams, fetchMyZonedTeams, fetchTeamMembers, myTeamsKey, type TeamMemberRecord, type TeamRecord } from '@/features/team/data/team-repository';
@@ -31,6 +32,7 @@ export function ExistingTeamSheet({ visible, onClose, ...rest }: Props) {
 function Teams({ meId, otherTeamId, onPick }: Omit<Props, 'visible' | 'onClose'>) {
   const { colors } = useTheme();
   const s = useThemedStyles(styles);
+  const [query, setQuery] = useState('');
   const mine = useQuery({ queryKey: myTeamsKey(meId), queryFn: () => fetchMyTeams(meId), enabled: Boolean(meId) });
   // Zoned teams I made count too: nobody owns them, so their creator brings them. They stay out of team rankings.
   const zoned = useQuery({ queryKey: ['my-zoned-teams', meId], queryFn: () => fetchMyZonedTeams(meId), enabled: Boolean(meId) });
@@ -44,10 +46,14 @@ function Teams({ meId, otherTeamId, onPick }: Omit<Props, 'visible' | 'onClose'>
   if (mine.isPending || zoned.isPending || (runnable.length > 0 && busy.isPending)) return <ActivityIndicator color={colors.link} accessibilityLabel="Loading your teams" />;
   if (mine.isError || zoned.isError || busy.isError) return <Text muted>{teamErrorText(mine.error ?? zoned.error ?? busy.error)}</Text>;
   if (runnable.length === 0) return <Text muted>You don’t own or run a team yet. Create one from Teams in the side menu.</Text>;
+  const needle = query.trim().toLowerCase();
+  const found = runnable.filter((team) => !needle || team.name.toLowerCase().includes(needle) || team.shortName.toLowerCase().includes(needle));
   return (
     <View style={s.list}>
+      <SearchField value={query} onChangeText={setQuery} placeholder="Search your teams" />
       <Text style={s.hint}>Its members join this side as the squad. Afterwards you can add the result to the team’s record.</Text>
-      {runnable.map((team) => {
+      {found.length === 0 ? <Text muted>{`No team matches “${query.trim()}”.`}</Text> : null}
+      {found.map((team) => {
         const reason = team.id === otherTeamId ? 'Already playing the other side.' : busy.data?.[team.id];
         return (
           <Pressable key={team.id} accessibilityRole="button" accessibilityState={{ disabled: Boolean(reason) || pick.isPending }}
