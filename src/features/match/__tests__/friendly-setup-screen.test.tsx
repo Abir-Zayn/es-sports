@@ -9,6 +9,7 @@ import { uploadTeamImage } from '../server/team-images';
 import { searchPlayers } from '../server/search-players';
 import { ThemeProvider } from '@/theme';
 
+import { fillFriendlyForm, quickAdd, sideAction } from '../__fixtures__/friendly-steps';
 import { FriendlySetupScreen } from '../screens/friendly-setup-screen';
 
 const mockReplace = jest.fn();
@@ -51,22 +52,7 @@ async function show() {
   );
 }
 
-async function quickAdd(team: 'Team A' | 'Team B', name: string) {
-  await fireEvent.press(screen.getByRole('button', { name: `Quick add to ${team}` }));
-  await fireEvent.changeText(screen.getByLabelText('Player name'), name);
-  await fireEvent.press(screen.getByRole('button', { name: 'Add to squad' }));
-}
-
-/** Four a side, both teams named and full. */
-async function fillForm() {
-  await fireEvent.press(screen.getByRole('button', { name: 'Fewer players a side' }));
-  await fireEvent.press(screen.getByRole('button', { name: 'Fewer players a side' }));
-  await fireEvent.changeText(screen.getByLabelText('Team A name'), 'Karnaphuli Kings');
-  await fireEvent.changeText(screen.getByLabelText('Team B name'), 'Chattogram Strikers');
-  await fireEvent.press(screen.getByRole('button', { name: 'Add me to Team A' }));
-  for (const name of ['Rafi Hasan', 'Imran Kayes', 'Sumon Das']) await quickAdd('Team A', name);
-  for (const name of ['Liton Roy', 'Nayeem Islam', 'Tanvir Ahmed', 'Arif Khan']) await quickAdd('Team B', name);
-}
+const fillForm = fillFriendlyForm;
 
 describe('friendly match setup', () => {
   beforeEach(() => {
@@ -87,21 +73,22 @@ describe('friendly match setup', () => {
   it('builds two squads, benches the extra player, and keeps the side at its size', async () => {
     await show();
     await fillForm();
-    expect(screen.getAllByText('4/4 Playing · 4/16 Squad')).toHaveLength(2);
+    expect(screen.getAllByText('4 in squad')).toHaveLength(2);
     expect(screen.queryByText('Organiser Me')).toBeNull();
-    await fireEvent.press(screen.getByRole('button', { name: 'Show Team A squad' }));
+    await sideAction('Team A', 'View squad');
     expect(screen.getByText('Karnaphuli Kings squad')).toBeTruthy();
     expect(screen.getByText('Organiser Me')).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Close karnaphuli kings squad' }));
     expect(screen.queryByText('Organiser Me')).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Add me to Team B' })).toBeNull();
-    await fireEvent.press(screen.getByRole('button', { name: 'Show Team B squad' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'More options for Team B' }));
+    expect(screen.queryByRole('button', { name: /^Add me\./ })).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: /^View squad\./ }));
     expect(screen.queryByText('Playing')).toBeNull();
     expect(screen.queryByRole('switch', { name: 'Liton Roy playing' })).toBeNull();
     await fireEvent.press(screen.getByRole('button', { name: 'Close chattogram strikers squad' }));
     await quickAdd('Team B', 'Reserve Player');
-    expect(screen.getByText('4/4 Playing · 5/16 Squad')).toBeTruthy();
-    await fireEvent.press(screen.getByRole('button', { name: 'Show Team B squad' }));
+    expect(screen.getByText('5 in squad')).toBeTruthy();
+    await sideAction('Team B', 'View squad');
     expect(screen.getByText('Select the players in the lineup.')).toBeTruthy();
     expect(screen.getByRole('switch', { name: 'Reserve Player playing', checked: false })).toBeTruthy();
     await fireEvent.press(screen.getByRole('switch', { name: 'Reserve Player playing' }));
@@ -117,10 +104,10 @@ describe('friendly match setup', () => {
     const avatarUrl = 'https://example.com/rafi.jpg';
     jest.mocked(searchPlayers).mockResolvedValueOnce([{ id: 'user-rafi', name: 'Rafi Hasan', area: 'Agrabad', avatarUrl }]);
     await show();
-    await fireEvent.press(screen.getByRole('button', { name: 'Find player for Team A' }));
+    await sideAction('Team A', 'Find a player');
     await fireEvent.changeText(screen.getByLabelText('Search players by name'), 'Rafi');
     await fireEvent.press(await screen.findByRole('button', { name: 'Add Rafi Hasan' }));
-    await fireEvent.press(screen.getByRole('button', { name: 'Show Team A squad' }));
+    await sideAction('Team A', 'View squad');
     expect(screen.getByText('Rafi Hasan')).toBeTruthy();
     expect(screen.getByTestId(`image-${avatarUrl}`, { includeHiddenElements: true })).toBeTruthy();
   });
@@ -130,7 +117,7 @@ describe('friendly match setup', () => {
     jest.mocked(searchPlayers).mockResolvedValueOnce([{ id: scorerId, name: 'Rafi Hasan', area: null, avatarUrl: null }]);
     await show();
     await fillForm();
-    await fireEvent.press(screen.getByRole('button', { name: 'Find player for Team B' }));
+    await sideAction('Team B', 'Find a player');
     await fireEvent.changeText(screen.getByLabelText('Search players by name'), 'Rafi');
     await fireEvent.press(await screen.findByRole('button', { name: 'Add Rafi Hasan' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Scorer: You. Change scorer' }));

@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { createFriendlyMatch, FriendlySetupExpiredError } from '@/features/scoring/data/friendly-create';
 import { ThemeProvider } from '@/theme';
 
+import { fillFriendlyForm } from '../__fixtures__/friendly-steps';
 import { FriendlySetupScreen } from '../screens/friendly-setup-screen';
 import { sweepOrphanTeamImagesDaily } from '../server/team-image-sweep';
 
@@ -58,22 +59,7 @@ async function show() {
   await render(<ThemeProvider><QueryClientProvider client={client}><FriendlySetupScreen /></QueryClientProvider></ThemeProvider>);
 }
 
-/** Four a side, both teams named and full. */
-async function fillForm() {
-  await fireEvent.press(screen.getByRole('button', { name: 'Fewer players a side' }));
-  await fireEvent.press(screen.getByRole('button', { name: 'Fewer players a side' }));
-  await fireEvent.changeText(screen.getByLabelText('Team A name'), 'Karnaphuli Kings');
-  await fireEvent.changeText(screen.getByLabelText('Team B name'), 'Chattogram Strikers');
-  await fireEvent.press(screen.getByRole('button', { name: 'Add me to Team A' }));
-  const squads: [string, string[]][] = [['Team A', ['Rafi Hasan', 'Imran Kayes', 'Sumon Das']], ['Team B', ['Liton Roy', 'Nayeem Islam', 'Tanvir Ahmed', 'Arif Khan']]];
-  for (const [team, names] of squads) {
-    for (const name of names) {
-      await fireEvent.press(screen.getByRole('button', { name: `Quick add to ${team}` }));
-      await fireEvent.changeText(screen.getByLabelText('Player name'), name);
-      await fireEvent.press(screen.getByRole('button', { name: 'Add to squad' }));
-    }
-  }
-}
+const fillForm = fillFriendlyForm;
 
 const press = (name: string) => fireEvent.press(screen.getByRole('button', { name }));
 const savedIds = () => jest.mocked(createFriendlyMatch).mock.calls.map(([match]) => match.id);

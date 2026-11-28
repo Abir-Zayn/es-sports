@@ -14,16 +14,18 @@ type Props = {
   /** The match's own title lines, blank until the match has loaded. */
   title?: string;
   subtitle?: string;
+  /** Shows the LIVE chip; off while loading and once the match is over. */
+  live?: boolean;
   children: ReactNode;
 };
 
 /** Shared shell of the match's Scorecard, Overs, Wagon and Info screens: compact header, tabs, then content. */
-export function MatchScreenFrame({ matchId, tab, title = '', subtitle = '', children }: Props) {
+export function MatchScreenFrame({ matchId, tab, title = '', subtitle = '', live = false, children }: Props) {
   const styles = useThemedStyles(createStyles);
   const { goBack } = useMatchRoutes(matchId);
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <MatchCompactHeader title={title} subtitle={subtitle} onBack={goBack} />
+      <MatchCompactHeader title={title} subtitle={subtitle} live={live} onBack={goBack} />
       <View style={styles.tabs}>
         <MatchTabs matchId={matchId} selected={tab} />
       </View>

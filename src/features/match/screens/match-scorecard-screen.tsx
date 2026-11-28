@@ -23,7 +23,8 @@ export function MatchScorecardScreen() {
   const live = useLiveMatchData(matchId);
   const view = live.data;
   return (
-    <MatchScreenFrame matchId={matchId} tab="scorecard" title={view?.header.title} subtitle={view?.header.subtitle}>
+    <MatchScreenFrame matchId={matchId} tab="scorecard" title={view?.header.title} subtitle={view?.header.subtitle}
+      live={view?.header.status === 'live'}>
       <StaleMatchNote query={live} />
       {!view ? (
         <MatchLoadState query={live} label={t('match.loadingScorecard')} />

@@ -91,3 +91,15 @@ describe('info tab', () => {
     expect(screen.getByText('The toss has not happened yet.')).toBeTruthy();
   });
 });
+
+describe('header LIVE chip', () => {
+  it('shows while the match is live and goes once it is over', async () => {
+    mockView = { ...seeded, header: { ...seeded.header, status: 'live' } };
+    await show(<MatchScorecardScreen />);
+    expect(screen.getByText('LIVE')).toBeTruthy();
+    screen.unmount();
+    mockView = { ...seeded, header: { ...seeded.header, status: 'completed' } };
+    await show(<MatchScorecardScreen />);
+    expect(screen.queryByText('LIVE')).toBeNull();
+  });
+});

@@ -6,10 +6,10 @@ import { Text } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import { dp, radius, shadows, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
-type Props = { title: string; subtitle: string; onBack: () => void };
+type Props = { title: string; subtitle: string; live: boolean; onBack: () => void };
 
 /** Slim header for the match's inner screens: borderless back chevron, centered match & competition titles. */
-export function MatchCompactHeader({ title, subtitle, onBack }: Props) {
+export function MatchCompactHeader({ title, subtitle, live, onBack }: Props) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = useThemedStyles(createStyles);
@@ -34,10 +34,12 @@ export function MatchCompactHeader({ title, subtitle, onBack }: Props) {
           </Text>
         )}
       </View>
-      <View style={styles.liveChip}>
-        <View style={styles.liveDot} />
-        <Text style={styles.liveText}>{t('matchCard.live')}</Text>
-      </View>
+      {live ? (
+        <View style={styles.liveChip}>
+          <View style={styles.liveDot} />
+          <Text style={styles.liveText}>{t('matchCard.live')}</Text>
+        </View>
+      ) : <View style={styles.spacer} />}
     </View>
   );
 }
@@ -69,6 +71,8 @@ const createStyles = (colors: Palette) =>
       borderRadius: radius.pill,
       backgroundColor: colors.dangerSoft,
     },
+    // Same width as the back button, so the titles stay centred when there is no chip.
+    spacer: { width: sizes.iconButton },
     liveDot: { width: dp(6), height: dp(6), borderRadius: radius.pill, backgroundColor: colors.live },
     liveText: { ...typography.labelSm, color: colors.dangerSoftText },
   });
