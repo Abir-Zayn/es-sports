@@ -7,6 +7,7 @@ import { teamErrorText } from '@/features/team/data/team-errors';
 import { canManage } from '@/features/team/data/team-management';
 import { fetchMyTeams, fetchMyZonedTeams, fetchTeamMembers, myTeamsKey, type TeamMemberRecord, type TeamRecord } from '@/features/team/data/team-repository';
 import { fetchBusyReasons } from '@/features/team/data/team-sync';
+import { useTranslation } from '@/i18n';
 import { Sheet } from '@/features/tournament/roster';
 import { dp, radius, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
@@ -32,6 +33,7 @@ export function ExistingTeamSheet({ visible, onClose, ...rest }: Props) {
 function Teams({ meId, otherTeamId, onPick }: Omit<Props, 'visible' | 'onClose'>) {
   const { colors } = useTheme();
   const s = useThemedStyles(styles);
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const mine = useQuery({ queryKey: myTeamsKey(meId), queryFn: () => fetchMyTeams(meId), enabled: Boolean(meId) });
   // Zoned teams I made count too: nobody owns them, so their creator brings them. They stay out of team rankings.
@@ -50,9 +52,9 @@ function Teams({ meId, otherTeamId, onPick }: Omit<Props, 'visible' | 'onClose'>
   const found = runnable.filter((team) => !needle || team.name.toLowerCase().includes(needle) || team.shortName.toLowerCase().includes(needle));
   return (
     <View style={s.list}>
-      <SearchField value={query} onChangeText={setQuery} placeholder="Search your teams" />
+      <SearchField value={query} onChangeText={setQuery} placeholder={t('friendly.teams.search')} />
       <Text style={s.hint}>Its members join this side as the squad. Afterwards you can add the result to the team’s record.</Text>
-      {found.length === 0 ? <Text muted>{`No team matches “${query.trim()}”.`}</Text> : null}
+      {found.length === 0 ? <Text muted>{t('friendly.teams.noMatch', { query: query.trim() })}</Text> : null}
       {found.map((team) => {
         const reason = team.id === otherTeamId ? 'Already playing the other side.' : busy.data?.[team.id];
         return (

@@ -29,6 +29,8 @@ export const bnMatchFriendly: Record<keyof typeof enMatchFriendly, string> = {
   'friendly.hero.editNameA11y': '{{label}}-এর নাম বদলান',
   'friendly.hero.moreA11y': '{{label}}-এর আরও অপশন',
   'friendly.actions.title': '{{label}} অপশন',
+  'friendly.teams.search': 'আপনার দল খুঁজুন',
+  'friendly.teams.noMatch': '“{{query}}” নামে কোনো দল নেই।',
   'friendly.actions.squad': 'স্কোয়াড দেখুন',
   'friendly.actions.squadDetail': 'স্কোয়াডে {{count}} জন · খেলছে {{playing}} জন',
   'friendly.actions.searchTeams': 'দল খুঁজুন',

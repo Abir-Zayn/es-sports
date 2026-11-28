@@ -39,7 +39,7 @@ export function MatchCompactHeader({ title, subtitle, live, onBack }: Props) {
           <View style={styles.liveDot} />
           <Text style={styles.liveText}>{t('matchCard.live')}</Text>
         </View>
-      ) : null}
+      ) : <View style={styles.spacer} />}
     </View>
   );
 }
@@ -71,6 +71,8 @@ const createStyles = (colors: Palette) =>
       borderRadius: radius.pill,
       backgroundColor: colors.dangerSoft,
     },
+    // Same width as the back button, so the titles stay centred when there is no chip.
+    spacer: { width: sizes.iconButton },
     liveDot: { width: dp(6), height: dp(6), borderRadius: radius.pill, backgroundColor: colors.live },
     liveText: { ...typography.labelSm, color: colors.dangerSoftText },
   });

@@ -27,6 +27,8 @@ export const enMatchFriendly = {
   'friendly.hero.editNameA11y': 'Edit {{label}} name',
   'friendly.hero.moreA11y': 'More options for {{label}}',
   'friendly.actions.title': '{{label}} options',
+  'friendly.teams.search': 'Search your teams',
+  'friendly.teams.noMatch': 'No team matches “{{query}}”.',
   'friendly.actions.squad': 'View squad',
   'friendly.actions.squadDetail': '{{count}} in squad · {{playing}} playing',
   'friendly.actions.searchTeams': 'Search teams',
