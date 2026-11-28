@@ -8,6 +8,8 @@ import { sampleLiveView } from '../__fixtures__/sample-live-view';
 import { MatchLiveScreen } from '../screens/match-live-screen';
 import { MatchWagonScreen } from '../screens/match-wagon-screen';
 
+jest.mock('react-native-reanimated', () => require('../__fixtures__/reanimated-stub'));
+
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
   useLocalSearchParams: () => ({ id: 'hpl-2026-hss-agt' }),

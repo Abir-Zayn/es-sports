@@ -9,6 +9,7 @@ const FOUR = '#178A4C';
 const SIX = '#6D3FE0';
 const ON_BOUNDARY = '#FFFFFF';
 const EXTRAS = ['Wd', 'Nb', 'Lb', 'B'];
+export const BOUNDARY_COLOURS = { four: { background: FOUR, color: ON_BOUNDARY }, six: { background: SIX, color: ON_BOUNDARY } } as const;
 
 export type BallKind = 'four' | 'six' | 'wicket' | 'extra' | 'dot' | 'runs' | 'pending';
 
@@ -53,8 +54,8 @@ export const spokenBall = (value: string): string => {
 
 function coloursOf(kind: BallKind, c: Palette): { background: string; color: string; border?: string } {
   switch (kind) {
-    case 'four': return { background: FOUR, color: ON_BOUNDARY };
-    case 'six': return { background: SIX, color: ON_BOUNDARY };
+    case 'four': return BOUNDARY_COLOURS.four;
+    case 'six': return BOUNDARY_COLOURS.six;
     case 'wicket': return { background: c.danger, color: c.onLive };
     case 'extra': return { background: c.accentSoft, color: c.accent };
     case 'runs': return { background: c.primarySoft, color: c.link };

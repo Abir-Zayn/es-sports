@@ -1,5 +1,6 @@
 import ChevronRight from 'lucide-react-native/icons/chevron-right';
 import { useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui';
@@ -9,6 +10,7 @@ import { ResumeScoringAction } from '@/features/scoring/handover/components/resu
 import { comingSoon } from '@/lib/coming-soon';
 import { radius, sizes, spacing, typography, useTheme, useThemedStyles, type Palette } from '@/theme';
 
+import { BallMoment } from '../components/ball-moment';
 import { LiveBattersCard, LiveBowlerCard } from '../components/live-scoring-tables';
 import { LiveHero } from '../components/live-hero';
 import { MatchLoadState, StaleMatchNote } from '../components/match-load-state';
@@ -29,19 +31,25 @@ export function MatchLiveScreen() {
   const { t } = useTranslation();
   const { goBack } = useMatchRoutes(matchId);
   const live = useLiveMatchData(matchId);
+  const [pulling, setPulling] = useState(false);
 
   if (!live.data) {
     // The frame keeps the back button and tabs, so a match that failed to load is never a dead end.
     return <MatchScreenFrame matchId={matchId} tab="live"><MatchLoadState query={live} label={t('match.loadingMatch')} /></MatchScreenFrame>;
   }
+  // Only a pull shows the spinner: Realtime and polling refresh quietly, so a new ball never jolts the page.
+  const onPull = () => { setPulling(true); void live.refetch().finally(() => setPulling(false)); };
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={live.isRefetching} onRefresh={() => void live.refetch()} tintColor={colors.textMuted} />}>
-      <LiveHero view={live.data} onBack={goBack} onShare={() => comingSoon(t('match.shareFeature'))} />
-      <MatchTabs matchId={matchId} selected="live" />
-      <View style={styles.stale}><StaleMatchNote query={live} /></View>
-      <LiveBody view={live.data} matchId={matchId} />
-    </ScrollView>
+    <View style={styles.screen}>
+      <ScrollView style={styles.screen} contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={pulling} onRefresh={onPull} tintColor={colors.textMuted} />}>
+        <LiveHero view={live.data} onBack={goBack} onShare={() => comingSoon(t('match.shareFeature'))} />
+        <MatchTabs matchId={matchId} selected="live" />
+        <View style={styles.stale}><StaleMatchNote query={live} /></View>
+        <LiveBody view={live.data} matchId={matchId} />
+      </ScrollView>
+      <BallMoment view={live.data} />
+    </View>
   );
 }
 
